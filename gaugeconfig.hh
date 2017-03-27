@@ -67,4 +67,4 @@ private:
 
 gaugeconfig coldstart(size_t Ls, size_t Lt);
 gaugeconfig hotstart(size_t Ls, size_t Lt, 
-                     const int seed);
+                     const int seed, const double delta);

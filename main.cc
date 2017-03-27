@@ -11,8 +11,8 @@ using std::endl;
 
 int main() {
   const size_t Ls = 8, Lt = 16;
-  const double beta = 2.8;
-  auto config = hotstart(Ls, Lt, 123456);
+  const double beta = 5.5;
+  auto config = hotstart(Ls, Lt, 123456, 0.5);
   //auto config = coldstart(Ls, Lt);
   
   double plaquette = gauge_energy(config);

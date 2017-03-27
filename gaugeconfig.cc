@@ -14,16 +14,19 @@ gaugeconfig coldstart(size_t Ls, size_t Lt) {
   return(config);
 }
 gaugeconfig hotstart(size_t Ls, size_t Lt, 
-                     const int seed) {
+                     const int seed, const double _delta) {
 
   gaugeconfig config(Ls, Lt);
-
+  double delta = _delta;
+  if(delta < 0.) delta = 0;
+  if(delta > 1.) delta = 1.;
   std::mt19937 engine(seed);
   std::uniform_real_distribution<double> dist1(-1., 1.);
   std::uniform_real_distribution<double> dist2(0., 2*3.1415);
+  std::uniform_real_distribution<double> dist3(0., delta*3.1415/2.);
 
   for(int i = 0; i < config.getSize(); i++) {
-    const double alpha = dist2(engine);
+    const double alpha = dist3(engine);
     const double u = dist1(engine);
     const double theta = dist2(engine);
 

@@ -15,3 +15,6 @@ gauge_energy.o: gauge_energy.cc gauge_energy.hh gaugeconfig.hh Makefile
 
 su2: main.cc gaugeconfig.o su2.o gauge_energy.o include/geometry.hh Makefile
 	$(CXX) $(CXXFLAGS) $(INCLUDE) main.cc gaugeconfig.o gauge_energy.o su2.o -o su2
+
+clean:
+	rm -f su2 *.o *~ core

@@ -1,7 +1,8 @@
 #include<iostream>
 #include<vector>
-#include"include/su2.hh"
-#include"include/geometry.hh"
+#include"su2.hh"
+#include"gaugeconfig.hh"
+#include"gauge_energy.hh"
 
 using std::vector;
 using std::cout;
@@ -9,33 +10,14 @@ using std::endl;
 
 
 int main() {
-  size_t Ls = 8, Lt = 16;
-
-  vector<su2> config;
-  config.resize(Ls*Ls*Ls*Lt);
+  const size_t Ls = 8, Lt = 16;
+  const double beta = 2.8;
+  auto config = hotstart(Ls, Lt, 123456);
+  //auto config = coldstart(Ls, Lt);
   
-  // set all to 1
-  for(auto i = config.begin(), end =config.end(); i < end; i++) {
-    *i = su2(1., 0.);
-  }
-  
-  cout << config[0].trace() << " " << config[0].det() << " " << config[0].geta() << " " << config[0].getb() << endl;
+  double plaquette = gauge_energy(config);
 
-  su2 U1;
-  U1 = config[0] * config[1];
-  cout << U1.det() << endl;
-
-  U1 = su2(Complex(0.8, 0.3), Complex(0.1, 0.4));
-  su2 U2(0.9, Complex(0.3, 0.2));
-  U1.rescale();
-  U2.rescale();
-  su2  U3 = U1 * U2;
-  cout << U3.det() << " " << trace(U1 * U2) << " " << U3.geta() << " " << U3.getb() << endl;
-
-  geometry geo(Ls, Lt);
-  size_t i = geo.getIndex(7, 5, 3, 9);
-  size_t c[4];
-  geo.getCoordinate(c, i);
-  cout << i << " " << c[0] << " " << c[1] << " " << c[2] << " " << c[3] << endl;
+  cout << "Initital Plaquette: " << plaquette/config.getVolume()/2./6. << endl; 
   return(0);
 }
+

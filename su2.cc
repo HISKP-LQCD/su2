@@ -1,5 +1,5 @@
-#include<complex>
 #include"su2.hh"
+#include<complex>
 
 double trace(const su2 &U) {
   double a = std::real(U.geta());

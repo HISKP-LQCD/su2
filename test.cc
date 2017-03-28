@@ -1,7 +1,7 @@
-#include<iostream>
-#include<vector>
 #include"su2.hh"
 #include"geometry.hh"
+#include<iostream>
+#include<vector>
 
 using std::vector;
 using std::cout;

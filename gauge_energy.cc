@@ -1,6 +1,6 @@
-#include"su2.hh"
 #include"gaugeconfig.hh"
 #include"gauge_energy.hh"
+#include"su2.hh"
 
 
 double gauge_energy(gaugeconfig &U) {

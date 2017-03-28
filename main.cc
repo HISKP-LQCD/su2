@@ -1,10 +1,11 @@
-#include<iostream>
-#include<vector>
 #include"su2.hh"
 #include"gaugeconfig.hh"
 #include"gauge_energy.hh"
 #include"random_gauge_trafo.hh"
 #include"sweep.hh"
+
+#include<iostream>
+#include<vector>
 
 using std::vector;
 using std::cout;
@@ -13,7 +14,7 @@ using std::endl;
 
 int main() {
   const size_t Ls = 8, Lt = 16;
-  const double beta = 5.5;
+  const double beta = 4.5;
   const size_t N_hit = 10;
   const size_t N_meas = 2000;
   const double delta = 0.1;

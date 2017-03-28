@@ -1,9 +1,9 @@
-#include<random>
-#include<vector>
 #include"gaugeconfig.hh"
 #include"random_su2.hh"
 #include"get_staples.hh"
 #include"sweep.hh"
+#include<random>
+#include<vector>
 
 double sweep(gaugeconfig &U, const size_t seed, const double delta, const size_t N_hit, const double beta) {
   std::mt19937 engine(seed);

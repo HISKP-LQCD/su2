@@ -13,11 +13,11 @@ using std::endl;
 
 int main() {
   const size_t Ls = 8, Lt = 16;
-  const double beta = 9.;
+  const double beta = 5.5;
   const size_t N_hit = 10;
-  const size_t N_meas = 100;
+  const size_t N_meas = 2000;
   const double delta = 0.1;
-  auto U = hotstart(Ls, Lt, 123456, 0.15);
+  auto U = hotstart(Ls, Lt, 123456, 0.2);
   //auto config = coldstart(Ls, Lt);
   
   double plaquette = gauge_energy(U);
@@ -28,11 +28,12 @@ int main() {
   cout << "Plaquette after rnd trafo: " << plaquette/U.getVolume()/N_c/6. << endl; 
 
   double rate = 0.;
-  for(int i = 0; i < N_meas; i++) {
+  for(size_t i = 0; i < N_meas; i++) {
     rate += sweep(U, 13243546, delta, N_hit, beta);
-    cout << "Plaquette after sweep: " << i << " " << gauge_energy(U)/U.getVolume()/N_c/6. << endl;
+    //cout << "Plaquette after sweep: " << i << " " << gauge_energy(U)/U.getVolume()/N_c/6. << endl;
+    cout << i << " " << gauge_energy(U)/U.getVolume()/N_c/6. << endl;
   }
-  cout << rate/double(N_meas) << endl;
+  cout << rate/static_cast<double>(N_meas) << endl;
   return(0);
 }
 

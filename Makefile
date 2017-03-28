@@ -1,8 +1,8 @@
 all: su2
 
-CXX=g++ -std=c++11 -g
+CXX=g++ 
 INCLUDE=-Iinclude/
-CXXFLAGS=-Wpedantic
+CXXFLAGS=-Wall -Wpedantic -std=c++11 -g
 
 gaugeconfig.o: gaugeconfig.cc gaugeconfig.hh su2.hh random_su2.hh Makefile
 	$(CXX) $(CXXFLAGS) $(INCLUDE) -c $<

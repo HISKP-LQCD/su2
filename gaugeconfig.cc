@@ -9,7 +9,7 @@
 gaugeconfig coldstart(size_t Ls, size_t Lt) {
 
   gaugeconfig config(Ls, Lt);
-  for(int i = 0; i < config.getSize(); i++) {
+  for(size_t i = 0; i < config.getSize(); i++) {
     config[i] = su2(1., 0.);
   }
   return(config);
@@ -23,7 +23,7 @@ gaugeconfig hotstart(size_t Ls, size_t Lt,
   if(delta > 1.) delta = 1.;
   std::mt19937 engine(seed);
 
-  for(int i = 0; i < config.getSize(); i++) {
+  for(size_t i = 0; i < config.getSize(); i++) {
     random_su2(config[i], engine, delta);
   }
   return(config);

@@ -3,20 +3,24 @@
 #include"gauge_energy.hh"
 
 
-double gauge_energy(gaugeconfig &config) {
+double gauge_energy(gaugeconfig &U) {
   double res = 0.;
-  for(size_t t = 0; t < config.getLt(); t++) {
-    for(size_t x = 0; x < config.getLs(); x++) {
-      for(size_t y = 0; y < config.getLs(); y++) {
-        for(size_t z = 0; z < config.getLs(); z++) {
+
+  std::vector<size_t> x = {0, 0, 0, 0};
+  for(x[0] = 0; x[0] < U.getLt(); x[0]++) {
+    for(x[1] = 0; x[1] < U.getLs(); x[1]++) {
+      for(x[2] = 0; x[2] < U.getLs(); x[2]++) {
+        for(x[3] = 0; x[3] < U.getLs(); x[3]++) {
+          std::vector<size_t> xplusmu = x;
+          std::vector<size_t> xplusnu = x;
           for(size_t mu = 0; mu < 3; mu++) {
             for(size_t nu = mu+1; nu < 4; nu++) {
-              std::vector<size_t> x1 = {t, x, y, z};
-              std::vector<size_t> x2 = {t, x, y, z};
-              x1[mu] += 1;
-              x2[nu] += 1;
-              res += trace(config(t, x, y, z, mu) * config(x1, nu) *
-                           config(x2, mu).dagger()*config(t, x, y, z, nu));
+              xplusmu[mu] += 1;
+              xplusnu[nu] += 1;
+              res += trace(U(x, mu) * U(xplusmu, nu) *
+                           U(xplusnu, mu).dagger()*U(x, nu).dagger());
+              xplusmu[mu] -= 1;
+              xplusnu[nu] -= 1;
             }
           }
         }

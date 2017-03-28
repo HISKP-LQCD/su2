@@ -8,17 +8,18 @@ su2 get_staples(gaugeconfig &U, vector<size_t> const x, const size_t mu) {
   x1[mu] += 1;
   for(int nu = 0; nu < 4; nu++) {
     if(nu != mu) {
-      x2[nu] += 1;
-      K += U(x1, nu) * U(x1, mu).dagger() * U(x, nu).dagger();
-      x2[nu] -= 1;
+      x2[nu]++;
+      K += U(x1, nu) * U(x2, mu).dagger() * U(x, nu).dagger();
+      x2[nu]--;
     }
   }
   for(int nu = 0; nu < 4; nu++) {
     if(nu != mu) {
-      x1[nu] -= 1;
-      x2[nu] -= 1;
+      x1[nu]--;
+      x2[nu]--;
       K += U(x1, nu).dagger() * U(x2, mu).dagger() * U(x2, nu);
-      x2[nu] += 1;
+      x2[nu]++;
+      x1[nu]++;
     }
   }
   return(K);

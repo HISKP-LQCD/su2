@@ -5,6 +5,8 @@
 
 using Complex = std::complex<double>;
 
+const size_t N_c = 2;
+
 class _su2 {
 public:
   explicit _su2() : a(0), b(0) {}
@@ -24,6 +26,10 @@ public:
   void operator=(const _su2 &U) {
     a = U.geta();
     b = U.getb();
+  }
+  void operator+=(const _su2 &U) {
+    a += U.a;
+    b += U.b;
   }
   void set(const Complex _a, const Complex _b) {
     a = _a;

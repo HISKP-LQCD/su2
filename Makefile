@@ -1,6 +1,6 @@
 all: su2
 
-CXX=clang++
+CXX=g++
 INCLUDE=-Iinclude/
 CXXFLAGS=-Wall -Wpedantic -std=c++11 -g -O3
 

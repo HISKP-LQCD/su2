@@ -1,7 +1,7 @@
 #pragma once
 
-#include<vector>
 #include"su2.hh"
+#include<vector>
 
 using std::vector;
 

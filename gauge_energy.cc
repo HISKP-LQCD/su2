@@ -17,8 +17,8 @@ double gauge_energy(gaugeconfig &U) {
             for(size_t nu = mu+1; nu < 4; nu++) {
               xplusmu[mu] += 1;
               xplusnu[nu] += 1;
-              res += trace(U(x, mu) * U(xplusmu, nu) *
-                           U(xplusnu, mu).dagger()*U(x, nu).dagger());
+              res += trace<su2>(U(x, mu) * U(xplusmu, nu) *
+                                U(xplusnu, mu).dagger()*U(x, nu).dagger());
               xplusmu[mu] -= 1;
               xplusnu[nu] -= 1;
             }

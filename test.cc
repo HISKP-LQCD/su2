@@ -31,7 +31,7 @@ int main() {
   U1.rescale();
   U2.rescale();
   su2  U3 = U1 * U2;
-  cout << U3.det() << " " << trace(U1 * U2) << " " << U3.geta() << " " << U3.getb() << endl;
+  cout << U3.det() << " " << trace<su2>(U1 * U2) << " " << U3.geta() << " " << U3.getb() << endl;
 
   geometry geo(Ls, Lt);
   size_t i = geo.getIndex(7, 5, 3, 9);

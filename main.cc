@@ -18,7 +18,7 @@ int main() {
   const size_t N_hit = 10;
   const size_t N_meas = 2000;
   const double delta = 0.1;
-  auto U = hotstart(Ls, Lt, 123456, 0.2);
+  auto U = hotstart(Ls, Lt, 123456, 0.1);
   //auto config = coldstart(Ls, Lt);
   
   double plaquette = gauge_energy(U);

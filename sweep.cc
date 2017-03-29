@@ -21,7 +21,7 @@ double sweep(gaugeconfig &U, const size_t seed, const double delta, const size_t
             for(size_t n = 0; n < N_hit; n++) {
               bool accept = false;
               random_su2(rU, engine, delta);
-              double deltaS = beta/2.*(trace(U(x, mu) * K) - trace(U(x, mu) * rU * K));
+              double deltaS = beta/static_cast<double>(N_c)*(trace<su2>(U(x, mu) * K) - trace(U(x, mu) * rU * K));
               if(deltaS < 0) accept = true;
               else accept = (uniform(engine) < exp(-deltaS));
               if(accept) {

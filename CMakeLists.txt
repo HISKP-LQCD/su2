@@ -4,9 +4,10 @@
 cmake_minimum_required(VERSION 2.8.11)
 project(su2 C CXX)
 
+add_definitions(--std=c++11)
 # There is one header file which is in a subdirectory. This add the `-i` to the
 # compiler.
-include_directories("include")
+#include_directories("include")
 
 # We could just have two `add_executable` blocks listing almost all source
 # files. However, CMake would then compile the source files twice, once for

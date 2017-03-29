@@ -6,6 +6,8 @@ using Complex = std::complex<double>;
 
 const size_t N_c = 2;
 
+template<class E> class su2expression;
+
 class _su2 {
 public:
   explicit _su2() : a(0), b(0) {}
@@ -36,6 +38,7 @@ public:
     a += U.a;
     b += U.b;
   }
+
   void set(const Complex _a, const Complex _b) {
     a = _a;
     b = _b;
@@ -71,6 +74,8 @@ _su2 operator-(const _su2 &U1, const _su2 &U2);
 // marker template class
 template<class E> class su2expression {
 public:
+  E expr;
+
   explicit su2expression() : expr() {}
   explicit su2expression(E e) : expr(e) {}
   explicit su2expression(Complex a, Complex b): expr(a, b) {}
@@ -86,11 +91,11 @@ public:
   void setb(Complex const &b) {
     expr.setb(b);
   }
-  void operator=(const E &U) {
+  template<class T> void operator=(const su2expression<T> &U) {
     expr.seta( U.geta() );
     expr.setb( U.getb() );
   }
-  void operator+=(const E &U) {
+  template<class T> void operator+=(const su2expression<T> &U) {
     expr.seta( expr.geta() += U.geta() );
     expr.setb( expr.getb() += U.getb() );
   }
@@ -98,8 +103,8 @@ public:
     expr.seta(_a);
     expr.setb(_b);
   }
-  E dagger() const {
-    E tmp(std::conj(expr.geta()), -expr.getb());
+  su2expression<E> dagger() const {
+    su2expression<E> tmp(std::conj(expr.geta()), -expr.getb());
     return(tmp);
   }
   double trace() {
@@ -113,14 +118,10 @@ public:
     expr.seta(expr.geta() /= r);
     expr.setb(expr.getb() /= r);
   }
-
-  //private:
-  E expr;
 };
 
 // template class for add operations
-template<class LE, class RE> class Add
-{
+template<class LE, class RE> class Add {
 public:
   explicit Add(LE le, RE re) : lexpr(le), rexpr(re) {}
   Complex geta() const {
@@ -134,15 +135,12 @@ private:
   RE rexpr;
 };
 // overload operator+
-template<class LE, class RE> su2expression<Add<LE, RE>> operator+(su2expression<LE> le, su2expression<RE> re)
-{
+template<class LE, class RE> su2expression<Add<LE, RE>> operator+(su2expression<LE> le, su2expression<RE> re) {
   return su2expression<Add<LE, RE>>(Add<LE, RE>(le.expr, re.expr));
 }
 
-
 // template class for multiplications
-template<class LE, class RE> class Mul
-{
+template<class LE, class RE> class Mul {
 public:
   explicit Mul(LE le, RE re) : lexpr(le), rexpr(re) {}
   Complex geta() const {
@@ -155,12 +153,11 @@ private:
   LE lexpr;
   RE rexpr;
 };
+
 // overload operator*
-template<class LE, class RE> su2expression<Mul<LE, RE>> operator*(su2expression<LE> le, su2expression<RE> re)
-{
+template<class LE, class RE> su2expression<Mul<LE, RE>> operator*(su2expression<LE> le, su2expression<RE> re) {
   return su2expression<Mul<LE, RE>>(Mul<LE, RE>(le.expr, re.expr));
 }
 
 
 using su2 = su2expression<_su2>;
-using su2o = _su2;

@@ -54,7 +54,11 @@ private:
   Complex a, b;
 };
 
-double trace(const _su2 &U);
+template<class matrix> double trace(matrix const &U) {
+  double a = std::real(U.geta());
+  return(2*a);
+}
+
 _su2 operator*(const _su2 &U1, const _su2 &U2);
 _su2 operator+(const _su2 &U1, const _su2 &U2);
 _su2 operator-(const _su2 &U1, const _su2 &U2);

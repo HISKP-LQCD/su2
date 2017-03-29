@@ -1,10 +1,6 @@
 #include"su2.hh"
 #include<complex>
 
-double trace(const su2 &U) {
-  double a = std::real(U.geta());
-  return(2*a);
-}
 
 su2 operator*(const su2 &U1, const su2 &U2) {
   su2 res;

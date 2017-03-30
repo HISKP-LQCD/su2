@@ -1,6 +1,7 @@
 #include"su2.hh"
 #include"gaugeconfig.hh"
 #include"get_staples.hh"
+#include<vector>
 
 su2 get_staples(gaugeconfig &U, vector<size_t> const x, const size_t mu) {
   su2 K(0., 0.);

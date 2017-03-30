@@ -11,7 +11,7 @@ double sweep(gaugeconfig &U, const size_t seed, const double delta,
   std::uniform_real_distribution<double> uniform(0., 1.);
 
   size_t rate = 0;
-  su2 rU(0., 0.);
+  su2 R(0., 0.);
   std::vector<size_t> x = {0, 0, 0, 0};
   for(x[0] = 0; x[0] < U.getLt(); x[0]++) {
     for(x[1] = 0; x[1] < U.getLs(); x[1]++) {
@@ -20,14 +20,13 @@ double sweep(gaugeconfig &U, const size_t seed, const double delta,
           for(size_t mu = 0; mu < 4; mu++) {
             su2 K = get_staples(U, x, mu);
             for(size_t n = 0; n < N_hit; n++) {
-              bool accept = false;
-              random_su2(rU, engine, delta);
+              random_su2(R, engine, delta);
               double deltaS = beta/static_cast<double>(N_c)*
-                (trace(U(x, mu) * K) - trace(U(x, mu) * rU * K));
-              if(deltaS < 0) accept = true;
-              else accept = (uniform(engine) < exp(-deltaS));
+                (trace(U(x, mu) * K) - trace(U(x, mu) * R * K));
+              bool accept = (deltaS < 0);
+              if(!accept) accept = (uniform(engine) < exp(-deltaS));
               if(accept) {
-                U(x, mu) = U(x, mu) * rU;
+                U(x, mu) = U(x, mu) * R;
                 U(x, mu).rescale();
                 rate += 1;
               }

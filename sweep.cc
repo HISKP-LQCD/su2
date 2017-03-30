@@ -5,7 +5,8 @@
 #include<random>
 #include<vector>
 
-double sweep(gaugeconfig &U, const size_t seed, const double delta, const size_t N_hit, const double beta) {
+double sweep(gaugeconfig &U, const size_t seed, const double delta, 
+             const size_t N_hit, const double beta) {
   std::mt19937 engine(seed);
   std::uniform_real_distribution<double> uniform(0., 1.);
 

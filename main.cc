@@ -3,6 +3,7 @@
 #include"gauge_energy.hh"
 #include"random_gauge_trafo.hh"
 #include"sweep.hh"
+#include"wilsonloop.hh"
 
 #include<iostream>
 #include<vector>

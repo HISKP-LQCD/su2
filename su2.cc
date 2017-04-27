@@ -22,3 +22,4 @@ su2 operator-(const su2 &U1, const su2 &U2) {
   res.b = U1.b - U2.b;
   return(res);
 }
+

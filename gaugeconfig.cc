@@ -4,6 +4,17 @@
 #include<random>
 #include<vector>
 #include<cmath>
+#include <fstream>
+
+void gaugeconfig::save(std::string const &path) const {
+  std::ofstream os(path, std::ios::out | std::ios::binary);
+  os.write(reinterpret_cast<char const *>(data.data()), storage_size());
+}
+
+void gaugeconfig::load(std::string const &path) {
+  std::ifstream ifs(path, std::ios::out | std::ios::binary);
+  ifs.read(reinterpret_cast<char *>(data.data()), storage_size());
+}
 
 
 gaugeconfig coldstart(size_t Ls, size_t Lt) {

@@ -19,6 +19,7 @@ int main() {
   const size_t N_hit = 10;
   const size_t N_meas = 2000;
   const double delta = 0.1;
+  const size_t N_save = 20;
   auto U = hotstart(Ls, Lt, 123456, 0.2);
   //auto config = coldstart(Ls, Lt);
   
@@ -32,8 +33,13 @@ int main() {
   double rate = 0.;
   for(size_t i = 0; i < N_meas; i++) {
     rate += sweep(U, 13243546, delta, N_hit, beta);
-    //cout << "Plaquette after sweep: " << i << " " << gauge_energy(U)/U.getVolume()/N_c/6. << endl;
     cout << i << " " << gauge_energy(U)/U.getVolume()/N_c/6. << endl;
+    if(i > 0 && i % N_save == 0) {
+      std::ostringstream os;
+      os << "wilsonloop." << i << ".dat" << std::ends;
+      std::string filename = os.str();
+      compute_all_loops(U, filename);
+    }
   }
   cout << rate/static_cast<double>(N_meas) << endl;
   return(0);

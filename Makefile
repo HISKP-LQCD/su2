@@ -2,7 +2,7 @@ all: dep su2
 
 CXX=g++ 
 INCLUDE=
-CXXFLAGS=-Wall -Wpedantic -std=c++11 -g -O3
+CXXFLAGS=-Wall -Wpedantic --std=c++11 -O3
 
 MODULES = gaugeconfig su2 gauge_energy random_gauge_trafo get_staples sweep main
 

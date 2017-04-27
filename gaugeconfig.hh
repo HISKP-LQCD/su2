@@ -13,6 +13,7 @@ public:
     Ls(Ls), Lt(Lt), volume(Ls*Ls*Ls*Lt) {
     data.resize(volume*4);
   }
+  size_t storage_size() const { return data.size() * sizeof(value_type); };
   size_t getLs() const {
     return(Ls);
   }
@@ -48,7 +49,9 @@ public:
   const value_type &operator[](size_t const index) const {
     return data[index];
   }
-  
+
+  void save(std::string const &path) const;
+  void load(std::string const &path);
 
 private:
   size_t Ls, Lt, volume;

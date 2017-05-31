@@ -1,5 +1,5 @@
-#include<random>
 #include"su2.hh"
+#include<random>
 
 constexpr double pi() { return std::atan(1)*4; }
 

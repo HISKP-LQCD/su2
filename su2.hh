@@ -44,7 +44,6 @@ public:
     a += U.a;
     b += U.b;
   }
-
   void set(const Complex _a, const Complex _b) {
     a = _a;
     b = _b;
@@ -104,6 +103,11 @@ public:
   template<class T> void operator+=(const su2expression<T> &U) {
     expr.seta( expr.geta() += U.geta() );
     expr.setb( expr.getb() += U.getb() );
+  }
+  template<class T> void operator*=(const su2expression<T> &U) {
+    auto tmp = expr.geta();
+    expr.seta( tmp*U.geta() - expr.getb()*std::conj(U.getb()));
+    expr.setb( tmp*U.getb() + expr.getb()*std::conj(U.geta()));
   }
   void set(const Complex _a, const Complex _b) {
     expr.seta(_a);

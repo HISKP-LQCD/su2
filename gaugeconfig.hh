@@ -9,10 +9,18 @@ class gaugeconfig {
 public:
   using value_type = su2;
 
-  gaugeconfig(const size_t Ls, const size_t Lt) : 
-    Ls(Ls), Lt(Lt), volume(Ls*Ls*Ls*Lt) {
+  gaugeconfig(const size_t Ls, const size_t Lt, const double beta=0) : 
+    Ls(Ls), Lt(Lt), volume(Ls*Ls*Ls*Lt), beta(beta) {
     data.resize(volume*4);
   }
+  gaugeconfig(const gaugeconfig &U) :
+    Ls(U.getLs()), Lt(U.getLt()), volume(U.getVolume()), beta(U.getBeta()) {
+    data.resize(volume*4);
+    for(size_t i = 0; i < getSize(); i++) {
+      data[i] = U[i];
+    }
+  }
+
   size_t storage_size() const { return data.size() * sizeof(value_type); };
   size_t getLs() const {
     return(Ls);
@@ -26,24 +34,40 @@ public:
   size_t getSize() const {
     return(volume*4);
   }
+  double getBeta() const {
+    return beta;
+  }
+  void setBeta(const double _beta){
+    beta = _beta;
+  }
+  void operator=(const gaugeconfig &U) {
+    Ls = U.getLs();
+    Lt = U.getLt();
+    volume = U.getVolume();
+    data.resize(U.getSize());
+    for(size_t i = 0; i < U.getSize(); i++) {
+      data[i] = U[i];
+    }
+  }
+
   value_type &operator()(size_t const t, size_t const x, size_t const y, size_t const z, size_t const mu) {
     return data[getIndex(t, x, y, z, mu)];
   }
 
   const value_type &operator()(size_t const t, size_t const x, size_t const y, size_t const z, size_t const mu) const {
-    return data[getIndex(t, x, y, z, mu)];
+    return data[ getIndex(t, x, y, z, mu) ];
   }
 
   value_type &operator()(std::vector<size_t> const &coords, size_t const mu) {
-    return data[getIndex(coords[0], coords[1], coords[2], coords[3], mu)];
+    return data[ getIndex(coords[0], coords[1], coords[2], coords[3], mu) ];
   }
 
   const value_type &operator()(std::vector<size_t> const &coords, size_t const mu) const {
-    return data[getIndex(coords[0], coords[1], coords[2], coords[3], mu)];
+    return data[ getIndex(coords[0], coords[1], coords[2], coords[3], mu) ];
   }
 
   value_type &operator[](size_t const index) {
-    return data[index];
+    return data[ index ];
   }
 
   const value_type &operator[](size_t const index) const {
@@ -55,6 +79,7 @@ public:
 
 private:
   size_t Ls, Lt, volume;
+  double beta;
 
   vector<value_type> data;
 

@@ -4,7 +4,7 @@ CXX=g++
 INCLUDE=
 CXXFLAGS=-Wall -Wpedantic --std=c++11 -O3
 
-MODULES = gaugeconfig su2 gauge_energy random_gauge_trafo get_staples sweep wilsonloop main
+MODULES = gaugeconfig su2 gauge_energy random_gauge_trafo get_staples sweep wilsonloop expsu2 main
 
 -include $(addsuffix .d,$(MODULES))
 

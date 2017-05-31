@@ -17,6 +17,12 @@ public:
   friend _su2 operator+(const _su2 &U1, const _su2 &U2);
   friend _su2 operator-(const _su2 &U1, const _su2 &U2);
   friend _su2 operator*(const _su2 &U1, const _su2 &U2);
+  _su2& operator*=(const _su2 &U1) {
+    Complex a = this->a;
+    this->a = a*U1.a - this->b*std::conj(U1.b);
+    this->b = a*U1.b + this->b*std::conj(U1.a);
+    return *this;
+  }
 
   Complex geta() const {
     return(a);

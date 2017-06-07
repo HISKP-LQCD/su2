@@ -28,7 +28,6 @@ int main() {
   md_params params(10, 1.0);
   
   std::mt19937 engine(seed);
-  std::normal_distribution<> dist(70, 10);
 
   double plaquette = gauge_energy(U);
   cout << "Initital Plaquette: " << plaquette/U.getVolume()/N_c/6. << endl; 
@@ -37,7 +36,9 @@ int main() {
   plaquette = gauge_energy(U);
   cout << "Plaquette after rnd trafo: " << plaquette/U.getVolume()/N_c/6. << endl; 
 
+  // generate list of monomials
   gaugemonomial<double> gm(0);
+  gm.setmdpassive();
   kineticmonomial<double> km(-1);
   std::list<monomial<double>*> monomial_list;
   monomial_list.push_back(&gm);

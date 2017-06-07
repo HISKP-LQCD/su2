@@ -3,7 +3,8 @@
 #include"gaugeconfig.hh"
 #include"hamiltonian_field.hh"
 #include"monomial.hh"
-#include"md_update.hh"
+#include"md_params.hh"
+#include"integrator.hh"
 #include<iostream>
 #include<vector>
 #include<list>
@@ -11,27 +12,6 @@
 
 using std::vector;
 
-class md_params {
-
-public:
-  md_params(size_t _nsteps, double _tau) : nsteps(_nsteps), tau(_tau) {}
-  size_t getnsteps() const {
-    return nsteps;
-  }
-  double gettau() const {
-    return tau;
-  }
-  void setnsteps(const size_t _nsteps) {
-    nsteps = _nsteps;
-  }
-  void settau(const double _tau) {
-    tau = _tau;
-  }
-
-private:
-  size_t nsteps;
-  double tau;
-};
 
 template<class URNG> int md_update(gaugeconfig &U,
                                    URNG &engine, 
@@ -49,17 +29,20 @@ template<class URNG> int md_update(gaugeconfig &U,
   hamiltonian_field<double> h(momenta, U);
 
   // compute the initial Hamiltonian
-  for (std::list<monomial<double>*>::iterator it = monomial_list.begin(); it != monomial_list.end(); it++) {
+  for (auto it = monomial_list.begin(); it != monomial_list.end(); it++) {
     (*it)->heatbath(h); 
   }
 
+  // keep a copy of original gauge field
   gaugeconfig U_old(U);
-  // perform MD evolution
 
+  // perform MD evolution
+  leapfrog<double> md_integ;
+  md_integ.integrate(monomial_list, h, params);
 
   // compute the final Hamiltonian
   double delta_H = 0.;
-  for (std::list<monomial<double>*>::iterator it = monomial_list.begin(); it != monomial_list.end(); it++) {
+  for (auto it = monomial_list.begin(); it != monomial_list.end(); it++) {
     (*it)->accept(h); 
     delta_H += (*it)->getDeltaH();
   }

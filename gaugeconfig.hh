@@ -51,7 +51,7 @@ public:
   }
 
   value_type &operator()(size_t const t, size_t const x, size_t const y, size_t const z, size_t const mu) {
-    return data[getIndex(t, x, y, z, mu)];
+    return data[ getIndex(t, x, y, z, mu) ];
   }
 
   const value_type &operator()(size_t const t, size_t const x, size_t const y, size_t const z, size_t const mu) const {
@@ -96,3 +96,4 @@ private:
 gaugeconfig coldstart(size_t Ls, size_t Lt);
 gaugeconfig hotstart(size_t Ls, size_t Lt, 
                      const int seed, const double delta);
+

@@ -10,7 +10,7 @@ public:
   monomial() : Hold(0.), Hnew(0.), timescale(0), mdactive(true) {}
   virtual void heatbath(hamiltonian_field<T> const &h) = 0;
   virtual void accept(hamiltonian_field<T> const &h) = 0;
-  virtual void derivative(std::vector<T> &x, hamiltonian_field<T> const &h) const = 0;
+  virtual void derivative(adjointfield<T> &deriv, hamiltonian_field<T> const &h) const = 0;
   void reset() {
     Hold = 0.;
     Hnew = 0.;
@@ -42,18 +42,12 @@ template<class T> class kineticmonomial : public monomial<T> {
 public:
   kineticmonomial(unsigned int _timescale) : monomial<T>::monomial(_timescale) {}
   void heatbath(hamiltonian_field<T> const &h) override {
-    monomial<T>::Hold = 0.;
-    for(size_t i = 0; i < h.U->getVolume()*4*3; i++) {
-      monomial<T>::Hold += 0.5*(*h.momenta)[i]*(*h.momenta)[i];
-    }
+    monomial<T>::Hold = 0.5 * ((*h.momenta)*(*h.momenta));
   }
   void accept(hamiltonian_field<T> const &h) override {
-    monomial<T>::Hnew = 0.;
-    for(size_t i = 0; i < h.U->getVolume()*4*3; i++) {
-      monomial<T>::Hnew += 0.5*(*h.momenta)[i]*(*h.momenta)[i];
-    }
+    monomial<T>::Hnew = 0.5 * ((*h.momenta)*(*h.momenta));
   }
-  virtual void derivative(std::vector<T> &x, hamiltonian_field<T> const &h) const {}
+  virtual void derivative(adjointfield<T> &deriv, hamiltonian_field<T> const &h) const {}
 };
 
 #include"gaugemonomial.hh"

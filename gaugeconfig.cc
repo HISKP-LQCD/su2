@@ -39,3 +39,4 @@ gaugeconfig hotstart(size_t Ls, size_t Lt,
   }
   return(config);
 }
+

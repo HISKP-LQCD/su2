@@ -1,6 +1,7 @@
 #pragma once
 
 #include"gaugeconfig.hh"
+#include"adjointfield.hh"
 #include"hamiltonian_field.hh"
 #include"monomial.hh"
 #include"md_params.hh"
@@ -17,15 +18,12 @@ template<class URNG> int md_update(gaugeconfig &U,
                                    URNG &engine, 
                                    md_params const &params,
                                    std::list<monomial<double>*> &monomial_list) {
-  size_t Volume = U.getVolume();
-  vector<double> momenta;
-  momenta.resize(Volume*4*3);
-  std::normal_distribution<double> normal(0., 1.);
-  std::uniform_real_distribution<double> uniform(0., 1.);
+  adjointfield<double> momenta(U.getLs(), U.getLt());
   // generate standard normal distributed random momenta
-  for(int i = 0; i < Volume*4*3; i++) {
-    momenta[i] = normal(engine);
-  }
+  momenta = initnormal<URNG, double>(engine, U.getLs(), U.getLt());
+  
+  std::uniform_real_distribution<double> uniform(0., 1.);
+
   hamiltonian_field<double> h(momenta, U);
 
   // compute the initial Hamiltonian
@@ -46,7 +44,7 @@ template<class URNG> int md_update(gaugeconfig &U,
     (*it)->accept(h); 
     delta_H += (*it)->getDeltaH();
   }
-  std::cout << delta_H << std::endl;
+  std::cout << "deltaH: " << delta_H << std::endl;
 
   // accept/reject step, if needed
   bool accepted = true;

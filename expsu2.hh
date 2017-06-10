@@ -1,6 +1,6 @@
 #pragma once
 
-#include <vector>
 #include "su2.hh"
+#include "adjointfield.hh"
 
-_su2 exp(std::vector<double> const & x);
+_su2 exp(adjoint<double> const & x);

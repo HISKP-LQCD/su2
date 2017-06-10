@@ -25,7 +25,7 @@ int main() {
   gaugeconfig U(Ls, Lt, beta);
   U = hotstart(Ls, Lt, 123456, 0.2);
 
-  md_params params(10, 1.0);
+  md_params params(20, 1.0);
   
   std::mt19937 engine(seed);
 

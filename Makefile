@@ -24,4 +24,4 @@ su2hmc: $(addsuffix .o, $(MODULES) hmc) Makefile
 	$(CXX) $(CXXFLAGS) $(INCLUDE) $(addsuffix .o, $(MODULES)) hmc.o -o su2hmc
 
 clean:
-	rm -f su2 su2hmc *.o *~ core
+	rm -f su2 su2hmc *.o *.d *~ core

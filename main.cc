@@ -22,7 +22,7 @@ int main() {
   const size_t N_save = 20;
   gaugeconfig U(Ls, Lt, beta);
   U = hotstart(Ls, Lt, 123456, 0.2);
-  U = coldstart(Ls, Lt);
+  //U = coldstart(Ls, Lt);
   
   double plaquette = gauge_energy(U);
   cout << "Initital Plaquette: " << plaquette/U.getVolume()/N_c/6. << endl; 

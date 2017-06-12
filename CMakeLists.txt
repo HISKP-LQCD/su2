@@ -3,6 +3,7 @@
 
 cmake_minimum_required(VERSION 2.8.11)
 project(su2 C CXX)
+project(su2hmc C CXX)
 
 add_definitions(--std=c++11)
 # There is one header file which is in a subdirectory. This add the `-i` to the
@@ -22,12 +23,27 @@ add_library(su2
     random_gauge_trafo.cc
     su2.cc
     sweep.cc
+    wilsonloop.cc
+)
+
+add_library(su2hmc
+    gauge_energy.cc
+    gaugeconfig.cc
+    get_staples.cc
+    random_gauge_trafo.cc
+    expsu2.cc
+    su2.cc
+    wilsonloop.cc
 )
 
 # Create the main program.
 add_executable(su2-main main.cc)
 target_link_libraries(su2-main su2)
 
+add_executable(su2-hmc hmc.cc)
+target_link_libraries(su2-hmc su2hmc)
+
+
 # Create the test driver.
-add_executable(su2-test test.cc)
-target_link_libraries(su2-test su2)
+# add_executable(su2-test test.cc)
+# target_link_libraries(su2-test su2)

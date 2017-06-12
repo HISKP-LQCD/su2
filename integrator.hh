@@ -8,6 +8,7 @@
 #include"gaugeconfig.hh"
 #include<vector>
 #include<list>
+#include<iostream>
 
 template<class T> class integrator{
 public:

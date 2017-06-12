@@ -14,11 +14,11 @@ template<class T> class gaugemonomial : public monomial<T> {
 public:
   gaugemonomial<T>(unsigned int _timescale) : monomial<T>::monomial(_timescale) {}
   void heatbath(hamiltonian_field<T> const &h) override {
-    monomial<T>::Hold = h.U->getBeta()/N_c*gauge_energy(*(h.U));
+    monomial<T>::Hold = h.U->getBeta()/N_c*(h.U->getVolume()*6 - gauge_energy(*(h.U)));
     return;
   }
   void accept(hamiltonian_field<T> const &h) override {
-    monomial<T>::Hnew = h.U->getBeta()/N_c*gauge_energy(*(h.U));
+    monomial<T>::Hnew = h.U->getBeta()/N_c*(h.U->getVolume()*6 - gauge_energy(*(h.U)));
     return;
   }
   void derivative(adjointfield<T> &deriv, hamiltonian_field<T> const &h) const override {

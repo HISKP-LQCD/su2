@@ -5,6 +5,7 @@
 #include"hamiltonian_field.hh"
 #include<list>
 #include<vector>
+#include<iostream>
 
 template<class T> void update_momenta(std::list<monomial<T>*> &monomial_list, 
                                       adjointfield<T> &deriv, hamiltonian_field<T> &h, 
@@ -22,7 +23,7 @@ template<class T> void update_momenta(std::list<monomial<T>*> &monomial_list,
     }
   }
   
-  for(size_t i = 0; i < h.U->getSize(); i++) {
+  for(size_t i = 0; i < h.momenta->getSize(); i++) {
     (*h.momenta)[i] -= dtau * deriv[i];
   }
   // std::vector<size_t> x = {0, 0, 0, 0};

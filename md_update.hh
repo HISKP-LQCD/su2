@@ -10,6 +10,7 @@
 #include<vector>
 #include<list>
 #include<random>
+#include<iostream>
 
 using std::vector;
 
@@ -20,8 +21,9 @@ template<class URNG> int md_update(gaugeconfig &U,
                                    std::list<monomial<double>*> &monomial_list) {
   adjointfield<double> momenta(U.getLs(), U.getLt());
   // generate standard normal distributed random momenta
+  // normal distribution checked!
   momenta = initnormal<URNG, double>(engine, U.getLs(), U.getLt());
-  
+
   std::uniform_real_distribution<double> uniform(0., 1.);
 
   hamiltonian_field<double> h(momenta, U);
@@ -43,8 +45,9 @@ template<class URNG> int md_update(gaugeconfig &U,
   for (auto it = monomial_list.begin(); it != monomial_list.end(); it++) {
     (*it)->accept(h); 
     delta_H += (*it)->getDeltaH();
+    //std::cout << "monomial deltaH: " << (*it)->getDeltaH() << " ";
   }
-  std::cout << "deltaH: " << delta_H << std::endl;
+  std::cout << "deltaH: " << delta_H << " ";// << std::endl;
 
   // accept/reject step, if needed
   bool accepted = true;

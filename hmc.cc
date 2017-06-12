@@ -19,13 +19,13 @@ using std::endl;
 int main() {
   const size_t Ls = 8, Lt = 16;
   const double beta = 4.5;
-  const size_t N_meas = 2000;
+  const size_t N_meas = 100;
   const size_t N_save = 20;
   const int seed = 13526463;
   gaugeconfig U(Ls, Lt, beta);
   U = hotstart(Ls, Lt, 123456, 0.2);
 
-  md_params params(20, 1.0);
+  md_params params(30, 1.0);
   
   std::mt19937 engine(seed);
 
@@ -38,8 +38,9 @@ int main() {
 
   // generate list of monomials
   gaugemonomial<double> gm(0);
-  gm.setmdpassive();
-  kineticmonomial<double> km(-1);
+  kineticmonomial<double> km(0);
+  km.setmdpassive();
+
   std::list<monomial<double>*> monomial_list;
   monomial_list.push_back(&gm);
   monomial_list.push_back(&km);

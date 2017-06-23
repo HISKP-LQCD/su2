@@ -15,10 +15,10 @@
 using std::vector;
 
 
-template<class URNG> int md_update(gaugeconfig &U,
-                                   URNG &engine, 
-                                   md_params const &params,
-                                   std::list<monomial<double>*> &monomial_list) {
+template<class URNG> void md_update(gaugeconfig &U,
+                                    URNG &engine, 
+                                    md_params &params,
+                                    std::list<monomial<double>*> &monomial_list) {
   adjointfield<double> momenta(U.getLs(), U.getLt());
   // generate standard normal distributed random momenta
   // normal distribution checked!
@@ -42,24 +42,39 @@ template<class URNG> int md_update(gaugeconfig &U,
 
   // compute the final Hamiltonian
   double delta_H = 0.;
+  // collect all the pieces from the different monomials
   for (auto it = monomial_list.begin(); it != monomial_list.end(); it++) {
     (*it)->accept(h); 
     delta_H += (*it)->getDeltaH();
-    //std::cout << "monomial deltaH: " << (*it)->getDeltaH() << " ";
   }
-  std::cout << "deltaH: " << delta_H << " ";// << std::endl;
+  params.setdeltaH(delta_H);
 
   // accept/reject step, if needed
-  bool accepted = true;
+  params.setaccept(true);
   if(delta_H > 0) {
     if(uniform(engine) > exp(-delta_H)) {
-      accepted = false;
+      params.setaccept(false);
     }
   }
-  if(!accepted) {
-    U = U_old;
+
+  // if wanted, perform a reversibility violation test.
+  if(params.getrevtest()) {
+    delta_H = 0.;
+    gaugeconfig U_save(U);
+    h.momenta->flipsign();
+    md_integ.integrate(monomial_list, h, params);
+    for (auto it = monomial_list.begin(); it != monomial_list.end(); it++) {
+      (*it)->accept(h); 
+      delta_H += (*it)->getDeltaH();
+    }
+    params.setdeltadeltaH(delta_H);
+    U = U_save;
   }
 
-  return accepted;
+  // in case not accepted, restore initial gauge field
+  if(!params.getaccept()) {
+    U = U_old;
+  }
+  return;
 }
 

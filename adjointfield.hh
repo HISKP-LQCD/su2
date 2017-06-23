@@ -8,6 +8,11 @@ template<class T> class adjoint {
 public:
   adjoint(T _a, T _b, T _c) : a(_a), b(_b), c(_c) {}
   adjoint() : a(0.), b(0.), c(0.) {}
+  void flipsign() {
+    a = -a;
+    b = -b;
+    c = -c;
+  }
   T geta() const {
     return a;
   }
@@ -61,7 +66,11 @@ public:
       data[i] = U[i];
     }
   }
-  
+  void flipsign() {
+    for(size_t i = 0; i < getSize(); i++) {
+      data[i].flipsign();
+    }
+  }
   size_t storage_size() const { return data.size() * sizeof(value_type); };
   size_t getLs() const {
     return(Ls);

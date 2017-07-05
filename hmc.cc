@@ -20,12 +20,12 @@ using std::endl;
 int main() {
   const size_t Ls = 8, Lt = 16;
   const double beta = 4.5;
-  const size_t N_meas = 100;
-  const size_t N_save = 20;
+  const size_t N_meas = 10;
+  const size_t N_save = 1;
   const size_t N_rev = 100;
   const int seed = 13526463;
   gaugeconfig U(Ls, Lt, beta);
-  U = hotstart(Ls, Lt, 123456, 0.2);
+  U = hotstart(Ls, Lt, 123456, 0.10);
 
   md_params params(100, 1.0);
   
@@ -65,13 +65,16 @@ int main() {
     cout << endl;
 
     if(i > 0 && i % N_save == 0) {
-      std::ostringstream os;
-      os << "wilsonloop." << i << ".dat" << std::ends;
-      std::string filename = os.str();
-      compute_all_loops(U, filename);
-      os << "gradient_flow." << i << ".dat" << std::ends;
-      filename = os.str();
-      gradient_flow(U, filename);
+      {
+        std::ostringstream os;
+        os << "wilsonloop." << i << ".dat" << std::ends;
+        compute_all_loops(U, os.str());
+      }
+      {
+        std::ostringstream os;
+        os << "gradient_flow." << i << ".dat" << std::ends;
+        gradient_flow(U, os.str());
+      }
     }
   }
   cout << rate/static_cast<double>(N_meas) << endl;

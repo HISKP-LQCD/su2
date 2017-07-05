@@ -48,8 +48,8 @@ void gradient_flow(gaugeconfig &U, std::string const &path) {
       runge_kutta(h, SW, eps);
       P[x0] = gauge_energy(Vt)/U.getVolume()/N_c/6.;
     }
-    double tsqP = t[1]*t[1]*(1-P[1]);
-    os << t[1] << " " << (1.-P[1]) << " " << tsqP << std::endl;
+    double tsqP = t[1]*t[1]*2*N_c*6.*(1-P[1]);
+    os << t[1] << " "  << P[1] << " " << 2*N_c*6.*(1.-P[1]) << " " << tsqP << std::endl;
   }
 
   return;

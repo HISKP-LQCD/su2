@@ -6,6 +6,7 @@
 #include"wilsonloop.hh"
 #include"md_update.hh"
 #include"monomial.hh"
+#include"gradient_flow.hh"
 
 #include<iostream>
 #include<vector>
@@ -21,7 +22,7 @@ int main() {
   const double beta = 4.5;
   const size_t N_meas = 100;
   const size_t N_save = 20;
-  const size_t N_rev = 1;
+  const size_t N_rev = 100;
   const int seed = 13526463;
   gaugeconfig U(Ls, Lt, beta);
   U = hotstart(Ls, Lt, 123456, 0.2);
@@ -68,6 +69,9 @@ int main() {
       os << "wilsonloop." << i << ".dat" << std::ends;
       std::string filename = os.str();
       compute_all_loops(U, filename);
+      os << "gradient_flow." << i << ".dat" << std::ends;
+      filename = os.str();
+      gradient_flow(U, filename);
     }
   }
   cout << rate/static_cast<double>(N_meas) << endl;

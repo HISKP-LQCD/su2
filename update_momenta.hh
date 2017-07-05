@@ -19,7 +19,7 @@ template<class T> void update_momenta(std::list<monomial<T>*> &monomial_list,
   // introduce more than one monomial per timescale
   for (std::list<monomial<double>*>::iterator it = monomial_list.begin(); it != monomial_list.end(); it++) {
     if((*it)->getmdactive() && ((*it)->getTimescale() == 0)) {
-      (*it)->derivative(deriv, h);
+      (*it)->derivative(deriv, h, 1.);
     }
   }
   

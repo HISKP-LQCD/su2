@@ -2,6 +2,10 @@
 #include"gauge_energy.hh"
 #include"su2.hh"
 
+// this is the Wilson plaquette gauge energy
+// \sum_mu \sum_nu<mu tr(P_{mu nu})
+//
+// checked for gauge invariance
 
 double gauge_energy(gaugeconfig &U) {
   double res = 0.;

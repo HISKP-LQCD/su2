@@ -16,6 +16,8 @@ void runge_kutta(hamiltonian_field<double> &h, monomial<double> &SW, const doubl
   double zfac[5] = { (-17.0)/(36.0), (8.0)/(9.0), (-3.0)/(4.0)};
   double expfac[3] = {-36.0/4./17.0, 1., -1.};
 
+  zeroadjointfield(*(h.momenta));
+
   for(int f = 0; f < 3; f++) {
     SW.derivative(*(h.momenta), h, zfac[f]/h.U->getBeta());
     update_gauge(h, eps*expfac[f]);
@@ -48,8 +50,8 @@ void gradient_flow(gaugeconfig &U, std::string const &path) {
       runge_kutta(h, SW, eps);
       P[x0] = gauge_energy(Vt)/U.getVolume()/N_c/6.;
     }
-    double tsqP = t[1]*t[1]*2*N_c*6.*(1-P[1]);
-    os << t[1] << " "  << P[1] << " " << 2*N_c*6.*(1.-P[1]) << " " << tsqP << std::endl;
+    double tsqE = t[1]*t[1]*2*N_c*6.*(1-P[1]);
+    os << t[1] << " "  << P[1] << " " << 2*N_c*6.*(1.-P[1]) << " " << tsqE << std::endl;
   }
 
   return;

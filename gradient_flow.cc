@@ -16,11 +16,15 @@ void runge_kutta(hamiltonian_field<double> &h, monomial<double> &SW, const doubl
   double zfac[5] = { (-17.0)/(36.0), (8.0)/(9.0), (-3.0)/(4.0)};
   double expfac[3] = {-36.0/4./17.0, 1., -1.};
 
+  // before the three steps zero the derivative field
   zeroadjointfield(*(h.momenta));
 
   for(int f = 0; f < 3; f++) {
+    // add to *(h.momenta) 
     SW.derivative(*(h.momenta), h, zfac[f]/h.U->getBeta());
-    update_gauge(h, eps*expfac[f]);
+    // where does the '-' come from?
+    // update the flowed gauge field Vt
+    update_gauge(h, -eps*expfac[f]);
   }
   return;
 }

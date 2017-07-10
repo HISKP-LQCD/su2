@@ -28,6 +28,7 @@
 # emacs
 *~
 # others
+*.dat
 core
 su2
 su2hmc

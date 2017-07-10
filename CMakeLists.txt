@@ -22,8 +22,11 @@ add_library(su2
     get_staples.cc
     random_gauge_trafo.cc
     su2.cc
+    expsu2.cc
     sweep.cc
     wilsonloop.cc
+    energy_density.cc
+    gradient_flow.cc
 )
 
 add_library(su2hmc
@@ -34,6 +37,8 @@ add_library(su2hmc
     expsu2.cc
     su2.cc
     wilsonloop.cc
+    energy_density.cc
+    gradient_flow.cc
 )
 
 # Create the main program.

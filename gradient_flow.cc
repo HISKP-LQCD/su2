@@ -3,6 +3,7 @@
 #include"gaugeconfig.hh"
 #include"adjointfield.hh"
 #include"gauge_energy.hh"
+#include"energy_density.hh"
 #include"monomial.hh"
 #include"gaugemonomial.hh"
 #include"hamiltonian_field.hh"
@@ -30,15 +31,17 @@ void runge_kutta(hamiltonian_field<double> &h, monomial<double> &SW, const doubl
 }
 
 void gradient_flow(gaugeconfig &U, std::string const &path) {
-  double t[3], P[3];
+  double t[3], P[3], E[3];
   double eps = 0.01;
   std::ofstream os(path, std::ios::out);
 
   for(unsigned int i = 0; i < 3; i++) {
     t[i] = 0.;
     P[i] = 0.;
+    E[i] = 0.;
   }
   P[2] = gauge_energy(U)/U.getVolume()/N_c/6.;
+  E[2] = energy_density(U);
 
   gaugeconfig Vt(U);
   adjointfield<double> deriv(U.getLs(), U.getLt());
@@ -49,13 +52,16 @@ void gradient_flow(gaugeconfig &U, std::string const &path) {
   while(t[1] < 9.99) {
     t[0] = t[2];
     P[0] = P[2];
+    E[0] = E[2];
     for(unsigned int x0 = 1; x0 < 3; x0++) {
       t[x0] = t[x0-1] + eps;
       runge_kutta(h, SW, eps);
       P[x0] = gauge_energy(Vt)/U.getVolume()/N_c/6.;
+      E[x0] = energy_density(Vt);
     }
-    double tsqE = t[1]*t[1]*2*N_c*6.*(1-P[1]);
-    os << t[1] << " "  << P[1] << " " << 2*N_c*6.*(1.-P[1]) << " " << tsqE << std::endl;
+    double tsqP = t[1]*t[1]*2*N_c*6.*(1-P[1]);
+    double tsqE = t[1]*t[1]*E[1];
+    os << t[1] << " "  << P[1] << " " << 2*N_c*6.*(1.-P[1]) << " " << tsqP << " " << E[1] << " " << tsqE << std::endl;
   }
 
   return;

@@ -80,5 +80,5 @@ double energy_density(gaugeconfig &U) {
       }
     }
   }
-  return(res/U.getVolume());
+  return(-res/U.getVolume()/16.);
 }

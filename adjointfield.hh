@@ -3,6 +3,7 @@
 #include<vector>
 #include<random>
 #include<cassert>
+#include<cmath>
 
 template<class T> class adjoint {
 public:
@@ -30,6 +31,10 @@ public:
   }
   void setc(T _a) {
     c = _a;
+  }
+  adjoint<T> round(size_t n) const {
+    T dn = n;
+    return adjoint(std::ceil(a * dn) / dn, std::ceil(b * dn) / dn, std::ceil(c * dn) / dn);
   }
   void operator=(const adjoint &A) {
     a = A.geta();
@@ -179,3 +184,4 @@ template<class T> void zeroadjointfield(adjointfield<T> &A) {
     A[i].setc(0.);
   }
 }
+

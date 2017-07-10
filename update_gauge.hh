@@ -12,3 +12,13 @@ template<class T> void update_gauge(hamiltonian_field<T> &h, const T dtau) {
   }
   return;
 }
+
+template<class T> void round_and_update_gauge(hamiltonian_field<T> &h, const T dtau, const size_t n) {
+  
+  // update the gauge field
+  // round before update
+  for(size_t i = 0; i < h.U->getSize(); i++) {
+    (*h.U)[i] = exp(dtau * (*h.momenta)[i]) * (*h.U)[i].round(n);
+  }
+  return;
+}

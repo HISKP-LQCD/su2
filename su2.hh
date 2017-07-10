@@ -22,6 +22,11 @@ public:
     this->b = a*U1.b + this->b*std::conj(U1.a);
     return *this;
   }
+  _su2 round(size_t n) const {
+    double dn = n;
+    return _su2(Complex(std::round(std::real(a)*dn), std::round(std::imag(a)*dn))/dn,
+                Complex(std::round(std::real(b)*dn), std::round(std::imag(b)*dn))/dn);
+  }
 
   Complex geta() const {
     return(a);

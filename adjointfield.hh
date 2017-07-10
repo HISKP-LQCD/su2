@@ -34,7 +34,7 @@ public:
   }
   adjoint<T> round(size_t n) const {
     T dn = n;
-    return adjoint(std::ceil(a * dn) / dn, std::ceil(b * dn) / dn, std::ceil(c * dn) / dn);
+    return adjoint(std::round(a * dn) / dn, std::round(b * dn) / dn, std::round(c * dn) / dn);
   }
   void operator=(const adjoint &A) {
     a = A.geta();

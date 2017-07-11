@@ -19,6 +19,10 @@
 //        nu
 //
 // checked for gauge invariance
+//
+// E = 1/4 G_{mu nu}^a G_{mu nu}^a = 1/2 tr(G_{mu nu} G_{mu nu})
+//
+
 
 double energy_density(gaugeconfig &U) {
   double res = 0.;
@@ -72,13 +76,16 @@ double energy_density(gaugeconfig &U) {
               // traceless and anti-hermitian
               su2 one(0.5*(leaf.geta()-std::conj(leaf.geta())), 
                       leaf.getb());
-
-              res += trace(one*one);
+              // trace(G_{mu,nu}^a G_{mu,nu}^a)
+              // averaged over four plaquette Wilson loops 1./4./4.
+              res += trace(one*one)/16.;
             }
           }
         }
       }
     }
   }
-  return(-res/U.getVolume()/16.);
+  // now we need to devide by 2, but we get a factor of two since we only
+  // averaged mu < nu
+  return(-res/U.getVolume());
 }

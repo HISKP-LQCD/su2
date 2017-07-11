@@ -7,6 +7,7 @@
 
 template<class T> void update_gauge(hamiltonian_field<T> &h, const T dtau) {
   
+  // update the gauge field
   for(size_t i = 0; i < h.U->getSize(); i++) {
     (*h.U)[i] = exp(dtau * (*h.momenta)[i]) * (*h.U)[i];
   }

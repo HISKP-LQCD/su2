@@ -3,8 +3,8 @@
 class md_params {
 
 public:
-  md_params(size_t _nsteps, double _tau) : 
-    nsteps(_nsteps), tau(_tau), H(0.),
+  md_params(size_t _nsteps, double _tau, size_t n = 1000000000) : 
+    nsteps(_nsteps), n_prec(n), tau(_tau), H(0.),
     deltaH(0.), deltadeltaH(0.), deltadeltaU(0.),
     revtest(false), accept(true) {}
   size_t getnsteps() const {
@@ -58,9 +58,15 @@ public:
   bool getaccept() const {
     return accept;
   }
-
+  void setn_prec(size_t n) {
+    n_prec = n;
+  }
+  size_t getn_prec() const {
+    return n_prec;
+  }
 private:
   size_t nsteps;
+  size_t n_prec;
   double tau;
   double H, deltaH, deltadeltaH, deltadeltaU;
   bool revtest, accept;

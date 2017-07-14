@@ -17,13 +17,23 @@ void runge_kutta(hamiltonian_field<double> &h, monomial<double> &SW, const doubl
   double zfac[5] = { (-17.0)/(36.0), (8.0)/(9.0), (-3.0)/(4.0)};
   double expfac[3] = {-36.0/4./17.0, 1., -1.};
 
+  // following arxiv:1006.4518
+  //
+  // W0      = V_t
+  // W1      = exp(1/4 Z0) W0
+  // W2      = exp(8/9 Z1 - 17/36 Z0) W1 = exp(Z') W1
+  // V_t+eps = exp(3/4 Z2 - 8/9 Z1 + 17/36 Z0) W2 = exp(3/4 Z2 - Z') W2
+  //
+  // Zi = eps*Z(Wi)
   // before the three steps zero the derivative field
   zeroadjointfield(*(h.momenta));
 
   for(int f = 0; f < 3; f++) {
     // add to *(h.momenta) 
+    // we have to cancel beta/N_c from the derivative
+    //SW.derivative(*(h.momenta), h, zfac[f]*2.*N_c/h.U->getBeta());
     SW.derivative(*(h.momenta), h, zfac[f]/h.U->getBeta());
-    // where does the '-' come from?
+    // The '-' comes from the action to be tr(1-U(p))
     // update the flowed gauge field Vt
     update_gauge(h, -eps*expfac[f]);
   }
@@ -49,7 +59,7 @@ void gradient_flow(gaugeconfig &U, std::string const &path) {
 
   gaugemonomial<double> SW(0);
 
-  while(t[1] < 9.99) {
+  while(t[1] < 3.99) {
     t[0] = t[2];
     P[0] = P[2];
     E[0] = E[2];

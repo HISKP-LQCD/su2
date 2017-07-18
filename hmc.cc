@@ -70,7 +70,7 @@ int main() {
 
     if(i > 0 && (i % N_save) == 0) {
       std::ostringstream os;
-      os << "config." << Ls << "." << Lt << "." << beta << i << std::ends;
+      os << "config." << Ls << "." << Lt << "." << beta << "." << i << std::ends;
       U.save(os.str());
     }
   }

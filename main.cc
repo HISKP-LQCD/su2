@@ -39,7 +39,7 @@ int main() {
     cout << i << " " << gauge_energy(U)/U.getVolume()/N_c/6. << endl;
     if(i > 0 && (i % N_save) == 0) {
       std::ostringstream os;
-      os << "config." << Ls << "." << Lt << "." << beta << i << std::ends;
+      os << "config." << Ls << "." << Lt << "." << beta << "." << i << std::ends;
       U.save(os.str());
     }
   }

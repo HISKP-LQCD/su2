@@ -31,8 +31,13 @@ void runge_kutta(hamiltonian_field<double> &h, monomial<double> &SW, const doubl
   for(int f = 0; f < 3; f++) {
     // add to *(h.momenta) 
     // we have to cancel beta/N_c from the derivative
-    //SW.derivative(*(h.momenta), h, zfac[f]*2.*N_c/h.U->getBeta());
-    SW.derivative(*(h.momenta), h, zfac[f]/h.U->getBeta());
+    // a factor two to obtain the correct normalisation of 
+    // the Wilson plaquette action
+    // S_W = 1./g_0^2 \sum_x \sum_{p} Re Tr(1 - U(p))
+    // where we sum over all oriented plaquettes
+    // we sum over unoriented plaquettes, so we have to multiply by 2
+    // which is usually in beta
+    SW.derivative(*(h.momenta), h, 2.*N_c*zfac[f]/h.U->getBeta());
     // The '-' comes from the action to be tr(1-U(p))
     // update the flowed gauge field Vt
     update_gauge(h, -eps*expfac[f]);

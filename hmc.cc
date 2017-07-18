@@ -7,8 +7,10 @@
 #include"md_update.hh"
 #include"monomial.hh"
 #include"gradient_flow.hh"
+#include"energy_density.hh"
 
 #include<iostream>
+#include<sstream>
 #include<vector>
 #include<random>
 
@@ -20,23 +22,25 @@ using std::endl;
 int main() {
   const size_t Ls = 8, Lt = 16;
   const double beta = 4.5;
-  const size_t N_meas = 10;
-  const size_t N_save = 1;
-  const size_t N_rev = 100;
+  const size_t N_meas = 500;
+  const size_t N_save = 20;
+  const size_t N_rev = 1;
   const int seed = 13526463;
   gaugeconfig U(Ls, Lt, beta);
   U = hotstart(Ls, Lt, 123456, 0.10);
 
-  md_params params(100, 1.0);
+  md_params params(50, 1.0);
   
   std::mt19937 engine(seed);
 
   double plaquette = gauge_energy(U);
   cout << "## Initital Plaquette: " << plaquette/U.getVolume()/N_c/6. << endl; 
+  cout << "## Initial Energy density: " << energy_density(U) << endl;
 
   random_gauge_trafo(U, 654321);
   plaquette = gauge_energy(U);
   cout << "## Plaquette after rnd trafo: " << plaquette/U.getVolume()/N_c/6. << endl; 
+  cout << "## Energy density: " << energy_density(U) << endl;
 
   // generate list of monomials
   gaugemonomial<double> gm(0);
@@ -50,33 +54,30 @@ int main() {
   double rate = 0.;
   for(size_t i = 0; i < N_meas; i++) {
     params.disablerevtest();
-    if((i+1) % N_rev == 0) {
+    if(i > 0 && (i) % N_rev == 0) {
       params.enablerevtest();
     }
     md_update(U, engine, params, monomial_list);
 
     rate += params.getaccept();
-    cout << i+1 << " " << gauge_energy(U)/U.getVolume()/N_c/6. << " " << params.getdeltaH() << " " 
-         << params.getaccept() << " " << rate/static_cast<double>(i+1) << " ";
+    cout << i << " " << params.getaccept() << " " << gauge_energy(U)/U.getVolume()/N_c/6. << " " << params.getdeltaH() << " " 
+         << rate/static_cast<double>(i+1) << " ";
     if(params.getrevtest()) {
       cout << params.getdeltadeltaH();
     }
     else cout << "NA";
     cout << endl;
 
-    if(i > 0 && i % N_save == 0) {
-      {
-        std::ostringstream os;
-        os << "wilsonloop." << i << ".dat" << std::ends;
-        compute_all_loops(U, os.str());
-      }
-      {
-        std::ostringstream os;
-        os << "gradient_flow." << i << ".dat" << std::ends;
-        gradient_flow(U, os.str());
-      }
+    if(i > 0 && (i % N_save) == 0) {
+      std::ostringstream os;
+      os << "config." << Ls << "." << Lt << "." << beta << i << std::ends;
+      U.save(os.str());
     }
   }
-  cout << rate/static_cast<double>(N_meas) << endl;
+  cout << "## Acceptance rate: " << rate/static_cast<double>(N_meas) << endl;
+
+  std::ostringstream os;
+  os << "config." << Ls << "." << Lt << "." << U.getBeta() << ".final" << std::ends;
+  U.save(os.str());
   return(0);
 }

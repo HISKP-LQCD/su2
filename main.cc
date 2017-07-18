@@ -7,6 +7,7 @@
 #include"gradient_flow.hh"
 
 #include<iostream>
+#include<sstream>
 #include<vector>
 
 using std::vector;
@@ -15,8 +16,8 @@ using std::endl;
 
 
 int main() {
-  const size_t Ls = 8, Lt = 16;
-  const double beta = 4.5;
+  const size_t Ls = 8, Lt = 8;
+  const double beta = 2.3;
   const size_t N_hit = 10;
   const size_t N_meas = 2000;
   const double delta = 0.1;
@@ -36,20 +37,18 @@ int main() {
   for(size_t i = 0; i < N_meas; i++) {
     rate += sweep(U, 13243546, delta, N_hit, beta);
     cout << i << " " << gauge_energy(U)/U.getVolume()/N_c/6. << endl;
-    if(i > 0 && i % N_save == 0) {
-      {
-        std::ostringstream os;
-        os << "wilsonloop." << i << ".dat" << std::ends;
-        compute_all_loops(U, os.str());
-      }
-      {
-        std::ostringstream os;
-        os << "gradient_flow." << i << ".dat" << std::ends;
-        gradient_flow(U, os.str());
-      }
+    if(i > 0 && (i % N_save) == 0) {
+      std::ostringstream os;
+      os << "config." << Ls << "." << Lt << "." << beta << i << std::ends;
+      U.save(os.str());
     }
   }
   cout << rate/static_cast<double>(N_meas) << endl;
+
+  std::ostringstream os;
+  os << "config." << Ls << "." << Lt << "." << U.getBeta() << ".final" << std::ends;
+  U.save(os.str());
+
   return(0);
 }
 

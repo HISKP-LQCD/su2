@@ -1,4 +1,5 @@
 # Copyright © 2017 Martin Ueding <dev@martin-ueding.de>
+#             2017 Carsten Urbach <urbach@hiskp.uni-bonn.de>
 # Licensed under the GNU Public License version 3
 
 cmake_minimum_required(VERSION 2.8.11)
@@ -29,24 +30,15 @@ add_library(su2
     gradient_flow.cc
 )
 
-add_library(su2hmc
-    gauge_energy.cc
-    gaugeconfig.cc
-    get_staples.cc
-    random_gauge_trafo.cc
-    expsu2.cc
-    su2.cc
-    wilsonloop.cc
-    energy_density.cc
-    gradient_flow.cc
-)
-
 # Create the main program.
 add_executable(su2-main main.cc)
 target_link_libraries(su2-main su2)
 
 add_executable(su2-hmc hmc.cc)
-target_link_libraries(su2-hmc su2hmc)
+target_link_libraries(su2-hmc su2)
+
+add_executable(measure measure.cc)
+target_link_libraries(measure su2)
 
 
 # Create the test driver.

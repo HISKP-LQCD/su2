@@ -76,6 +76,7 @@ public:
 
   void save(std::string const &path) const;
   void load(std::string const &path);
+  void loadEigen(std::string const &path);
 
 private:
   size_t Ls, Lt, volume;

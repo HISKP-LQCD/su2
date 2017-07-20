@@ -4,7 +4,7 @@
 #include"random_gauge_trafo.hh"
 #include"sweep.hh"
 #include"wilsonloop.hh"
-#include"md_update.hh"
+#include"kramers_md_update.hh"
 #include"monomial.hh"
 #include"gradient_flow.hh"
 #include"energy_density.hh"
@@ -20,14 +20,14 @@ using std::endl;
 
 
 int main() {
-  const size_t Ls = 8, Lt = 8;
-  const double beta = 4.5;
-  const size_t N_meas = 500;
-  const size_t N_save = 20;
+  const size_t Ls = 8, Lt = 16;
+  const double beta = 2.3;
+  const size_t N_meas = 5000;
+  const size_t N_save = 100;
   const size_t N_rev = 1;
   const int seed = 13526463;
   gaugeconfig U(Ls, Lt, beta);
-  U = hotstart(Ls, Lt, 123456, 0.10);
+  U = hotstart(Ls, Lt, 123456, 0.15);
 
   md_params params(1, 0.02);
   

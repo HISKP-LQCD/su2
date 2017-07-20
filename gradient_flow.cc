@@ -45,7 +45,7 @@ void runge_kutta(hamiltonian_field<double> &h, monomial<double> &SW, const doubl
   return;
 }
 
-void gradient_flow(gaugeconfig &U, std::string const &path) {
+void gradient_flow(gaugeconfig &U, std::string const &path, const double tmax) {
   double t[3], P[3], E[3];
   double eps = 0.01;
   std::ofstream os(path, std::ios::out);
@@ -64,7 +64,7 @@ void gradient_flow(gaugeconfig &U, std::string const &path) {
 
   gaugemonomial<double> SW(0);
 
-  while(t[1] < 3.99) {
+  while(t[1] < tmax) {
     t[0] = t[2];
     P[0] = P[2];
     E[0] = E[2];

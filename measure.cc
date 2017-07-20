@@ -29,35 +29,30 @@ int main() {
   gaugeconfig U(Ls, Lt, beta);
   U = hotstart(Ls, Lt, 123456, 0.10);
 
-  md_params params(50, 1.0);
-  
-  std::mt19937 engine(seed);
-
-  std::ostringstream os;
-  os << "config." << Ls << "." << Lt << "." << U.getBeta() << ".1980" << std::ends;
-  //os << "gauge-links-0000.bin" << std::ends;
-  //os << "indexing.bin" << std::ends;
-  U.load(os.str());
-
-  double plaquette = gauge_energy(U);
-  cout << "## Initital Plaquette: " << plaquette/U.getVolume()/N_c/6. << endl; 
-  cout << "## Initial Energy density: " << energy_density(U) << endl;
-
-  random_gauge_trafo(U, 654321);
-  plaquette = gauge_energy(U);
-  cout << "## Plaquette after rnd trafo: " << plaquette/U.getVolume()/N_c/6. << endl; 
-  cout << "## Energy density: " << energy_density(U) << endl;
-
-  size_t i = 0;
-  {
+  for(size_t i = 500; i < 2000; i+=20) {
     std::ostringstream os;
-    os << "wilsonloop." << i+1 << ".dat" << std::ends;
-    compute_all_loops(U, os.str());
-  }
-  {
-    std::ostringstream os;
-    os << "gradient_flow." << i+1 << ".dat" << std::ends;
-    gradient_flow(U, os.str());
+    os << "config." << Ls << "." << Lt << ".b" << U.getBeta() << "." << i << std::ends;
+    U.load(os.str());
+    
+    double plaquette = gauge_energy(U);
+    cout << "## Initital Plaquette: " << plaquette/U.getVolume()/N_c/6. << endl; 
+    cout << "## Initial Energy density: " << energy_density(U) << endl;
+    
+    random_gauge_trafo(U, 654321);
+    plaquette = gauge_energy(U);
+    cout << "## Plaquette after rnd trafo: " << plaquette/U.getVolume()/N_c/6. << endl; 
+    cout << "## Energy density: " << energy_density(U) << endl;
+    
+    {
+      std::ostringstream os;
+      os << "wilsonloop." << i+1 << ".dat" << std::ends;
+      compute_all_loops(U, os.str());
+    }
+    {
+      std::ostringstream os;
+      os << "gradient_flow." << i+1 << ".dat" << std::ends;
+      gradient_flow(U, os.str(), 7.99);
+    }
   }
 
   return(0);

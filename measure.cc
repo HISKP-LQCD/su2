@@ -20,7 +20,7 @@ using std::endl;
 
 
 int main() {
-  const size_t Ls = 8, Lt = 16;
+  const size_t Ls = 8, Lt = 8;
   const double beta = 2.3;
   const size_t N_meas = 500;
   const size_t N_save = 20;
@@ -34,10 +34,10 @@ int main() {
   std::mt19937 engine(seed);
 
   std::ostringstream os;
-  //os << "config." << Ls << "." << Lt << "." << U.getBeta() << std::ends;
-  os << "gauge-links-0000.bin" << std::ends;
+  os << "config." << Ls << "." << Lt << "." << U.getBeta() << ".1980" << std::ends;
+  //os << "gauge-links-0000.bin" << std::ends;
   //os << "indexing.bin" << std::ends;
-  U.loadEigen(os.str());
+  U.load(os.str());
 
   double plaquette = gauge_energy(U);
   cout << "## Initital Plaquette: " << plaquette/U.getVolume()/N_c/6. << endl; 

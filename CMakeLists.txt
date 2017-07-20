@@ -37,6 +37,9 @@ target_link_libraries(su2-main su2)
 add_executable(su2-hmc hmc.cc)
 target_link_libraries(su2-hmc su2)
 
+add_executable(su2-kramers kramers.cc)
+target_link_libraries(su2-kramers su2)
+
 add_executable(measure measure.cc)
 target_link_libraries(measure su2)
 

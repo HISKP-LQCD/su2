@@ -10,6 +10,7 @@
 #include"energy_density.hh"
 
 #include<iostream>
+#include<iomanip>
 #include<sstream>
 #include<vector>
 #include<random>
@@ -29,7 +30,7 @@ int main() {
   gaugeconfig U(Ls, Lt, beta);
   U = hotstart(Ls, Lt, 123456, 0.10);
 
-  for(size_t i = 500; i < 2000; i+=20) {
+  for(size_t i = 500; i < 501; i+=20) {
     std::ostringstream os;
     os << "config." << Ls << "." << Lt << ".b" << U.getBeta() << "." << i << std::ends;
     U.load(os.str());
@@ -40,17 +41,28 @@ int main() {
     
     random_gauge_trafo(U, 654321);
     plaquette = gauge_energy(U);
-    cout << "## Plaquette after rnd trafo: " << plaquette/U.getVolume()/N_c/6. << endl; 
+    cout << "## Plaquette after rnd trafo: " << std::scientific << std::setw(15) << plaquette/U.getVolume()/N_c/6. << endl; 
     cout << "## Energy density: " << energy_density(U) << endl;
     
     {
       std::ostringstream os;
-      os << "wilsonloop." << i+1 << ".dat" << std::ends;
+      os << "wilsonloop.";
+      auto prevw = os.width(6);
+      auto prevf = os.fill('0');
+      os << i;
+      os.width(prevw);
+      os.fill(prevf);
+      os << ".dat" << std::ends;
       compute_all_loops(U, os.str());
     }
     {
       std::ostringstream os;
-      os << "gradient_flow." << i+1 << ".dat" << std::ends;
+      os << "gradient_flow.";
+      auto prevw = os.width(6);
+      auto prevf = os.fill('0');
+      os << i;
+      os.width(prevw);
+      os.fill(prevf);
       gradient_flow(U, os.str(), 7.99);
     }
   }

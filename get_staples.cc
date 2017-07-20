@@ -3,6 +3,11 @@
 #include"get_staples.hh"
 #include<vector>
 
+//
+// U^staples = \sum_{nu != mu} U_nu(x+mu) U_mu(x+nu)^dagger + U_nu(x)^dagger
+//             + sum__{nu != mu} U_nu(x+mu-nu)^dagger U_mu(x-nu)^dagger U_nu(x-nu)
+// 
+
 su2 get_staples(gaugeconfig &U, vector<size_t> const x, const size_t mu) {
   su2 K(0., 0.);
   vector<size_t> x1 = x, x2 = x;

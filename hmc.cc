@@ -70,14 +70,14 @@ int main() {
 
     if(i > 0 && (i % N_save) == 0) {
       std::ostringstream os;
-      os << "config." << Ls << "." << Lt << "." << beta << "." << i << std::ends;
+      os << "config." << Ls << "." << Lt << ".b" << beta << "." << i << std::ends;
       U.save(os.str());
     }
   }
   cout << "## Acceptance rate: " << rate/static_cast<double>(N_meas) << endl;
 
   std::ostringstream os;
-  os << "config." << Ls << "." << Lt << "." << U.getBeta() << ".final" << std::ends;
+  os << "config." << Ls << "." << Lt << ".b" << U.getBeta() << ".final" << std::ends;
   U.save(os.str());
   return(0);
 }

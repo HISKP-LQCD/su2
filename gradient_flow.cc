@@ -11,6 +11,7 @@
 
 #include<string>
 #include<fstream>
+#include<iomanip>
 
 void runge_kutta(hamiltonian_field<double> &h, monomial<double> &SW, const double eps) {
 
@@ -76,7 +77,12 @@ void gradient_flow(gaugeconfig &U, std::string const &path, const double tmax) {
     }
     double tsqP = t[1]*t[1]*2*N_c*6.*(1-P[1]);
     double tsqE = t[1]*t[1]*E[1];
-    os << t[1] << " "  << P[1] << " " << 2*N_c*6.*(1.-P[1]) << " " << tsqP << " " << E[1] << " " << tsqE << std::endl;
+    os << std::scientific << std::setw(15) << t[1] << " ";
+    os << P[1] << " ";
+    os << 2*N_c*6.*(1.-P[1]) << " ";
+    os << tsqP << " ";
+    os << E[1] << " ";
+    os << tsqE << std::endl;
   }
 
   return;

@@ -5,6 +5,7 @@
 #include"gaugeconfig.hh"
 #include<vector>
 #include<fstream>
+#include<iomanip>
 
 double planar_wilsonloop_dir(gaugeconfig &U, const size_t r, const size_t t, 
                              const size_t mu, const size_t nu) {
@@ -55,7 +56,7 @@ void compute_all_loops(gaugeconfig &U, std::string const &path) {
     os << t << " ";
     for(size_t r = 1; r < U.getLs(); r++) {
       double loop = wilsonloop(U, r, t);
-      os << loop << " ";
+      os << std::scientific << std::setw(15) << loop << " ";
     }
     os << std::endl;
   }

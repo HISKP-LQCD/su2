@@ -35,7 +35,7 @@ int main() {
 
   double rate = 0.;
   for(size_t i = 0; i < N_meas; i++) {
-    rate += sweep(U, 13243546, delta, N_hit, beta);
+    rate += sweep(U, 13243546+i, delta, N_hit, beta);
     cout << i << " " << gauge_energy(U)/U.getVolume()/N_c/6. << endl;
     if(i > 0 && (i % N_save) == 0) {
       std::ostringstream os;

@@ -24,15 +24,14 @@ add_library(su2
     random_gauge_trafo.cc
     su2.cc
     expsu2.cc
-    sweep.cc
     wilsonloop.cc
     energy_density.cc
     gradient_flow.cc
 )
 
 # Create the main program.
-add_executable(su2-main main.cc)
-target_link_libraries(su2-main su2)
+add_executable(su2-metropolis main.cc)
+target_link_libraries(su2-metropolis su2)
 
 add_executable(su2-hmc hmc.cc)
 target_link_libraries(su2-hmc su2)
@@ -44,6 +43,3 @@ add_executable(measure measure.cc)
 target_link_libraries(measure su2)
 
 
-# Create the test driver.
-# add_executable(su2-test test.cc)
-# target_link_libraries(su2-test su2)

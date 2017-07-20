@@ -32,7 +32,9 @@ public:
             for(size_t mu = 0; mu < 4; mu++) {
               _su2 S = (*h.U)(x, mu) * get_staples(*h.U, x, mu);
               const Complex a = S.geta(), b = S.getb();
-              deriv(x, mu) += fac*h.U->getBeta()/double(N_c) *
+              // the antihermitian traceless part
+              // beta/N_c *(U*U^stap - (U*U^stap)^dagger)
+              deriv(x, mu) += fac*h.U->getBeta()/double(N_c) * 
                 adjoint<double>(2.*std::imag(b), 2.*std::real(b), 2.*std::imag(a));
             }
           }

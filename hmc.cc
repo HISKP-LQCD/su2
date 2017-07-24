@@ -8,6 +8,7 @@
 #include"monomial.hh"
 #include"gradient_flow.hh"
 #include"energy_density.hh"
+#include"print_program_options.hh"
 
 #include<iostream>
 #include<sstream>
@@ -73,6 +74,7 @@ int main(int ac, char* av[]) {
       cout << endl << desc << endl;
       return 1;
     }
+    PrintVariableMap(vm);
   }
   catch(std::exception& e) {
     std::cerr << "error: " << e.what() << "\n";
@@ -81,6 +83,7 @@ int main(int ac, char* av[]) {
   catch(...) {
     std::cerr << "Exception of unknown type!\n";
   }
+
 
 
   gaugeconfig U(Ls, Lt, beta);

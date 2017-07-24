@@ -7,6 +7,8 @@ project(su2 C CXX)
 project(su2hmc C CXX)
 
 add_definitions(--std=c++11)
+
+
 find_package(OpenMP)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
@@ -31,19 +33,37 @@ add_library(su2
     wilsonloop.cc
     energy_density.cc
     gradient_flow.cc
+    print_program_options.cc
 )
 
 # Create the main program.
+find_package(Boost COMPONENTS program_options filesystem system)
+if(Boost_FOUND)
+  include_directories(${Boost_INCLUDE_DIRS})
+endif()
+
 add_executable(su2-metropolis main.cc)
-target_link_libraries(su2-metropolis su2)
+if(Boost_FOUND)
+  target_link_libraries(su2-metropolis su2 ${Boost_LIBRARIES})
+else()
+  target_link_libraries(su2-metropolis su2 "-lboost_program_options -lboost_filesystem -lboost_system")
+endif()
 
 add_executable(su2-hmc hmc.cc)
-target_link_libraries(su2-hmc su2)
+if(Boost_FOUND)
+  target_link_libraries(su2-hmc su2 ${Boost_LIBRARIES})
+else()
+  target_link_libraries(su2-hmc su2 "-lboost_program_options -lboost_filesystem -lboost_system")
+endif()
 
 add_executable(su2-kramers kramers.cc)
-target_link_libraries(su2-kramers su2)
+if(Boost_FOUND)
+  target_link_libraries(su2-kramers su2 ${Boost_LIBRARIES})
+else()
+  target_link_libraries(su2-kramers su2 "-lboost_program_options -lboost_filesystem -lboost_system")
+endif()
+
 
 add_executable(measure measure.cc)
 target_link_libraries(measure su2)
-
 

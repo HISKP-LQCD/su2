@@ -8,12 +8,13 @@
 #include"monomial.hh"
 #include"gradient_flow.hh"
 #include"energy_density.hh"
+#include"print_program_options.hh"
 
 #include<iostream>
 #include<sstream>
 #include<vector>
 #include<random>
-#include <boost/program_options.hpp>
+#include<boost/program_options.hpp>
 
 using std::vector;
 using std::cout;
@@ -73,6 +74,7 @@ int main(int ac, char* av[]) {
       cout << endl << desc << endl;
       return 1;
     }
+    PrintVariableMap(vm);
   }
   catch(std::exception& e) {
     std::cerr << "error: " << e.what() << "\n";

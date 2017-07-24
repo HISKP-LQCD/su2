@@ -1,3 +1,7 @@
+// taken from https://gist.github.com/gesquive
+// and adapted to the needs here...
+//
+
 #include <string.h>
 #include <iostream>
 #include <iterator>

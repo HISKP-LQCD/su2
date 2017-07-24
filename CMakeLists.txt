@@ -43,25 +43,16 @@ if(Boost_FOUND)
 endif()
 
 add_executable(su2-metropolis main.cc)
-if(Boost_FOUND)
-  target_link_libraries(su2-metropolis su2 ${Boost_LIBRARIES})
-else()
-  target_link_libraries(su2-metropolis su2 "-lboost_program_options -lboost_filesystem -lboost_system")
-endif()
-
 add_executable(su2-hmc hmc.cc)
-if(Boost_FOUND)
-  target_link_libraries(su2-hmc su2 ${Boost_LIBRARIES})
-else()
-  target_link_libraries(su2-hmc su2 "-lboost_program_options -lboost_filesystem -lboost_system")
-endif()
-
 add_executable(su2-kramers kramers.cc)
-if(Boost_FOUND)
-  target_link_libraries(su2-kramers su2 ${Boost_LIBRARIES})
-else()
-  target_link_libraries(su2-kramers su2 "-lboost_program_options -lboost_filesystem -lboost_system")
-endif()
+
+foreach(target su2-hmc su2-metropolis su2-kramers)
+  if(Boost_FOUND)
+    target_link_libraries(${target} su2 ${Boost_LIBRARIES})
+  else()
+    target_link_libraries(${target} su2 "-lboost_program_options -lboost_filesystem -lboost_system")
+  endif()
+endforeach(target)
 
 
 add_executable(measure measure.cc)

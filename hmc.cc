@@ -13,23 +13,80 @@
 #include<sstream>
 #include<vector>
 #include<random>
+#include <boost/program_options.hpp>
 
+namespace po = boost::program_options;
 using std::vector;
 using std::cout;
 using std::endl;
+using std::cerr;
+
+int main(int ac, char* av[]) {
+  size_t Ls = 8, Lt = 16;
+  double beta = 2.3;
+  size_t N_meas = 2000;
+  size_t N_rev = 1;
+  double heat = 0.;
+  size_t N_save = 200;
+  int seed = 13526463;
+  size_t n_steps = 10;
+  size_t exponent = 16;
+  double tau = 1.;
+
+  try {
+    po::options_description desc("Allowed options");
+    desc.add_options()
+      ("help,h", "produce this help message")
+      ("spatialsize,L", po::value<size_t>(&Ls), "spatial lattice size")
+      ("temporalsize,T", po::value<size_t>(&Lt), "temporal lattice size")
+      ("nsave", po::value<size_t>(&N_save)->default_value(1000), "N_save")
+      ("nrev", po::value<size_t>(&N_rev)->default_value(0), "frequenz of reversibility tests N_rev, 0: not reversibility test")
+      ("nsteps", po::value<size_t>(&n_steps)->default_value(1000), "n_steps")
+      ("tau", po::value<double>(&tau)->default_value(1.), "trajectory length tau")
+      ("nmeas,n", po::value<size_t>(&N_meas)->default_value(10), "total number of measurements")
+      ("exponent", po::value<size_t>(&exponent)->default_value(16), "exponent for rounding")
+      ("beta,b", po::value<double>(&beta), "beta value")
+      ("seed,s", po::value<int>(&seed)->default_value(13526463), "PRNG seed")
+      ("heat", po::value<double>(&heat)->default_value(1.), "randomness of the initial config, 1: hot, 0: cold")
+      ;
+
+    po::variables_map vm;
+    po::store(po::parse_command_line(ac, av, desc), vm);
+    po::notify(vm);
+    
+    if (vm.count("help")) {
+      cout << desc << endl;
+      return 1;
+    }
+    if (!vm.count("spatialsize") && !vm.count("help")) {
+      std::cerr << "spatial lattice size must be given!" << endl;
+      cout << endl << desc << endl;
+      return 1;
+    }
+    if (!vm.count("temporalsize") && !vm.count("help")) {
+      std::cerr << "temporal lattice size must be given!" << endl;
+      cout << endl << desc << endl;
+      return 1;
+    }
+    if (!vm.count("beta") && !vm.count("help")) {
+      std::cerr << "beta value must be specified!" << endl;
+      cout << endl << desc << endl;
+      return 1;
+    }
+  }
+  catch(std::exception& e) {
+    std::cerr << "error: " << e.what() << "\n";
+    return 1;
+  }
+  catch(...) {
+    std::cerr << "Exception of unknown type!\n";
+  }
 
 
-int main() {
-  const size_t Ls = 8, Lt = 16;
-  const double beta = 4.5;
-  const size_t N_meas = 500;
-  const size_t N_save = 20;
-  const size_t N_rev = 1;
-  const int seed = 13526463;
   gaugeconfig U(Ls, Lt, beta);
-  U = hotstart(Ls, Lt, 123456, 0.10);
+  U = hotstart(Ls, Lt, seed, heat);
 
-  md_params params(50, 1.0);
+  md_params params(n_steps, tau);
   
   std::mt19937 engine(seed);
 
@@ -54,7 +111,7 @@ int main() {
   double rate = 0.;
   for(size_t i = 0; i < N_meas; i++) {
     params.disablerevtest();
-    if(i > 0 && (i) % N_rev == 0) {
+    if(i > 0 && N_rev != 0 && (i) % N_rev == 0) {
       params.enablerevtest();
     }
     md_update(U, engine, params, monomial_list);

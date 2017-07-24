@@ -53,6 +53,7 @@ void gaugeconfig::loadEigen(std::string const &path) {
 gaugeconfig coldstart(size_t Ls, size_t Lt) {
 
   gaugeconfig config(Ls, Lt);
+#pragma omp parallel for
   for(size_t i = 0; i < config.getSize(); i++) {
     config[i] = su2(1., 0.);
   }

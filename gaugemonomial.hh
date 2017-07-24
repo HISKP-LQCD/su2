@@ -25,10 +25,12 @@ public:
   }
   void derivative(adjointfield<T> &deriv, hamiltonian_field<T> const &h, const T fac = 1.) const override {
     std::vector<size_t> x = {0, 0, 0, 0};
-    for(x[0] = 0; x[0] < h.U->getLt(); x[0]++) {
-      for(x[1] = 0; x[1] < h.U->getLs(); x[1]++) {
-        for(x[2] = 0; x[2] < h.U->getLs(); x[2]++) {
-          for(x[3] = 0; x[3] < h.U->getLs(); x[3]++) {
+#pragma omp parallel for
+    for(size_t x0 = 0; x0 < h.U->getLt(); x0++) {
+      for(size_t x1 = 0; x1 < h.U->getLs(); x1++) {
+        for(size_t x2 = 0; x2 < h.U->getLs(); x2++) {
+          for(size_t x3 = 0; x3 < h.U->getLs(); x3++) {
+            std::vector<size_t> x = {x0, x1, x2, x3};
             for(size_t mu = 0; mu < 4; mu++) {
               _su2 S = (*h.U)(x, mu) * get_staples(*h.U, x, mu);
               const Complex a = S.geta(), b = S.getb();

@@ -7,6 +7,10 @@ project(su2 C CXX)
 project(su2hmc C CXX)
 
 add_definitions(--std=c++11)
+find_package(OpenMP)
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+
 # There is one header file which is in a subdirectory. This add the `-i` to the
 # compiler.
 #include_directories("include")

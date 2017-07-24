@@ -16,6 +16,7 @@ public:
   gaugeconfig(const gaugeconfig &U) :
     Ls(U.getLs()), Lt(U.getLt()), volume(U.getVolume()), beta(U.getBeta()) {
     data.resize(volume*4);
+#pragma omp parallel for
     for(size_t i = 0; i < getSize(); i++) {
       data[i] = U[i];
     }
@@ -45,6 +46,7 @@ public:
     Lt = U.getLt();
     volume = U.getVolume();
     data.resize(U.getSize());
+#pragma omp parallel for
     for(size_t i = 0; i < U.getSize(); i++) {
       data[i] = U[i];
     }

@@ -24,6 +24,7 @@ template<class T> void update_momenta(std::list<monomial<T>*> &monomial_list,
   }
   
   // update the momenta after the derivative has been accumulated
+#pragma omp parallel for
   for(size_t i = 0; i < h.momenta->getSize(); i++) {
     (*h.momenta)[i] -= dtau * deriv[i];
   }
@@ -49,6 +50,7 @@ template<class T> void round_and_update_momenta(std::list<monomial<T>*> &monomia
   
   // update the momenta after the derivative has been accumulated
   // round before update
+#pragma omp parallel for
   for(size_t i = 0; i < h.momenta->getSize(); i++) {
     (*h.momenta)[i] -= dtau * deriv[i].round(n);
   }

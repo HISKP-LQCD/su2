@@ -11,6 +11,7 @@
 #include"print_program_options.hh"
 
 #include<iostream>
+#include<iomanip>
 #include<sstream>
 #include<vector>
 #include<random>
@@ -34,6 +35,9 @@ int main(int ac, char* av[]) {
   const size_t n_steps = 1;
   size_t exponent = 16;
   double tau = 1.;
+
+  cout << "## Kramers Equation Algorithm for SU(2) gauge theory" << endl;
+  cout << "## (C) Carsten Urbach <urbach@hiskp.uni-bonn.de> (2017)" << endl << endl;
 
   try {
     po::options_description desc("Allowed options");
@@ -118,8 +122,8 @@ int main(int ac, char* av[]) {
     kramers_md_update(U, engine, params, monomial_list);
 
     rate += params.getaccept();
-    std::cout << i << " " << params.getaccept() << " " << gauge_energy(U)/U.getVolume()/N_c/6. << " " << params.getdeltaH() << " " 
-              << rate/static_cast<double>(i+1) << std::endl;
+    cout << i << " " << params.getaccept() << " " << std::scientific << std::setw(15) << gauge_energy(U)/U.getVolume()/N_c/6. << " " << std::setw(15) << params.getdeltaH() << " " 
+         << std::setw(15) << rate/static_cast<double>(i+1) << std::endl;
 
     if(i > 0 && (i % N_save) == 0) {
       std::ostringstream os;

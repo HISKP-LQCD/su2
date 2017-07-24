@@ -8,6 +8,7 @@
 #include"print_program_options.hh"
 
 #include<iostream>
+#include<iomanip>
 #include<sstream>
 #include<vector>
 #include<random>
@@ -27,7 +28,9 @@ int main(int ac, char* av[]) {
   double heat = 0.;
   size_t N_save = 200;
   int seed = 13526463;
-  
+
+  cout << "## Metropolis Algorithm for SU(2) gauge theory" << endl;
+  cout << "## (C) Carsten Urbach <urbach@hiskp.uni-bonn.de> (2017)" << endl << endl;  
   
   try {
     po::options_description desc("Allowed options");
@@ -96,7 +99,7 @@ int main(int ac, char* av[]) {
   for(size_t i = 0; i < N_meas; i++) {
     std::mt19937 engine(seed+i);
     rate += sweep(U, engine, delta, N_hit, beta);
-    cout << i << " " << gauge_energy(U)/U.getVolume()/N_c/6. << endl;
+    cout << i << " " << std::scientific << std::setw(15) << gauge_energy(U)/U.getVolume()/N_c/6. << endl;
     if(i > 0 && (i % N_save) == 0) {
       std::ostringstream os;
       os << "config." << Ls << "." << Lt << ".b" << beta << "." << i << std::ends;

@@ -11,10 +11,11 @@
 #include"print_program_options.hh"
 
 #include<iostream>
+#include<iomanip>
 #include<sstream>
 #include<vector>
 #include<random>
-#include <boost/program_options.hpp>
+#include<boost/program_options.hpp>
 
 namespace po = boost::program_options;
 using std::vector;
@@ -34,6 +35,9 @@ int main(int ac, char* av[]) {
   size_t exponent = 16;
   double tau = 1.;
 
+  cout << "## HMC Algorithm for SU(2) gauge theory" << endl;
+  cout << "## (C) Carsten Urbach <urbach@hiskp.uni-bonn.de> (2017)" << endl << endl;
+
   try {
     po::options_description desc("Allowed options");
     desc.add_options()
@@ -45,7 +49,7 @@ int main(int ac, char* av[]) {
       ("nsteps", po::value<size_t>(&n_steps)->default_value(1000), "n_steps")
       ("tau", po::value<double>(&tau)->default_value(1.), "trajectory length tau")
       ("nmeas,n", po::value<size_t>(&N_meas)->default_value(10), "total number of measurements")
-      ("exponent", po::value<size_t>(&exponent)->default_value(16), "exponent for rounding")
+      ("exponent", po::value<size_t>(&exponent)->default_value(0), "exponent for rounding")
       ("beta,b", po::value<double>(&beta), "beta value")
       ("seed,s", po::value<int>(&seed)->default_value(13526463), "PRNG seed")
       ("heat", po::value<double>(&heat)->default_value(1.), "randomness of the initial config, 1: hot, 0: cold")
@@ -111,6 +115,7 @@ int main(int ac, char* av[]) {
   monomial_list.push_back(&gm);
   monomial_list.push_back(&km);
 
+  params.setexponent(exponent);
   double rate = 0.;
   for(size_t i = 0; i < N_meas; i++) {
     params.disablerevtest();
@@ -120,8 +125,8 @@ int main(int ac, char* av[]) {
     md_update(U, engine, params, monomial_list);
 
     rate += params.getaccept();
-    cout << i << " " << params.getaccept() << " " << gauge_energy(U)/U.getVolume()/N_c/6. << " " << params.getdeltaH() << " " 
-         << rate/static_cast<double>(i+1) << " ";
+    cout << i << " " << params.getaccept() << " " << std::scientific << std::setw(15) << gauge_energy(U)/U.getVolume()/N_c/6. << " " << std::setw(15) << params.getdeltaH() << " " 
+         << std::setw(15) << rate/static_cast<double>(i+1) << " ";
     if(params.getrevtest()) {
       cout << params.getdeltadeltaH();
     }

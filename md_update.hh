@@ -37,8 +37,14 @@ template<class URNG> void md_update(gaugeconfig &U,
   gaugeconfig U_old(U);
 
   // perform MD evolution
-  leapfrog<double> md_integ;
-  md_integ.integrate(monomial_list, h, params);
+  if(params.getexponent() < 1) {
+    leapfrog<double> md_integ;
+    md_integ.integrate(monomial_list, h, params);
+  }
+  else {
+    lp_leapfrog<double> md_integ(params.getexponent());
+    md_integ.integrate(monomial_list, h, params);
+  }
 
   // compute the final Hamiltonian
   double delta_H = 0.;
@@ -63,7 +69,15 @@ template<class URNG> void md_update(gaugeconfig &U,
     delta_H = 0.;
     gaugeconfig U_save(U);
     h.momenta->flipsign();
-    md_integ.integrate(monomial_list, h, params);
+    if(params.getexponent() < 1) {
+      leapfrog<double> md_integ;
+      md_integ.integrate(monomial_list, h, params);
+    }
+    else {
+      lp_leapfrog<double> md_integ(params.getexponent());
+      md_integ.integrate(monomial_list, h, params);
+    }
+
     for (auto it = monomial_list.begin(); it != monomial_list.end(); it++) {
       (*it)->accept(h); 
       delta_H += (*it)->getDeltaH();

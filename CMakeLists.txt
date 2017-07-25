@@ -34,6 +34,7 @@ add_library(su2
     energy_density.cc
     gradient_flow.cc
     print_program_options.cc
+    parse_commandline.cc
 )
 
 # Create the main program.

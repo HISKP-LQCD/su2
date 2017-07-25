@@ -3,107 +3,61 @@
 #include"gauge_energy.hh"
 #include"random_gauge_trafo.hh"
 #include"sweep.hh"
-#include"wilsonloop.hh"
 #include"kramers_md_update.hh"
 #include"monomial.hh"
-#include"gradient_flow.hh"
-#include"energy_density.hh"
-#include"print_program_options.hh"
+#include"parse_commandline.hh"
 
 #include<iostream>
 #include<iomanip>
 #include<sstream>
-#include<vector>
 #include<random>
 #include<boost/program_options.hpp>
 
-using std::vector;
 using std::cout;
 using std::endl;
-using std::cerr;
 namespace po = boost::program_options;
 
 int main(int ac, char* av[]) {
-
-  size_t Ls = 8, Lt = 16;
-  double beta = 2.3;
-  size_t N_meas = 2000;
-  size_t N_rev = 1;
-  double heat = 0.;
-  size_t N_save = 200;
-  int seed = 13526463;
   const size_t n_steps = 1;
-  size_t exponent = 16;
-  double tau = 1.;
 
-  cout << "## Kramers Equation Algorithm for SU(2) gauge theory" << endl;
+  general_params gparams;
+  size_t N_rev;
+  size_t exponent;
+  double tau;
+
+  cout << "## Kramers Algorithm for SU(2) gauge theory" << endl;
   cout << "## (C) Carsten Urbach <urbach@hiskp.uni-bonn.de> (2017)" << endl << endl;
 
-  try {
-    po::options_description desc("Allowed options");
-    desc.add_options()
-      ("help,h", "produce this help message")
-      ("spatialsize,L", po::value<size_t>(&Ls), "spatial lattice size")
-      ("temporalsize,T", po::value<size_t>(&Lt), "temporal lattice size")
-      ("nsave", po::value<size_t>(&N_save)->default_value(1000), "N_save")
-      //      ("nrev", po::value<size_t>(&N_rev)->default_value(1000), "N_rev")
-      ("tau", po::value<double>(&tau)->default_value(1.), "trajectory length tau")
-      ("nmeas,n", po::value<size_t>(&N_meas)->default_value(10), "total number of measurements")
-      ("exponent", po::value<size_t>(&exponent)->default_value(16), "exponent for rounding")
-      ("beta,b", po::value<double>(&beta), "beta value")
-      ("seed,s", po::value<int>(&seed)->default_value(13526463), "PRNG seed")
-      ("heat", po::value<double>(&heat)->default_value(1.), "randomness of the initial config, 1: hot, 0: cold")
-      ;
+  po::options_description desc("Allowed options");
+  add_general_options(desc, gparams);
+  // add HMC specific options
+  desc.add_options()
+    ("tau", po::value<double>(&tau)->default_value(1.), "trajectory length tau")
+    ;
 
-    po::variables_map vm;
-    po::store(po::parse_command_line(ac, av, desc), vm);
-    po::notify(vm);
-    
-    if (vm.count("help")) {
-      cout << desc << endl;
-      return 1;
-    }
-    if (!vm.count("spatialsize") && !vm.count("help")) {
-      std::cerr << "spatial lattice size must be given!" << endl;
-      cout << endl << desc << endl;
-      return 1;
-    }
-    if (!vm.count("temporalsize") && !vm.count("help")) {
-      std::cerr << "temporal lattice size must be given!" << endl;
-      cout << endl << desc << endl;
-      return 1;
-    }
-    if (!vm.count("beta") && !vm.count("help")) {
-      std::cerr << "beta value must be specified!" << endl;
-      cout << endl << desc << endl;
-      return 1;
-    }
-    PrintVariableMap(vm);
-  }
-  catch(std::exception& e) {
-    std::cerr << "error: " << e.what() << "\n";
-    return 1;
-  }
-  catch(...) {
-    std::cerr << "Exception of unknown type!\n";
+  int err = parse_commandline(ac, av, desc, gparams);
+  if(err > 0) {
+    return err;
   }
 
-
-  gaugeconfig U(Ls, Lt, beta);
-  U = hotstart(Ls, Lt, seed, heat);
-
-  md_params params(n_steps, tau);
-  
-  std::mt19937 engine(seed);
+  gaugeconfig U(gparams.Ls, gparams.Lt, gparams.beta);
+  if(gparams.restart) {
+    U.load(gparams.configfilename);
+  }
+  else {
+    U = hotstart(gparams.Ls, gparams.Lt, gparams.seed, gparams.heat);
+  }
+  // Molecular Dynamics parameters
+  md_params mdparams(n_steps, tau);
+  // PRNG engine  
+  std::mt19937 engine(gparams.seed);
 
   double plaquette = gauge_energy(U);
   cout << "## Initital Plaquette: " << plaquette/U.getVolume()/N_c/6. << endl; 
-  cout << "## Initial Energy density: " << energy_density(U) << endl;
 
   random_gauge_trafo(U, 654321);
   plaquette = gauge_energy(U);
   cout << "## Plaquette after rnd trafo: " << plaquette/U.getVolume()/N_c/6. << endl; 
-  cout << "## Energy density: " << energy_density(U) << endl;
 
   // generate list of monomials
   gaugemonomial<double> gm(0);
@@ -114,27 +68,27 @@ int main(int ac, char* av[]) {
   monomial_list.push_back(&gm);
   monomial_list.push_back(&km);
 
-  params.setkmax(5);
+  mdparams.setkmax(5);
 
   double rate = 0.;
-  for(size_t i = 0; i < N_meas; i++) {
-    params.disablerevtest();
-    kramers_md_update(U, engine, params, monomial_list);
+  for(size_t i = 0; i < gparams.N_meas; i++) {
+    mdparams.disablerevtest();
+    kramers_md_update(U, engine, mdparams, monomial_list);
 
-    rate += params.getaccept();
-    cout << i << " " << params.getaccept() << " " << std::scientific << std::setw(15) << gauge_energy(U)/U.getVolume()/N_c/6. << " " << std::setw(15) << params.getdeltaH() << " " 
+    rate += mdparams.getaccept();
+    cout << i << " " << mdparams.getaccept() << " " << std::scientific << std::setw(15) << gauge_energy(U)/U.getVolume()/N_c/6. << " " << std::setw(15) << mdparams.getdeltaH() << " " 
          << std::setw(15) << rate/static_cast<double>(i+1) << std::endl;
 
-    if(i > 0 && (i % N_save) == 0) {
+    if(i > 0 && (i % gparams.N_save) == 0) {
       std::ostringstream os;
-      os << "config." << Ls << "." << Lt << ".b" << beta << "." << i << std::ends;
+      os << "config." << gparams.Ls << "." << gparams.Lt << ".b" << gparams.beta << "." << i << std::ends;
       U.save(os.str());
     }
   }
-  cout << "## Acceptance rate: " << rate/static_cast<double>(N_meas) << endl;
+  cout << "## Acceptance rate: " << rate/static_cast<double>(gparams.N_meas) << endl;
 
   std::ostringstream os;
-  os << "config." << Ls << "." << Lt << ".b" << U.getBeta() << ".final" << std::ends;
+  os << "config." << gparams.Ls << "." << gparams.Lt << ".b" << U.getBeta() << ".final" << std::ends;
   U.save(os.str());
   return(0);
 }

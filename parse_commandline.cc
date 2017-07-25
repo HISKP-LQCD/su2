@@ -29,7 +29,8 @@ int parse_commandline(int ac, char * av[], po::options_description &desc, genera
     po::variables_map vm;
     po::store(po::parse_command_line(ac, av, desc), vm);
     po::notify(vm);
-    
+
+    params.restart = false;
     if (vm.count("help")) {
       std::cout << desc << std::endl;
       return 1;

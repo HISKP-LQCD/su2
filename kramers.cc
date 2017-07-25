@@ -42,7 +42,10 @@ int main(int ac, char* av[]) {
 
   gaugeconfig U(gparams.Ls, gparams.Lt, gparams.beta);
   if(gparams.restart) {
-    U.load(gparams.configfilename);
+    err = U.load(gparams.configfilename);
+    if(err != 0) {
+      return err;
+    }
   }
   else {
     U = hotstart(gparams.Ls, gparams.Lt, gparams.seed, gparams.heat);

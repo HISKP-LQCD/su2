@@ -77,7 +77,7 @@ public:
   }
 
   void save(std::string const &path) const;
-  void load(std::string const &path);
+  int load(std::string const &path);
   void loadEigen(std::string const &path);
 
 private:

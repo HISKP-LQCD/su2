@@ -15,11 +15,16 @@ void gaugeconfig::save(std::string const &path) const {
   return;
 }
 
-void gaugeconfig::load(std::string const &path) {
+int gaugeconfig::load(std::string const &path) {
   std::cout << "## Reading config from file " << path << std::endl;
   std::ifstream ifs(path, std::ios::in | std::ios::binary);
-  ifs.read(reinterpret_cast<char *>(data.data()), storage_size());
-  return;
+  if(ifs) {
+    ifs.read(reinterpret_cast<char *>(data.data()), storage_size());
+    return 0;
+  }
+  else
+    std::cerr << "Error: could not read file from " << path << std::endl;
+  return 1;
 }
 
 void gaugeconfig::loadEigen(std::string const &path) {

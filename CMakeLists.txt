@@ -42,8 +42,8 @@ include_directories(${CMAKE_SOURCE_DIR}/)
 include_directories(${CMAKE_BINARY_DIR}/generated/)
 
 find_package(OpenMP)
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS} -D_USE_OMP_")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS} -D_USE_OMP_")
 
 # There is one header file which is in a subdirectory. This add the `-i` to the
 # compiler.

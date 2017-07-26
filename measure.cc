@@ -8,6 +8,7 @@
 #include"monomial.hh"
 #include"gradient_flow.hh"
 #include"energy_density.hh"
+#include"version.hh"
 
 #include<iostream>
 #include<iomanip>
@@ -27,6 +28,12 @@ int main() {
   const size_t N_save = 20;
   const size_t N_rev = 1;
   const int seed = 13526463;
+
+  cout << "## Measuring Tool for SU(2) gauge theory" << endl;
+  cout << "## (C) Carsten Urbach <urbach@hiskp.uni-bonn.de> (2017)" << endl;
+  cout << "## GIT branch " << GIT_BRANCH << " on commit " << GIT_COMMIT_HASH << endl << endl;  
+
+
   gaugeconfig U(Ls, Lt, beta);
   U = hotstart(Ls, Lt, 123456, 0.10);
 

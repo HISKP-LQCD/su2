@@ -6,6 +6,7 @@
 #include"md_update.hh"
 #include"monomial.hh"
 #include"parse_commandline.hh"
+#include"version.hh"
 
 #include<iostream>
 #include<iomanip>
@@ -26,7 +27,8 @@ int main(int ac, char* av[]) {
   double tau = 1.;
 
   cout << "## HMC Algorithm for SU(2) gauge theory" << endl;
-  cout << "## (C) Carsten Urbach <urbach@hiskp.uni-bonn.de> (2017)" << endl << endl;
+  cout << "## (C) Carsten Urbach <urbach@hiskp.uni-bonn.de> (2017)" << endl;
+  cout << "## GIT branch " << GIT_BRANCH << " on commit " << GIT_COMMIT_HASH << endl << endl;  
 
   po::options_description desc("Allowed options");
   add_general_options(desc, gparams);

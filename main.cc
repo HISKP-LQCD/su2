@@ -61,7 +61,7 @@ int main(int ac, char* av[]) {
   cout << "Plaquette after rnd trafo: " << plaquette/U.getVolume()/N_c/6. << endl; 
 
   double rate = 0.;
-  for(size_t i = 0; i < gparams.N_meas; i++) {
+  for(size_t i = gparams.icounter; i < gparams.N_meas + gparams.icounter; i++) {
     std::mt19937 engine(gparams.seed+i);
     rate += sweep(U, engine, delta, N_hit, gparams.beta);
     cout << i << " " << std::scientific << std::setw(15) << gauge_energy(U)/U.getVolume()/N_c/6. << endl;

@@ -8,7 +8,8 @@ public:
   size_t Ls, Lt;             
   size_t N_meas;             
   size_t N_save;             
-  int seed;                  
+  size_t icounter;
+  size_t seed;                  
   double beta;               
   double heat;               
   bool restart;              

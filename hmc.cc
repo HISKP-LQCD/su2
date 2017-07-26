@@ -78,7 +78,7 @@ int main(int ac, char* av[]) {
 
   mdparams.setexponent(exponent);
   double rate = 0.;
-  for(size_t i = 0; i < gparams.N_meas; i++) {
+  for(size_t i = gparams.icounter; i < gparams.N_meas+gparams.icounter; i++) {
     mdparams.disablerevtest();
     if(i > 0 && N_rev != 0 && (i) % N_rev == 0) {
       mdparams.enablerevtest();

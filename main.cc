@@ -8,6 +8,7 @@
 
 #include<iostream>
 #include<iomanip>
+#include<fstream>
 #include<sstream>
 #include<vector>
 #include<random>
@@ -60,22 +61,24 @@ int main(int ac, char* av[]) {
   plaquette = gauge_energy(U);
   cout << "Plaquette after rnd trafo: " << plaquette/U.getVolume()/N_c/6. << endl; 
 
+  std::ofstream os("output.metropolis.data", std::ios::app);
   double rate = 0.;
   for(size_t i = gparams.icounter; i < gparams.N_meas + gparams.icounter; i++) {
     std::mt19937 engine(gparams.seed+i);
     rate += sweep(U, engine, delta, N_hit, gparams.beta);
     cout << i << " " << std::scientific << std::setw(18) << std::setprecision(15) << gauge_energy(U)/U.getVolume()/N_c/6. << endl;
+    os << i << " " << std::scientific << std::setw(18) << std::setprecision(15) << gauge_energy(U)/U.getVolume()/N_c/6. << endl;
     if(i > 0 && (i % gparams.N_save) == 0) {
-      std::ostringstream os;
-      os << "config." << gparams.Ls << "." << gparams.Lt << ".b" << gparams.beta << "." << i << std::ends;
-      U.save(os.str());
+      std::ostringstream oss;
+      oss << "config." << gparams.Ls << "." << gparams.Lt << ".b" << gparams.beta << "." << i << std::ends;
+      U.save(oss.str());
     }
   }
   cout << rate/static_cast<double>(gparams.N_meas) << endl;
 
-  std::ostringstream os;
-  os << "config." << gparams.Ls << "." << gparams.Lt << ".b" << U.getBeta() << ".final" << std::ends;
-  U.save(os.str());
+  std::ostringstream oss;
+  oss << "config." << gparams.Ls << "." << gparams.Lt << ".b" << U.getBeta() << ".final" << std::ends;
+  U.save(oss.str());
 
   return(0);
 }

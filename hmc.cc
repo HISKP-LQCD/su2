@@ -9,10 +9,10 @@
 #include"version.hh"
 
 #include<iostream>
+#include<fstream>
 #include<iomanip>
 #include<sstream>
 #include<random>
-#include<string>
 #include<boost/program_options.hpp>
 
 namespace po = boost::program_options;
@@ -77,6 +77,7 @@ int main(int ac, char* av[]) {
   monomial_list.push_back(&km);
 
   mdparams.setexponent(exponent);
+  std::ofstream os("output.hmc.data", std::ios::app);
   double rate = 0.;
   for(size_t i = gparams.icounter; i < gparams.N_meas+gparams.icounter; i++) {
     mdparams.disablerevtest();
@@ -94,16 +95,24 @@ int main(int ac, char* av[]) {
     else cout << "NA";
     cout << endl;
 
+    os << i << " " << mdparams.getaccept() << " " << std::scientific << std::setw(18) << std::setprecision(15) << gauge_energy(U)/U.getVolume()/N_c/6. << " " << std::setw(15) << mdparams.getdeltaH() << " " 
+       << std::setw(15) << rate/static_cast<double>(i+1) << " ";
+    if(mdparams.getrevtest()) {
+      os << mdparams.getdeltadeltaH();
+    }
+    else os << "NA";
+    os << endl;
+
     if(i > 0 && (i % gparams.N_save) == 0) {
-      std::ostringstream os;
-      os << "config." << gparams.Ls << "." << gparams.Lt << ".b" << gparams.beta << "." << i << std::ends;
-      U.save(os.str());
+      std::ostringstream oss;
+      oss << "config." << gparams.Ls << "." << gparams.Lt << ".b" << gparams.beta << "." << i << std::ends;
+      U.save(oss.str());
     }
   }
   cout << "## Acceptance rate: " << rate/static_cast<double>(gparams.N_meas) << endl;
 
-  std::ostringstream os;
-  os << "config." << gparams.Ls << "." << gparams.Lt << ".b" << U.getBeta() << ".final" << std::ends;
-  U.save(os.str());
+  std::ostringstream oss;
+  oss << "config." << gparams.Ls << "." << gparams.Lt << ".b" << U.getBeta() << ".final" << std::ends;
+  U.save(oss.str());
   return(0);
 }

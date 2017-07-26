@@ -8,7 +8,8 @@ project(su2hmc C CXX)
 
 add_definitions(--std=c++11)
 
-
+## here we generate version.hh
+## to track the git version of the executables
 if(EXISTS "${CMAKE_SOURCE_DIR}/.git")
   execute_process(
     COMMAND git rev-parse --abbrev-ref HEAD
@@ -31,8 +32,7 @@ endif(EXISTS "${CMAKE_SOURCE_DIR}/.git")
 message(STATUS "Git current branch: ${GIT_BRANCH}")
 message(STATUS "Git commit hash: ${GIT_COMMIT_HASH}")
 
-message(STATUS "Generating version.h")
-
+message(STATUS "Generating version.hh")
 configure_file(
   ${CMAKE_SOURCE_DIR}/version.hh.in
   ${CMAKE_BINARY_DIR}/generated/version.hh

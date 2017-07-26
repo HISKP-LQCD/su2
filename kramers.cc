@@ -82,11 +82,12 @@ int main(int ac, char* av[]) {
     mdparams.disablerevtest();
     kramers_md_update(U, engine, mdparams, monomial_list);
 
+    double energy = gauge_energy(U);
     rate += mdparams.getaccept();
-    cout << i << " " << mdparams.getaccept() << " " << std::scientific << std::setw(18)  << std::setprecision(15) << gauge_energy(U)/U.getVolume()/N_c/6. << " " << std::setw(15) << mdparams.getdeltaH() << " " 
+    cout << i << " " << mdparams.getaccept() << " " << std::scientific << std::setw(18)  << std::setprecision(15) << energy/U.getVolume()/N_c/6. << " " << std::setw(15) << mdparams.getdeltaH() << " " 
          << std::setw(15) << rate/static_cast<double>(i+1) << std::endl;
 
-    os << i << " " << mdparams.getaccept() << " " << std::scientific << std::setw(18)  << std::setprecision(15) << gauge_energy(U)/U.getVolume()/N_c/6. << " " << std::setw(15) << mdparams.getdeltaH() << " " 
+    os << i << " " << mdparams.getaccept() << " " << std::scientific << std::setw(18)  << std::setprecision(15) << energy/U.getVolume()/N_c/6. << " " << std::setw(15) << mdparams.getdeltaH() << " " 
        << std::setw(15) << rate/static_cast<double>(i+1) << std::endl;
 
     if(i > 0 && (i % gparams.N_save) == 0) {

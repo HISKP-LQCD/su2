@@ -77,7 +77,12 @@ int main(int ac, char* av[]) {
   monomial_list.push_back(&km);
 
   mdparams.setexponent(exponent);
-  std::ofstream os("output.hmc.data", std::ios::app);
+  std::ofstream os;
+  if(gparams.icounter == 0) 
+    os.open("output.hmc.data", std::ios::out);
+  else 
+    os.open("output.hmc.data", std::ios::app);
+
   double rate = 0.;
   for(size_t i = gparams.icounter; i < gparams.N_meas+gparams.icounter; i++) {
     mdparams.disablerevtest();

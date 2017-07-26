@@ -64,7 +64,7 @@ int main(int ac, char* av[]) {
   for(size_t i = gparams.icounter; i < gparams.N_meas + gparams.icounter; i++) {
     std::mt19937 engine(gparams.seed+i);
     rate += sweep(U, engine, delta, N_hit, gparams.beta);
-    cout << i << " " << std::scientific << std::setw(15) << gauge_energy(U)/U.getVolume()/N_c/6. << endl;
+    cout << i << " " << std::scientific << std::setw(18) << std::setprecision(15) << gauge_energy(U)/U.getVolume()/N_c/6. << endl;
     if(i > 0 && (i % gparams.N_save) == 0) {
       std::ostringstream os;
       os << "config." << gparams.Ls << "." << gparams.Lt << ".b" << gparams.beta << "." << i << std::ends;

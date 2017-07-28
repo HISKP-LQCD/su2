@@ -57,8 +57,6 @@ int main(int ac, char* av[]) {
   }
   // Molecular Dynamics parameters
   md_params mdparams(n_steps, tau);
-  // PRNG engine
-  std::mt19937 engine(gparams.seed);
 
   double plaquette = gauge_energy(U);
   cout << "## Initital Plaquette: " << plaquette/U.getVolume()/N_c/6. << endl; 
@@ -89,6 +87,8 @@ int main(int ac, char* av[]) {
     if(i > 0 && N_rev != 0 && (i) % N_rev == 0) {
       mdparams.enablerevtest();
     }
+    // PRNG engine
+    std::mt19937 engine(gparams.seed+i);
     md_update(U, engine, mdparams, monomial_list);
 
     double energy = gauge_energy(U);

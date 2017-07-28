@@ -55,8 +55,6 @@ int main(int ac, char* av[]) {
   }
   // Molecular Dynamics parameters
   md_params mdparams(n_steps, tau);
-  // PRNG engine  
-  std::mt19937 engine(gparams.seed);
 
   double plaquette = gauge_energy(U);
   cout << "## Initital Plaquette: " << plaquette/U.getVolume()/N_c/6. << endl; 
@@ -85,6 +83,9 @@ int main(int ac, char* av[]) {
   double rate = 0.;
   for(size_t i = gparams.icounter; i < gparams.N_meas + gparams.icounter; i++) {
     mdparams.disablerevtest();
+
+    // PRNG engine  
+    std::mt19937 engine(gparams.seed + i);
     kramers_md_update(U, engine, mdparams, monomial_list);
 
     double energy = gauge_energy(U);

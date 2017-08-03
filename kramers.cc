@@ -36,6 +36,7 @@ int main(int ac, char* av[]) {
   // add HMC specific options
   desc.add_options()
     ("tau", po::value<double>(&tau)->default_value(1.), "trajectory length tau")
+    ("no-accept-reject", "switch off the accept/reject step")
     ;
 
   int err = parse_commandline(ac, av, desc, gparams);
@@ -73,6 +74,7 @@ int main(int ac, char* av[]) {
   monomial_list.push_back(&km);
 
   mdparams.setkmax(5);
+  if(!gparams.acceptreject) mdparams.disableacceptreject();
 
   std::ofstream os;
   if(gparams.icounter == 0) 

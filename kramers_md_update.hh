@@ -73,11 +73,13 @@ template<class URNG> void kramers_md_update(gaugeconfig &U,
     }
     params.setdeltaH(delta_H);
 
-    // accept/reject step, if needed
+    // accept/reject step, if needed and/or wanted
     params.setaccept(true);
-    if(delta_H > 0) {
-      if(uniform(engine) > exp(-delta_H)) {
-        params.setaccept(false);
+    if(params.getacceptreject()) {
+      if(delta_H > 0) {
+        if(uniform(engine) > exp(-delta_H)) {
+          params.setaccept(false);
+        }
       }
     }
 

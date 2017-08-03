@@ -13,6 +13,7 @@ public:
   double beta;               
   double heat;               
   bool restart;              
+  bool acceptreject;
   std::string configfilename;
 };
 

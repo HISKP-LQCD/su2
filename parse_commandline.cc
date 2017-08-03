@@ -32,6 +32,7 @@ int parse_commandline(int ac, char * av[], po::options_description &desc, genera
     po::notify(vm);
 
     params.restart = false;
+    params.acceptreject = true;
     if (vm.count("help")) {
       std::cout << desc << std::endl;
       return 1;
@@ -58,6 +59,9 @@ int parse_commandline(int ac, char * av[], po::options_description &desc, genera
         return 1;
       }
       params.restart = true;
+    }
+    if (vm.count("no-accept-reject")) {
+      params.acceptreject = false;
     }
     PrintVariableMap(vm);
   }

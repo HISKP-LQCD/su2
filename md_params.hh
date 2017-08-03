@@ -6,7 +6,7 @@ public:
   md_params(size_t _nsteps, double _tau, size_t n = 1000000000) : 
     nsteps(_nsteps), n_prec(n), kmax(5), exponent(16), tau(_tau), H(0.),
     deltaH(0.), deltadeltaH(0.), deltadeltaU(0.),
-    revtest(false), accept(true) {}
+    revtest(false), accept(true), acceptreject(true) {}
   size_t getnsteps() const {
     return nsteps;
   }
@@ -58,6 +58,15 @@ public:
   bool getaccept() const {
     return accept;
   }
+  void disableacceptreject() {
+    acceptreject = false;
+  }
+  void enableacceptreject() {
+    acceptreject = true;
+  }
+  bool getacceptreject() const {
+    return acceptreject;
+  }
   void setn_prec(size_t n) {
     n_prec = n;
   }
@@ -84,6 +93,6 @@ private:
   size_t exponent;
   double tau;
   double H, deltaH, deltadeltaH, deltadeltaU;
-  bool revtest, accept;
+  bool revtest, accept, acceptreject;
 };
 

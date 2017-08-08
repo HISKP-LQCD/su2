@@ -17,27 +17,28 @@ using std::vector;
 
 
 
-template<class URNG> void kramers_md_update(gaugeconfig &U,
-                                            URNG &engine, 
-                                            md_params &params,
-                                            std::list<monomial<double>*> &monomial_list) {
-  adjointfield<double> momenta(U.getLs(), U.getLt());
+template<class URNG, class T> void kramers_md_update(gaugeconfig &U,
+                                                     URNG &engine, 
+                                                     md_params &params,
+                                                     std::list<monomial<T>*> &monomial_list, 
+                                                     integrator<T> &md_integ) {
+  adjointfield<T> momenta(U.getLs(), U.getLt());
   // generate standard normal distributed random momenta
   // normal distribution checked!
-  momenta = initnormal<URNG, double>(engine, U.getLs(), U.getLt());
+  momenta = initnormal<URNG, T>(engine, U.getLs(), U.getLt());
 
   // for the accept reject step
-  std::uniform_real_distribution<double> uniform(0., 1.);
+  std::uniform_real_distribution<T> uniform(0., 1.);
 
-  const double gamma = 2.0;
-  adjointfield<double> eta(U.getLs(), U.getLt());
-  adjointfield<double> momenta_old(U.getLs(), U.getLt());
+  const double gamma = params.getgamma();
+  adjointfield<T> eta(U.getLs(), U.getLt());
+  adjointfield<T> momenta_old(U.getLs(), U.getLt());
   gaugeconfig U_old(U.getLs(), U.getLt(), U.getBeta());
 
   for(size_t k = 0; k < params.getkmax(); k++) {
     // first momenta update
-    eta = initnormal<URNG, double>(engine, U.getLs(), U.getLt());
-    double epsilon = params.gettau()/double(params.getnsteps());
+    eta = initnormal<URNG, T>(engine, U.getLs(), U.getLt());
+    T epsilon = params.gettau()/T(params.getnsteps());
     for(size_t i = 0; i < momenta.getSize(); i++) {
       momenta[i].seta(momenta[i].geta()*exp(-gamma*epsilon) + sqrt(1 - exp(-2*gamma*epsilon))*eta[i].geta());
       momenta[i].setb(momenta[i].getb()*exp(-gamma*epsilon) + sqrt(1 - exp(-2*gamma*epsilon))*eta[i].getb());
@@ -49,7 +50,7 @@ template<class URNG> void kramers_md_update(gaugeconfig &U,
     // keep a copy of original gauge field and the momenta
     U_old = U;
     
-    hamiltonian_field<double> h(momenta, U);
+    hamiltonian_field<T> h(momenta, U);
 
     // compute the initial Hamiltonian
     for (auto it = monomial_list.begin(); it != monomial_list.end(); it++) {
@@ -60,7 +61,6 @@ template<class URNG> void kramers_md_update(gaugeconfig &U,
     if(params.getnsteps() != 1) {
       
     }
-    leapfrog<double> md_integ;
     md_integ.integrate(monomial_list, h, params);
     
     // compute the final Hamiltonian

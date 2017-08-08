@@ -15,18 +15,19 @@
 using std::vector;
 
 
-template<class URNG> void md_update(gaugeconfig &U,
-                                    URNG &engine, 
-                                    md_params &params,
-                                    std::list<monomial<double>*> &monomial_list) {
-  adjointfield<double> momenta(U.getLs(), U.getLt());
+template<class URNG, class T> void md_update(gaugeconfig &U,
+                                             URNG &engine, 
+                                             md_params &params,
+                                             std::list<monomial<T>*> &monomial_list, 
+                                             integrator<T> &md_integ) {
+  adjointfield<T> momenta(U.getLs(), U.getLt());
   // generate standard normal distributed random momenta
   // normal distribution checked!
-  momenta = initnormal<URNG, double>(engine, U.getLs(), U.getLt());
+  momenta = initnormal<URNG, T>(engine, U.getLs(), U.getLt());
 
-  std::uniform_real_distribution<double> uniform(0., 1.);
+  std::uniform_real_distribution<T> uniform(0., 1.);
 
-  hamiltonian_field<double> h(momenta, U);
+  hamiltonian_field<T> h(momenta, U);
 
   // compute the initial Hamiltonian
   for (auto it = monomial_list.begin(); it != monomial_list.end(); it++) {
@@ -37,14 +38,7 @@ template<class URNG> void md_update(gaugeconfig &U,
   gaugeconfig U_old(U);
 
   // perform MD evolution
-  if(params.getexponent() < 1) {
-    leapfrog<double> md_integ;
-    md_integ.integrate(monomial_list, h, params);
-  }
-  else {
-    lp_leapfrog<double> md_integ(params.getexponent());
-    md_integ.integrate(monomial_list, h, params);
-  }
+  md_integ.integrate(monomial_list, h, params);
 
   // compute the final Hamiltonian
   double delta_H = 0.;
@@ -69,14 +63,7 @@ template<class URNG> void md_update(gaugeconfig &U,
     delta_H = 0.;
     gaugeconfig U_save(U);
     h.momenta->flipsign();
-    if(params.getexponent() < 1) {
-      leapfrog<double> md_integ;
-      md_integ.integrate(monomial_list, h, params);
-    }
-    else {
-      lp_leapfrog<double> md_integ(params.getexponent());
-      md_integ.integrate(monomial_list, h, params);
-    }
+    md_integ.integrate(monomial_list, h, params);
 
     for (auto it = monomial_list.begin(); it != monomial_list.end(); it++) {
       (*it)->accept(h); 

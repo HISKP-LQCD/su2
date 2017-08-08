@@ -6,6 +6,7 @@ public:
   md_params(size_t _nsteps, double _tau, size_t n = 1000000000) : 
     nsteps(_nsteps), n_prec(n), kmax(5), exponent(16), tau(_tau), H(0.),
     deltaH(0.), deltadeltaH(0.), deltadeltaU(0.),
+    gamma(2.0),
     revtest(false), accept(true), acceptreject(true) {}
   size_t getnsteps() const {
     return nsteps;
@@ -52,6 +53,12 @@ public:
   double getH() const {
     return H;
   }
+  void setgamma(const double g) {
+    gamma = g;
+  }
+  double getgamma() const {
+    return gamma;
+  }
   void setaccept(const bool a) {
     accept = a;
   }
@@ -93,6 +100,7 @@ private:
   size_t exponent;
   double tau;
   double H, deltaH, deltadeltaH, deltadeltaU;
+  double gamma;
   bool revtest, accept, acceptreject;
 };
 

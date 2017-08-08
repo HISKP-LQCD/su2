@@ -9,7 +9,7 @@ public:
   size_t N_meas;             
   size_t N_save;             
   size_t icounter;
-  size_t seed;                  
+  size_t seed; 
   double beta;               
   double heat;               
   bool restart;              

@@ -5,6 +5,7 @@
 #include"sweep.hh"
 #include"md_update.hh"
 #include"monomial.hh"
+#include"integrator.hh"
 #include"parse_commandline.hh"
 #include"version.hh"
 
@@ -21,10 +22,11 @@ using std::endl;
 
 int main(int ac, char* av[]) {
   general_params gparams;
-  size_t N_rev = 1;
-  size_t n_steps = 10;
-  size_t exponent = 16;
-  double tau = 1.;
+  size_t N_rev;
+  size_t n_steps;
+  size_t exponent;
+  double tau;
+  size_t integs;
 
   cout << "## HMC Algorithm for SU(2) gauge theory" << endl;
   cout << "## (C) Carsten Urbach <urbach@hiskp.uni-bonn.de> (2017)" << endl;
@@ -38,6 +40,7 @@ int main(int ac, char* av[]) {
     ("nsteps", po::value<size_t>(&n_steps)->default_value(1000), "n_steps")
     ("tau", po::value<double>(&tau)->default_value(1.), "trajectory length tau")
     ("exponent", po::value<size_t>(&exponent)->default_value(0), "exponent for rounding")
+    ("integrator", po::value<size_t>(&integs)->default_value(0), "itegration scheme to be used: 0=leapfrog, 1=lp_leapfrog, 2=omf4, 3=lp_omf4")
     ;
 
   int err = parse_commandline(ac, av, desc, gparams);
@@ -74,7 +77,8 @@ int main(int ac, char* av[]) {
   monomial_list.push_back(&gm);
   monomial_list.push_back(&km);
 
-  mdparams.setexponent(exponent);
+  integrator<double> * md_integ = set_integrator<double>(integs, exponent);
+
   std::ofstream os;
   if(gparams.icounter == 0) 
     os.open("output.hmc.data", std::ios::out);
@@ -89,7 +93,8 @@ int main(int ac, char* av[]) {
     }
     // PRNG engine
     std::mt19937 engine(gparams.seed+i);
-    md_update(U, engine, mdparams, monomial_list);
+    // perform the MD update
+    md_update(U, engine, mdparams, monomial_list, *md_integ);
 
     double energy = gauge_energy(U);
     rate += mdparams.getaccept();

@@ -53,7 +53,7 @@ int main(int ac, char* av[]) {
   gaugeconfig U(gparams.Ls, gparams.Lt, gparams.beta);
   //U = hotstart(gparams.Ls, gparams.Lt, 123456, 0.10);
 
-  for(size_t i = gparams.icounter; i < gparams.N_meas+gparams.icounter; i+=nstep) {
+  for(size_t i = gparams.icounter; i < gparams.N_meas*nstep+gparams.icounter; i+=nstep) {
     std::ostringstream os;
     os << "config." << gparams.Ls << "." << gparams.Lt << ".b" << U.getBeta() << "." << i << std::ends;
     U.load(os.str());

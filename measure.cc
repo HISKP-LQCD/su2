@@ -29,6 +29,7 @@ int main(int ac, char* av[]) {
   size_t nstep;
   bool Wloop;
   bool gradient;
+  double tmax;
 
   cout << "## Measuring Tool for SU(2) gauge theory" << endl;
   cout << "## (C) Carsten Urbach <urbach@hiskp.uni-bonn.de> (2017)" << endl;
@@ -41,6 +42,7 @@ int main(int ac, char* av[]) {
     ("Wloops", po::value<bool>(&Wloop)->default_value(false), "measure Wilson loops")
     ("gradient", po::value<bool>(&gradient)->default_value(false), "meausre Grandient flow")
     ("nstep", po::value<size_t>(&nstep)->default_value(1), "measure each nstep config")
+    ("tmax", po::value<double>(&tmax)->default_value(9.99), "tmax for gradient flow")
     ;
 
   int err = parse_commandline(ac, av, desc, gparams);
@@ -60,12 +62,12 @@ int main(int ac, char* av[]) {
     cout << "## Initital Plaquette: " << plaquette/U.getVolume()/N_c/6. << endl; 
     cout << "## Initial Energy density: " << energy_density(U) << endl;
     
-    random_gauge_trafo(U, 654321);
+    random_gauge_trafo(U, gparams.seed);
     plaquette = gauge_energy(U);
     cout << "## Plaquette after rnd trafo: " << std::scientific << std::setw(15) << plaquette/U.getVolume()/N_c/6. << endl; 
     cout << "## Energy density: " << energy_density(U) << endl;
     
-    if(Wloop){
+    if(Wloop) {
       std::ostringstream os;
       os << "wilsonloop.";
       auto prevw = os.width(6);
@@ -76,7 +78,7 @@ int main(int ac, char* av[]) {
       os << ".dat" << std::ends;
       compute_all_loops(U, os.str());
     }
-    if(gradient){
+    if(gradient) {
       std::ostringstream os;
       os << "gradient_flow.";
       auto prevw = os.width(6);
@@ -84,7 +86,7 @@ int main(int ac, char* av[]) {
       os << i;
       os.width(prevw);
       os.fill(prevf);
-      gradient_flow(U, os.str(), 7.99);
+      gradient_flow(U, os.str(), tmax);
     }
   }
 

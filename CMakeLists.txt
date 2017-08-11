@@ -78,16 +78,13 @@ endif()
 add_executable(su2-metropolis main.cc)
 add_executable(su2-hmc hmc.cc)
 add_executable(su2-kramers kramers.cc)
+add_executable(measure measure.cc)
 
-foreach(target su2-hmc su2-metropolis su2-kramers)
+foreach(target su2-hmc su2-metropolis su2-kramers measure)
   if(Boost_FOUND)
     target_link_libraries(${target} su2 ${Boost_LIBRARIES})
   else()
     target_link_libraries(${target} su2 "-lboost_program_options -lboost_filesystem -lboost_system")
   endif()
 endforeach(target)
-
-
-add_executable(measure measure.cc)
-target_link_libraries(measure su2)
 

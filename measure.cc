@@ -8,6 +8,7 @@
 #include"monomial.hh"
 #include"gradient_flow.hh"
 #include"energy_density.hh"
+#include"parse_commandline.hh"
 #include"version.hh"
 
 #include<iostream>
@@ -15,31 +16,44 @@
 #include<sstream>
 #include<vector>
 #include<random>
+#include<boost/program_options.hpp>
 
-using std::vector;
+namespace po = boost::program_options;
+
 using std::cout;
 using std::endl;
 
 
-int main() {
-  const size_t Ls = 8, Lt = 8;
-  const double beta = 2.3;
-  const size_t N_meas = 500;
-  const size_t N_save = 20;
-  const size_t N_rev = 1;
-  const int seed = 13526463;
+int main(int ac, char* av[]) {
+  general_params gparams;
+  size_t nstep;
+  bool Wloop;
+  bool gradient;
 
   cout << "## Measuring Tool for SU(2) gauge theory" << endl;
   cout << "## (C) Carsten Urbach <urbach@hiskp.uni-bonn.de> (2017)" << endl;
   cout << "## GIT branch " << GIT_BRANCH << " on commit " << GIT_COMMIT_HASH << endl << endl;  
 
+  po::options_description desc("Allowed options");
+  add_general_options(desc, gparams);
+  // add measure specific options
+  desc.add_options()
+    ("Wloops", po::value<bool>(&Wloop)->default_value(false), "measure Wilson loops")
+    ("gradient", po::value<bool>(&gradient)->default_value(false), "meausre Grandient flow")
+    ("nstep", po::value<size_t>(&nstep)->default_value(1), "measure each nstep config")
+    ;
 
-  gaugeconfig U(Ls, Lt, beta);
-  U = hotstart(Ls, Lt, 123456, 0.10);
+  int err = parse_commandline(ac, av, desc, gparams);
+  if(err > 0) {
+    return err;
+  }
 
-  for(size_t i = 500; i < 501; i+=20) {
+  gaugeconfig U(gparams.Ls, gparams.Lt, gparams.beta);
+  //U = hotstart(gparams.Ls, gparams.Lt, 123456, 0.10);
+
+  for(size_t i = gparams.icounter; i < gparams.N_meas+gparams.icounter; i+=nstep) {
     std::ostringstream os;
-    os << "config." << Ls << "." << Lt << ".b" << U.getBeta() << "." << i << std::ends;
+    os << "config." << gparams.Ls << "." << gparams.Lt << ".b" << U.getBeta() << "." << i << std::ends;
     U.load(os.str());
     
     double plaquette = gauge_energy(U);
@@ -51,7 +65,7 @@ int main() {
     cout << "## Plaquette after rnd trafo: " << std::scientific << std::setw(15) << plaquette/U.getVolume()/N_c/6. << endl; 
     cout << "## Energy density: " << energy_density(U) << endl;
     
-    {
+    if(Wloop){
       std::ostringstream os;
       os << "wilsonloop.";
       auto prevw = os.width(6);
@@ -62,7 +76,7 @@ int main() {
       os << ".dat" << std::ends;
       compute_all_loops(U, os.str());
     }
-    {
+    if(gradient){
       std::ostringstream os;
       os << "gradient_flow.";
       auto prevw = os.width(6);

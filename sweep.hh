@@ -29,7 +29,7 @@ template<class URNG> double sweep(gaugeconfig &U, URNG &engine, const double del
               if(!accept) accept = (uniform(engine) < exp(-deltaS));
               if(accept) {
                 U(x, mu) = U(x, mu) * R;
-                U(x, mu).rescale();
+                U(x, mu).restoreSU();
                 rate += 1;
               }
             }

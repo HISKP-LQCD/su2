@@ -1,5 +1,4 @@
 #include"su2.hh"
-#include"geometry.hh"
 #include<iostream>
 #include<vector>
 
@@ -28,8 +27,8 @@ int main() {
 
   U1 = su2(Complex(0.8, 0.3), Complex(0.1, 0.4));
   su2 U2(0.9, Complex(0.3, 0.2));
-  U1.rescale();
-  U2.rescale();
+  U1.restoreSU();
+  U2.restoreSU();
   su2  U3 = U1 * U2;
   cout << U3.det() << " " << trace(U1 * U2) << " " << U3.geta() << " " << U3.getb() << endl;
 

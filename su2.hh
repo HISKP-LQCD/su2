@@ -55,7 +55,7 @@ public:
   Complex det() {
     return(a*std::conj(a) + b*std::conj(b)); 
   }
-  void rescale() {
+  void restoreSU() {
     double r = sqrt(std::abs(a)*std::abs(a) + std::abs(b)*std::abs(b));
     a /= r;
     b /= r;

@@ -41,6 +41,14 @@ public:
   void setBeta(const double _beta){
     beta = _beta;
   }
+
+  void restoreSU() {
+#pragma omp parallel for
+    for(size_t i = 0; i < getSize(); i++) {
+      data[i].restoreSU();
+    }
+  }
+
   void operator=(const gaugeconfig &U) {
     Ls = U.getLs();
     Lt = U.getLt();

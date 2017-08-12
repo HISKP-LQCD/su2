@@ -95,8 +95,7 @@ int main(int ac, char* av[]) {
     std::mt19937 engine(gparams.seed+i);
     // perform the MD update
     md_update(U, engine, mdparams, monomial_list, *md_integ);
-    // restore SU(3)
-    U.restoreSU();
+
     double energy = gauge_energy(U);
     rate += mdparams.getaccept();
     cout << i << " " << mdparams.getaccept() << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy/U.getVolume()/N_c/6. << " " << std::setw(15) << mdparams.getdeltaH() << " " 

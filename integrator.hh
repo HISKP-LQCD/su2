@@ -40,6 +40,8 @@ public:
 
     // final half-step for the momenta
     update_momenta(monomial_list, deriv, h, dtau/2.);
+    // restore SU
+    h.U->restoreSU();
   }
 };
 
@@ -66,6 +68,8 @@ public:
 
     // final half-step for the momenta
     round_and_update_momenta(monomial_list, deriv, h, dtau/2., N);
+    // restore SU
+    h.U->restoreSU();
   }
 private:
   size_t n_prec;
@@ -103,6 +107,8 @@ public:
     update_gauge(h, eps[8]);
     // final half-step in the momenta
     update_momenta(monomial_list, deriv, h, 0.5*eps[9]);
+    // restore SU
+    h.U->restoreSU();
   }
 private:
   double rho, theta, vartheta, lambda;
@@ -141,6 +147,8 @@ public:
     round_and_update_gauge(h, eps[8], N);
     // final half-step in the momenta
     round_and_update_momenta(monomial_list, deriv, h, 0.5*eps[9], N);
+    // restore SU
+    h.U->restoreSU();
   }
 private:
   double rho, theta, vartheta, lambda;

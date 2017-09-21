@@ -76,7 +76,7 @@ int main(int ac, char* av[]) {
       os.width(prevw);
       os.fill(prevf);
       os << ".dat" << std::ends;
-      compute_all_loops(U, os.str());
+      compute_special_loops(U, os.str());
     }
     if(gradient) {
       std::ostringstream os;

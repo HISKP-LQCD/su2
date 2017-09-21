@@ -62,3 +62,17 @@ void compute_all_loops(gaugeconfig &U, std::string const &path) {
   }
   return;
 }
+
+void compute_special_loops(gaugeconfig &U, std::string const &path) {
+  std::ofstream os(path, std::ios::out);
+  size_t r[2] = {2, 8};
+  for(size_t t = 1; t < U.getLt(); t++) {
+    os << t << " ";
+    for(size_t i = 0; i < 2; i++) {
+      double loop = wilsonloop(U, r[i], t);
+      os << std::scientific << std::setw(15) << loop << " ";
+    }
+    os << std::endl;
+  }
+  return;
+}

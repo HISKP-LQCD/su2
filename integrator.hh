@@ -11,7 +11,7 @@
 #include<iostream>
 #include<cmath>
 
-enum integrators { LEAPFROG = 0, LP_LEAPFROG = 1, OMF4 = 2, LP_OMF4 = 3, EULER = 4};
+enum integrators { LEAPFROG = 0, LP_LEAPFROG = 1, OMF4 = 2, LP_OMF4 = 3, EULER = 4, RUTH = 5};
 
 // virtual integrator class
 template<class T> class integrator{
@@ -173,6 +173,28 @@ public:
   }
 };
 
+// third order symplectic, but non-reversible integrator (Ruth)
+template<class T> class ruth : public integrator<T> {
+public:
+  ruth() {}
+  void integrate(std::list<monomial<T>*> &monomial_list, hamiltonian_field<T> &h, md_params const &params) {
+    adjointfield<T> deriv(h.U->getLs(), h.U->getLt());
+    
+    T dtau = params.gettau()/T(params.getnsteps());
+    // nsteps full steps
+    for(size_t i = 0; i < params.getnsteps(); i++) {
+      update_momenta(monomial_list, deriv, h, dtau);
+      update_gauge(h, -1./24.*dtau);
+      update_momenta(monomial_list, deriv, h, -2./3.*dtau);
+      update_gauge(h, 3./4.*dtau);
+      update_momenta(monomial_list, deriv, h, 2./3.*dtau);
+      update_gauge(h, 7./24.*dtau);
+    }
+    // restore SU
+    h.U->restoreSU();
+  }
+};
+
 
 template<class T> integrator<T>* set_integrator(const size_t integs, const size_t exponent) {
   integrator<T> * integ;
@@ -195,6 +217,10 @@ template<class T> integrator<T>* set_integrator(const size_t integs, const size_
   else if(static_cast<integrators>(integs) == EULER) {
     integ = new euler<T>();
     std::cerr << "euler" << std::endl;
+  }
+  else if(static_cast<integrators>(integs) == RUTH) {
+    integ = new ruth<T>();
+    std::cerr << "ruth" << std::endl;
   }
   else {
     std::cerr << "Integrator does not match, using default" << std::endl;

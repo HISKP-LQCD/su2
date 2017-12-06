@@ -17,14 +17,16 @@ enum integrators { LEAPFROG = 0, LP_LEAPFROG = 1, OMF4 = 2, LP_OMF4 = 3, EULER =
 template<class T> class integrator{
 public:
   integrator() {}
-  virtual void integrate(std::list<monomial<T>*> &monomial_list, hamiltonian_field<T> &h, md_params const &params) = 0;
+  virtual void integrate(std::list<monomial<T>*> &monomial_list, hamiltonian_field<T> &h, 
+                         md_params const &params, const bool restore = true) = 0;
 };
 
 // leapfrog integration scheme
 template<class T> class leapfrog : public integrator<T> {
 public:
   leapfrog() {}
-  void integrate(std::list<monomial<T>*> &monomial_list, hamiltonian_field<T> &h, md_params const &params) {
+  void integrate(std::list<monomial<T>*> &monomial_list, hamiltonian_field<T> &h, 
+                 md_params const &params, const bool restore=true) {
     adjointfield<T> deriv(h.U->getLs(), h.U->getLt());
     
     T dtau = params.gettau()/T(params.getnsteps());
@@ -41,7 +43,7 @@ public:
     // final half-step for the momenta
     update_momenta(monomial_list, deriv, h, dtau/2.);
     // restore SU
-    h.U->restoreSU();
+    if(restore) h.U->restoreSU();
   }
 };
 
@@ -51,7 +53,7 @@ public:
   lp_leapfrog() : n_prec(16) {}
   lp_leapfrog(size_t n) : n_prec(n) {}
   void integrate(std::list<monomial<T>*> &monomial_list, hamiltonian_field<T> &h, 
-                          md_params const &params) {
+                 md_params const &params, const bool restore = true) {
     adjointfield<T> deriv(h.U->getLs(), h.U->getLt());
     const size_t N = pow(10, n_prec);
 
@@ -69,7 +71,7 @@ public:
     // final half-step for the momenta
     round_and_update_momenta(monomial_list, deriv, h, dtau/2., N);
     // restore SU
-    h.U->restoreSU();
+    if(restore) h.U->restoreSU();
   }
 private:
   size_t n_prec;
@@ -80,7 +82,8 @@ private:
 template<class T> class omf4 : public integrator<T> {
 public:
   omf4() : rho(0.2539785108410595), theta(-0.03230286765269967), vartheta(0.08398315262876693), lambda(0.6822365335719091) {}
-  void integrate(std::list<monomial<T>*> &monomial_list, hamiltonian_field<T> &h, md_params const &params) {
+  void integrate(std::list<monomial<T>*> &monomial_list, hamiltonian_field<T> &h, 
+                 md_params const &params, const bool restore = true) {
     adjointfield<T> deriv(h.U->getLs(), h.U->getLt());
     
     T dtau = params.gettau()/T(params.getnsteps());
@@ -108,7 +111,7 @@ public:
     // final half-step in the momenta
     update_momenta(monomial_list, deriv, h, 0.5*eps[9]);
     // restore SU
-    h.U->restoreSU();
+    if(restore) h.U->restoreSU();
   }
 private:
   double rho, theta, vartheta, lambda;
@@ -119,7 +122,8 @@ template<class T> class lp_omf4 : public integrator<T> {
 public:
   lp_omf4() : rho(0.2539785108410595), theta(-0.03230286765269967), vartheta(0.08398315262876693), lambda(0.6822365335719091), n_prec(16) {}
   lp_omf4(size_t n) : rho(0.2539785108410595), theta(-0.03230286765269967), vartheta(0.08398315262876693), lambda(0.6822365335719091), n_prec(n) {}
-  void integrate(std::list<monomial<T>*> &monomial_list, hamiltonian_field<T> &h, md_params const &params) {
+  void integrate(std::list<monomial<T>*> &monomial_list, hamiltonian_field<T> &h, 
+                 md_params const &params, const bool restore = true) {
     adjointfield<T> deriv(h.U->getLs(), h.U->getLt());
     const size_t N = pow(10, n_prec);
 
@@ -148,7 +152,7 @@ public:
     // final half-step in the momenta
     round_and_update_momenta(monomial_list, deriv, h, 0.5*eps[9], N);
     // restore SU
-    h.U->restoreSU();
+    if(restore) h.U->restoreSU();
   }
 private:
   double rho, theta, vartheta, lambda;
@@ -159,7 +163,8 @@ private:
 template<class T> class euler : public integrator<T> {
 public:
   euler() {}
-  void integrate(std::list<monomial<T>*> &monomial_list, hamiltonian_field<T> &h, md_params const &params) {
+  void integrate(std::list<monomial<T>*> &monomial_list, hamiltonian_field<T> &h, 
+                 md_params const &params, const bool restore = true) {
     adjointfield<T> deriv(h.U->getLs(), h.U->getLt());
     
     T dtau = params.gettau()/T(params.getnsteps());
@@ -169,7 +174,7 @@ public:
       update_gauge(h, dtau);
     }
     // restore SU
-    h.U->restoreSU();
+    if(restore) h.U->restoreSU();
   }
 };
 
@@ -177,7 +182,8 @@ public:
 template<class T> class ruth : public integrator<T> {
 public:
   ruth() {}
-  void integrate(std::list<monomial<T>*> &monomial_list, hamiltonian_field<T> &h, md_params const &params) {
+  void integrate(std::list<monomial<T>*> &monomial_list, hamiltonian_field<T> &h, 
+                 md_params const &params, const bool restore = true) {
     adjointfield<T> deriv(h.U->getLs(), h.U->getLt());
     
     T dtau = params.gettau()/T(params.getnsteps());
@@ -191,7 +197,7 @@ public:
       update_gauge(h, 7./24.*dtau);
     }
     // restore SU
-    h.U->restoreSU();
+    if(restore) h.U->restoreSU();
   }
 };
 

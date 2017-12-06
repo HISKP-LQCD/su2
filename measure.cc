@@ -9,6 +9,7 @@
 #include"gradient_flow.hh"
 #include"energy_density.hh"
 #include"parse_commandline.hh"
+#include"lyapunov.hh"
 #include"version.hh"
 
 #include<iostream>
@@ -29,7 +30,12 @@ int main(int ac, char* av[]) {
   size_t nstep;
   bool Wloop;
   bool gradient;
+  bool lyapunov;
   double tmax;
+  size_t n_steps;
+  size_t exponent;
+  double tau;
+  size_t integs;
 
   cout << "## Measuring Tool for SU(2) gauge theory" << endl;
   cout << "## (C) Carsten Urbach <urbach@hiskp.uni-bonn.de> (2017)" << endl;
@@ -43,6 +49,10 @@ int main(int ac, char* av[]) {
     ("gradient", po::value<bool>(&gradient)->default_value(false), "meausre Grandient flow")
     ("nstep", po::value<size_t>(&nstep)->default_value(1), "measure each nstep config")
     ("tmax", po::value<double>(&tmax)->default_value(9.99), "tmax for gradient flow")
+    ("nsteps", po::value<size_t>(&n_steps)->default_value(1000), "n_steps")
+    ("tau", po::value<double>(&tau)->default_value(1.), "trajectory length tau")
+    ("exponent", po::value<size_t>(&exponent)->default_value(0), "exponent for rounding")
+    ("integrator", po::value<size_t>(&integs)->default_value(0), "itegration scheme to be used: 0=leapfrog, 1=lp_leapfrog, 2=omf4, 3=lp_omf4")
     ;
 
   int err = parse_commandline(ac, av, desc, gparams);
@@ -76,7 +86,7 @@ int main(int ac, char* av[]) {
       os.width(prevw);
       os.fill(prevf);
       os << ".dat" << std::ends;
-      compute_special_loops(U, os.str());
+      compute_spacial_loops(U, os.str());
     }
     if(gradient) {
       std::ostringstream os;
@@ -87,6 +97,29 @@ int main(int ac, char* av[]) {
       os.width(prevw);
       os.fill(prevf);
       gradient_flow(U, os.str(), tmax);
+    }
+    if(lyapunov) {
+      std::ostringstream os;
+      os << "lyapunov.";
+      auto prevw = os.width(6);
+      auto prevf = os.fill('0');
+      os << i;
+      os.width(prevw);
+      os.fill(prevf);
+
+      // PRNG engine
+      std::mt19937 engine(gparams.seed+i);
+      gaugemonomial<double> gm(0);
+      kineticmonomial<double> km(0);
+      km.setmdpassive();
+      
+      std::list<monomial<double>*> monomial_list;
+      monomial_list.push_back(&gm);
+      monomial_list.push_back(&km);
+      md_params mdparams(n_steps, tau);
+      integrator<double> * md_integ = set_integrator<double>(integs, exponent);
+
+      compute_lyapunov(U, engine, mdparams, monomial_list, *md_integ, os.str(), exponent);
     }
   }
 

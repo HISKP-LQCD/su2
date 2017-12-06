@@ -29,6 +29,7 @@ template<class T, class URNG> void compute_lyapunov(gaugeconfig &U,
                                                     const size_t d = 12) {
 
   const size_t n = pow(10, d);
+
   adjointfield<T> momenta(U.getLs(), U.getLt());
   // generate standard normal distributed random momenta
   momenta = initnormal<URNG, T>(engine, U.getLs(), U.getLt());
@@ -36,8 +37,15 @@ template<class T, class URNG> void compute_lyapunov(gaugeconfig &U,
   
   // generate copy of U, but round to d decimal digits
   gaugeconfig U2(U.getLs(), U.getLt(), U.getBeta());
-  for(size_t i = 0; i < U.getSize(); i++) {
-    U2[i] = U[i].round(n);
+  if(d != 0) {
+    for(size_t i = 0; i < U.getSize(); i++) {
+      U2[i] = U[i].round(n);
+    }
+  }
+  else {
+    for(size_t i = 0; i < U.getSize(); i++) {
+      U2[i] = U[i];
+    }
   }
   
   hamiltonian_field<T> h(momenta, U);

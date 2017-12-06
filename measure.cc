@@ -47,6 +47,7 @@ int main(int ac, char* av[]) {
   desc.add_options()
     ("Wloops", po::value<bool>(&Wloop)->default_value(false), "measure Wilson loops")
     ("gradient", po::value<bool>(&gradient)->default_value(false), "meausre Grandient flow")
+    ("lyapunov", po::value<bool>(&lyapunov)->default_value(false), "meausre Lyapunov Exponent")
     ("nstep", po::value<size_t>(&nstep)->default_value(1), "measure each nstep config")
     ("tmax", po::value<double>(&tmax)->default_value(9.99), "tmax for gradient flow")
     ("nsteps", po::value<size_t>(&n_steps)->default_value(1000), "n_steps")

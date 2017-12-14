@@ -121,6 +121,7 @@ int main(int ac, char* av[]) {
       integrator<double> * md_integ = set_integrator<double>(integs, exponent);
 
       compute_lyapunov(U, engine, mdparams, monomial_list, *md_integ, os.str(), exponent);
+      delete(md_integ);
     }
   }
 

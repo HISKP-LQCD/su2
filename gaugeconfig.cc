@@ -32,11 +32,11 @@ void gaugeconfig::loadEigen(std::string const &path) {
   std::ifstream ifs(path, std::ios::in | std::ios::binary);
   double X[8];
   for(size_t t = 0; t < Lt; t++) {
-    for(size_t x = 0; x < Ls; x++) {
-      for(size_t y = 0; y < Ls; y++) {
-        for(size_t z = 0; z < Ls; z++) {
+    for(size_t x = 0; x < Lx; x++) {
+      for(size_t y = 0; y < Ly; y++) {
+        for(size_t z = 0; z < Lz; z++) {
           //size_t coord[4] = {t, x, y, z};
-          for(size_t mu = 0; mu < 4; mu++) {
+          for(size_t mu = 0; mu < ndims; mu++) {
             if(ifs.good()) {
               ifs.read(reinterpret_cast<char *>(X), 8*sizeof(double));
               su2 U(std::complex<double>(X[0], X[1]), std::complex<double>(X[4], X[5]));
@@ -55,19 +55,20 @@ void gaugeconfig::loadEigen(std::string const &path) {
   return;
 }
 
-gaugeconfig coldstart(size_t Ls, size_t Lt) {
+gaugeconfig coldstart(const size_t Lx, const size_t Ly, const size_t Lz, const size_t Lt, const size_t ndims) {
 
-  gaugeconfig config(Ls, Lt);
+  gaugeconfig config(Lx, Ly, Lz, Lt, ndims);
 #pragma omp parallel for
   for(size_t i = 0; i < config.getSize(); i++) {
     config[i] = su2(1., 0.);
   }
   return(config);
 }
-gaugeconfig hotstart(size_t Ls, size_t Lt, 
-                     const int seed, const double _delta) {
 
-  gaugeconfig config(Ls, Lt);
+gaugeconfig hotstart(const size_t Lx, const size_t Ly, const size_t Lz, const size_t Lt, 
+                     const int seed, const double _delta, const size_t ndims) {
+
+  gaugeconfig config(Lx, Ly, Lz, Lt, ndims);
   double delta = _delta;
   if(delta < 0.) delta = 0;
   if(delta > 1.) delta = 1.;

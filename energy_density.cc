@@ -29,14 +29,14 @@ double energy_density(gaugeconfig &U) {
 
   std::vector<size_t> x = {0, 0, 0, 0};
   for(x[0] = 0; x[0] < U.getLt(); x[0]++) {
-    for(x[1] = 0; x[1] < U.getLs(); x[1]++) {
-      for(x[2] = 0; x[2] < U.getLs(); x[2]++) {
-        for(x[3] = 0; x[3] < U.getLs(); x[3]++) {
+    for(x[1] = 0; x[1] < U.getLx(); x[1]++) {
+      for(x[2] = 0; x[2] < U.getLy(); x[2]++) {
+        for(x[3] = 0; x[3] < U.getLz(); x[3]++) {
           std::vector<size_t> x1 = x;
           std::vector<size_t> x2 = x;
           std::vector<size_t> x3 = x;
-          for(size_t mu = 0; mu < 3; mu++) {
-            for(size_t nu = mu+1; nu < 4; nu++) {
+          for(size_t mu = 0; mu < U.getndims()-1; mu++) {
+            for(size_t nu = mu+1; nu < U.getndims(); nu++) {
               x1[mu] += 1;
               x2[nu] += 1;
               su2 leaf = U(x, mu) * U(x1, nu) *

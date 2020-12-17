@@ -16,10 +16,10 @@ template<class URNG> double sweep(gaugeconfig &U, URNG &engine, const double del
   su2 R(0., 0.);
   std::vector<size_t> x = {0, 0, 0, 0};
   for(x[0] = 0; x[0] < U.getLt(); x[0]++) {
-    for(x[1] = 0; x[1] < U.getLs(); x[1]++) {
-      for(x[2] = 0; x[2] < U.getLs(); x[2]++) {
-        for(x[3] = 0; x[3] < U.getLs(); x[3]++) {
-          for(size_t mu = 0; mu < 4; mu++) {
+    for(x[1] = 0; x[1] < U.getLx(); x[1]++) {
+      for(x[2] = 0; x[2] < U.getLy(); x[2]++) {
+        for(x[3] = 0; x[3] < U.getLz(); x[3]++) {
+          for(size_t mu = 0; mu < U.getndims(); mu++) {
             su2 K = get_staples(U, x, mu);
             for(size_t n = 0; n < N_hit; n++) {
               random_su2(R, engine, delta);

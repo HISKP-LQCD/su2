@@ -60,7 +60,7 @@ void gradient_flow(gaugeconfig &U, std::string const &path, const double tmax) {
   E[2] = energy_density(U);
 
   gaugeconfig Vt(U);
-  adjointfield<double> deriv(U.getLs(), U.getLt());
+  adjointfield<double> deriv(U.getLx(), U.getLy(), U.getLz(), U.getLt());
   hamiltonian_field<double> h(deriv, Vt);
 
   gaugemonomial<double> SW(0);

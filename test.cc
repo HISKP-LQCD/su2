@@ -8,11 +8,11 @@ using std::endl;
 
 
 int main() {
-  size_t Ls = 8, Lt = 16;
+  size_t Lx = 8, Ly = 8, Lz = 8, Lt = 16;
 
   
   vector<su2> config;
-  config.resize(Ls*Ls*Ls*Lt);
+  config.resize(Lx*Ly*Lz*Lt);
   
   // set all to 1
   for(auto i = config.begin(), end =config.end(); i < end; i++) {
@@ -32,7 +32,7 @@ int main() {
   su2  U3 = U1 * U2;
   cout << U3.det() << " " << trace(U1 * U2) << " " << U3.geta() << " " << U3.getb() << endl;
 
-  geometry geo(Ls, Lt);
+  geometry geo(Lx, Ly, Lz, Lt);
   size_t i = geo.getIndex(7, 5, 3, 9);
   size_t c[4];
   geo.getCoordinate(c, i);

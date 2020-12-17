@@ -11,8 +11,11 @@ namespace po = boost::program_options;
 void add_general_options(po::options_description &desc, general_params &params) {
   desc.add_options()
     ("help,h", "produce this help message")
-    ("spatialsize,L", po::value<size_t>(&params.Ls), "spatial lattice size")
+    ("spatialsizex,Lx", po::value<size_t>(&params.Lx), "spatial lattice size x")
+    ("spatialsizey,Ly", po::value<size_t>(&params.Ly), "spatial lattice size y")
+    ("spatialsizey,Lz", po::value<size_t>(&params.Lz), "spatial lattice size z")
     ("temporalsize,T", po::value<size_t>(&params.Lt), "temporal lattice size")
+    ("ndims", po::value<size_t>(&params.ndims), "number of dimensions")
     ("nsave", po::value<size_t>(&params.N_save)->default_value(1000), "N_save")
     ("nmeas,n", po::value<size_t>(&params.N_meas)->default_value(10), "total number of sweeps")
     ("counter", po::value<size_t>(&params.icounter)->default_value(0), "initial counter for updates")
@@ -37,8 +40,18 @@ int parse_commandline(int ac, char * av[], po::options_description &desc, genera
       std::cout << desc << std::endl;
       return 1;
     }
-    if (!vm.count("spatialsize") && !vm.count("help")) {
-      std::cerr << "spatial lattice size must be given!" << std::endl;
+    if (!vm.count("spatialsizex") && !vm.count("help")) {
+      std::cerr << "spatial lattice x-size must be given!" << std::endl;
+      std::cout << std::endl << desc << std::endl;
+      return 1;
+    }
+    if (!vm.count("spatialsizey") && !vm.count("help")) {
+      std::cerr << "spatial lattice y-size must be given!" << std::endl;
+      std::cout << std::endl << desc << std::endl;
+      return 1;
+    }
+    if (!vm.count("spatialsizez") && !vm.count("help")) {
+      std::cerr << "spatial lattice z-size must be given!" << std::endl;
       std::cout << std::endl << desc << std::endl;
       return 1;
     }
@@ -62,6 +75,9 @@ int parse_commandline(int ac, char * av[], po::options_description &desc, genera
     }
     if (vm.count("no-accept-reject")) {
       params.acceptreject = false;
+    }
+    if (!vm.count("ndims")) {
+      params.ndims = 4;
     }
     PrintVariableMap(vm);
   }

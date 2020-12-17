@@ -22,22 +22,22 @@ template<class URNG, class T> void kramers_md_update(gaugeconfig &U,
                                                      md_params &params,
                                                      std::list<monomial<T>*> &monomial_list, 
                                                      integrator<T> &md_integ) {
-  adjointfield<T> momenta(U.getLs(), U.getLt());
+  adjointfield<T> momenta(U.getLx(), U.getLy(), U.getLz(), U.getLt());
   // generate standard normal distributed random momenta
   // normal distribution checked!
-  momenta = initnormal<URNG, T>(engine, U.getLs(), U.getLt());
+  momenta = initnormal<URNG, T>(engine, U.getLx(), U.getLy(), U.getLz(), U.getLt());
 
   // for the accept reject step
   std::uniform_real_distribution<T> uniform(0., 1.);
 
   const double gamma = params.getgamma();
-  adjointfield<T> eta(U.getLs(), U.getLt());
-  adjointfield<T> momenta_old(U.getLs(), U.getLt());
-  gaugeconfig U_old(U.getLs(), U.getLt(), U.getBeta());
+  adjointfield<T> eta(U.getLx(), U.getLy(), U.getLz(), U.getLt());
+  adjointfield<T> momenta_old(U.getLx(), U.getLy(), U.getLz(), U.getLt());
+  gaugeconfig U_old(U.getLx(), U.getLy(), U.getLz(), U.getLt(), U.getBeta());
 
   for(size_t k = 0; k < params.getkmax(); k++) {
     // first momenta update
-    eta = initnormal<URNG, T>(engine, U.getLs(), U.getLt());
+    eta = initnormal<URNG, T>(engine, U.getLx(), U.getLy(), U.getLz(), U.getLt());
     T epsilon = params.gettau()/T(params.getnsteps());
     for(size_t i = 0; i < momenta.getSize(); i++) {
       momenta[i].seta(momenta[i].geta()*exp(-gamma*epsilon) + sqrt(1 - exp(-2*gamma*epsilon))*eta[i].geta());

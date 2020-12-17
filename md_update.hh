@@ -20,10 +20,10 @@ template<class URNG, class T> void md_update(gaugeconfig &U,
                                              md_params &params,
                                              std::list<monomial<T>*> &monomial_list, 
                                              integrator<T> &md_integ) {
-  adjointfield<T> momenta(U.getLs(), U.getLt());
+  adjointfield<T> momenta(U.getLx(), U.getLy(), U.getLz(), U.getLt());
   // generate standard normal distributed random momenta
   // normal distribution checked!
-  momenta = initnormal<URNG, T>(engine, U.getLs(), U.getLt());
+  momenta = initnormal<URNG, T>(engine, U.getLx(), U.getLy(), U.getLz(), U.getLt());
 
   std::uniform_real_distribution<T> uniform(0., 1.);
 

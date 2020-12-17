@@ -11,9 +11,9 @@ namespace po = boost::program_options;
 void add_general_options(po::options_description &desc, general_params &params) {
   desc.add_options()
     ("help,h", "produce this help message")
-    ("spatialsizex,Lx", po::value<size_t>(&params.Lx), "spatial lattice size x")
-    ("spatialsizey,Ly", po::value<size_t>(&params.Ly), "spatial lattice size y")
-    ("spatialsizey,Lz", po::value<size_t>(&params.Lz), "spatial lattice size z")
+    ("spatialsizex,X", po::value<size_t>(&params.Lx), "spatial lattice size x")
+    ("spatialsizey,Y", po::value<size_t>(&params.Ly), "spatial lattice size y")
+    ("spatialsizez,Z", po::value<size_t>(&params.Lz), "spatial lattice size z")
     ("temporalsize,T", po::value<size_t>(&params.Lt), "temporal lattice size")
     ("ndims", po::value<size_t>(&params.ndims), "number of dimensions")
     ("nsave", po::value<size_t>(&params.N_save)->default_value(1000), "N_save")

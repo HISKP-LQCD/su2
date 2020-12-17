@@ -43,7 +43,7 @@ int main(int ac, char* av[]) {
     return err;
   }
 
-  gaugeconfig U(gparams.Lx, gparams.Ly, gparams.Lz, gparams.Lt, gparams.beta, ndims);
+  gaugeconfig U(gparams.Lx, gparams.Ly, gparams.Lz, gparams.Lt, gparams.beta, gparams.ndims);
   if(gparams.restart) {
     err = U.load(gparams.configfilename);
     if(err != 0) {
@@ -51,7 +51,7 @@ int main(int ac, char* av[]) {
     }
   }
   else {
-    U = hotstart(gparams.Lx, gparams.Ly, gparams.Lz, gparams.Lt, gparams.seed, gparams.heat);
+    U = hotstart(gparams.Lx, gparams.Ly, gparams.Lz, gparams.Lt, gparams.seed, gparams.heat, gparams.ndims);
   }
 
   double plaquette = gauge_energy(U);
@@ -75,7 +75,7 @@ int main(int ac, char* av[]) {
     os << i << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy/U.getVolume()/N_c/6. << " " << -U.getBeta()/N_c*(U.getVolume()*6*N_c - energy) << endl;
     if(i > 0 && (i % gparams.N_save) == 0) {
       std::ostringstream oss;
-      oss << "config." << gparams.Lx << "." gparams.Ly << "." gparams.Lz << "." << gparams.Lt << ".b" << gparams.beta << "." << i << std::ends;
+      oss << "config." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz << "." << gparams.Lt << ".b" << gparams.beta << "." << i << std::ends;
       U.save(oss.str());
     }
   }

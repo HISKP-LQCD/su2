@@ -18,7 +18,7 @@ public:
     data.resize(volume*4);
   }
   gaugeconfig(const gaugeconfig &U) :
-    Lx(U.getLx()), Ly(U.getLy), Lz(U.getLz), Lt(U.getLt()), volume(U.getVolume()), beta(U.getBeta()), ndims(U.getndims()) {
+    Lx(U.getLx()), Ly(U.getLy()), Lz(U.getLz()), Lt(U.getLt()), volume(U.getVolume()), beta(U.getBeta()), ndims(U.getndims()) {
     data.resize(volume*4);
 #pragma omp parallel for
     for(size_t i = 0; i < getSize(); i++) {
@@ -116,5 +116,5 @@ private:
 };
 
 gaugeconfig hotstart(const size_t Lx, const size_t Ly, const size_t Lz, const size_t Lt, 
-                     const int seed, const double _delta, sonst size_t ndims);
+                     const int seed, const double _delta, const size_t ndims);
 gaugeconfig coldstart(const size_t Lx, const size_t Ly, const size_t Lz, const size_t Lt, const size_t ndims);

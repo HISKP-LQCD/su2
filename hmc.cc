@@ -116,7 +116,7 @@ int main(int ac, char* av[]) {
 
     if(i > 0 && (i % gparams.N_save) == 0) {
       std::ostringstream oss;
-      oss << "config." << gparams.Lx << "." gparams.Ly << "." gparams.Lz << "." << gparams.Lt << ".b" << gparams.beta << "." << i << std::ends;
+      oss << "config." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz << "." << gparams.Lt << ".b" << gparams.beta << "." << i << std::ends;
       U.save(oss.str());
     }
   }

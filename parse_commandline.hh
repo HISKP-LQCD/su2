@@ -5,7 +5,7 @@ namespace po = boost::program_options;
 
 class general_params {
 public:
-  size_t Ls, Lt;             
+  size_t Lx, Ly, Lz, Lt, ndims;             
   size_t N_meas;             
   size_t N_save;             
   size_t icounter;

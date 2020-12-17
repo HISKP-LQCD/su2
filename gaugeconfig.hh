@@ -9,17 +9,13 @@ class gaugeconfig {
 public:
   using value_type = su2;
 
-  gaugeconfig(const size_t Ls, const size_t Lt, const double beta=0) : 
-    Lx(Ls), Ly(Ls), Lz(Ls), Lt(Lt), volume(Lx*Ly*Lz*Lt), beta(beta), ndims(4) {
-    data.resize(volume*4);
-  }
   gaugeconfig(const size_t Lx, const size_t Ly, const size_t Lz, const size_t Lt, const size_t ndims=4, const double beta=0) : 
     Lx(Lx), Ly(Ly), Lz(Lz), Lt(Lt), volume(Lx*Ly*Lz*Lt), beta(beta), ndims(ndims) {
-    data.resize(volume*4);
+    data.resize(volume*ndims);
   }
   gaugeconfig(const gaugeconfig &U) :
     Lx(U.getLx()), Ly(U.getLy()), Lz(U.getLz()), Lt(U.getLt()), volume(U.getVolume()), beta(U.getBeta()), ndims(U.getndims()) {
-    data.resize(volume*4);
+    data.resize(volume*ndims);
 #pragma omp parallel for
     for(size_t i = 0; i < getSize(); i++) {
       data[i] = U[i];
@@ -46,7 +42,7 @@ public:
     return(volume);
   }
   size_t getSize() const {
-    return(volume*4);
+    return(volume*ndims);
   }
   double getBeta() const {
     return beta;
@@ -110,8 +106,8 @@ private:
     size_t y1 = (x + Lx) % Lx;
     size_t y2 = (y + Ly) % Ly;
     size_t y3 = (z + Lz) % Lz;
-    size_t _mu = (mu + 4) % 4;
-    return( (((y0*Lx + y1)*Ly + y2)*Lz + y3)*4 + _mu );
+    size_t _mu = (mu + ndims) % ndims;
+    return( (((y0*Lx + y1)*Ly + y2)*Lz + y3)*ndims + _mu );
   }
 };
 

@@ -60,13 +60,13 @@ template<class T> class adjointfield {
 public:
   using value_type = adjoint<T>;
   
-  adjointfield(const size_t Lx, const size_t Ly, const size_t Lz, const size_t Lt) : 
-    Lx(Lx), Ly(Ly), Lt(Lt), volume(Lx*Ly*Lz*Lt) {
+  adjointfield(const size_t Lx, const size_t Ly, const size_t Lz, const size_t Lt, const size_t ndims = 4) : 
+    Lx(Lx), Ly(Ly), Lt(Lt), volume(Lx*Ly*Lz*Lt), ndims(ndims) {
     data.resize(volume*4);
   }
   adjointfield(const adjointfield &U) :
-    Lx(U.getLx()), Ly(U.getLy()), Lz(U.getLz()), Lt(U.getLt()), volume(U.getVolume()) {
-    data.resize(volume*4);
+    Lx(U.getLx()), Ly(U.getLy()), Lz(U.getLz()), Lt(U.getLt()), volume(U.getVolume()), ndims(U.getndims()) {
+    data.resize(volume*ndims);
     for(size_t i = 0; i < getSize(); i++) {
       data[i] = U[i];
     }
@@ -89,11 +89,14 @@ public:
   size_t getLt() const {
     return(Lt);
   }
+  size_t getndims() const {
+    return(ndims);
+  }
   size_t getVolume() const {
     return(volume);
   }
   size_t getSize() const {
-    return(volume*4);
+    return(volume*ndims);
   }
   void operator=(const adjointfield &U) {
     Lx = U.getLx();
@@ -132,7 +135,7 @@ public:
   }
 
 private:
-  size_t Lx, Ly, Lz, Lt, volume;
+  size_t Lx, Ly, Lz, Lt, volume, ndims;
   
   std::vector<value_type> data;
   
@@ -141,8 +144,8 @@ private:
     size_t y1 = (x + Lx) % Lx;
     size_t y2 = (y + Ly) % Ly;
     size_t y3 = (z + Lz) % Lz;
-    size_t _mu = (mu + 4) % 4;
-    return( (((y0*Lx + y1)*Ly + y2)*Lz + y3)*4 + _mu );
+    size_t _mu = (mu + ndims) % ndims;
+    return( (((y0*Lx + y1)*Ly + y2)*Lz + y3)*ndims + _mu );
   }
 };
 
@@ -174,8 +177,8 @@ template<class T> T operator*(const adjointfield<T> &A, const adjointfield<T> &B
   return res;
 }
 
-template<class URNG, class T> adjointfield<T> initnormal(URNG &engine, size_t Lx, size_t Ly, size_t Lz, size_t Lt) {
-  adjointfield<T> A(Lx, Ly, Lz, Lt);
+template<class URNG, class T> adjointfield<T> initnormal(URNG &engine, const size_t Lx, const size_t Ly, const size_t Lz, const size_t Lt, const size_t ndims) {
+  adjointfield<T> A(Lx, Ly, Lz, Lt, ndims);
   std::normal_distribution<double> normal(0., 1.);
   for(size_t i = 0; i < A.getSize(); i++) {
     A[i].seta(T(normal(engine)));

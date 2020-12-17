@@ -26,7 +26,7 @@ int main(int ac, char* av[]) {
   double delta = 0.1;
 
   cout << "## Metropolis Algorithm for SU(2) gauge theory" << endl;
-  cout << "## (C) Carsten Urbach <urbach@hiskp.uni-bonn.de> (2017)" << endl;
+  cout << "## (C) Carsten Urbach <urbach@hiskp.uni-bonn.de> (2017,2020)" << endl;
   cout << "## GIT branch " << GIT_BRANCH << " on commit " << GIT_COMMIT_HASH << endl << endl;  
 
   po::options_description desc("Allowed options");
@@ -43,7 +43,7 @@ int main(int ac, char* av[]) {
     return err;
   }
 
-  gaugeconfig U(gparams.Lx, gparams.Ly, gparams.Lz, gparams.Lt, gparams.beta, gparams.ndims);
+  gaugeconfig U(gparams.Lx, gparams.Ly, gparams.Lz, gparams.Lt, gparams.ndims, gparams.beta);
   if(gparams.restart) {
     err = U.load(gparams.configfilename);
     if(err != 0) {
@@ -55,6 +55,10 @@ int main(int ac, char* av[]) {
   }
 
   double plaquette = gauge_energy(U);
+  double fac = 1.;
+  if(U.getndims() == 4) fac = 1./6.;
+  if(U.getndims() == 3) fac = 1./2.;
+  const double normalisation = 1./U.getVolume()/N_c;
   cout << "Initital Plaquette: " << plaquette/U.getVolume()/N_c/6. << endl; 
 
   random_gauge_trafo(U, 654321);

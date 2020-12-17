@@ -27,7 +27,7 @@ public:
   leapfrog() {}
   void integrate(std::list<monomial<T>*> &monomial_list, hamiltonian_field<T> &h, 
                  md_params const &params, const bool restore=true) {
-    adjointfield<T> deriv(h.U->getLx(), h.U->getLy(), h.U->getLz(), h.U->getLt());
+    adjointfield<T> deriv(h.U->getLx(), h.U->getLy(), h.U->getLz(), h.U->getLt(), h.U->getndims());
     
     T dtau = params.gettau()/T(params.getnsteps());
     // initial half-step for the  momenta
@@ -54,7 +54,7 @@ public:
   lp_leapfrog(size_t n) : n_prec(n) {}
   void integrate(std::list<monomial<T>*> &monomial_list, hamiltonian_field<T> &h, 
                  md_params const &params, const bool restore = true) {
-    adjointfield<T> deriv(h.U->getLx(), h.U->getLy(), h.U->getLz(), h.U->getLt());
+    adjointfield<T> deriv(h.U->getLx(), h.U->getLy(), h.U->getLz(), h.U->getLt(), h.U->getndims());
     const size_t N = pow(10, n_prec);
 
     T dtau = params.gettau()/T(params.getnsteps());
@@ -84,7 +84,7 @@ public:
   omf4() : rho(0.2539785108410595), theta(-0.03230286765269967), vartheta(0.08398315262876693), lambda(0.6822365335719091) {}
   void integrate(std::list<monomial<T>*> &monomial_list, hamiltonian_field<T> &h, 
                  md_params const &params, const bool restore = true) {
-    adjointfield<T> deriv(h.U->getLx(), h.U->getLy(), h.U->getLz(), h.U->getLt());
+    adjointfield<T> deriv(h.U->getLx(), h.U->getLy(), h.U->getLz(), h.U->getLt(), h.U->getndims());
     
     T dtau = params.gettau()/T(params.getnsteps());
     T eps[10] = {rho*dtau, lambda*dtau, 
@@ -124,7 +124,7 @@ public:
   lp_omf4(size_t n) : rho(0.2539785108410595), theta(-0.03230286765269967), vartheta(0.08398315262876693), lambda(0.6822365335719091), n_prec(n) {}
   void integrate(std::list<monomial<T>*> &monomial_list, hamiltonian_field<T> &h, 
                  md_params const &params, const bool restore = true) {
-    adjointfield<T> deriv(h.U->getLx(), h.U->getLy(), h.U->getLz(), h.U->getLt());
+    adjointfield<T> deriv(h.U->getLx(), h.U->getLy(), h.U->getLz(), h.U->getLt(), h.U->getndims());
     const size_t N = pow(10, n_prec);
 
     T dtau = params.gettau()/T(params.getnsteps());
@@ -165,7 +165,7 @@ public:
   euler() {}
   void integrate(std::list<monomial<T>*> &monomial_list, hamiltonian_field<T> &h, 
                  md_params const &params, const bool restore = true) {
-    adjointfield<T> deriv(h.U->getLx(), h.U->getLy(), h.U->getLz(), h.U->getLt());
+    adjointfield<T> deriv(h.U->getLx(), h.U->getLy(), h.U->getLz(), h.U->getLt(), h.U->getndims());
     
     T dtau = params.gettau()/T(params.getnsteps());
     // nsteps full steps
@@ -184,7 +184,7 @@ public:
   ruth() {}
   void integrate(std::list<monomial<T>*> &monomial_list, hamiltonian_field<T> &h, 
                  md_params const &params, const bool restore = true) {
-    adjointfield<T> deriv(h.U->getLx(), h.U->getLy(), h.U->getLz(), h.U->getLt());
+    adjointfield<T> deriv(h.U->getLx(), h.U->getLy(), h.U->getLz(), h.U->getLt(), h.U->getndims());
     
     T dtau = params.gettau()/T(params.getnsteps());
     // nsteps full steps

@@ -30,9 +30,9 @@ template<class T, class URNG> void compute_lyapunov(gaugeconfig &U,
 
   const size_t n = pow(10, d);
 
-  adjointfield<T> momenta(U.getLx(), U.getLy(), U.getLz(), U.getLt());
+  adjointfield<T> momenta(U.getLx(), U.getLy(), U.getLz(), U.getLt(), U.getndims());
   // generate standard normal distributed random momenta
-  momenta = initnormal<URNG, T>(engine, U.getLx(), U.getLy(), U.getLz(), U.getLt());
+  momenta = initnormal<URNG, T>(engine, U.getLx(), U.getLy(), U.getLz(), U.getLt(), U.getndims());
   adjointfield<T> momenta2(momenta);
   
   // generate copy of U, but round to d decimal digits

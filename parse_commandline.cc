@@ -79,6 +79,16 @@ int parse_commandline(int ac, char * av[], po::options_description &desc, genera
     if (!vm.count("ndims")) {
       params.ndims = 4;
     }
+    if (params.ndims > 4 || params.ndims < 2) {
+      std::cerr << "2 <= ndims <= 4!" << std::endl;
+      std::cout << std::endl << desc << std::endl;
+      return 1;
+    }
+    if (params.Lx < 1 || params.Ly < 1 || params.Lz < 1 || params.Lt < 1) {
+      std::cerr << "All box extends must be > 1!" << std::endl;
+      std::cout << std::endl << desc << std::endl;
+      return 1;
+    }
     PrintVariableMap(vm);
   }
   catch(std::exception& e) {

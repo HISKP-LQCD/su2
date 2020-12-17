@@ -58,12 +58,12 @@ int main(int ac, char* av[]) {
   double fac = 1.;
   if(U.getndims() == 4) fac = 1./6.;
   if(U.getndims() == 3) fac = 1./2.;
-  const double normalisation = 1./U.getVolume()/N_c;
-  cout << "Initital Plaquette: " << plaquette/U.getVolume()/N_c/6. << endl; 
+  const double normalisation = fac/U.getVolume()/N_c;
+  cout << "Initital Plaquette: " << plaquette*normalisation << endl; 
 
   random_gauge_trafo(U, 654321);
   plaquette = gauge_energy(U);
-  cout << "Plaquette after rnd trafo: " << plaquette/U.getVolume()/N_c/6. << endl; 
+  cout << "Plaquette after rnd trafo: " << plaquette*normalisation << endl; 
 
   std::ofstream os;
   if(gparams.icounter == 0) 
@@ -75,8 +75,8 @@ int main(int ac, char* av[]) {
     std::mt19937 engine(gparams.seed+i);
     rate += sweep(U, engine, delta, N_hit, gparams.beta);
     double energy = gauge_energy(U);
-    cout << i << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy/U.getVolume()/N_c/6. << " " << -U.getBeta()/N_c*(U.getVolume()*6*N_c - energy) << endl;
-    os << i << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy/U.getVolume()/N_c/6. << " " << -U.getBeta()/N_c*(U.getVolume()*6*N_c - energy) << endl;
+    cout << i << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy*normalisation << " " << -U.getBeta()/N_c*(U.getVolume()*N_c/fac - energy) << endl;
+    os << i << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy*normalisation << " " << -U.getBeta()/N_c*(U.getVolume()*N_c/fac - energy) << endl;
     if(i > 0 && (i % gparams.N_save) == 0) {
       std::ostringstream oss;
       oss << "config." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz << "." << gparams.Lt << ".b" << gparams.beta << "." << i << std::ends;

@@ -1,14 +1,15 @@
 #pragma once
 
-#include"gaugeconfig.hh"
+#include"su2.hh"
 #include"gaugeconfig.hh"
 #include"random_su2.hh"
 #include"get_staples.hh"
 #include<random>
 #include<vector>
 
-template<class URNG> double sweep(gaugeconfig &U, URNG &engine, const double delta, 
-                                  const size_t N_hit, const double beta) {
+template<class URNG, class T> double sweep(gaugeconfig<T> &U, URNG &engine,
+                                           const double delta, 
+                                           const size_t N_hit, const double beta) {
 
   std::uniform_real_distribution<double> uniform(0., 1.);
 

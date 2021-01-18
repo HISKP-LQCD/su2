@@ -71,7 +71,7 @@ template<class matrix> double trace(matrix const &U) {
 }
 
 _su2 operator*(const _su2 &U1, const _su2 &U2);
-_su2 operator+(const _su2 &U1, const _su2 &U2);
-_su2 operator-(const _su2 &U1, const _su2 &U2);
+_su2 operator*(const _su2 &U1, const _su2 &U2);
+_su2 operator*(const _su2 &U1, const _su2 &U2);
 
 using su2 = _su2;

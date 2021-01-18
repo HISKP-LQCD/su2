@@ -1,19 +1,27 @@
 #pragma once
 
 #include"su2.hh"
+#include"genzsu2.hh"
+#include"random_su2.hh"
+#include<random>
 #include<vector>
+#include<cmath>
+#include<fstream>
+#include<complex>
+#include<iostream>
+#include<cassert>
 
 using std::vector;
 
-class gaugeconfig {
+template<class T> class gaugeconfig {
 public:
-  using value_type = su2;
+  using value_type = T;
 
   gaugeconfig(const size_t Lx, const size_t Ly, const size_t Lz, const size_t Lt, const size_t ndims=4, const double beta=0) : 
     Lx(Lx), Ly(Ly), Lz(Lz), Lt(Lt), volume(Lx*Ly*Lz*Lt), beta(beta), ndims(ndims) {
     data.resize(volume*ndims);
   }
-  gaugeconfig(const gaugeconfig &U) :
+  gaugeconfig(const gaugeconfig<T> &U) :
     Lx(U.getLx()), Ly(U.getLy()), Lz(U.getLz()), Lt(U.getLt()), volume(U.getVolume()), beta(U.getBeta()), ndims(U.getndims()) {
     data.resize(volume*ndims);
 #pragma omp parallel for
@@ -58,7 +66,7 @@ public:
     }
   }
 
-  void operator=(const gaugeconfig &U) {
+  void operator=(const gaugeconfig<T> &U) {
     volume = U.getVolume();
     data.resize(U.getSize());
 #pragma omp parallel for
@@ -111,6 +119,71 @@ private:
   }
 };
 
-gaugeconfig hotstart(const size_t Lx, const size_t Ly, const size_t Lz, const size_t Lt, 
-                     const int seed, const double _delta, const size_t ndims);
-gaugeconfig coldstart(const size_t Lx, const size_t Ly, const size_t Lz, const size_t Lt, const size_t ndims);
+
+template<class T> void gaugeconfig<T>::save(std::string const &path) const {
+  std::ofstream ofs(path, std::ios::out | std::ios::binary);
+  ofs.write(reinterpret_cast<char const *>(data.data()), storage_size());
+  return;
+}
+
+template<class T> int gaugeconfig<T>::load(std::string const &path) {
+  std::cout << "## Reading config from file " << path << std::endl;
+  std::ifstream ifs(path, std::ios::in | std::ios::binary);
+  if(ifs) {
+    ifs.read(reinterpret_cast<char *>(data.data()), storage_size());
+    return 0;
+  }
+  else
+    std::cerr << "Error: could not read file from " << path << std::endl;
+  return 1;
+}
+
+gaugeconfig<Gsu2> coldstart(const size_t Lx, const size_t Ly,
+                            const size_t Lz, const size_t Lt,
+                            const size_t ndims, const size_t m=10) {
+  gaugeconfig<Gsu2> config(Lx, Ly, Lz, Lt, ndims);
+#pragma omp parallel for
+  for(size_t i = 0; i < config.getSize(); i++) {
+    config[i] = Gsu2(m);
+  }
+  return(config);
+}
+
+gaugeconfig<su2> coldstart(const size_t Lx, const size_t Ly,
+                           const size_t Lz, const size_t Lt,
+                           const size_t ndims) {
+  
+  gaugeconfig<su2> config(Lx, Ly, Lz, Lt, ndims);
+#pragma omp parallel for
+  for(size_t i = 0; i < config.getSize(); i++) {
+    config[i] = su2(1., 0.);
+  }
+  return(config);
+}
+
+gaugeconfig<Gsu2> hotstart(const size_t Lx, const size_t Ly,
+                           const size_t Lz, const size_t Lt, 
+                           const int seed, const double _delta,
+                           const size_t ndims, const size_t m) {
+  gaugeconfig<Gsu2> config(Lx, Ly, Lz, Lt, ndims);
+
+  return(config);
+}
+
+gaugeconfig<su2> hotstart(const size_t Lx, const size_t Ly,
+                          const size_t Lz, const size_t Lt, 
+                          const int seed, const double _delta,
+                          const size_t ndims) {
+  
+  gaugeconfig<su2> config(Lx, Ly, Lz, Lt, ndims);
+  double delta = _delta;
+  if(delta < 0.) delta = 0;
+  if(delta > 1.) delta = 1.;
+  std::mt19937 engine(seed);
+  
+  for(size_t i = 0; i < config.getSize(); i++) {
+    random_su2(config[i], engine, delta);
+  }
+  return(config);
+}
+

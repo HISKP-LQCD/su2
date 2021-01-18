@@ -1,3 +1,5 @@
+#pragma once
+
 #include"su2.hh"
 #include<random>
 

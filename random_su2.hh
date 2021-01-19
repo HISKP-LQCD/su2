@@ -22,3 +22,25 @@ template<class URNG> void random_su2(su2 &U, URNG &engine,
           salpha*r*Complex(sin(theta), cos(theta)));
   return;
 }
+
+template<class URNG> void random_su2(Gsu2 &U, URNG &engine, 
+                                     const size_t m = 10) {
+
+
+  size_t j[4];
+  std::uniform_int_distribution<int> uni1(0, m);
+  j[0] = uni1(engine);
+  std::uniform_int_distribution<int> uni2(0, m-j[0]);
+  j[1] = uni2(engine);
+  std::uniform_int_distribution<int> uni3(0, m-j[0]-j[1]);
+  j[2] = uni3(engine);
+  j[3] = m - j[0] - j[1] - j[2];
+
+  std::uniform_int_distribution<int> uni4(0, 1);
+  int s[4];
+  for(int i = 0; i < 4; i++) {
+    s[i] = 2*uni4(engine) - 1;
+  }
+  U = Gsu2(m, j, s);
+  return;
+}

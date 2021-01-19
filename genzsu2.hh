@@ -20,7 +20,7 @@ public:
     s[2] = +1;
     s[3] = +1;
   }
-  explicit _Gsu2(unsigned int m) : m(m) {
+  explicit _Gsu2(size_t m) : m(m) {
     j[0] = m;
     j[1] = 0;
     j[2] = 0;
@@ -32,8 +32,8 @@ public:
     assert((m == j[0] + j[1] + j[2] + j[3]));
     assert(((abs(s[0]) == 1) && (abs(s[1]) == 1) && (abs(s[2]) == 1) && (abs(s[3]) == 1)));
   }
-  explicit _Gsu2(unsigned int _m,
-                 unsigned int * _j,
+  explicit _Gsu2(size_t _m,
+                 size_t * _j,
                  int * _s){
     for(int i = 0; i < 4; i++) {
       j[i] = _j[i];
@@ -43,8 +43,8 @@ public:
     assert((m == (j[0] + j[1] + j[2] + j[3])));
     assert(((abs(s[0]) == 1) && (abs(s[1]) == 1) && (abs(s[2]) == 1) && (abs(s[3]) == 1)));
   }
-  explicit _Gsu2(unsigned int m,
-                 unsigned int j1, unsigned int j2, unsigned int j3,
+  explicit _Gsu2(size_t m,
+                 size_t j1, size_t j2, size_t j3,
                  int s1=1, int s2=1, int s3=1, int s4=1) : m(m) {
     j[0] = j1;
     j[1] = j2;
@@ -61,13 +61,24 @@ public:
   friend su2 operator*(const su2 &U1, const _Gsu2 &U2);
   friend su2 operator*(const _Gsu2 &U1, const su2 &U2);
 
-  unsigned int getj(const unsigned int i) const {
+  size_t getj(const size_t i) const {
     return(j[i]);
   }
-  int gets(const unsigned int i) const {
+  void setjpair(const size_t i1, const size_t i2,
+               const size_t _j1, const size_t _j2) {
+    j[i1] = _j1;
+    j[i2] = _j2;
+    assert((m == (j[0] + j[1] + j[2] + j[3])));
+    return;
+  }
+  int gets(const size_t i) const {
     return(s[i]);
   }
-  unsigned int getm() const {
+  void sets(const size_t i, const int _s) {
+    s[i] = _s;
+    return;
+  }
+  size_t getm() const {
     return(m);
   }
   void operator=(const _Gsu2 &U) {
@@ -79,7 +90,7 @@ public:
     assert((m == (j[0] + j[1] + j[2] + j[3])));
     assert(((abs(s[0]) == 1) && (abs(s[1]) == 1) && (abs(s[2]) == 1) && (abs(s[3]) == 1)));
   }
-  void set(const unsigned int * const _j, const int * const _s, const unsigned int _m) {
+  void set(const size_t * const _j, const int * const _s, const size_t _m) {
     for(int i = 0; i < 4; i++) {
       j[i] = _j[i];
       s[i] = _s[i];
@@ -103,8 +114,8 @@ public:
   }
 
 private:
-  unsigned int m;
-  unsigned int j[4];
+  size_t m;
+  size_t j[4];
   int s[4];
 };
 

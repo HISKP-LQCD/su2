@@ -1,5 +1,5 @@
 # Copyright © 2017 Martin Ueding <dev@martin-ueding.de>
-#             2017 Carsten Urbach <urbach@hiskp.uni-bonn.de>
+#             2017,2021 Carsten Urbach <urbach@hiskp.uni-bonn.de>
 # Licensed under the GNU Public License version 3
 
 cmake_minimum_required(VERSION 2.8.11)

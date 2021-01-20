@@ -89,6 +89,13 @@ int parse_commandline(int ac, char * av[], po::options_description &desc, genera
       std::cout << std::endl << desc << std::endl;
       return 1;
     }
+    if (params.ndims == 2) {
+      params.Ly = 1;
+      params.Lz = 1;
+    }
+    if (params.ndims == 3) {
+      params.Lz = 1;
+    }
     PrintVariableMap(vm);
   }
   catch(std::exception& e) {

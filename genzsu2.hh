@@ -110,6 +110,8 @@ public:
             static_cast<double>(j[2]) + static_cast<double>(j[3]))/static_cast<double>(m)); 
   }
   void restoreSU() {
+    assert((m == (j[0] + j[1] + j[2] + j[3])));
+    assert(((abs(s[0]) == 1) && (abs(s[1]) == 1) && (abs(s[2]) == 1) && (abs(s[3]) == 1)));
     return;
   }
 

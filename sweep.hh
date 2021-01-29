@@ -74,6 +74,7 @@ template<class URNG> double sweep(gaugeconfig<Gsu2> &U, URNG &engine,
               j[0] = U(x,mu).getj(p[0]);
               j[1] = U(x,mu).getj(p[1]);
               if((j[0] == 0 && j[1] == 0) || (j[0] == m && j[1] == m)) {
+                // only flip signs
                 R.sets(p[0], (2*unisign(engine) - 1));
                 R.sets(p[1], (2*unisign(engine) - 1));
               }
@@ -82,14 +83,31 @@ template<class URNG> double sweep(gaugeconfig<Gsu2> &U, URNG &engine,
                 while(!done) {
                   // get a shift
                   int shift = (2*unisign(engine) - 1)*(unij(engine) + 1);
-                  if((j[0] + shift < m) && (j[0] + shift >= 0) &&
-                     (j[1] - shift < m) && (j[1] - shift >= 0)) {
+                  if(j[0] + shift < 0) { // shift < 0
+                    done = true;
+                    size_t _j = - shift - j[0];
+                    j[1] += j[0] - _j;
+                    j[0] = _j;
+                    // flipt sign in s[p[0]]
+                    R.sets(p[0], -R.gets(p[0]));
+                  }
+                  else if(j[1] - shift < 0) { // shift > 0
+                    done = true;
+                    size_t _j = shift - j[1];
+                    j[0] += j[1] - _j;
+                    j[1] = _j;
+                    // flip sign in s[p[1]]
+                    R.sets(p[1], -R.gets(p[1]));
+                  }
+                  else if((j[0] + shift <= m) && (j[0] + shift >= 0) &&
+                          (j[1] - shift <= m) && (j[1] - shift >= 0)) {
                     done = true;
                     j[0] += shift;
                     j[1] -= shift;
                   }
                 }
                 R.setjpair(p[0], p[1], j[0], j[1]);
+                R.restoreSU();
               }
               double deltaS = beta/static_cast<double>(N_c)*
                 (trace(U(x, mu) * K) - trace(R * K));

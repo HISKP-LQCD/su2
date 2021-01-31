@@ -24,17 +24,35 @@ reference-section-title: References
 The Genz points are defined as
 \[
 x\ =\ \left(s_1\sqrt{\frac{j_1}{m}}, s_2\sqrt{\frac{j_2}{m}},
-s_3\sqrt{\frac{j_3}{m}}, s_4\sqrt{\frac{j_4}{m}}, \right)\,,
+s_3\sqrt{\frac{j_3}{m}}, s_4\sqrt{\frac{j_4}{m}}, \right)^t\,,
 \]
 with $s_j\in\{-1, +1\}$, $m\in\mathbb{N}$ and $j_i\in \mathbb{N}_0$, $\sum_i j_i = m$
 (see @tobias).
+
+We write an SU$(2)$ matrix as
+\[
+\begin{pmatrix}
+x_1 + ix_2 & -x_3 + ix_4 \\
+x_3 + ix_4 & x_1 - i x_2\\
+\end{pmatrix}
+\]
+In terms of the Genz partitioning we then have
+\[
+\mathrm{tr}(x) = 2 s_1\sqrt{\frac{j_1}{m}}\,.
+\]
+The hermitian conjugate of $x$ is
+\[
+x^\dagger\ =\ \left(s_1\sqrt{\frac{j_1}{m}}, -s_2\sqrt{\frac{j_2}{m}},
+-s_3\sqrt{\frac{j_3}{m}}, -s_4\sqrt{\frac{j_4}{m}}, \right)^t\,,
+\]
+
 
 ## Alternative
 
 Alternative proposal by Johann
 \[
 x\ =\ \left(s_1\frac{j_1}{j}, s_2\frac{j_2}{j},
-s_3\frac{j_3}{j}, s_4\frac{j_4}{j}, \right)\,,\qquad j =\sqrt{\sum_i j_i^2}\,,
+s_3\frac{j_3}{j}, s_4\frac{j_4}{j}, \right)^t\,,\qquad J =\sqrt{\sum_i j_i^2}\,,
 \]
 also with $\sum_i j_i = m$.
 
@@ -44,7 +62,7 @@ also with $\sum_i j_i = m$.
 ## Genz Points
 
 1. pick $k_{1,2}$ uniformly random without replacement from $\{1, 2,
-   3, 4\}$.  (pick a pair $j_{k_1}$ and $j_{k_2}$)
+   3, 4\}$.  (i.e. pick a pair $j_{k_1}$ and $j_{k_2}$)
 2. pick $\delta$ uniformly random from $\{-\Delta, \ldots, -1, 1, \ldots, \Delta\}$,
    $\Delta\in\mathbb{N}, \Delta < m$.
 3. now update

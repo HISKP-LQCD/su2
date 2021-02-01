@@ -174,6 +174,20 @@ gaugeconfig<Gsu2> hotstart(const size_t Lx, const size_t Ly,
   return(config);
 }
 
+gaugeconfig<Osu2> Ohotstart(const size_t Lx, const size_t Ly,
+                            const size_t Lz, const size_t Lt, 
+                            const int seed, const size_t m,
+                            const size_t ndims) {
+  gaugeconfig<Osu2> config(Lx, Ly, Lz, Lt, ndims);
+  std::mt19937 engine(seed);
+
+  for(size_t i = 0; i < config.getSize(); i++) {
+    random_su2(config[i], engine, m);
+  }
+  return(config);
+}
+
+
 gaugeconfig<su2> hotstart(const size_t Lx, const size_t Ly,
                           const size_t Lz, const size_t Lt, 
                           const int seed, const double _delta,

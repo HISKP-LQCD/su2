@@ -9,8 +9,8 @@
 #include<iostream>
 
 template<class URNG> double sweep(gaugeconfig<su2> &U, URNG &engine,
-                                           const double delta, 
-                                           const size_t N_hit, const double beta) {
+                                  const double delta, 
+                                  const size_t N_hit, const double beta) {
 
   std::uniform_real_distribution<double> uniform(0., 1.);
 
@@ -43,10 +43,10 @@ template<class URNG> double sweep(gaugeconfig<su2> &U, URNG &engine,
   return( double(rate)/double(N_hit)/double(U.getSize()));
 }
 
-template<class URNG> double sweep(gaugeconfig<Gsu2> &U, URNG &engine,
-                                  const size_t m, const size_t delta,
-                                  const size_t N_hit, const double beta) {
-
+template<class URNG, class T> double sweep(gaugeconfig<T> &U, URNG &engine,
+                                           const size_t m, const size_t delta,
+                                           const size_t N_hit, const double beta) {
+  
   std::uniform_real_distribution<double> uniform(0., 1.);
   std::uniform_int_distribution<int> uniindex(0, 3);
   std::uniform_int_distribution<int> unij(0, delta-1);
@@ -61,7 +61,7 @@ template<class URNG> double sweep(gaugeconfig<Gsu2> &U, URNG &engine,
           for(size_t mu = 0; mu < U.getndims(); mu++) {
             su2 K = get_staples(U, x, mu);
             for(size_t n = 0; n < N_hit; n++) {
-              Gsu2 R = U(x, mu);
+              T R = U(x, mu);
               // get a pair
               size_t p[2];
               p[0] = uniindex(engine);

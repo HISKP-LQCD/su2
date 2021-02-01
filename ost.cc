@@ -1,5 +1,5 @@
 #include"su2.hh"
-#include"genzsu2.hh"
+#include"ostsu2.hh"
 #include"gaugeconfig.hh"
 #include"gauge_energy.hh"
 #include"sweep.hh"
@@ -27,7 +27,7 @@ int main(int ac, char* av[]) {
   size_t m = 100;
 
   cout << "## Metropolis Algorithm for SU(2) gauge theory" << endl;
-  cout << "## based on Genz point partitioning for SU(2)" << endl;
+  cout << "## based on a special partitioning for SU(2)" << endl;
   cout << "## (C) Carsten Urbach <urbach@hiskp.uni-bonn.de> (2017,2020,2021)" << endl;
   cout << "## GIT branch " << GIT_BRANCH << " on commit " << GIT_COMMIT_HASH << endl << endl;  
 
@@ -45,7 +45,7 @@ int main(int ac, char* av[]) {
   if(err > 0) {
     return err;
   }
-  gaugeconfig<Gsu2> U(gparams.Lx, gparams.Ly, gparams.Lz, gparams.Lt, gparams.ndims, gparams.beta);
+  gaugeconfig<Osu2> U(gparams.Lx, gparams.Ly, gparams.Lz, gparams.Lt, gparams.ndims, gparams.beta);
   if(gparams.restart) {
     err = U.load(gparams.configfilename);
     if(err != 0) {
@@ -53,7 +53,7 @@ int main(int ac, char* av[]) {
     }
   }
   else {
-    U = hotstart(gparams.Lx, gparams.Ly, gparams.Lz, gparams.Lt, gparams.seed, m, gparams.ndims);
+    U = Ohotstart(gparams.Lx, gparams.Ly, gparams.Lz, gparams.Lt, gparams.seed, m, gparams.ndims);
   }
 
   double plaquette = gauge_energy(U);

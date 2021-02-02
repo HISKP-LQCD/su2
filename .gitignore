@@ -33,3 +33,5 @@ core
 su2
 su2hmc
 build/
+
+*.pdf

@@ -164,12 +164,15 @@ gaugeconfig<su2> coldstart(const size_t Lx, const size_t Ly,
 gaugeconfig<Gsu2> hotstart(const size_t Lx, const size_t Ly,
                            const size_t Lz, const size_t Lt, 
                            const int seed, const size_t m,
-                           const size_t ndims) {
+                           const double _delta, const size_t ndims) {
   gaugeconfig<Gsu2> config(Lx, Ly, Lz, Lt, ndims);
+  double delta = _delta;
+  if(delta < 0.) delta = 0;
+  if(delta > 1.) delta = 1.;
   std::mt19937 engine(seed);
 
   for(size_t i = 0; i < config.getSize(); i++) {
-    random_su2(config[i], engine, m);
+    random_su2(config[i], engine, m, delta);
   }
   return(config);
 }
@@ -177,12 +180,15 @@ gaugeconfig<Gsu2> hotstart(const size_t Lx, const size_t Ly,
 gaugeconfig<Osu2> Ohotstart(const size_t Lx, const size_t Ly,
                             const size_t Lz, const size_t Lt, 
                             const int seed, const size_t m,
-                            const size_t ndims) {
+                            const double _delta, const size_t ndims) {
   gaugeconfig<Osu2> config(Lx, Ly, Lz, Lt, ndims);
+  double delta = _delta;
+  if(delta < 0.) delta = 0;
+  if(delta > 1.) delta = 1.;
   std::mt19937 engine(seed);
 
   for(size_t i = 0; i < config.getSize(); i++) {
-    random_su2(config[i], engine, m);
+    random_su2(config[i], engine, m, delta);
   }
   return(config);
 }

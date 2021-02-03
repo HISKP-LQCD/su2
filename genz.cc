@@ -54,7 +54,8 @@ int main(int ac, char* av[]) {
     }
   }
   else {
-    U = hotstart(gparams.Lx, gparams.Ly, gparams.Lz, gparams.Lt, gparams.seed, m, gparams.ndims);
+    U = hotstart(gparams.Lx, gparams.Ly, gparams.Lz, gparams.Lt,
+                 gparams.seed, m, gparams.heat, gparams.ndims);
   }
 
   double plaquette = gauge_energy(U);

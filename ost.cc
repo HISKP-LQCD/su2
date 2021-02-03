@@ -22,7 +22,7 @@ namespace po = boost::program_options;
 int main(int ac, char* av[]) {
   general_params gparams;
 
-  size_t N_hit = 10;
+  size_t N_hit = 10, dN_hit = 10;
   size_t delta = 2;
   size_t m = 100;
 
@@ -39,6 +39,7 @@ int main(int ac, char* av[]) {
     ("nhit", po::value<size_t>(&N_hit)->default_value(10), "N_hit")
     ("Genzm,m", po::value<size_t>(&m)->default_value(100), "Genz m")
     ("delta,d", po::value<size_t>(&delta)->default_value(2), "delta")
+    ("dnhit", po::value<size_t>(&dN_hit)->default_value(10), "dN_hit")
     ;
 
   int err = parse_commandline(ac, av, desc, gparams);
@@ -71,7 +72,7 @@ int main(int ac, char* av[]) {
   double rate = 0.;
   for(size_t i = gparams.icounter; i < gparams.N_meas + gparams.icounter; i++) {
     std::mt19937 engine(gparams.seed+i);
-    rate += sweep(U, engine, m, delta, N_hit, gparams.beta);
+    rate += sweep(U, engine, m, delta, N_hit, dN_hit, gparams.beta);
     double energy = gauge_energy(U);
     cout << i << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy*normalisation << " " << -U.getBeta()/N_c*(U.getVolume()*N_c/fac - energy) << endl;
     os << i << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy*normalisation << " " << -U.getBeta()/N_c*(U.getVolume()*N_c/fac - energy) << endl;

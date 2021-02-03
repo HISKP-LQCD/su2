@@ -45,7 +45,8 @@ template<class URNG> double sweep(gaugeconfig<su2> &U, URNG &engine,
 
 template<class URNG, class T> double sweep(gaugeconfig<T> &U, URNG &engine,
                                            const size_t m, const size_t delta,
-                                           const size_t N_hit, const double beta) {
+                                           const size_t N_hit, const size_t dN,
+                                           const double beta) {
   
   std::uniform_real_distribution<double> uniform(0., 1.);
   std::uniform_int_distribution<int> uniindex(0, 3);
@@ -62,48 +63,59 @@ template<class URNG, class T> double sweep(gaugeconfig<T> &U, URNG &engine,
             su2 K = get_staples(U, x, mu);
             for(size_t n = 0; n < N_hit; n++) {
               T R = U(x, mu);
-              // get a pair
-              size_t p[2];
-              p[0] = uniindex(engine);
-              p[1] = p[0];
-              while(p[0] == p[1]) {
-                p[1] = uniindex(engine);
+              if(n % dN == 0) {
+                R.sets(0, (2*unisign(engine) - 1));
+                R.sets(1, (2*unisign(engine) - 1));
+                R.sets(2, (2*unisign(engine) - 1));
+                R.sets(3, (2*unisign(engine) - 1));
               }
-              // get the corresponding j-values
-              size_t j[2];
-              j[0] = U(x,mu).getj(p[0]);
-              j[1] = U(x,mu).getj(p[1]);
-              if(!((j[0] == 0 && j[1] == 0) || (j[0] == m && j[1] == m))) {
-                bool done = false;
-                while(!done) {
-                  // get a shift
-                  int shift = (2*unisign(engine) - 1)*(unij(engine) + 1);
-                  if(j[0] + shift < 0) { // shift < 0
-                    done = true;
-                    size_t _j = - shift - j[0];
-                    j[1] += j[0] - _j;
-                    j[0] = _j;
-                  }
-                  else if(j[1] - shift < 0) { // shift > 0
-                    done = true;
-                    size_t _j = shift - j[1];
-                    j[0] += j[1] - _j;
-                    j[1] = _j;
-                  }
-                  else if((j[0] + shift <= m) && (j[0] + shift >= 0) &&
-                          (j[1] - shift <= m) && (j[1] - shift >= 0)) {
-                    done = true;
-                    j[0] += shift;
-                    j[1] -= shift;
-                  }
+              else {
+                // get a pair
+                size_t p[2];
+                p[0] = uniindex(engine);
+                p[1] = p[0];
+                while(p[0] == p[1]) {
+                  p[1] = uniindex(engine);
                 }
-                R.setjpair(p[0], p[1], j[0], j[1]);
-                R.restoreSU();
+                // get the corresponding j-values
+                size_t j[2];
+                j[0] = U(x,mu).getj(p[0]);
+                j[1] = U(x,mu).getj(p[1]);
+                if(!((j[0] == 0 && j[1] == 0) || (j[0] == m && j[1] == m))) {
+                  bool done = false;
+                  while(!done) {
+                    // get a shift
+                    int shift = (2*unisign(engine) - 1)*(unij(engine) + 1);
+                    if(j[0] + shift < 0) { // shift < 0
+                      done = true;
+                      size_t _j = - shift - j[0];
+                      j[1] += j[0];
+                      j[0] = 0;
+                      R.sets(p[0], -R.gets(p[0]));
+                    }
+                    else if(j[1] - shift < 0) { // shift > 0
+                      done = true;
+                      size_t _j = shift - j[1];
+                      j[0] += j[1];
+                      j[1] = 0;
+                      R.sets(p[1], -R.gets(p[1]));
+                    }
+                    else if((j[0] + shift <= m) && (j[0] + shift >= 0) &&
+                            (j[1] - shift <= m) && (j[1] - shift >= 0)) {
+                      done = true;
+                      j[0] += shift;
+                      j[1] -= shift;
+                    }
+                  }
+                  R.setjpair(p[0], p[1], j[0], j[1]);
+                  R.restoreSU();
+                }
+                else {
+                  // flip the signs of the two j
+                  R.sets(p[0], (2*unisign(engine) - 1));
+                  R.sets(p[1], (2*unisign(engine) - 1));
+                }
               }
-              R.sets(0, (2*unisign(engine) - 1));
-              R.sets(1, (2*unisign(engine) - 1));
-              R.sets(2, (2*unisign(engine) - 1));
-              R.sets(3, (2*unisign(engine) - 1));
               double deltaS = beta/static_cast<double>(N_c)*
                 (trace(U(x, mu) * K) - trace(R * K));
               bool accept = (deltaS < 0);

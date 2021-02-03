@@ -109,8 +109,11 @@ public:
     return(2 * s[0] * static_cast<double>(j[0])/getJ());
   }
   Complex det() {
-    return((static_cast<double>(j[0]) + static_cast<double>(j[1]) +
-            static_cast<double>(j[2]) + static_cast<double>(j[3]))/static_cast<double>(m)); 
+    return((static_cast<double>(j[0])*static_cast<double>(j[0]) +
+            static_cast<double>(j[1])*static_cast<double>(j[1]) +
+            static_cast<double>(j[2])*static_cast<double>(j[2]) +
+            static_cast<double>(j[3])*static_cast<double>(j[3])) /
+           static_cast<double>(getJ()*getJ())); 
   }
   void restoreSU() {
     assert((m == (j[0] + j[1] + j[2] + j[3])));

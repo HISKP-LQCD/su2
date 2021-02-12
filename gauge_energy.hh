@@ -1,6 +1,5 @@
 #pragma once
 
-#include"gauge_energy.hh"
 #ifdef _USE_OMP_
 #  include<omp.h>
 #endif

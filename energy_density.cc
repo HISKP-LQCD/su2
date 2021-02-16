@@ -33,8 +33,6 @@ void energy_density(gaugeconfig &U, double &res, double &Q) {
   res = 0.;
   Q = 0.;
 
-  if(U.getndims() < 4) return;
-  
   // Euclidean 4D totally anti-symemtric tensor 
   static epsilon4_t eps4 = new_epsilon4();
   
@@ -47,8 +45,8 @@ void energy_density(gaugeconfig &U, double &res, double &Q) {
           std::vector<size_t> x2 = x;
           std::vector<size_t> x3 = x;
           su2 G[4][4];
-          for(size_t mu = 0; mu < 3; mu++) {
-            for(size_t nu = mu+1; nu < 4; nu++) {
+          for(size_t mu = 0; mu < U.getndims()-1; mu++) {
+            for(size_t nu = mu+1; nu < U.getndims(); nu++) {
               x1[mu] += 1;
               x2[nu] += 1;
               su2 leaf = U(x, mu) * U(x1, nu) *
@@ -94,21 +92,23 @@ void energy_density(gaugeconfig &U, double &res, double &Q) {
           }
 
           // sum up the topological charge contribution now
-          for( int i = 0; i < eps4.N; i++ ){
-            int i1 = eps4.eps_idx[i][0];
-            int i2 = eps4.eps_idx[i][1];
-            int i3 = eps4.eps_idx[i][2];
-            int i4 = eps4.eps_idx[i][3];
-            
-            // when Gmunu components from the lower triangle are to be used,
-            // we can simply skip them and multiply our normalisation by a factor of two
-            if( eps4.eps_idx[i][1] < eps4.eps_idx[i][0] ){
-              continue;
+          if(U.getndims() == 4) {
+            for( int i = 0; i < eps4.N; i++ ){
+              int i1 = eps4.eps_idx[i][0];
+              int i2 = eps4.eps_idx[i][1];
+              int i3 = eps4.eps_idx[i][2];
+              int i4 = eps4.eps_idx[i][3];
+              
+              // when Gmunu components from the lower triangle are to be used,
+              // we can simply skip them and multiply our normalisation by a factor of two
+              if( eps4.eps_idx[i][1] < eps4.eps_idx[i][0] ){
+                continue;
+              }
+              if( eps4.eps_idx[i][3] < eps4.eps_idx[i][2] ){
+                continue;
+              }
+              Q += eps4.eps_val[i]*trace(G[ i1 ][ i2 ]*G[ i3 ][ i4 ] );
             }
-            if( eps4.eps_idx[i][3] < eps4.eps_idx[i][2] ){
-              continue;
-            }
-            Q += eps4.eps_val[i]*trace(G[ i1 ][ i2 ]*G[ i3 ][ i4 ] );
           }
         }
       }

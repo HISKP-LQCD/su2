@@ -1,6 +1,7 @@
 #include"su2.hh"
 #include"gaugeconfig.hh"
 #include"gauge_energy.hh"
+#include"energy_density.hh"
 #include"random_gauge_trafo.hh"
 #include"sweep.hh"
 #include"parse_commandline.hh"
@@ -59,11 +60,18 @@ int main(int ac, char* av[]) {
   if(U.getndims() == 4) fac = 1./6.;
   if(U.getndims() == 3) fac = 1./2.;
   const double normalisation = fac/U.getVolume()/N_c;
-  cout << "Initital Plaquette: " << plaquette*normalisation << endl; 
+  double density, Q;
+  energy_density(U, density, Q);
+  cout << "Initial Plaquette: " << plaquette*normalisation << endl;
+  cout << "Initial Energy Density: " << density << endl;
+  cout << "Initial Topological Charge: " << Q << endl;
 
   random_gauge_trafo(U, 654321);
   plaquette = gauge_energy(U);
+  energy_density(U, density, Q);
   cout << "Plaquette after rnd trafo: " << plaquette*normalisation << endl; 
+  cout << "Energy Density rnd trafo: " << density << endl;
+  cout << "Topological Charge rnd trafo: " << Q << endl;
 
   std::ofstream os;
   if(gparams.icounter == 0) 
@@ -75,8 +83,13 @@ int main(int ac, char* av[]) {
     std::mt19937 engine(gparams.seed+i);
     rate += sweep(U, engine, delta, N_hit, gparams.beta);
     double energy = gauge_energy(U);
-    cout << i << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy*normalisation << " " << -U.getBeta()/N_c*(U.getVolume()*N_c/fac - energy) << endl;
-    os << i << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy*normalisation << " " << -U.getBeta()/N_c*(U.getVolume()*N_c/fac - energy) << endl;
+    energy_density(U, density, Q);
+    cout << i << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy*normalisation <<
+      " " << -U.getBeta()/N_c*(U.getVolume()*N_c/fac - energy) << " " <<
+      density << " " << Q << endl;
+    os << i << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy*normalisation <<
+      " " << -U.getBeta()/N_c*(U.getVolume()*N_c/fac - energy) << " " <<
+      density << " " << Q << endl;
     if(i > 0 && (i % gparams.N_save) == 0) {
       std::ostringstream oss;
       oss << "config." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz << "." << gparams.Lt << ".b" << gparams.beta << "." << i << std::ends;

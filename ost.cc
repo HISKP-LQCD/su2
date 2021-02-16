@@ -2,6 +2,7 @@
 #include"ostsu2.hh"
 #include"gaugeconfig.hh"
 #include"gauge_energy.hh"
+#include"energy_density.hh"
 #include"sweep.hh"
 #include"parse_commandline.hh"
 #include"version.hh"
@@ -75,8 +76,14 @@ int main(int ac, char* av[]) {
     std::mt19937 engine(gparams.seed+i);
     rate += sweep(U, engine, m, delta, N_hit, dN_hit, gparams.beta);
     double energy = gauge_energy(U);
-    cout << i << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy*normalisation << " " << -U.getBeta()/N_c*(U.getVolume()*N_c/fac - energy) << endl;
-    os << i << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy*normalisation << " " << -U.getBeta()/N_c*(U.getVolume()*N_c/fac - energy) << endl;
+    double density, Q;
+    energy_density(U, density, Q);
+    cout << i << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy*normalisation <<
+      " " << -U.getBeta()/N_c*(U.getVolume()*N_c/fac - energy) << " " <<
+      density << " " << Q << endl;
+    os << i << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy*normalisation <<
+      " " << -U.getBeta()/N_c*(U.getVolume()*N_c/fac - energy) << " " <<
+      density << " " << Q << endl;
     if(i > 0 && (i % gparams.N_save) == 0) {
       std::ostringstream oss;
       oss << "gconfig." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz << "." << gparams.Lt << ".b" << gparams.beta << "." << i << std::ends;

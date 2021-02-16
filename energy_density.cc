@@ -1,7 +1,12 @@
 #include"su2.hh"
 #include"gaugeconfig.hh"
 #include"energy_density.hh"
+#include"tensors.hh"
 #include<complex>
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 
 // symmetric definition of the energy density
 // using the clover leaf
@@ -24,9 +29,13 @@
 //
 
 
-double energy_density(gaugeconfig &U) {
-  double res = 0.;
+void energy_density(gaugeconfig &U, double &res, double &Q) {
+  res = 0.;
+  Q = 0.;
 
+  // Euclidean 4D totally anti-symemtric tensor 
+  static epsilon4_t eps4 = new_epsilon4();
+  
   std::vector<size_t> x = {0, 0, 0, 0};
   for(x[0] = 0; x[0] < U.getLt(); x[0]++) {
     for(x[1] = 0; x[1] < U.getLx(); x[1]++) {
@@ -35,6 +44,7 @@ double energy_density(gaugeconfig &U) {
           std::vector<size_t> x1 = x;
           std::vector<size_t> x2 = x;
           std::vector<size_t> x3 = x;
+          su2 G[4][4];
           for(size_t mu = 0; mu < U.getndims()-1; mu++) {
             for(size_t nu = mu+1; nu < U.getndims(); nu++) {
               x1[mu] += 1;
@@ -74,11 +84,30 @@ double energy_density(gaugeconfig &U) {
               x2[mu] -= 1;
 
               // traceless and anti-hermitian
-              su2 one(0.5*(leaf.geta()-std::conj(leaf.geta())), 
-                      leaf.getb());
+              G[mu][nu] =  su2(0.5*(leaf.geta()-std::conj(leaf.geta())), leaf.getb());
               // trace(G_{mu,nu}^a G_{mu,nu}^a)
               // averaged over four plaquette Wilson loops 1./4./4.
-              res += trace(one*one)/16.;
+              res += trace(G[mu][nu]*G[mu][nu])/16.;
+            }
+          }
+
+          // sum up the topological charge contribution now
+          if(U.getndims() == 4) {
+            for( int i = 0; i < eps4.N; i++ ){
+              int i1 = eps4.eps_idx[i][0];
+              int i2 = eps4.eps_idx[i][1];
+              int i3 = eps4.eps_idx[i][2];
+              int i4 = eps4.eps_idx[i][3];
+              
+              // when Gmunu components from the lower triangle are to be used,
+              // we can simply skip them and multiply our normalisation by a factor of two
+              if( eps4.eps_idx[i][1] < eps4.eps_idx[i][0] ){
+                continue;
+              }
+              if( eps4.eps_idx[i][3] < eps4.eps_idx[i][2] ){
+                continue;
+              }
+              Q += eps4.eps_val[i]*trace(G[ i1 ][ i2 ]*G[ i3 ][ i4 ] );
             }
           }
         }
@@ -87,5 +116,6 @@ double energy_density(gaugeconfig &U) {
   }
   // now we need to devide by 2, but we get a factor of two since we only
   // averaged mu < nu
-  return(-res/U.getVolume());
+  res = -res/U.getVolume();
+  Q =  -Q  / ( 4 * 32.0 * M_PI * M_PI );
 }

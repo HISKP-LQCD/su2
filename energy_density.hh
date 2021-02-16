@@ -1,4 +1,4 @@
 #pragma once
 #include"gaugeconfig.hh"
 
-double energy_density(gaugeconfig &U);
+void energy_density(gaugeconfig &U, double &res, double &Q);

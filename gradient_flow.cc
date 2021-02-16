@@ -50,14 +50,15 @@ void gradient_flow(gaugeconfig &U, std::string const &path, const double tmax) {
   double t[3], P[3], E[3];
   double eps = 0.01;
   std::ofstream os(path, std::ios::out);
-
+  double density = 0., Q = 0.;
   for(unsigned int i = 0; i < 3; i++) {
     t[i] = 0.;
     P[i] = 0.;
     E[i] = 0.;
   }
   P[2] = gauge_energy(U)/U.getVolume()/N_c/6.;
-  E[2] = energy_density(U);
+  energy_density(U, density, Q);
+  E[2] = density;
 
   gaugeconfig Vt(U);
   adjointfield<double> deriv(U.getLs(), U.getLt());
@@ -73,7 +74,8 @@ void gradient_flow(gaugeconfig &U, std::string const &path, const double tmax) {
       t[x0] = t[x0-1] + eps;
       runge_kutta(h, SW, eps);
       P[x0] = gauge_energy(Vt)/U.getVolume()/N_c/6.;
-      E[x0] = energy_density(Vt);
+      energy_density(Vt, density, Q);
+      E[x0] = density;
     }
     double tsqP = t[1]*t[1]*2*N_c*6.*(1-P[1]);
     double tsqE = t[1]*t[1]*E[1];

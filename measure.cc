@@ -70,13 +70,16 @@ int main(int ac, char* av[]) {
     U.load(os.str());
     
     double plaquette = gauge_energy(U);
+    double density = 0., Q=0.;
+    energy_density(U, density, Q);
     cout << "## Initital Plaquette: " << plaquette/U.getVolume()/N_c/6. << endl; 
-    cout << "## Initial Energy density: " << energy_density(U) << endl;
+    cout << "## Initial Energy density: " << density << endl;
     
     random_gauge_trafo(U, gparams.seed);
     plaquette = gauge_energy(U);
+    energy_density(U, density, Q);
     cout << "## Plaquette after rnd trafo: " << std::scientific << std::setw(15) << plaquette/U.getVolume()/N_c/6. << endl; 
-    cout << "## Energy density: " << energy_density(U) << endl;
+    cout << "## Energy density: " << density << endl;
     
     if(Wloop) {
       std::ostringstream os;

@@ -63,6 +63,7 @@ template<class URNG, class T> double sweep(gaugeconfig<T> &U, URNG &engine,
             su2 K = get_staples(U, x, mu);
             for(size_t n = 0; n < N_hit; n++) {
               T R = U(x, mu);
+              double w_orig = R.weight();
               if(n % dN == 0) {
                 R.sets(0, (2*unisign(engine) - 1));
                 R.sets(1, (2*unisign(engine) - 1));
@@ -118,8 +119,9 @@ template<class URNG, class T> double sweep(gaugeconfig<T> &U, URNG &engine,
               }
               double deltaS = beta/static_cast<double>(N_c)*
                 (trace(U(x, mu) * K) - trace(R * K));
-              bool accept = (deltaS < 0);
-              if(!accept) accept = (uniform(engine) < exp(-deltaS));
+              double w_new = R.weight();
+              //bool accept = (deltaS < 0);
+              bool accept = (uniform(engine) < exp(-deltaS)*w_new/w_orig);
               if(accept) {
                 U(x, mu) = R;
                 rate += 1;

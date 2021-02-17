@@ -114,6 +114,9 @@ public:
     assert(((abs(s[0]) == 1) && (abs(s[1]) == 1) && (abs(s[2]) == 1) && (abs(s[3]) == 1)));
     return;
   }
+  double weight() {
+    return(1.);
+  }
 
 private:
   size_t m;

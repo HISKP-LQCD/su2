@@ -120,6 +120,10 @@ public:
     assert(((abs(s[0]) == 1) && (abs(s[1]) == 1) && (abs(s[2]) == 1) && (abs(s[3]) == 1)));
     return;
   }
+  double weight() {
+    const double w = sqrt(2.)/getJ();
+    return(w*w*w);
+  }
 
 private:
   size_t m;

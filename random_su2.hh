@@ -2,7 +2,7 @@
 
 #include"su2.hh"
 #include"genzsu2.hh"
-#include"ostsu2.hh"
+#include"linearsu2.hh"
 #include<random>
 #include<iostream>
 
@@ -49,7 +49,7 @@ template<class URNG> void random_su2(Gsu2 &U, URNG &engine,
   return;
 }
 
-template<class URNG> void random_su2(Osu2 &U, URNG &engine, 
+template<class URNG> void random_su2(Lsu2 &U, URNG &engine, 
                                      const size_t m = 10,
                                      const double delta = 0.) {
 
@@ -70,6 +70,6 @@ template<class URNG> void random_su2(Osu2 &U, URNG &engine,
   for(int i = ilower; i < 4; i++) {
     s[i] = 2*uni4(engine) - 1;
   }
-  U = Osu2(m, j, s);
+  U = Lsu2(m, j, s);
   return;
 }

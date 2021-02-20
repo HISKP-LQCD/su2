@@ -8,9 +8,9 @@
 
 using Complex = std::complex<double>;
 
-class _Osu2 {
+class _Lsu2 {
 public:
-  explicit _Osu2() : m(0) {
+  explicit _Lsu2() : m(0) {
     j[0] = m;
     j[1] = 0;
     j[2] = 0;
@@ -20,7 +20,7 @@ public:
     s[2] = +1;
     s[3] = +1;
   }
-  explicit _Osu2(size_t m) : m(m) {
+  explicit _Lsu2(size_t m) : m(m) {
     j[0] = m;
     j[1] = 0;
     j[2] = 0;
@@ -32,7 +32,7 @@ public:
     assert((m == j[0] + j[1] + j[2] + j[3]));
     assert(((abs(s[0]) == 1) && (abs(s[1]) == 1) && (abs(s[2]) == 1) && (abs(s[3]) == 1)));
   }
-  explicit _Osu2(size_t _m,
+  explicit _Lsu2(size_t _m,
                  size_t * _j,
                  int * _s){
     for(int i = 0; i < 4; i++) {
@@ -43,7 +43,7 @@ public:
     assert((m == (j[0] + j[1] + j[2] + j[3])));
     assert(((abs(s[0]) == 1) && (abs(s[1]) == 1) && (abs(s[2]) == 1) && (abs(s[3]) == 1)));
   }
-  explicit _Osu2(size_t m,
+  explicit _Lsu2(size_t m,
                  size_t j1, size_t j2, size_t j3,
                  int s1=1, int s2=1, int s3=1, int s4=1) : m(m) {
     j[0] = j1;
@@ -57,9 +57,9 @@ public:
     assert((m == (j[0] + j[1] + j[2] + j[3])));
     assert(((abs(s[0]) == 1) && (abs(s[1]) == 1) && (abs(s[2]) == 1) && (abs(s[3]) == 1)));
   }
-  friend su2 operator*(const _Osu2 &U1, const _Osu2 &U2);
-  friend su2 operator*(const su2 &U1, const _Osu2 &U2);
-  friend su2 operator*(const _Osu2 &U1, const su2 &U2);
+  friend su2 operator*(const _Lsu2 &U1, const _Lsu2 &U2);
+  friend su2 operator*(const su2 &U1, const _Lsu2 &U2);
+  friend su2 operator*(const _Lsu2 &U1, const su2 &U2);
 
   size_t getj(const size_t i) const {
     return(j[i]);
@@ -84,7 +84,7 @@ public:
   double getJ() const {
     return(sqrt(static_cast<double>(j[0]*j[0] + j[1]*j[1] + j[2]*j[2] + j[3]*j[3])));
   }
-  void operator=(const _Osu2 &U) {
+  void operator=(const _Lsu2 &U) {
     for(int i = 0; i < 4; i++) {
       j[i] = U.getj(i);
       s[i] = U.gets(i);
@@ -102,8 +102,8 @@ public:
     assert((m == (j[0] + j[1] + j[2] + j[3])));
     assert(((abs(s[0]) == 1) && (abs(s[1]) == 1) && (abs(s[2]) == 1) && (abs(s[3]) == 1)));
   }
-  _Osu2 dagger() const {
-    return(_Osu2(m, j[0], j[1], j[2], s[0], -s[1], -s[2], -s[3]));
+  _Lsu2 dagger() const {
+    return(_Lsu2(m, j[0], j[1], j[2], s[0], -s[1], -s[2], -s[3]));
   }
   double trace() {
     return(2 * s[0] * static_cast<double>(j[0])/getJ());
@@ -131,8 +131,8 @@ private:
   int s[4];
 };
 
-su2 operator*(const _Osu2 &U1, const _Osu2 &U2);
-su2 operator*(const su2 &U1, const _Osu2 &U2);
-su2 operator*(const _Osu2 &U1, const su2 &U2);
+su2 operator*(const _Lsu2 &U1, const _Lsu2 &U2);
+su2 operator*(const su2 &U1, const _Lsu2 &U2);
+su2 operator*(const _Lsu2 &U1, const su2 &U2);
 
-using Osu2 = _Osu2;
+using Lsu2 = _Lsu2;

@@ -1,5 +1,5 @@
 #include"su2.hh"
-#include"ostsu2.hh"
+#include"linearsu2.hh"
 #include"gaugeconfig.hh"
 #include"gauge_energy.hh"
 #include"energy_density.hh"
@@ -47,7 +47,7 @@ int main(int ac, char* av[]) {
   if(err > 0) {
     return err;
   }
-  gaugeconfig<Osu2> U(gparams.Lx, gparams.Ly, gparams.Lz, gparams.Lt, gparams.ndims, gparams.beta);
+  gaugeconfig<Lsu2> U(gparams.Lx, gparams.Ly, gparams.Lz, gparams.Lt, gparams.ndims, gparams.beta);
   if(gparams.restart) {
     err = U.load(gparams.configfilename);
     if(err != 0) {

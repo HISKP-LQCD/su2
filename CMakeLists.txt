@@ -58,7 +58,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS} -D_USE_OMP_")
 add_library(su2
     su2.cc
     genzsu2.cc
-    ostsu2.cc
+    linearsu2.cc
 ##    wilsonloop.cc
 ##    energy_density.cc
 ##    gradient_flow.cc
@@ -74,11 +74,11 @@ endif()
 
 add_executable(su2-metropolis main.cc)
 add_executable(genz genz.cc)
-add_executable(ost ost.cc)
+add_executable(linear linear.cc)
 #add_executable(measure measure.cc)
 
 #foreach(target su2-metropolis genz measure)
-foreach(target su2-metropolis genz ost)
+foreach(target su2-metropolis genz linear)
   if(Boost_FOUND)
     target_link_libraries(${target} su2 ${Boost_LIBRARIES})
   else()

@@ -177,11 +177,11 @@ gaugeconfig<Gsu2> hotstart(const size_t Lx, const size_t Ly,
   return(config);
 }
 
-gaugeconfig<Osu2> Ohotstart(const size_t Lx, const size_t Ly,
+gaugeconfig<Lsu2> Ohotstart(const size_t Lx, const size_t Ly,
                             const size_t Lz, const size_t Lt, 
                             const int seed, const size_t m,
                             const double _delta, const size_t ndims) {
-  gaugeconfig<Osu2> config(Lx, Ly, Lz, Lt, ndims);
+  gaugeconfig<Lsu2> config(Lx, Ly, Lz, Lt, ndims);
   double delta = _delta;
   if(delta < 0.) delta = 0;
   if(delta > 1.) delta = 1.;

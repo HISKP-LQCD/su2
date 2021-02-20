@@ -1,9 +1,9 @@
 #include"su2.hh"
-#include"ostsu2.hh"
+#include"linearsu2.hh"
 #include<complex>
 #include<math.h>
 
-su2 operator*(const Osu2 &U1, const Osu2 &U2) {
+su2 operator*(const Lsu2 &U1, const Lsu2 &U2) {
   const double J1 = U1.getJ(), J2 = U2.getJ();
   Complex a1(U1.s[0]*static_cast<double>(U1.j[0])/J1,
              U1.s[1]*static_cast<double>(U1.j[1])/J1);
@@ -17,7 +17,7 @@ su2 operator*(const Osu2 &U1, const Osu2 &U2) {
   return(res);
 }
 
-su2 operator*(const su2 &U1, const Osu2 &U2) {
+su2 operator*(const su2 &U1, const Lsu2 &U2) {
   const double J2 = U2.getJ();
   Complex a2(U2.s[0]*static_cast<double>(U2.j[0])/J2,
              U2.s[1]*static_cast<double>(U2.j[1])/J2);
@@ -27,7 +27,7 @@ su2 operator*(const su2 &U1, const Osu2 &U2) {
   return(res);
 }
 
-su2 operator*(const Osu2 &U1, const su2 &U2) {
+su2 operator*(const Lsu2 &U1, const su2 &U2) {
   const double J1 = U1.getJ();
   Complex a1(U1.s[0]*static_cast<double>(U1.j[0])/J1,
              U1.s[1]*static_cast<double>(U1.j[1])/J1);

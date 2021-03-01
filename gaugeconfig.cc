@@ -27,34 +27,6 @@ int gaugeconfig::load(std::string const &path) {
   return 1;
 }
 
-void gaugeconfig::loadEigen(std::string const &path) {
-  std::cout << "## Reading config from file " << path << " in Eigen format" << std::endl;
-  std::ifstream ifs(path, std::ios::in | std::ios::binary);
-  double X[8];
-  for(size_t t = 0; t < Lt; t++) {
-    for(size_t x = 0; x < Ls; x++) {
-      for(size_t y = 0; y < Ls; y++) {
-        for(size_t z = 0; z < Ls; z++) {
-          //size_t coord[4] = {t, x, y, z};
-          for(size_t mu = 0; mu < 4; mu++) {
-            if(ifs.good()) {
-              ifs.read(reinterpret_cast<char *>(X), 8*sizeof(double));
-              su2 U(std::complex<double>(X[0], X[1]), std::complex<double>(X[4], X[5]));
-              data[ getIndex(t, x, y, z, mu) ] = U;
-              //std::cout << X[0] << " " << coord[mu] << std::endl;
-              //std::cout << U.det() << " " << trace(U) <<  " " << ifs.gcount() << std::endl;
-            }
-            else {
-              std::cerr << "Could not read all data from file " << path << std::endl;
-            }
-          }
-        }
-      }
-    }
-  }
-  return;
-}
-
 gaugeconfig coldstart(size_t Ls, size_t Lt) {
 
   gaugeconfig config(Ls, Lt);

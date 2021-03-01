@@ -57,7 +57,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS} -D_USE_OMP_")
 # here.
 add_library(su2
     gauge_energy.cc
-    gaugeconfig.cc
+    #gaugeconfig.cc
     #get_staples.cc
     u1.cc
     random_gauge_trafo.cc

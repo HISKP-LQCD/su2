@@ -13,14 +13,15 @@ template<class URNG> double sweep(gaugeconfig &U, URNG &engine, const double del
   std::uniform_real_distribution<double> uniform(0., 1.);
 
   size_t rate = 0;
-  su2 R(0., 0.);
+  su2 R;
   std::vector<size_t> x = {0, 0, 0, 0};
   for(x[0] = 0; x[0] < U.getLt(); x[0]++) {
     for(x[1] = 0; x[1] < U.getLs(); x[1]++) {
       for(x[2] = 0; x[2] < U.getLs(); x[2]++) {
         for(x[3] = 0; x[3] < U.getLs(); x[3]++) {
           for(size_t mu = 0; mu < 4; mu++) {
-            su2 K = get_staples(U, x, mu);
+            su2 K;
+            get_staples(K, U, x, mu);
             for(size_t n = 0; n < N_hit; n++) {
               random_su2(R, engine, delta);
               double deltaS = beta/static_cast<double>(N_c)*

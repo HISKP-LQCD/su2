@@ -7,7 +7,7 @@
 #include<fstream>
 #include<iomanip>
 
-double planar_wilsonloop_dir(gaugeconfig &U, const size_t r, const size_t t, 
+double planar_wilsonloop_dir(gaugeconfig<su2> &U, const size_t r, const size_t t, 
                              const size_t mu, const size_t nu) {
   double loop = 0.;
 
@@ -42,7 +42,7 @@ double planar_wilsonloop_dir(gaugeconfig &U, const size_t r, const size_t t,
   return loop;
 }
 
-double wilsonloop(gaugeconfig &U, const size_t r, const size_t t) {
+double wilsonloop(gaugeconfig<su2> &U, const size_t r, const size_t t) {
   double loop = 0.;
   for(size_t mu = 1; mu < 4; mu++) {
     loop += planar_wilsonloop_dir(U, r, t, mu, 0);
@@ -50,7 +50,7 @@ double wilsonloop(gaugeconfig &U, const size_t r, const size_t t) {
   return loop/U.getVolume()/N_c/3.;
 }
 
-void compute_all_loops(gaugeconfig &U, std::string const &path) {
+void compute_all_loops(gaugeconfig<su2> &U, std::string const &path) {
   std::ofstream os(path, std::ios::out);
   for(size_t t = 1; t < U.getLt(); t++) {
     os << t << " ";
@@ -63,7 +63,7 @@ void compute_all_loops(gaugeconfig &U, std::string const &path) {
   return;
 }
 
-void compute_spacial_loops(gaugeconfig &U, std::string const &path) {
+void compute_spacial_loops(gaugeconfig<su2> &U, std::string const &path) {
   std::ofstream os(path, std::ios::out);
   size_t r[2] = {2, 8};
   for(size_t t = 1; t < U.getLt(); t++) {

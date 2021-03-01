@@ -4,17 +4,17 @@
 #include<random>
 
 
-void random_gauge_trafo(gaugeconfig &U, const int seed) {
+template<class T> void random_gauge_trafo(gaugeconfig<T> &U, const int seed) {
   std::mt19937 engine(seed);
   
-  su2 rU(0., 0.), tmp(0., 0.);
+  T rU(0., 0.), tmp(0., 0.);
   std::vector<size_t> x = {0, 0, 0, 0};
   for(x[0] = 0; x[0] < U.getLt(); x[0]++) {
     for(x[1] = 0; x[1] < U.getLs(); x[1]++) {
       for(x[2] = 0; x[2] < U.getLs(); x[2]++) {
         for(x[3] = 0; x[3] < U.getLs(); x[3]++) {
           std::vector<size_t> xminusmu = x;
-          random_su2(rU, engine, 1);
+          random_element(rU, engine, 1);
           for(size_t mu = 0; mu < 4; mu++) {
             U(x, mu) = rU * U(x, mu);
 

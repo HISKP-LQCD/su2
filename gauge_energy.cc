@@ -10,7 +10,7 @@
 //
 // checked for gauge invariance
 
-double gauge_energy(gaugeconfig &U) {
+template<class T> double gauge_energy(gaugeconfig<T> &U) {
 
   double res = 0.;
 #ifdef _USE_OMP_

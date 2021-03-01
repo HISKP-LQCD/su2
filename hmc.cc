@@ -48,7 +48,7 @@ int main(int ac, char* av[]) {
     return err;
   }
 
-  gaugeconfig U(gparams.Ls, gparams.Lt, gparams.beta);
+  gaugeconfig<su2> U(gparams.Ls, gparams.Lt, gparams.beta);
   if(gparams.restart) {
     err = U.load(gparams.configfilename);
     if(err != 0) {
@@ -56,7 +56,7 @@ int main(int ac, char* av[]) {
     }
   }
   else {
-    U = hotstart(gparams.Ls, gparams.Lt, gparams.seed, gparams.heat);
+    hotstart(U, gparams.seed, gparams.heat);
   }
   // Molecular Dynamics parameters
   md_params mdparams(n_steps, tau);

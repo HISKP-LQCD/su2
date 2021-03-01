@@ -46,7 +46,7 @@ void runge_kutta(hamiltonian_field<double> &h, monomial<double> &SW, const doubl
   return;
 }
 
-void gradient_flow(gaugeconfig &U, std::string const &path, const double tmax) {
+void gradient_flow(gaugeconfig<su2> &U, std::string const &path, const double tmax) {
   double t[3], P[3], E[3];
   double eps = 0.01;
   std::ofstream os(path, std::ios::out);
@@ -60,7 +60,7 @@ void gradient_flow(gaugeconfig &U, std::string const &path, const double tmax) {
   energy_density(U, density, Q);
   E[2] = density;
 
-  gaugeconfig Vt(U);
+  gaugeconfig<su2> Vt(U);
   adjointfield<double> deriv(U.getLs(), U.getLt());
   hamiltonian_field<double> h(deriv, Vt);
 

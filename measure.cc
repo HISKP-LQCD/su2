@@ -61,8 +61,7 @@ int main(int ac, char* av[]) {
     return err;
   }
 
-  gaugeconfig U(gparams.Ls, gparams.Lt, gparams.beta);
-  //U = hotstart(gparams.Ls, gparams.Lt, 123456, 0.10);
+  gaugeconfig<su2> U(gparams.Ls, gparams.Lt, gparams.beta);
 
   for(size_t i = gparams.icounter; i < gparams.N_meas*nstep+gparams.icounter; i+=nstep) {
     std::ostringstream os;

@@ -7,7 +7,7 @@
 //             + sum__{nu != mu} U_nu(x+mu-nu)^dagger U_mu(x-nu)^dagger U_nu(x-nu)
 // 
 
-template<class T> void get_staples(T &K, gaugeconfig &U,
+template<class T, class S> void get_staples(T &K, gaugeconfig<S> &U,
                                    vector<size_t> const x,
                                    const size_t mu) {
   vector<size_t> x1 = x, x2 = x;

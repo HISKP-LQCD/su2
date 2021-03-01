@@ -1,4 +1,5 @@
 #include"su2.hh"
+#include"u1.hh"
 #include"gaugeconfig.hh"
 #include"gauge_energy.hh"
 #include"random_gauge_trafo.hh"
@@ -43,7 +44,7 @@ int main(int ac, char* av[]) {
     return err;
   }
 
-  gaugeconfig<su2> U(gparams.Ls, gparams.Lt, gparams.beta);
+  gaugeconfig<_u1> U(gparams.Ls, gparams.Lt, gparams.beta);
   if(gparams.restart) {
     err = U.load(gparams.configfilename);
     if(err != 0) {

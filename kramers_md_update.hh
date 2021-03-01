@@ -17,7 +17,7 @@ using std::vector;
 
 
 
-template<class URNG, class T> void kramers_md_update(gaugeconfig &U,
+template<class URNG, class T> void kramers_md_update(gaugeconfig<su2> &U,
                                                      URNG &engine, 
                                                      md_params &params,
                                                      std::list<monomial<T>*> &monomial_list, 
@@ -33,7 +33,7 @@ template<class URNG, class T> void kramers_md_update(gaugeconfig &U,
   const double gamma = params.getgamma();
   adjointfield<T> eta(U.getLs(), U.getLt());
   adjointfield<T> momenta_old(U.getLs(), U.getLt());
-  gaugeconfig U_old(U.getLs(), U.getLt(), U.getBeta());
+  gaugeconfig<su2> U_old(U.getLs(), U.getLt(), U.getBeta());
 
   for(size_t k = 0; k < params.getkmax(); k++) {
     // first momenta update

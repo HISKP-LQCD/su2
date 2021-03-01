@@ -29,7 +29,7 @@
 //
 
 
-void energy_density(gaugeconfig &U, double &res, double &Q) {
+void energy_density(gaugeconfig<su2> &U, double &res, double &Q) {
   res = 0.;
   Q = 0.;
 

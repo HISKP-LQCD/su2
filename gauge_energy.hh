@@ -29,8 +29,8 @@ template<class T> double gauge_energy(gaugeconfig<T> &U) {
             std::vector<size_t> x = {x0, x1, x2, x3};
             std::vector<size_t> xplusmu = x;
             std::vector<size_t> xplusnu = x;
-            for(size_t mu = 0; mu < 3; mu++) {
-              for(size_t nu = mu+1; nu < 4; nu++) {
+            for(size_t mu = 0; mu < U.getndims()-1; mu++) {
+              for(size_t nu = mu+1; nu < U.getndims(); nu++) {
                 xplusmu[mu] += 1;
                 xplusnu[nu] += 1;
                 tmp += trace(U(x, mu) * U(xplusmu, nu) *

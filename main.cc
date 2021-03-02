@@ -83,7 +83,7 @@ int main(int ac, char* av[]) {
       U.save(oss.str());
     }
   }
-  cout << rate/static_cast<double>(gparams.N_meas) << endl;
+  cout << "## Acceptance rate " << rate/static_cast<double>(gparams.N_meas) << endl;
 
   std::ostringstream oss;
   oss << "config." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz << "." << gparams.Lt << ".b" << U.getBeta() << ".final" << std::ends;

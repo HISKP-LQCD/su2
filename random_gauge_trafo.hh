@@ -17,7 +17,7 @@ template<class T> void random_gauge_trafo(gaugeconfig<T> &U, const int seed) {
         for(x[3] = 0; x[3] < U.getLz(); x[3]++) {
           std::vector<size_t> xminusmu = x;
           random_element(rU, engine, 1);
-          for(size_t mu = 0; mu < 4; mu++) {
+          for(size_t mu = 0; mu < U.getndims(); mu++) {
             U(x, mu) = rU * U(x, mu);
 
             xminusmu[mu] -= 1;

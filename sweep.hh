@@ -46,7 +46,7 @@ template<class URNG, class T> double sweep(gaugeconfig<T> &U, URNG &engine,
 template<class URNG> double sweep(gaugeconfig<_u1> &U, URNG &engine,
                                   const double delta, 
                                   const size_t N_hit, const double beta) {
-  
+ 
   std::uniform_real_distribution<double> uniform(0., 1.);
 
   size_t rate = 0;
@@ -67,7 +67,7 @@ template<class URNG> double sweep(gaugeconfig<_u1> &U, URNG &engine,
               if(!accept) accept = (uniform(engine) < exp(-deltaS));
               if(accept) {
                 U(x, mu) = U(x, mu) * R;
-                U(x, mu).restoreSU();
+                //U(x, mu).restoreSU();
                 rate += 1;
               }
             }

@@ -36,10 +36,9 @@ template<class URNG> void random_element(_u1 &U, URNG &engine,
   return;
 }
 
-template<class URNG> void random_su2(Gsu2 &U, URNG &engine, 
-                                     const size_t m = 10,
-                                     const double delta = 0.) {
-
+template<class URNG> void random_element(Gsu2 &U, URNG &engine, 
+                                         const double delta = 0.) {
+  const size_t m = U.getm();
   size_t lower = static_cast<int>(delta * m);
   size_t j[4];
   std::uniform_int_distribution<int> uni1(lower, m);
@@ -59,11 +58,10 @@ template<class URNG> void random_su2(Gsu2 &U, URNG &engine,
   return;
 }
 
-template<class URNG> void random_su2(Lsu2 &U, URNG &engine, 
-                                     const size_t m = 10,
-                                     const double delta = 0.) {
-
-
+template<class URNG> void random_element(Lsu2 &U, URNG &engine, 
+                                         const double delta = 0.) {
+  
+  const size_t m = U.getm();
   size_t lower = static_cast<size_t>(delta * m);
   size_t j[4];
   std::uniform_int_distribution<int> uni1(lower, m);

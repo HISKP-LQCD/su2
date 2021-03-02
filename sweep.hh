@@ -15,7 +15,7 @@ template<class URNG> double sweep(gaugeconfig<su2> &U, URNG &engine,
   std::uniform_real_distribution<double> uniform(0., 1.);
 
   size_t rate = 0;
-  T R;
+  su2 R;
   std::vector<size_t> x = {0, 0, 0, 0};
   for(x[0] = 0; x[0] < U.getLt(); x[0]++) {
     for(x[1] = 0; x[1] < U.getLx(); x[1]++) {
@@ -97,7 +97,8 @@ template<class URNG, class T> double sweep(gaugeconfig<T> &U, URNG &engine,
       for(x[2] = 0; x[2] < U.getLy(); x[2]++) {
         for(x[3] = 0; x[3] < U.getLz(); x[3]++) {
           for(size_t mu = 0; mu < U.getndims(); mu++) {
-            su2 K = get_staples(U, x, mu);
+            su2 K(0, 0);
+            get_staples(K, U, x, mu);
             for(size_t n = 0; n < N_hit; n++) {
               T R = U(x, mu);
               double w_orig = R.weight();

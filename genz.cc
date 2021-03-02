@@ -48,6 +48,8 @@ int main(int ac, char* av[]) {
     return err;
   }
   gaugeconfig<Gsu2> U(gparams.Lx, gparams.Ly, gparams.Lz, gparams.Lt, gparams.ndims, gparams.beta);
+  for(size_t i = 0; i < U.getSize(); i++) U[i].setm(m);
+
   if(gparams.restart) {
     err = U.load(gparams.configfilename);
     if(err != 0) {

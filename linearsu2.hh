@@ -81,6 +81,9 @@ public:
   size_t getm() const {
     return(m);
   }
+  void setm(const size_t _m) {
+    m = _m;
+  }
   double getJ() const {
     return(sqrt(static_cast<double>(j[0]*j[0] + j[1]*j[1] + j[2]*j[2] + j[3]*j[3])));
   }

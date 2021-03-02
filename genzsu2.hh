@@ -81,6 +81,9 @@ public:
   size_t getm() const {
     return(m);
   }
+  void setm(const size_t _m) {
+    m = _m;
+  }
   void operator=(const _Gsu2 &U) {
     for(int i = 0; i < 4; i++) {
       j[i] = U.getj(i);

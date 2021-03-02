@@ -44,7 +44,7 @@ int main(int ac, char* av[]) {
     return err;
   }
 
-  gaugeconfig<_u1> U(gparams.Ls, gparams.Lt, gparams.beta);
+  gaugeconfig<_u1> U(gparams.Lx, gparams.Ly, gparams.Lz, gparams.Lt, gparams.beta);
   if(gparams.restart) {
     err = U.load(gparams.configfilename);
     if(err != 0) {
@@ -76,14 +76,14 @@ int main(int ac, char* av[]) {
     os << i << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy/U.getVolume()/6. << " " << -U.getBeta()*(U.getVolume()*6 - energy) << endl;
     if(i > 0 && (i % gparams.N_save) == 0) {
       std::ostringstream oss;
-      oss << "config." << gparams.Ls << "." << gparams.Lt << ".b" << gparams.beta << "." << i << std::ends;
+      oss << "config." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz<< "." << gparams.Lt << ".b" << gparams.beta << "." << i << std::ends;
       U.save(oss.str());
     }
   }
   cout << rate/static_cast<double>(gparams.N_meas) << endl;
 
   std::ostringstream oss;
-  oss << "config." << gparams.Ls << "." << gparams.Lt << ".b" << U.getBeta() << ".final" << std::ends;
+  oss << "config." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz<< "." << gparams.Lt << ".b" << U.getBeta() << ".final" << std::ends;
   U.save(oss.str());
 
   return(0);

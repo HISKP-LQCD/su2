@@ -56,7 +56,7 @@ int main(int ac, char* av[]) {
     }
   }
   else {
-    hotstart(U, gparams.Lx, gparams.Ly, gparams.Lz, gparams.Lt, gparams.seed, gparams.heat, gparams.ndims);
+    hotstart(U, gparams.seed, gparams.heat);
   }
   // Molecular Dynamics parameters
   md_params mdparams(n_steps, tau);

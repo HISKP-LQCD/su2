@@ -32,7 +32,9 @@ public:
           for(size_t x3 = 0; x3 < h.U->getLz(); x3++) {
             std::vector<size_t> x = {x0, x1, x2, x3};
             for(size_t mu = 0; mu < h.U->getndims(); mu++) {
-              _su2 S = (*h.U)(x, mu) * get_staples(*h.U, x, mu);
+              _su2 S(0., 0.);
+              get_staples(S, *h.U, x, mu);
+              S = (*h.U)(x, mu) * S;
               const Complex a = S.geta(), b = S.getb();
               // the antihermitian traceless part
               // beta/N_c *(U*U^stap - (U*U^stap)^dagger)

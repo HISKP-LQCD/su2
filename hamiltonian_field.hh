@@ -6,7 +6,7 @@
 
 template<class T> struct hamiltonian_field {
   adjointfield<T> * momenta;
-  gaugeconfig * U;
-  hamiltonian_field(adjointfield<T> &momenta, gaugeconfig &U) :
+  gaugeconfig<su2> * U;
+  hamiltonian_field(adjointfield<T> &momenta, gaugeconfig<su2> &U) :
     momenta(&momenta), U(&U) {}
 };

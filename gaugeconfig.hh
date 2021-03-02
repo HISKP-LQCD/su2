@@ -1,13 +1,21 @@
 #pragma once
 
 #include"su2.hh"
+#include"u1.hh"
+#include"random_su2.hh"
+#include<random>
 #include<vector>
+#include<cmath>
+#include<fstream>
+#include<complex>
+#include<iostream>
+#include<cassert>
 
 using std::vector;
 
-class gaugeconfig {
+template<class T> class gaugeconfig {
 public:
-  using value_type = su2;
+  using value_type = T;
 
   gaugeconfig(const size_t Lx, const size_t Ly, const size_t Lz, const size_t Lt, const size_t ndims=4, const double beta=0) : 
     Lx(Lx), Ly(Ly), Lz(Lz), Lt(Lt), volume(Lx*Ly*Lz*Lt), beta(beta), ndims(ndims) {
@@ -93,7 +101,6 @@ public:
 
   void save(std::string const &path) const;
   int load(std::string const &path);
-  void loadEigen(std::string const &path);
 
 private:
   size_t Lx, Ly, Lz, Lt, volume, ndims;
@@ -111,6 +118,51 @@ private:
   }
 };
 
-gaugeconfig hotstart(const size_t Lx, const size_t Ly, const size_t Lz, const size_t Lt, 
-                     const int seed, const double _delta, const size_t ndims);
-gaugeconfig coldstart(const size_t Lx, const size_t Ly, const size_t Lz, const size_t Lt, const size_t ndims);
+template<class T> void gaugeconfig<T>::save(std::string const &path) const {
+  std::ofstream ofs(path, std::ios::out | std::ios::binary);
+  ofs.write(reinterpret_cast<char const *>(data.data()), storage_size());
+  return;
+}
+
+template<class T> int gaugeconfig<T>::load(std::string const &path) {
+  std::cout << "## Reading config from file " << path << std::endl;
+  std::ifstream ifs(path, std::ios::in | std::ios::binary);
+  if(ifs) {
+    ifs.read(reinterpret_cast<char *>(data.data()), storage_size());
+    return 0;
+  }
+  else
+    std::cerr << "Error: could not read file from " << path << std::endl;
+  return 1;
+}
+
+
+template<class T> void coldstart(gaugeconfig<T> &config) {
+
+#pragma omp parallel for
+  for(size_t i = 0; i < config.getSize(); i++) {
+    config[i] = T(1., 0.);
+  }
+}
+
+template<class T> void coldstart(gaugeconfig<_u1> &config) {
+
+#pragma omp parallel for
+  for(size_t i = 0; i < config.getSize(); i++) {
+    config[i] = _u1(0.);
+  }
+}
+
+template<class T> void  hotstart(gaugeconfig<T> & config,
+                                 const int seed, const double _delta) {
+
+  double delta = _delta;
+  if(delta < 0.) delta = 0;
+  if(delta > 1.) delta = 1.;
+  std::mt19937 engine(seed);
+
+  for(size_t i = 0; i < config.getSize(); i++) {
+    random_element(config[i], engine, delta);
+  }
+}
+

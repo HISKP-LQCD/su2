@@ -15,7 +15,7 @@
 using std::vector;
 
 
-template<class URNG, class T> void md_update(gaugeconfig &U,
+template<class URNG, class T> void md_update(gaugeconfig<su2> &U,
                                              URNG &engine, 
                                              md_params &params,
                                              std::list<monomial<T>*> &monomial_list, 
@@ -35,7 +35,7 @@ template<class URNG, class T> void md_update(gaugeconfig &U,
   }
 
   // keep a copy of original gauge field
-  gaugeconfig U_old(U);
+  gaugeconfig<su2> U_old(U);
 
   // perform MD evolution
   md_integ.integrate(monomial_list, h, params);
@@ -61,7 +61,7 @@ template<class URNG, class T> void md_update(gaugeconfig &U,
   // if wanted, perform a reversibility violation test.
   if(params.getrevtest()) {
     delta_H = 0.;
-    gaugeconfig U_save(U);
+    gaugeconfig<su2> U_save(U);
     h.momenta->flipsign();
     md_integ.integrate(monomial_list, h, params);
 

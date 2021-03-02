@@ -65,7 +65,12 @@ private:
   Complex a, b;
 };
 
-template<class matrix> double trace(matrix const &U) {
+//template<class matrix> double trace(matrix const &U) {
+//  double a = std::real(U.geta());
+//  return(2*a);
+//}
+
+inline double trace(_su2 const &U) {
   double a = std::real(U.geta());
   return(2*a);
 }

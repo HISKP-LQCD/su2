@@ -2,6 +2,7 @@
 
 #include"su2.hh"
 #include"genzsu2.hh"
+#include"u1.hh"
 #include"random_su2.hh"
 #include<random>
 #include<vector>
@@ -101,7 +102,6 @@ public:
 
   void save(std::string const &path) const;
   int load(std::string const &path);
-  void loadEigen(std::string const &path);
 
 private:
   size_t Lx, Ly, Lz, Lt, volume, ndims;
@@ -118,7 +118,6 @@ private:
     return( (((y0*Lx + y1)*Ly + y2)*Lz + y3)*ndims + _mu );
   }
 };
-
 
 template<class T> void gaugeconfig<T>::save(std::string const &path) const {
   std::ofstream ofs(path, std::ios::out | std::ios::binary);
@@ -138,76 +137,32 @@ template<class T> int gaugeconfig<T>::load(std::string const &path) {
   return 1;
 }
 
-gaugeconfig<Gsu2> coldstart(const size_t Lx, const size_t Ly,
-                            const size_t Lz, const size_t Lt,
-                            const size_t ndims, const size_t m=10) {
-  gaugeconfig<Gsu2> config(Lx, Ly, Lz, Lt, ndims);
+template<class T> void coldstart(gaugeconfig<T> &config) {
+
 #pragma omp parallel for
   for(size_t i = 0; i < config.getSize(); i++) {
-    config[i] = Gsu2(m);
+    config[i] = T(1., 0.);
   }
-  return(config);
 }
 
-gaugeconfig<su2> coldstart(const size_t Lx, const size_t Ly,
-                           const size_t Lz, const size_t Lt,
-                           const size_t ndims) {
-  
-  gaugeconfig<su2> config(Lx, Ly, Lz, Lt, ndims);
+template<class T> void coldstart(gaugeconfig<_u1> &config) {
+
 #pragma omp parallel for
   for(size_t i = 0; i < config.getSize(); i++) {
-    config[i] = su2(1., 0.);
+    config[i] = _u1(0.);
   }
-  return(config);
 }
 
-gaugeconfig<Gsu2> hotstart(const size_t Lx, const size_t Ly,
-                           const size_t Lz, const size_t Lt, 
-                           const int seed, const size_t m,
-                           const double _delta, const size_t ndims) {
-  gaugeconfig<Gsu2> config(Lx, Ly, Lz, Lt, ndims);
+template<class T> void  hotstart(gaugeconfig<T> & config,
+                                 const int seed, const double _delta) {
+
   double delta = _delta;
   if(delta < 0.) delta = 0;
   if(delta > 1.) delta = 1.;
   std::mt19937 engine(seed);
 
   for(size_t i = 0; i < config.getSize(); i++) {
-    random_su2(config[i], engine, m, delta);
+    random_element(config[i], engine, delta);
   }
-  return(config);
-}
-
-gaugeconfig<Lsu2> Ohotstart(const size_t Lx, const size_t Ly,
-                            const size_t Lz, const size_t Lt, 
-                            const int seed, const size_t m,
-                            const double _delta, const size_t ndims) {
-  gaugeconfig<Lsu2> config(Lx, Ly, Lz, Lt, ndims);
-  double delta = _delta;
-  if(delta < 0.) delta = 0;
-  if(delta > 1.) delta = 1.;
-  std::mt19937 engine(seed);
-
-  for(size_t i = 0; i < config.getSize(); i++) {
-    random_su2(config[i], engine, m, delta);
-  }
-  return(config);
-}
-
-
-gaugeconfig<su2> hotstart(const size_t Lx, const size_t Ly,
-                          const size_t Lz, const size_t Lt, 
-                          const int seed, const double _delta,
-                          const size_t ndims) {
-  
-  gaugeconfig<su2> config(Lx, Ly, Lz, Lt, ndims);
-  double delta = _delta;
-  if(delta < 0.) delta = 0;
-  if(delta > 1.) delta = 1.;
-  std::mt19937 engine(seed);
-  
-  for(size_t i = 0; i < config.getSize(); i++) {
-    random_su2(config[i], engine, delta);
-  }
-  return(config);
 }
 

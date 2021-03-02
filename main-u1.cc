@@ -1,7 +1,7 @@
 #include"su2.hh"
+#include"u1.hh"
 #include"gaugeconfig.hh"
 #include"gauge_energy.hh"
-#include"energy_density.hh"
 #include"random_gauge_trafo.hh"
 #include"sweep.hh"
 #include"parse_commandline.hh"
@@ -26,8 +26,8 @@ int main(int ac, char* av[]) {
   size_t N_hit = 10;
   double delta = 0.1;
 
-  cout << "## Metropolis Algorithm for SU(2) gauge theory" << endl;
-  cout << "## (C) Carsten Urbach <urbach@hiskp.uni-bonn.de> (2017,2020)" << endl;
+  cout << "## Metropolis Algorithm for U(1) gauge theory" << endl;
+  cout << "## (C) Carsten Urbach <urbach@hiskp.uni-bonn.de> (2017, 2021)" << endl;
   cout << "## GIT branch " << GIT_BRANCH << " on commit " << GIT_COMMIT_HASH << endl << endl;  
 
   po::options_description desc("Allowed options");
@@ -44,7 +44,7 @@ int main(int ac, char* av[]) {
     return err;
   }
 
-  gaugeconfig<su2> U(gparams.Lx, gparams.Ly, gparams.Lz, gparams.Lt, gparams.ndims, gparams.beta);
+  gaugeconfig<_u1> U(gparams.Lx, gparams.Ly, gparams.Lz, gparams.Lt, gparams.ndims, gparams.beta);
   if(gparams.restart) {
     err = U.load(gparams.configfilename);
     if(err != 0) {
@@ -59,47 +59,36 @@ int main(int ac, char* av[]) {
   double fac = 1.;
   if(U.getndims() == 4) fac = 1./6.;
   if(U.getndims() == 3) fac = 1./2.;
-  const double normalisation = fac/U.getVolume()/N_c;
-  double density, Q;
-  energy_density(U, density, Q);
-  cout << "Initial Plaquette: " << plaquette*normalisation << endl;
-  cout << "Initial Energy Density: " << density << endl;
-  cout << "Initial Topological Charge: " << Q << endl;
+  const double normalisation = fac/U.getVolume();
+  cout << "Initital Plaquette: " << plaquette*normalisation << endl; 
 
   random_gauge_trafo(U, 654321);
   plaquette = gauge_energy(U);
-  energy_density(U, density, Q);
   cout << "Plaquette after rnd trafo: " << plaquette*normalisation << endl; 
-  cout << "Energy Density rnd trafo: " << density << endl;
-  cout << "Topological Charge rnd trafo: " << Q << endl;
+
 
   std::ofstream os;
   if(gparams.icounter == 0) 
-    os.open("output.metropolis.data", std::ios::out);
+    os.open("output.u1-metropolis.data", std::ios::out);
   else
-    os.open("output.metropolis.data", std::ios::app);
+    os.open("output.u1-metropolis.data", std::ios::app);
   double rate = 0.;
   for(size_t i = gparams.icounter; i < gparams.N_meas + gparams.icounter; i++) {
     std::mt19937 engine(gparams.seed+i);
     rate += sweep(U, engine, delta, N_hit, gparams.beta);
     double energy = gauge_energy(U);
-    energy_density(U, density, Q);
-    cout << i << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy*normalisation <<
-      " " << -U.getBeta()/N_c*(U.getVolume()*N_c/fac - energy) << " " <<
-      density << " " << Q << endl;
-    os << i << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy*normalisation <<
-      " " << -U.getBeta()/N_c*(U.getVolume()*N_c/fac - energy) << " " <<
-      density << " " << Q << endl;
+    cout << i << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy*normalisation << " " << -U.getBeta()*(U.getVolume()*6/fac - energy) << endl;
+    os << i << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy*normalisation << " " << -U.getBeta()*(U.getVolume()*6/fac - energy) << endl;
     if(i > 0 && (i % gparams.N_save) == 0) {
       std::ostringstream oss;
-      oss << "config." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz << "." << gparams.Lt << ".b" << gparams.beta << "." << i << std::ends;
+      oss << "configu1." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz<< "." << gparams.Lt << ".b" << gparams.beta << "." << i << std::ends;
       U.save(oss.str());
     }
   }
   cout << "## Acceptance rate " << rate/static_cast<double>(gparams.N_meas) << endl;
 
   std::ostringstream oss;
-  oss << "config." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz << "." << gparams.Lt << ".b" << U.getBeta() << ".final" << std::ends;
+  oss << "configu1." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz<< "." << gparams.Lt << ".b" << U.getBeta() << ".final" << std::ends;
   U.save(oss.str());
 
   return(0);

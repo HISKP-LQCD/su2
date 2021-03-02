@@ -58,7 +58,7 @@ int main(int ac, char* av[]) {
   double plaquette = gauge_energy(U);
   double fac = 1.;
   if(U.getndims() == 4) fac = 1./6.;
-  if(U.getndims() == 3) fac = 1./2.;
+  if(U.getndims() == 3) fac = 1./3.;
   const double normalisation = fac/U.getVolume();
   cout << "Initital Plaquette: " << plaquette*normalisation << endl; 
 

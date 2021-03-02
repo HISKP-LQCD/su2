@@ -41,7 +41,7 @@ public:
     return(_u1(-a));
   }
   double trace() {
-    return((std::cos(a*2*M_PI)));
+    return(std::cos(a*2*M_PI));
   }
   Complex det() {
     return(std::exp(2*a*M_PI*Complex(0., 1.))); 
@@ -53,6 +53,10 @@ private:
   double a;
 };
 
+inline double trace(_u1 const &U) {
+  return(std::cos(U.geta()*2*M_PI));
+}
+
 double trace(Complex c);
 
 _u1 operator*(const _u1 &U1, const _u1 &U2);
@@ -61,4 +65,3 @@ Complex operator*(const Complex &U1, const _u1 &U2);
 Complex operator+(const _u1 &U1, const _u1 &U2);
 Complex operator-(const _u1 &U1, const _u1 &U2);
 void operator+=(Complex & U1, const _u1 & U2);
-//Complex& operator+=(const _u1 &U);

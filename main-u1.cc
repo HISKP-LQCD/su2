@@ -5,6 +5,7 @@
 #include"random_gauge_trafo.hh"
 #include"sweep.hh"
 #include"parse_commandline.hh"
+#include"energy_density.hh"
 #include"version.hh"
 
 #include<iostream>
@@ -26,7 +27,7 @@ int main(int ac, char* av[]) {
   size_t N_hit = 10;
   double delta = 0.1;
 
-  cout << "## Metropolis Algorithm for SU(2) gauge theory" << endl;
+  cout << "## Metropolis Algorithm for U(1) gauge theory" << endl;
   cout << "## (C) Carsten Urbach <urbach@hiskp.uni-bonn.de> (2017)" << endl;
   cout << "## GIT branch " << GIT_BRANCH << " on commit " << GIT_COMMIT_HASH << endl << endl;  
 
@@ -72,8 +73,10 @@ int main(int ac, char* av[]) {
     std::mt19937 engine(gparams.seed+i);
     rate += sweep(U, engine, delta, N_hit, gparams.beta);
     double energy = gauge_energy(U);
-    cout << i << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy/U.getVolume()/6. << " " << -U.getBeta()*(U.getVolume()*6 - energy) << endl;
-    os << i << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy/U.getVolume()/6. << " " << -U.getBeta()*(U.getVolume()*6 - energy) << endl;
+    double E = 0., Q = 0.;
+    energy_density(U, E, Q);
+    cout << i << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy/U.getVolume()/6. << " " << Q << endl;
+    os << i << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy/U.getVolume()/6. << " " << Q << endl;
     if(i > 0 && (i % gparams.N_save) == 0) {
       std::ostringstream oss;
       oss << "config." << gparams.Ls << "." << gparams.Lt << ".b" << gparams.beta << "." << i << std::ends;

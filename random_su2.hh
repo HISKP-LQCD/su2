@@ -27,7 +27,7 @@ template<class URNG, class T> void random_element(T &U, URNG &engine,
 template<class URNG> void random_element(_u1 &U, URNG &engine, 
                                          const double delta = 1.) {
 
-  std::uniform_real_distribution<double> dist(0., delta);
+  std::uniform_real_distribution<double> dist(-delta, delta);
 
   U = _u1(dist(engine));
   return;

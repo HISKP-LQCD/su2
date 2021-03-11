@@ -78,8 +78,8 @@ int main(int ac, char* av[]) {
     double energy = gauge_energy(U);
     double E = 0., Q = 0.;
     energy_density(U, E, Q);
-    cout << i << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy/U.getVolume()/6. << " " << Q << endl;
-    os << i << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy/U.getVolume()/6. << " " << Q << endl;
+    cout << i << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy*normalisation << " " << Q << endl;
+    os << i << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy*normalisation << " " << Q << endl;
     if(i > 0 && (i % gparams.N_save) == 0) {
       std::ostringstream oss;
       oss << "configu1." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz<< "." << gparams.Lt << ".b" << gparams.beta << "." << i << std::ends;

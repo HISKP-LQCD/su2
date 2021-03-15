@@ -200,10 +200,10 @@ void energy_density(gaugeconfig<_u1> &U, double &res, double &Q) {
             
             // when Gmunu components from the lower triangle are to be used,
             // we can simply skip them and multiply our normalisation by a factor of two
-            if( eps4.eps_idx[i][1] < eps4.eps_idx[i][0] ){
+            if( i2 < i1 ){
               continue;
             }
-            if( eps4.eps_idx[i][3] < eps4.eps_idx[i][2] ){
+            if( i4 < i3 ){
               continue;
             }
             Q += eps4.eps_val[i]*trace(G[ i1 ][ i2 ]*G[ i3 ][ i4 ] );

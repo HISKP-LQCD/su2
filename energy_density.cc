@@ -23,11 +23,17 @@
 // -->   -->
 //        nu
 //
-// checked for gauge invariance
+// checked for gauge invariance!
 //
+// energy density
 // E = 1/4 G_{mu nu}^a G_{mu nu}^a = 1/2 tr(G_{mu nu} G_{mu nu})
 //
-
+// topological charge
+// Q = 1./(32 pi^2) exp_\mu\nu\rho\sigma Trace[ G_\mu\nu G_\rho\sigma]
+//
+// from hep-lat/9603008 we take equation (6)
+// G_\mu\nu = 1/4 sum_clover 1/2 (clover - h.c.)
+//
 
 void energy_density(gaugeconfig<su2> &U, double &res, double &Q) {
   res = 0.;
@@ -84,6 +90,7 @@ void energy_density(gaugeconfig<su2> &U, double &res, double &Q) {
               x2[mu] -= 1;
 
               // traceless and anti-hermitian
+              // here we include a factor 1/2 already
               G[mu][nu] =  su2(0.5*(leaf.geta()-std::conj(leaf.geta())), leaf.getb());
               // trace(G_{mu,nu}^a G_{mu,nu}^a)
               // averaged over four plaquette Wilson loops 1./4./4.
@@ -100,10 +107,10 @@ void energy_density(gaugeconfig<su2> &U, double &res, double &Q) {
             
             // when Gmunu components from the lower triangle are to be used,
             // we can simply skip them and multiply our normalisation by a factor of two
-            if( eps4.eps_idx[i][1] < eps4.eps_idx[i][0] ){
+            if( i2 < i1 ){
               continue;
             }
-            if( eps4.eps_idx[i][3] < eps4.eps_idx[i][2] ){
+            if( i4 < i3 ){
               continue;
             }
             Q += eps4.eps_val[i]*trace(G[ i1 ][ i2 ]*G[ i3 ][ i4 ] );
@@ -115,7 +122,9 @@ void energy_density(gaugeconfig<su2> &U, double &res, double &Q) {
   // now we need to devide by 2, but we get a factor of two since we only
   // averaged mu < nu
   res = -res/U.getVolume();
-  Q =  -Q  / ( 4 * 32.0 * M_PI * M_PI );
+  // factor 2 from summing only mu < nu
+  // factor 1/4 from G_\mu\nu
+  Q =  -2 * Q  / ( 4 * 32.0 * M_PI * M_PI );
 }
 
 void energy_density(gaugeconfig<_u1> &U, double &res, double &Q) {
@@ -173,7 +182,8 @@ void energy_density(gaugeconfig<_u1> &U, double &res, double &Q) {
               x2[nu] += 1;
               x2[mu] -= 1;
 
-              // traceless and anti-hermitian
+              // purely imaginary in U(1)
+              // here we include a factor 1/2 already
               G[mu][nu] =  Complex(0, std::imag(leaf));
               // trace(G_{mu,nu}^a G_{mu,nu}^a)
               // averaged over four plaquette Wilson loops 1./4./4.
@@ -205,5 +215,7 @@ void energy_density(gaugeconfig<_u1> &U, double &res, double &Q) {
   // now we need to devide by 2, but we get a factor of two since we only
   // averaged mu < nu
   res = -res/U.getVolume();
-  Q =  -Q  / ( 4 * 32.0 * M_PI * M_PI );
+  // factor 2 from summing only mu < nu
+  // factor 1/4 from G_\mu\nu
+  Q =  -2 * Q  / ( 4 * 32.0 * M_PI * M_PI );
 }

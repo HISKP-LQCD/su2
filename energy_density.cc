@@ -29,11 +29,18 @@
 // E = 1/4 G_{mu nu}^a G_{mu nu}^a = 1/2 tr(G_{mu nu} G_{mu nu})
 //
 // topological charge
-// Q = 1./(32 pi^2) exp_\mu\nu\rho\sigma Trace[ G_\mu\nu G_\rho\sigma]
+// Q = 1./(32 pi^2) eps_\mu\nu\rho\sigma Trace[ G_\mu\nu G_\rho\sigma]
 //
 // from hep-lat/9603008 we take equation (6)
-// G_\mu\nu = 1/4 sum_clover 1/2 (clover - h.c.)
+// G_\mu\nu = 1/4 sum_clover 1/2 (clover - h.c.)_\mu\nu
 //
+// that means
+// Q = 1./(32 pi^2)/16 eps_\mu\nu\rho\sigma Trace[
+//  sum_clover 1/2 (clover - h.c.)_\mu\nu * sum_clover 1/2 (clover - h.c.)_\rho\sigma
+// ]
+//
+// if we take only the terms with \mu < \nu and \rho < \sigma, we need
+// to multiply by a factor of 4. All 4 terms come with the same sign.
 
 void energy_density(gaugeconfig<su2> &U, double &res, double &Q) {
   res = 0.;
@@ -107,7 +114,8 @@ void energy_density(gaugeconfig<su2> &U, double &res, double &Q) {
               int i4 = eps4.eps_idx[i][3];
               
               // when Gmunu components from the lower triangle are to be used,
-              // we can simply skip them and multiply our normalisation by a factor of two
+              // we can simply skip them and multiply our normalisation by a factor of four
+              // in total
               if( i2 < i1 ){
                 continue;
               }
@@ -124,9 +132,9 @@ void energy_density(gaugeconfig<su2> &U, double &res, double &Q) {
   // now we need to devide by 2, but we get a factor of two since we only
   // averaged mu < nu
   res = -res/U.getVolume();
-  // factor 2 from summing only mu < nu
-  // factor 1/4 from G_\mu\nu
-  Q =  -2 * Q  / ( 4 * 32.0 * M_PI * M_PI );
+  // factor 4 from summing only mu < nu and rho < sigma
+  // factor 1/16 from G_\mu\nu
+  Q =  -4. * Q  / ( 16. * 32.0 * M_PI * M_PI );
 }
 
 void energy_density(gaugeconfig<_u1> &U, double &res, double &Q) {
@@ -186,7 +194,7 @@ void energy_density(gaugeconfig<_u1> &U, double &res, double &Q) {
 
               // purely imaginary in U(1)
               // here we include a factor 1/2 already
-              G[mu][nu] =  Complex(0, std::imag(leaf));
+              G[mu][nu] =  Complex(0., std::imag(leaf));
               // trace(G_{mu,nu}^a G_{mu,nu}^a)
               // averaged over four plaquette Wilson loops 1./4./4.
               res += trace(G[mu][nu]*G[mu][nu])/16.;
@@ -202,7 +210,8 @@ void energy_density(gaugeconfig<_u1> &U, double &res, double &Q) {
               int i4 = eps4.eps_idx[i][3];
               
               // when Gmunu components from the lower triangle are to be used,
-              // we can simply skip them and multiply our normalisation by a factor of two
+              // we can simply skip them and multiply our normalisation by a factor of four
+              // in total
               if( i2 < i1 ){
                 continue;
               }
@@ -221,5 +230,5 @@ void energy_density(gaugeconfig<_u1> &U, double &res, double &Q) {
   res = -res/U.getVolume();
   // factor 2 from summing only mu < nu
   // factor 1/4 from G_\mu\nu
-  Q =  -2 * Q  / ( 4 * 32.0 * M_PI * M_PI );
+  Q =  -4. * Q  / ( 16. * 32.0 * M_PI * M_PI );
 }

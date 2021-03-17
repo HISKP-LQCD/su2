@@ -222,7 +222,7 @@ void energy_density(gaugeconfig<_u1> &U, double &res, double &Q) {
             }
           }
           if(U.getndims() == 2) {
-            Q += std::imag(G[0][1] - G[1][0])
+            Q += std::imag(G[0][1] - G[1][0]);
           }
         }
       }

@@ -128,8 +128,7 @@ template<class T> void energy_density(gaugeconfig<T> &U, double &res, double &Q)
             }
           }
           if(U.getndims() == 2) {
-            // FIXME for fact i!
-            //Q += -trace(Complex(0., 1.) * (G[0][1] - G[1][0]));
+            Q += -std::imag(trace((G[0][1] - G[1][0])));
           }
         }
       }

@@ -4,6 +4,7 @@
 #include"random_gauge_trafo.hh"
 #include"sweep.hh"
 #include"parse_commandline.hh"
+#include"energy_density.hh"
 #include"version.hh"
 
 #include<iostream>
@@ -73,8 +74,10 @@ int main(int ac, char* av[]) {
     std::mt19937 engine(gparams.seed+i);
     rate += sweep(U, engine, delta, N_hit, gparams.beta);
     double energy = gauge_energy(U);
-    cout << i << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy*normalisation << " " << -U.getBeta()/double(U.getNc())*(U.getVolume()*double(U.getNc())/fac - energy) << endl;
-    os << i << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy*normalisation << " " << -U.getBeta()/double(U.getNc())*(U.getVolume()*double(U.getNc())/fac - energy) << endl;
+    double E = 0., Q = 0.;
+    energy_density(U, E, Q);
+    cout << i << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy*normalisation << " " << Q << endl;
+    os << i << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy*normalisation << " " << Q << endl;
     if(i > 0 && (i % gparams.N_save) == 0) {
       std::ostringstream oss;
       oss << "config." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz << "." << gparams.Lt << ".b" << gparams.beta << "." << i << std::ends;

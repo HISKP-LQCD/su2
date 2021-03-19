@@ -49,7 +49,9 @@ public:
   void setBeta(const double _beta){
     beta = _beta;
   }
-
+  int getNc() {
+    return(data[0].N_c);
+  }
   void restoreSU() {
 #pragma omp parallel for
     for(size_t i = 0; i < getSize(); i++) {

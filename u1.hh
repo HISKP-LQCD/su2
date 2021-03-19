@@ -1,5 +1,7 @@
 #pragma once 
 
+#include"accum_type.hh"
+#include"traceless_antiherm.hh"
 #include<complex>
 #include<iostream>
 #include<fstream>
@@ -57,7 +59,17 @@ inline double trace(_u1 const &U) {
   return(std::cos(U.geta()*2*M_PI));
 }
 
-double trace(Complex c);
+inline double trace(Complex c) {
+  return(std::real(c));
+}
+
+template<> struct accum_type<_u1> {
+  typedef Complex type;
+};
+
+template<> inline Complex traceless_antiherm(const Complex& x) {
+  return(Complex(0., std::imag(x)));
+}
 
 _u1 operator*(const _u1 &U1, const _u1 &U2);
 Complex operator*(const _u1 &U1, const Complex &U2);
@@ -65,3 +77,4 @@ Complex operator*(const Complex &U1, const _u1 &U2);
 Complex operator+(const _u1 &U1, const _u1 &U2);
 Complex operator-(const _u1 &U1, const _u1 &U2);
 void operator+=(Complex & U1, const _u1 & U2);
+

@@ -2,6 +2,7 @@
 #include"gaugeconfig.hh"
 #include"energy_density.hh"
 #include"tensors.hh"
+#include"accum_type.hh"
 #include<complex>
 
 #ifndef M_PI
@@ -46,6 +47,7 @@ void energy_density(gaugeconfig<su2> &U, double &res, double &Q) {
   res = 0.;
   Q = 0.;
 
+  typedef typename accum_type<su2>::type accum;
   // Euclidean 4D totally anti-symemtric tensor 
   static epsilon4_t eps4 = new_epsilon4();
   
@@ -57,12 +59,12 @@ void energy_density(gaugeconfig<su2> &U, double &res, double &Q) {
           std::vector<size_t> x1 = x;
           std::vector<size_t> x2 = x;
           std::vector<size_t> x3 = x;
-          su2 G[4][4];
+          accum G[4][4];
           for(size_t mu = 0; mu < U.getndims()-1; mu++) {
             for(size_t nu = mu+1; nu < U.getndims(); nu++) {
               x1[mu] += 1;
               x2[nu] += 1;
-              su2 leaf = U(x, mu) * U(x1, nu) *
+              accum leaf = U(x, mu) * U(x1, nu) *
                 U(x2, mu).dagger()*U(x, nu).dagger();
               x1[mu] -= 1;
               x2[nu] -= 1;
@@ -98,7 +100,8 @@ void energy_density(gaugeconfig<su2> &U, double &res, double &Q) {
 
               // traceless and anti-hermitian
               // here we include a factor 1/2 already
-              G[mu][nu] =  su2(0.5*(leaf.geta()-std::conj(leaf.geta())), leaf.getb());
+              //G[mu][nu] =  su2(0.5*(leaf.geta()-std::conj(leaf.geta())), leaf.getb());
+              G[mu][nu] =  traceless_antiherm(leaf);
               // trace(G_{mu,nu}^a G_{mu,nu}^a)
               // averaged over four plaquette Wilson loops 1./4./4.
               res += trace(G[mu][nu]*G[mu][nu])/16.;
@@ -141,6 +144,7 @@ void energy_density(gaugeconfig<_u1> &U, double &res, double &Q) {
   res = 0.;
   Q = 0.;
 
+  typedef typename accum_type<_u1>::type accum;
   // Euclidean 4D totally anti-symemtric tensor 
   static epsilon4_t eps4 = new_epsilon4();
   
@@ -152,12 +156,12 @@ void energy_density(gaugeconfig<_u1> &U, double &res, double &Q) {
           std::vector<size_t> x1 = x;
           std::vector<size_t> x2 = x;
           std::vector<size_t> x3 = x;
-          Complex G[4][4];
+          accum G[4][4];
           for(size_t mu = 0; mu < U.getndims()-1; mu++) {
             for(size_t nu = mu+1; nu < U.getndims(); nu++) {
               x1[mu] += 1;
               x2[nu] += 1;
-              Complex leaf = 0.;
+              accum leaf;
               leaf += U(x, mu) * U(x1, nu) *
                 U(x2, mu).dagger()*U(x, nu).dagger();
               x1[mu] -= 1;
@@ -194,7 +198,8 @@ void energy_density(gaugeconfig<_u1> &U, double &res, double &Q) {
 
               // purely imaginary in U(1)
               // here we include a factor 1/2 already
-              G[mu][nu] =  Complex(0., std::imag(leaf));
+              //G[mu][nu] =  Complex(0., std::imag(leaf));
+              G[mu][nu] =  traceless_antiherm(leaf);
               // trace(G_{mu,nu}^a G_{mu,nu}^a)
               // averaged over four plaquette Wilson loops 1./4./4.
               res += trace(G[mu][nu]*G[mu][nu])/16.;

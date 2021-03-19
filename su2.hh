@@ -1,5 +1,7 @@
 #pragma once 
 
+#include"accum_type.hh"
+#include"traceless_antiherm.hh"
 #include<complex>
 //#include<cmath>
 
@@ -75,8 +77,13 @@ inline double trace(_su2 const &U) {
   return(2*a);
 }
 
+template<> inline _su2 traceless_antiherm(const _su2& x) {
+  return(_su2(0.5*(x.geta()-std::conj(x.geta())), x.getb()));
+}
+
 _su2 operator*(const _su2 &U1, const _su2 &U2);
 _su2 operator+(const _su2 &U1, const _su2 &U2);
 _su2 operator-(const _su2 &U1, const _su2 &U2);
 
 using su2 = _su2;
+

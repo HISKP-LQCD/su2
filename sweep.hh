@@ -27,7 +27,7 @@ template<class URNG, class T> double sweep(gaugeconfig<T> &U, URNG &engine,
             for(size_t n = 0; n < N_hit; n++) {
               random_element(R, engine, delta);
               double deltaS = beta/static_cast<double>(N_c)*
-                (trace(U(x, mu) * K) - trace(U(x, mu) * R * K));
+                (retrace(U(x, mu) * K) - retrace(U(x, mu) * R * K));
               bool accept = (deltaS < 0);
               if(!accept) accept = (uniform(engine) < exp(-deltaS));
               if(accept) {

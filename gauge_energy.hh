@@ -33,8 +33,8 @@ template<class T> double gauge_energy(gaugeconfig<T> &U) {
               for(size_t nu = mu+1; nu < 4; nu++) {
                 xplusmu[mu] += 1;
                 xplusnu[nu] += 1;
-                tmp += trace(U(x, mu) * U(xplusmu, nu) *
-                             U(xplusnu, mu).dagger()*U(x, nu).dagger());
+                tmp += retrace(U(x, mu) * U(xplusmu, nu) *
+                               U(xplusnu, mu).dagger()*U(x, nu).dagger());
                 xplusmu[mu] -= 1;
                 xplusnu[nu] -= 1;
               }

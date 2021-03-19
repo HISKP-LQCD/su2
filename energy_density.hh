@@ -103,7 +103,7 @@ template<class T> void energy_density(gaugeconfig<T> &U, double &res, double &Q)
               G[mu][nu] =  traceless_antiherm(leaf);
               // trace(G_{mu,nu}^a G_{mu,nu}^a)
               // averaged over four plaquette Wilson loops 1./4./4.
-              res += trace(G[mu][nu]*G[mu][nu])/16.;
+              res += retrace(G[mu][nu]*G[mu][nu])/16.;
             }
           }
 
@@ -123,7 +123,7 @@ template<class T> void energy_density(gaugeconfig<T> &U, double &res, double &Q)
             if( i4 < i3 ){
               continue;
             }
-            Q += eps4.eps_val[i]*trace(G[ i1 ][ i2 ]*G[ i3 ][ i4 ] );
+            Q += eps4.eps_val[i]*retrace(G[ i1 ][ i2 ]*G[ i3 ][ i4 ] );
           }
         }
       }

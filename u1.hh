@@ -46,7 +46,7 @@ public:
   _u1 dagger() const {
     return(_u1(-a));
   }
-  double trace() {
+  double retrace() {
     return(std::cos(a*2*M_PI));
   }
   Complex det() {
@@ -59,11 +59,11 @@ private:
   double a;
 };
 
-inline double trace(_u1 const &U) {
+inline double retrace(_u1 const &U) {
   return(std::cos(U.geta()*2*M_PI));
 }
 
-inline double trace(Complex c) {
+inline double retrace(Complex c) {
   return(std::real(c));
 }
 

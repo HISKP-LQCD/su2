@@ -53,15 +53,15 @@ template<class T> void energy_density(gaugeconfig<T> &U, double &res, double &Q)
   
   std::vector<size_t> x = {0, 0, 0, 0};
   for(x[0] = 0; x[0] < U.getLt(); x[0]++) {
-    for(x[1] = 0; x[1] < U.getLs(); x[1]++) {
-      for(x[2] = 0; x[2] < U.getLs(); x[2]++) {
-        for(x[3] = 0; x[3] < U.getLs(); x[3]++) {
+    for(x[1] = 0; x[1] < U.getLx(); x[1]++) {
+      for(x[2] = 0; x[2] < U.getLy(); x[2]++) {
+        for(x[3] = 0; x[3] < U.getLz(); x[3]++) {
           std::vector<size_t> x1 = x;
           std::vector<size_t> x2 = x;
           std::vector<size_t> x3 = x;
           accum G[4][4];
-          for(size_t mu = 0; mu < 3; mu++) {
-            for(size_t nu = mu+1; nu < 4; nu++) {
+          for(size_t mu = 0; mu < U.getndims()-1; mu++) {
+            for(size_t nu = mu+1; nu < U.getndims(); nu++) {
               x1[mu] += 1;
               x2[nu] += 1;
               accum leaf = U(x, mu) * U(x1, nu) *
@@ -107,23 +107,29 @@ template<class T> void energy_density(gaugeconfig<T> &U, double &res, double &Q)
             }
           }
 
-          // sum up the topological charge contribution now
-          for( int i = 0; i < eps4.N; i++ ){
-            int i1 = eps4.eps_idx[i][0];
-            int i2 = eps4.eps_idx[i][1];
-            int i3 = eps4.eps_idx[i][2];
-            int i4 = eps4.eps_idx[i][3];
-            
-            // when Gmunu components from the lower triangle are to be used,
-            // we can simply skip them and multiply our normalisation by a factor of four
-            // in total
-            if( i2 < i1 ){
-              continue;
+          if(U.getndims() == 4) {
+            // sum up the topological charge contribution now
+            for( int i = 0; i < eps4.N; i++ ){
+              int i1 = eps4.eps_idx[i][0];
+              int i2 = eps4.eps_idx[i][1];
+              int i3 = eps4.eps_idx[i][2];
+              int i4 = eps4.eps_idx[i][3];
+              
+              // when Gmunu components from the lower triangle are to be used,
+              // we can simply skip them and multiply our normalisation by a factor of four
+              // in total
+              if( i2 < i1 ){
+                continue;
+              }
+              if( i4 < i3 ){
+                continue;
+              }
+              Q += eps4.eps_val[i]*trace(G[ i1 ][ i2 ]*G[ i3 ][ i4 ] );
             }
-            if( i4 < i3 ){
-              continue;
-            }
-            Q += eps4.eps_val[i]*trace(G[ i1 ][ i2 ]*G[ i3 ][ i4 ] );
+          }
+          if(U.getndims() == 2) {
+            // FIXME for fact i!
+            //Q += -trace(Complex(0., 1.) * (G[0][1] - G[1][0]));
           }
         }
       }

@@ -34,7 +34,7 @@ double planar_wilsonloop_dir(gaugeconfig<su2> &U, const size_t r, const size_t t
             xrun[mu] -= 1;
             L *= U(xrun, mu).dagger();
           }
-          loop += trace(L);
+          loop += retrace(L);
         }
       }
     }

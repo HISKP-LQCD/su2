@@ -51,7 +51,7 @@ public:
   _su2 dagger() const {
     return(_su2(std::conj(a), -b));
   }
-  double trace() {
+  double retrace() {
     return(2.*std::real(a));
   }
   Complex det() {
@@ -72,7 +72,7 @@ private:
 //  return(2*a);
 //}
 
-inline double trace(_su2 const &U) {
+inline double retrace(_su2 const &U) {
   double a = std::real(U.geta());
   return(2*a);
 }

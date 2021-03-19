@@ -63,8 +63,12 @@ inline double retrace(_u1 const &U) {
   return(std::cos(U.geta()*2*M_PI));
 }
 
-inline double retrace(Complex c) {
+inline double retrace(const Complex c) {
   return(std::real(c));
+}
+
+inline Complex trace(const Complex c) {
+  return(c);
 }
 
 template<> struct accum_type<_u1> {

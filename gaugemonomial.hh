@@ -16,11 +16,11 @@ public:
   // S_g = sum_x sum_{mu<nu} beta*(1- 1/Nc*Re[Tr[U_{mu nu}]])
   // beta = 2*N_c/g_0^2
   void heatbath(hamiltonian_field<T> const &h) override {
-    monomial<T>::Hold = h.U->getBeta()*(h.U->getVolume()*6 - gauge_energy(*(h.U))/N_c);
+    monomial<T>::Hold = h.U->getBeta()*(h.U->getVolume()*6 - gauge_energy(*(h.U))/double(h.U->getNc()));
     return;
   }
   void accept(hamiltonian_field<T> const &h) override {
-    monomial<T>::Hnew = h.U->getBeta()*(h.U->getVolume()*6 - gauge_energy(*(h.U))/N_c);
+    monomial<T>::Hnew = h.U->getBeta()*(h.U->getVolume()*6 - gauge_energy(*(h.U))/double(h.U->getNc()));
     return;
   }
   void derivative(adjointfield<T> &deriv, hamiltonian_field<T> const &h, const T fac = 1.) const override {
@@ -38,7 +38,7 @@ public:
               const Complex a = S.geta(), b = S.getb();
               // the antihermitian traceless part
               // beta/N_c *(U*U^stap - (U*U^stap)^dagger)
-              deriv(x, mu) += fac*h.U->getBeta()/double(N_c) * 
+              deriv(x, mu) += fac*h.U->getBeta()/double(h.U->getNc()) * 
                 adjoint<double>(2.*std::imag(b), 2.*std::real(b), 2.*std::imag(a));
             }
           }

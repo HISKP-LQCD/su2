@@ -18,6 +18,7 @@ using Complex = std::complex<double>;
 
 class _u1 {
 public:
+  const size_t N_c = 1;
   explicit _u1() : a(0) {}
   explicit _u1(double a) : a(a) {}
   _u1(const _u1& U) : a(U.a) {}

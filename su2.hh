@@ -7,10 +7,10 @@
 
 using Complex = std::complex<double>;
 
-const size_t N_c = 2;
 
 class _su2 {
 public:
+  const size_t N_c = 2;
   explicit _su2() : a(0), b(0) {}
   explicit _su2(Complex a, Complex b) : a(a), b(b) {}
   _su2(const _su2& U) : a(U.a), b(U.b) {}
@@ -66,11 +66,6 @@ public:
 private:
   Complex a, b;
 };
-
-//template<class matrix> double trace(matrix const &U) {
-//  double a = std::real(U.geta());
-//  return(2*a);
-//}
 
 inline double retrace(_su2 const &U) {
   double a = std::real(U.geta());

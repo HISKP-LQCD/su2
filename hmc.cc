@@ -62,11 +62,11 @@ int main(int ac, char* av[]) {
   md_params mdparams(n_steps, tau);
 
   double plaquette = gauge_energy(U);
-  cout << "## Initital Plaquette: " << plaquette/U.getVolume()/N_c/6. << endl; 
+  cout << "## Initital Plaquette: " << plaquette/U.getVolume()/double(U.getNc())/6. << endl; 
 
   random_gauge_trafo(U, 654321);
   plaquette = gauge_energy(U);
-  cout << "## Plaquette after rnd trafo: " << plaquette/U.getVolume()/N_c/6. << endl; 
+  cout << "## Plaquette after rnd trafo: " << plaquette/U.getVolume()/double(U.getNc())/6. << endl; 
 
   // generate list of monomials
   gaugemonomial<double> gm(0);
@@ -98,7 +98,7 @@ int main(int ac, char* av[]) {
 
     double energy = gauge_energy(U);
     rate += mdparams.getaccept();
-    cout << i << " " << mdparams.getaccept() << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy/U.getVolume()/N_c/6. << " " << std::setw(15) << mdparams.getdeltaH() << " " 
+    cout << i << " " << mdparams.getaccept() << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy/U.getVolume()/double(U.getNc())/6. << " " << std::setw(15) << mdparams.getdeltaH() << " " 
          << std::setw(15) << rate/static_cast<double>(i+1) << " ";
     if(mdparams.getrevtest()) {
       cout << mdparams.getdeltadeltaH();
@@ -106,7 +106,7 @@ int main(int ac, char* av[]) {
     else cout << "NA";
     cout << endl;
 
-    os << i << " " << mdparams.getaccept() << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy/U.getVolume()/N_c/6. << " " << std::setw(15) << mdparams.getdeltaH() << " " 
+    os << i << " " << mdparams.getaccept() << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy/U.getVolume()/double(U.getNc())/6. << " " << std::setw(15) << mdparams.getdeltaH() << " " 
        << std::setw(15) << rate/static_cast<double>(i+1) << " ";
     if(mdparams.getrevtest()) {
       os << mdparams.getdeltadeltaH();

@@ -47,7 +47,7 @@ double wilsonloop(gaugeconfig<su2> &U, const size_t r, const size_t t) {
   for(size_t mu = 1; mu < U.getndims(); mu++) {
     loop += planar_wilsonloop_dir(U, r, t, mu, 0);
   }
-  return loop/U.getVolume()/N_c/3.;
+  return loop/U.getVolume()/double(U.getNc())/3.;
 }
 
 void compute_all_loops(gaugeconfig<su2> &U, std::string const &path) {

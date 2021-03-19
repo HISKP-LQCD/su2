@@ -52,7 +52,7 @@ int main() {
   cout << u.retrace() << " = " << retrace(u) << endl
        << u.det() << " " << u.geta() << " " << endl;
 
-  _u1 x(0.5), y(0.7), z;
+  _u1 x(0.5*2*M_PI), y(0.7*2*M_PI), z;
   cout << "test of det, the two following must be equal" << endl;
   cout << x.det() << " = " << std::exp(0.5*2*M_PI*Complex(0., 1.)) << endl;
   cout << "test of retrace, the two following must be equal" << endl;

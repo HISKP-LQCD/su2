@@ -5,16 +5,8 @@
 #include<complex>
 #include<iostream>
 #include<fstream>
-//#include<cmath>
-
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
-
 
 using Complex = std::complex<double>;
-
-//const size_t N_c = 2;
 
 class _u1 {
 public:
@@ -28,7 +20,7 @@ public:
   friend _u1 operator*(const _u1 &U1, const _u1 &U2);
   // implicit conversion operator to complex
   operator Complex() const {
-    return(std::exp(2*a*M_PI*Complex(0., 1.))); 
+    return(std::exp(a*Complex(0., 1.))); 
   }
   _u1& operator*=(const _u1 &U1) {
     this->a += U1.a;
@@ -48,10 +40,10 @@ public:
     return(_u1(-a));
   }
   double retrace() {
-    return(std::cos(a*2*M_PI));
+    return(std::cos(a));
   }
   Complex det() {
-    return(std::exp(2*a*M_PI*Complex(0., 1.))); 
+    return(std::exp(a*Complex(0., 1.))); 
   }
   void restoreSU() {
   }
@@ -61,7 +53,7 @@ private:
 };
 
 inline double retrace(_u1 const &U) {
-  return(std::cos(U.geta()*2*M_PI));
+  return(std::cos(U.geta()));
 }
 
 inline double retrace(const Complex c) {

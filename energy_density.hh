@@ -1,8 +1,7 @@
 #pragma once
-#include"su2.hh"
-#include"u1.hh"
 #include"gaugeconfig.hh"
 #include"tensors.hh"
+#include"accum_type.hh"
 #include<complex>
 
 #ifndef M_PI
@@ -24,16 +23,30 @@
 // -->   -->
 //        nu
 //
-// checked for gauge invariance
+// checked for gauge invariance!
 //
+// energy density
 // E = 1/4 G_{mu nu}^a G_{mu nu}^a = 1/2 tr(G_{mu nu} G_{mu nu})
 //
-
+// topological charge
+// Q = 1./(32 pi^2) eps_\mu\nu\rho\sigma Trace[ G_\mu\nu G_\rho\sigma]
+//
+// from hep-lat/9603008 we take equation (6)
+// G_\mu\nu = 1/4 sum_clover 1/2 (clover - h.c.)_\mu\nu
+//
+// that means
+// Q = 1./(32 pi^2)/16 eps_\mu\nu\rho\sigma Trace[
+//  sum_clover 1/2 (clover - h.c.)_\mu\nu * sum_clover 1/2 (clover - h.c.)_\rho\sigma
+// ]
+//
+// if we take only the terms with \mu < \nu and \rho < \sigma, we need
+// to multiply by a factor of 4. All 4 terms come with the same sign.
 
 template<class T> void energy_density(gaugeconfig<T> &U, double &res, double &Q) {
   res = 0.;
   Q = 0.;
 
+  typedef typename accum_type<T>::type accum;
   // Euclidean 4D totally anti-symemtric tensor 
   static epsilon4_t eps4 = new_epsilon4();
   
@@ -45,12 +58,12 @@ template<class T> void energy_density(gaugeconfig<T> &U, double &res, double &Q)
           std::vector<size_t> x1 = x;
           std::vector<size_t> x2 = x;
           std::vector<size_t> x3 = x;
-          su2 G[4][4];
+          accum G[4][4];
           for(size_t mu = 0; mu < U.getndims()-1; mu++) {
             for(size_t nu = mu+1; nu < U.getndims(); nu++) {
               x1[mu] += 1;
               x2[nu] += 1;
-              su2 leaf = U(x, mu) * U(x1, nu) *
+              accum leaf = U(x, mu) * U(x1, nu) *
                 U(x2, mu).dagger()*U(x, nu).dagger();
               x1[mu] -= 1;
               x2[nu] -= 1;
@@ -85,15 +98,16 @@ template<class T> void energy_density(gaugeconfig<T> &U, double &res, double &Q)
               x2[mu] -= 1;
 
               // traceless and anti-hermitian
-              G[mu][nu] =  su2(0.5*(leaf.geta()-std::conj(leaf.geta())), leaf.getb());
+              // here we include a factor 1/2 already
+              G[mu][nu] =  traceless_antiherm(leaf);
               // trace(G_{mu,nu}^a G_{mu,nu}^a)
               // averaged over four plaquette Wilson loops 1./4./4.
-              res += trace(G[mu][nu]*G[mu][nu])/16.;
+              res += retrace(G[mu][nu]*G[mu][nu])/16.;
             }
           }
 
-          // sum up the topological charge contribution now
           if(U.getndims() == 4) {
+            // sum up the topological charge contribution now
             for( int i = 0; i < eps4.N; i++ ){
               int i1 = eps4.eps_idx[i][0];
               int i2 = eps4.eps_idx[i][1];
@@ -101,15 +115,19 @@ template<class T> void energy_density(gaugeconfig<T> &U, double &res, double &Q)
               int i4 = eps4.eps_idx[i][3];
               
               // when Gmunu components from the lower triangle are to be used,
-              // we can simply skip them and multiply our normalisation by a factor of two
-              if( eps4.eps_idx[i][1] < eps4.eps_idx[i][0] ){
+              // we can simply skip them and multiply our normalisation by a factor of four
+              // in total
+              if( i2 < i1 ){
                 continue;
               }
-              if( eps4.eps_idx[i][3] < eps4.eps_idx[i][2] ){
+              if( i4 < i3 ){
                 continue;
               }
-              Q += eps4.eps_val[i]*trace(G[ i1 ][ i2 ]*G[ i3 ][ i4 ] );
+              Q += eps4.eps_val[i]*retrace(G[ i1 ][ i2 ]*G[ i3 ][ i4 ] );
             }
+          }
+          if(U.getndims() == 2) {
+            Q += -std::imag(trace((G[0][1] - G[1][0])));
           }
         }
       }
@@ -118,5 +136,8 @@ template<class T> void energy_density(gaugeconfig<T> &U, double &res, double &Q)
   // now we need to devide by 2, but we get a factor of two since we only
   // averaged mu < nu
   res = -res/U.getVolume();
-  Q =  -Q  / ( 4 * 32.0 * M_PI * M_PI );
+  // factor 4 from summing only mu < nu and rho < sigma
+  // factor 1/16 from G_\mu\nu
+  Q =  -4. * Q  / ( 16. * 32.0 * M_PI * M_PI );
 }
+

@@ -57,7 +57,7 @@ int main(int ac, char* av[]) {
 
   double plaquette = gauge_energy(U);
   double fac = 2./U.getndims()/(U.getndims()-1);
-  const double normalisation = fac/U.getVolume()/N_c;
+  const double normalisation = fac/U.getVolume()/double(U.getNc());
   double density, Q;
   energy_density(U, density, Q);
   cout << "Initial Plaquette: " << plaquette*normalisation << endl;
@@ -83,10 +83,10 @@ int main(int ac, char* av[]) {
     double energy = gauge_energy(U);
     energy_density(U, density, Q);
     cout << i << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy*normalisation <<
-      " " << -U.getBeta()/N_c*(U.getVolume()*N_c/fac - energy) << " " <<
+      " " << -U.getBeta()/double(U.getNc())*(U.getVolume()*double(U.getNc())/fac - energy) << " " <<
       density << " " << Q << endl;
     os << i << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy*normalisation <<
-      " " << -U.getBeta()/N_c*(U.getVolume()*N_c/fac - energy) << " " <<
+      " " << -U.getBeta()/double(U.getNc())*(U.getVolume()*double(U.getNc())/fac - energy) << " " <<
       density << " " << Q << endl;
     if(i > 0 && (i % gparams.N_save) == 0) {
       std::ostringstream oss;

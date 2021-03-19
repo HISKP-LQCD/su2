@@ -61,7 +61,7 @@ public:
   using value_type = adjoint<T>;
   
   adjointfield(const size_t Lx, const size_t Ly, const size_t Lz, const size_t Lt, const size_t ndims = 4) : 
-    Lx(Lx), Ly(Ly), Lt(Lt), volume(Lx*Ly*Lz*Lt), ndims(ndims) {
+    Lx(Lx), Ly(Ly), Lz(Lz), Lt(Lt), volume(Lx*Ly*Lz*Lt), ndims(ndims) {
     data.resize(volume*4);
   }
   adjointfield(const adjointfield &U) :
@@ -138,7 +138,7 @@ private:
   size_t Lx, Ly, Lz, Lt, volume, ndims;
   
   std::vector<value_type> data;
-  
+
   size_t getIndex(const size_t t, const size_t x, const size_t y, const size_t z, const size_t mu) const {
     size_t y0 = (t + Lt) % Lt;
     size_t y1 = (x + Lx) % Lx;

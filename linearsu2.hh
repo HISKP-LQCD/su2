@@ -10,6 +10,7 @@ using Complex = std::complex<double>;
 
 class _Lsu2 {
 public:
+  const size_t N_c = 2;
   explicit _Lsu2() : m(0) {
     j[0] = m;
     j[1] = 0;
@@ -108,7 +109,7 @@ public:
   _Lsu2 dagger() const {
     return(_Lsu2(m, j[0], j[1], j[2], s[0], -s[1], -s[2], -s[3]));
   }
-  double trace() {
+  double retrace() {
     return(2 * s[0] * static_cast<double>(j[0])/getJ());
   }
   Complex det() {
@@ -133,6 +134,11 @@ private:
   size_t j[4];
   int s[4];
 };
+
+template<> struct accum_type<_Lsu2> {
+  typedef _su2 type;
+};
+
 
 su2 operator*(const _Lsu2 &U1, const _Lsu2 &U2);
 su2 operator*(const su2 &U1, const _Lsu2 &U2);

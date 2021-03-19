@@ -10,6 +10,7 @@ using Complex = std::complex<double>;
 
 class _Gsu2 {
 public:
+  const size_t N_c = 2;
   explicit _Gsu2() : m(0) {
     j[0] = m;
     j[1] = 0;
@@ -126,6 +127,11 @@ private:
   size_t j[4];
   int s[4];
 };
+
+template<> struct accum_type<_Gsu2> {
+  typedef _su2 type;
+};
+
 
 su2 operator*(const _Gsu2 &U1, const _Gsu2 &U2);
 su2 operator*(const su2 &U1, const _Gsu2 &U2);

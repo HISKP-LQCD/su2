@@ -38,7 +38,7 @@ void runge_kutta(hamiltonian_field<double> &h, monomial<double> &SW, const doubl
     // where we sum over all oriented plaquettes
     // we sum over unoriented plaquettes, so we have to multiply by 2
     // which is usually in beta
-    SW.derivative(*(h.momenta), h, 2.*N_c*zfac[f]/h.U->getBeta());
+    SW.derivative(*(h.momenta), h, 2.*h.U->getNc()*zfac[f]/h.U->getBeta());
     // The '-' comes from the action to be tr(1-U(p))
     // update the flowed gauge field Vt
     update_gauge(h, -eps*expfac[f]);
@@ -47,17 +47,18 @@ void runge_kutta(hamiltonian_field<double> &h, monomial<double> &SW, const doubl
 }
 
 void gradient_flow(gaugeconfig<su2> &U, std::string const &path, const double tmax) {
-  double t[3], P[3], E[3];
+  double t[3], P[3], E[3], Q[3];
   double eps = 0.01;
   std::ofstream os(path, std::ios::out);
-  double density = 0., Q = 0.;
+  double density = 0., topQ = 0.;
   for(unsigned int i = 0; i < 3; i++) {
     t[i] = 0.;
     P[i] = 0.;
     E[i] = 0.;
+    Q[i] = 0.;
   }
-  P[2] = gauge_energy(U)/U.getVolume()/N_c/6.;
-  energy_density(U, density, Q);
+  P[2] = gauge_energy(U)/U.getVolume()/double(U.getNc())/6.;
+  energy_density(U, density, topQ);
   E[2] = density;
 
   gaugeconfig<su2> Vt(U);
@@ -70,21 +71,24 @@ void gradient_flow(gaugeconfig<su2> &U, std::string const &path, const double tm
     t[0] = t[2];
     P[0] = P[2];
     E[0] = E[2];
+    Q[0] = Q[2];
     for(unsigned int x0 = 1; x0 < 3; x0++) {
       t[x0] = t[x0-1] + eps;
       runge_kutta(h, SW, eps);
-      P[x0] = gauge_energy(Vt)/U.getVolume()/N_c/6.;
-      energy_density(Vt, density, Q);
+      P[x0] = gauge_energy(Vt)/U.getVolume()/double(U.getNc())/6.;
+      energy_density(Vt, density, topQ);
       E[x0] = density;
+      Q[x0] = topQ;
     }
-    double tsqP = t[1]*t[1]*2*N_c*6.*(1-P[1]);
+    double tsqP = t[1]*t[1]*2*U.getNc()*6.*(1-P[1]);
     double tsqE = t[1]*t[1]*E[1];
     os << std::scientific << std::setw(15) << t[1] << " ";
     os << P[1] << " ";
-    os << 2*N_c*6.*(1.-P[1]) << " ";
+    os << 2*U.getNc()*6.*(1.-P[1]) << " ";
     os << tsqP << " ";
     os << E[1] << " ";
-    os << tsqE << std::endl;
+    os << tsqE << " ";
+    os << topQ << std::endl;
   }
 
   return;

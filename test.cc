@@ -24,8 +24,8 @@ int main() {
   }
 
   su2 U(1., 0.);
-  cout << "trace, det, a and b of unit matrix" << endl;
-  cout << U.trace() << " = " << trace(U) << endl << U.det()
+  cout << "retrace, det, a and b of unit matrix" << endl;
+  cout << U.retrace() << " = " << retrace(U) << endl << U.det()
        << " " << U.geta() << " " << U.getb() << endl;
 
   su2 U1;
@@ -37,9 +37,9 @@ int main() {
   U1.restoreSU();
   U2.restoreSU();
   su2  U3 = U1 * U2;
-  cout << "U3 = U1 * U2: det, trace, a, b" << endl;
+  cout << "U3 = U1 * U2: det, retrace, a, b" << endl;
   cout << "should be: 1, 1.3264 (0.6632,0.184826) (0.293548,0.6632)" << endl;
-  cout << U3.det() << " " << trace(U1 * U2) << " " << U3.geta() << " " << U3.getb() << endl;
+  cout << U3.det() << " " << retrace(U1 * U2) << " " << U3.geta() << " " << U3.getb() << endl;
 
   U = config[0] * config[0].dagger();
   cout << "Test of U*U^dagger, should be: (1,0) (0,0)" << endl;
@@ -47,16 +47,16 @@ int main() {
 
   cout << endl << "Tests of U(1)" << endl << endl;;
   _u1 u;
-  double a = u.trace();
-  cout << "test basic trace, det and geta functions" << endl;
-  cout << u.trace() << " = " << trace(u) << endl
+  double a = u.retrace();
+  cout << "test basic retrace, det and geta functions" << endl;
+  cout << u.retrace() << " = " << retrace(u) << endl
        << u.det() << " " << u.geta() << " " << endl;
 
-  _u1 x(0.5), y(0.7), z;
+  _u1 x(0.5*2*M_PI), y(0.7*2*M_PI), z;
   cout << "test of det, the two following must be equal" << endl;
   cout << x.det() << " = " << std::exp(0.5*2*M_PI*Complex(0., 1.)) << endl;
-  cout << "test of trace, the two following must be equal" << endl;
-  cout << x.trace() << " = " << trace(x) << endl;
+  cout << "test of retrace, the two following must be equal" << endl;
+  cout << x.retrace() << " = " << retrace(x) << endl;
   cout << "test multiplication, the two complex numbers must agree" << endl;
 
   z = x * y;

@@ -1,14 +1,16 @@
 #pragma once 
 
+#include"accum_type.hh"
+#include"traceless_antiherm.hh"
 #include<complex>
 //#include<cmath>
 
 using Complex = std::complex<double>;
 
-const size_t N_c = 2;
 
 class _su2 {
 public:
+  const size_t N_c = 2;
   explicit _su2() : a(0), b(0) {}
   explicit _su2(Complex a, Complex b) : a(a), b(b) {}
   _su2(const _su2& U) : a(U.a), b(U.b) {}
@@ -49,7 +51,7 @@ public:
   _su2 dagger() const {
     return(_su2(std::conj(a), -b));
   }
-  double trace() {
+  double retrace() {
     return(2.*std::real(a));
   }
   Complex det() {
@@ -65,14 +67,22 @@ private:
   Complex a, b;
 };
 
-//template<class matrix> double trace(matrix const &U) {
-//  double a = std::real(U.geta());
-//  return(2*a);
-//}
-
-inline double trace(_su2 const &U) {
+inline double retrace(_su2 const &U) {
   double a = std::real(U.geta());
   return(2*a);
+}
+
+inline Complex trace(_su2 const &U) {
+  double a = std::real(U.geta());
+  return(Complex(2*a, 0.));
+}
+
+template<> struct accum_type<_su2> {
+  typedef _su2 type;
+};
+
+template<> inline _su2 traceless_antiherm(const _su2& x) {
+  return(_su2(0.5*(x.geta()-std::conj(x.geta())), x.getb()));
 }
 
 _su2 operator*(const _su2 &U1, const _su2 &U2);
@@ -80,3 +90,4 @@ _su2 operator*(const _su2 &U1, const _su2 &U2);
 _su2 operator*(const _su2 &U1, const _su2 &U2);
 
 using su2 = _su2;
+

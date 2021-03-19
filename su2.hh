@@ -77,6 +77,12 @@ inline double retrace(_su2 const &U) {
   return(2*a);
 }
 
+inline Complex trace(_su2 const &U) {
+  double a = std::real(U.geta());
+  return(Complex(2*a, 0.));
+}
+
+
 template<> inline _su2 traceless_antiherm(const _su2& x) {
   return(_su2(0.5*(x.geta()-std::conj(x.geta())), x.getb()));
 }

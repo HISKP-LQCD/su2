@@ -23,7 +23,7 @@ template<class URNG, typename Float, class Group> void md_update(gaugeconfig<Gro
   adjointfield<Float, Group> momenta(U.getLs(), U.getLt());
   // generate standard normal distributed random momenta
   // normal distribution checked!
-  momenta = initnormal<URNG, Float>(engine, U.getLs(), U.getLt());
+  initnormal(engine, momenta);
 
   std::uniform_real_distribution<Float> uniform(0., 1.);
 

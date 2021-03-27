@@ -58,9 +58,7 @@ int main(int ac, char* av[]) {
   else {
     hotstart(U, gparams.seed, gparams.heat);
   }
-  // Molecular Dynamics parameters
-  md_params mdparams(n_steps, tau);
-
+  
   double plaquette = gauge_energy(U);
   cout << "## Initital Plaquette: " << plaquette/U.getVolume()/double(U.getNc())/6. << endl; 
 
@@ -68,16 +66,19 @@ int main(int ac, char* av[]) {
   plaquette = gauge_energy(U);
   cout << "## Plaquette after rnd trafo: " << plaquette/U.getVolume()/double(U.getNc())/6. << endl; 
 
+  // Molecular Dynamics parameters
+  md_params mdparams(n_steps, tau);
+  
   // generate list of monomials
   gaugemonomial<double, su2> gm(0);
   kineticmonomial<double, su2> km(0);
   km.setmdpassive();
 
-  std::list<monomial<double>*> monomial_list;
+  std::list<monomial<double, su2>*> monomial_list;
   monomial_list.push_back(&gm);
   monomial_list.push_back(&km);
 
-  integrator<double> * md_integ = set_integrator<double>(integs, exponent);
+  integrator<double, su2> * md_integ = set_integrator<double>(integs, exponent);
 
   std::ofstream os;
   if(gparams.icounter == 0) 

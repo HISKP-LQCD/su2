@@ -34,6 +34,9 @@ public:
   void setc(Float _a) {
     c = _a;
   }
+  void setzero() {
+    a = b = c = 0.;
+  }
   adjointsu2<Float> round(size_t n) const {
     Float dn = n;
     return adjointsu2(std::round(a * dn) / dn, std::round(b * dn) / dn, std::round(c * dn) / dn);
@@ -76,6 +79,10 @@ public:
   void seta(Float _a) {
     a = _a;
   }
+  void setzero() {
+    a = 0.;
+  }
+
   adjointu1<Float> round(size_t n) const {
     Float dn = n;
     return adjointu1(std::round(a * dn) / dn);
@@ -197,32 +204,33 @@ private:
 };
 
 
-template<typename Float>  adjointsu2<Float> operator*(const Float &x, const adjointsu2<Float> &A) {
-  adjointsu2<Float> res;
-  res.seta(x * A.geta());
-  res.setb(x * A.getb());
-  res.setc(x * A.getc());
-  return res;
+template<typename Float> inline adjointsu2<Float> operator*(const Float &x, const adjointsu2<Float> &A) {
+  //  adjointsu2<Float> res;
+  //  res.seta(x * A.geta());
+  //  res.setb(x * A.getb());
+  //  res.setc(x * A.getc());
+  return adjointsu2<Float>(x * A.geta(), x * A.getb(), x * A.getc());
 }
 
-template<typename Float>  adjointu1<Float> operator*(const Float &x, const adjointu1<Float> &A) {
-  adjointu1<Float> res;
-  res.seta(x * A.geta());
-  return res;
+template<typename Float> inline adjointu1<Float> operator*(const Float &x, const adjointu1<Float> &A) {
+  //  adjointu1<Float> res;
+  //  res.seta(x * A.geta());
+  return adjointu1<Float>(x * A.geta());
 }
 
 
-template<typename Float>  adjointfield<Float> operator*(const Float &x, const adjointfield<Float> &A) {
-  adjointfield<Float> res(A.getLs(), A.getLt());
+template<typename Float, class Group>  adjointfield<Float, su2> operator*(const Float &x, const adjointfield<Float, Group> &A) {
+  adjointfield<Float, Group> res(A.getLs(), A.getLt());
   for(size_t i = 0; i < A.getSize(); i++) {
-    res[i].seta( x * A[i].geta());
-    res[i].setb( x * A[i].getb());
-    res[i].setc( x * A[i].getc());
+    //    res[i].seta( x * A[i].geta());
+    //    res[i].setb( x * A[i].getb());
+    //    res[i].setc( x * A[i].getc());
+    res[i] = x * A[i];
   }
   return res;
 }
 
-template<typename Float> Float operator*(const adjointfield<Float> &A, const adjointfield<Float> &B) {
+template<typename Float> Float operator*(const adjointfield<Float, su2> &A, const adjointfield<Float, su2> &B) {
   Float res = 0.;
   assert(A.getSize() == B.getSize());
   for(size_t i = 0; i < A.getSize(); i++) {
@@ -231,22 +239,37 @@ template<typename Float> Float operator*(const adjointfield<Float> &A, const adj
   return res;
 }
 
-template<class URNG, typename Float> adjointfield<Float> initnormal(URNG &engine, size_t Ls, size_t Lt) {
-  adjointfield<Float> A(Ls, Lt);
+template<typename Float> Float operator*(const adjointfield<Float, _u1> &A, const adjointfield<Float, _u1> &B) {
+  Float res = 0.;
+  assert(A.getSize() == B.getSize());
+  for(size_t i = 0; i < A.getSize(); i++) {
+    res += A[i].geta()*B[i].geta();
+  }
+  return res;
+}
+
+
+template<class URNG, typename Float> void initnormal(URNG &engine, adjointfield<Float, su2> &A) {
   std::normal_distribution<double> normal(0., 1.);
   for(size_t i = 0; i < A.getSize(); i++) {
     A[i].seta(Float(normal(engine)));
     A[i].setb(Float(normal(engine)));
     A[i].setc(Float(normal(engine)));
   }
-  return A;
+  return;
 }
 
-template<typename Float> void zeroadjointfield(adjointfield<Float> &A) {
+template<class URNG, typename Float> void initnormal(URNG &engine, adjointfield<Float, _u1> &A) {
+  std::normal_distribution<double> normal(0., 1.);
   for(size_t i = 0; i < A.getSize(); i++) {
-    A[i].seta(0.);
-    A[i].setb(0.);
-    A[i].setc(0.);
+    A[i].seta(Float(normal(engine)));
+  }
+  return;
+}
+
+template<typename Float, class Group> inline void zeroadjointfield(adjointfield<Float, Group> &A) {
+  for(size_t i = 0; i < A.getSize(); i++) {
+    A[i].setzero();
   }
 }
 

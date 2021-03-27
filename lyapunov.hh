@@ -32,7 +32,7 @@ template<typename Float, class URNG, class Group> void compute_lyapunov(gaugecon
 
   adjointfield<Float, Group> momenta(U.getLs(), U.getLt());
   // generate standard normal distributed random momenta
-  momenta = initnormal<URNG, Float>(engine, U.getLs(), U.getLt());
+  initnormal(engine, momenta);
   adjointfield<Float, Group> momenta2(momenta);
   
   // generate copy of U, but round to d decimal digits

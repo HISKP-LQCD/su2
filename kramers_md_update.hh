@@ -25,7 +25,7 @@ template<class URNG, typename Float, class Group> void kramers_md_update(gaugeco
   adjointfield<Float, Group> momenta(U.getLs(), U.getLt());
   // generate standard normal distributed random momenta
   // normal distribution checked!
-  momenta = initnormal<URNG, Float>(engine, U.getLs(), U.getLt());
+  initnormal(engine, momenta);
 
   // for the accept reject step
   std::uniform_real_distribution<Float> uniform(0., 1.);
@@ -37,7 +37,7 @@ template<class URNG, typename Float, class Group> void kramers_md_update(gaugeco
 
   for(size_t k = 0; k < params.getkmax(); k++) {
     // first momenta update
-    eta = initnormal<URNG, Float>(engine, U.getLs(), U.getLt());
+    initnormal<URNG, Float>(engine, eta);
     Float epsilon = params.gettau()/Float(params.getnsteps());
     for(size_t i = 0; i < momenta.getSize(); i++) {
       momenta[i].seta(momenta[i].geta()*exp(-gamma*epsilon) + sqrt(1 - exp(-2*gamma*epsilon))*eta[i].geta());

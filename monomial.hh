@@ -44,7 +44,7 @@ public:
   void heatbath(hamiltonian_field<Float, Group> const &h) override {
     monomial<Float, Group>::Hold = 0.5 * ((*h.momenta)*(*h.momenta));
   }
-  void accept(hamiltonian_field<Float> const &h) override {
+  void accept(hamiltonian_field<Float, Group> const &h) override {
     monomial<Float, Group>::Hnew = 0.5 * ((*h.momenta)*(*h.momenta));
   }
   virtual void derivative(adjointfield<Float, Group> &deriv, hamiltonian_field<Float, Group> const &h, const Float fac) const {}

@@ -1,5 +1,6 @@
 #pragma once
 #include"su2.hh"
+#include"u1.hh"
 #include"monomial.hh"
 #include"gaugeconfig.hh"
 #include"adjointfield.hh"
@@ -25,6 +26,7 @@ public:
   }
   void derivative(adjointfield<Float, Group> &deriv, hamiltonian_field<Float, Group> const &h, const Float fac = 1.) const override {
     std::vector<size_t> x = {0, 0, 0, 0};
+    typedef typename accum_type<Group>::type accum;
 #pragma omp parallel for
     for(size_t x0 = 0; x0 < h.U->getLt(); x0++) {
       for(size_t x1 = 0; x1 < h.U->getLs(); x1++) {
@@ -32,7 +34,7 @@ public:
           for(size_t x3 = 0; x3 < h.U->getLs(); x3++) {
             std::vector<size_t> x = {x0, x1, x2, x3};
             for(size_t mu = 0; mu < 4; mu++) {
-              Group S(0., 0.);
+              accum S;
               get_staples(S, *h.U, x, mu);
               S = (*h.U)(x, mu) * S;
               // the antihermitian traceless part

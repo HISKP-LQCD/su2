@@ -60,7 +60,7 @@ private:
 
 template<typename Float=double> inline adjointsu2<Float> get_deriv(su2 & A) {
   const Complex a = A.geta(), b = A.getb();
-  return(adjointsu2<Float>(2.*std::imag(b), 2.*std::real(b), 2.*std::imag(a)));
+  return adjointsu2<Float>(2.*std::imag(b), 2.*std::real(b), 2.*std::imag(a));
 }
 
 template<typename Float> class adjointu1 {
@@ -93,6 +93,10 @@ public:
 private:
   Float a;
 };
+
+template<typename Float=double> inline adjointu1<Float> get_deriv(_u1 & A) {
+  return adjointu1<Float>(-std::sin(A.geta()));
+}
 
 // The following class will be used to deliver the
 // adjoint type depending on the gauge group

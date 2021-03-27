@@ -7,9 +7,9 @@
 #include<vector>
 #include<iostream>
 
-template<class T> void update_momenta(std::list<monomial<T>*> &monomial_list, 
-                                      adjointfield<T> &deriv, hamiltonian_field<T> &h, 
-                                      const double dtau) {
+template<typename Float, class Group> void update_momenta(std::list<monomial<Float, Group>*> &monomial_list, 
+                                                          adjointfield<Float, Group> &deriv, hamiltonian_field<Float, Group> &h, 
+                                                          const double dtau) {
 
   zeroadjointfield(deriv);
 
@@ -32,9 +32,9 @@ template<class T> void update_momenta(std::list<monomial<T>*> &monomial_list,
   return;
 }
 
-template<class T> void round_and_update_momenta(std::list<monomial<T>*> &monomial_list, 
-                                                adjointfield<T> &deriv, hamiltonian_field<T> &h, 
-                                                const double dtau, const size_t n) {
+template<typename Float, class Group> void round_and_update_momenta(std::list<monomial<Float, Group>*> &monomial_list, 
+                                                                    adjointfield<Float, Group> &deriv, hamiltonian_field<Float, Group> &h, 
+                                                                    const double dtau, const size_t n) {
   
   zeroadjointfield(deriv);
 

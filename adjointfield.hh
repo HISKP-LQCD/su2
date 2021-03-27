@@ -154,7 +154,7 @@ public:
   size_t getSize() const {
     return(volume*4);
   }
-  void operator=(const adjointfield &U) {
+  void operator=(const adjointfield<Float, Group> &U) {
     Ls = U.getLs();
     Lt = U.getLt();
     volume = U.getVolume();

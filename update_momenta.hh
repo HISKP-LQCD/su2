@@ -17,7 +17,7 @@ template<typename Float, class Group> void update_momenta(std::list<monomial<Flo
   // NOTE:
   // by using the intermediate field deriv we allow us to later
   // introduce more than one monomial per timescale
-  for (std::list<monomial<double>*>::iterator it = monomial_list.begin(); it != monomial_list.end(); it++) {
+  for (typename std::list<monomial<double, Group>*>::iterator it = monomial_list.begin(); it != monomial_list.end(); it++) {
     if((*it)->getmdactive() && ((*it)->getTimescale() == 0)) {
       (*it)->derivative(deriv, h, 1.);
     }
@@ -42,7 +42,7 @@ template<typename Float, class Group> void round_and_update_momenta(std::list<mo
   // NOTE:
   // by using the intermediate field deriv we allow us to later
   // introduce more than one monomial per timescale
-  for (std::list<monomial<double>*>::iterator it = monomial_list.begin(); it != monomial_list.end(); it++) {
+  for (typename std::list<monomial<double, Group>*>::iterator it = monomial_list.begin(); it != monomial_list.end(); it++) {
     if((*it)->getmdactive() && ((*it)->getTimescale() == 0)) {
       (*it)->derivative(deriv, h, 1.);
     }

@@ -26,6 +26,10 @@ public:
     this->a += U1.a;
     return *this;
   }
+  _u1 round(size_t n) const {
+    double dn = n;
+    return _u1(double(std::round(a)*dn)/dn);
+  }
 
   double geta() const {
     return(a);

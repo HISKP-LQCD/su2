@@ -18,8 +18,8 @@ using std::vector;
 template<class URNG, typename Float, class Group> void md_update(gaugeconfig<Group> &U,
                                                                  URNG &engine, 
                                                                  md_params &params,
-                                                                 std::list<monomial<Float>*> &monomial_list, 
-                                                                 integrator<Float> &md_integ) {
+                                                                 std::list<monomial<Float, Group>*> &monomial_list, 
+                                                                 integrator<Float, Group> &md_integ) {
   adjointfield<Float, Group> momenta(U.getLs(), U.getLt());
   // generate standard normal distributed random momenta
   // normal distribution checked!

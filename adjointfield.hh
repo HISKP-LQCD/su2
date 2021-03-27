@@ -101,8 +101,8 @@ private:
   Float a;
 };
 
-template<typename Float=double> inline adjointu1<Float> get_deriv(_u1 & A) {
-  return adjointu1<Float>(-std::sin(A.geta()));
+template<typename Float=double> inline adjointu1<Float> get_deriv(Complex & A) {
+  return adjointu1<Float>(-std::imag(A));
 }
 
 // The following class will be used to deliver the
@@ -122,8 +122,6 @@ template<typename Float> struct adjoint_type<Float, _u1> {
 
 template<typename Float, class Group=su2> class adjointfield {
 public:
-  //  typedef typename accum_type<T>::type ;
-  //  using value_type = adjoint<Float>;
   using value_type = typename adjoint_type<Float, Group>::type;
   adjointfield(const size_t Ls, const size_t Lt) : 
     Ls(Ls), Lt(Lt), volume(Ls*Ls*Ls*Lt) {
@@ -205,16 +203,10 @@ private:
 
 
 template<typename Float> inline adjointsu2<Float> operator*(const Float &x, const adjointsu2<Float> &A) {
-  //  adjointsu2<Float> res;
-  //  res.seta(x * A.geta());
-  //  res.setb(x * A.getb());
-  //  res.setc(x * A.getc());
   return adjointsu2<Float>(x * A.geta(), x * A.getb(), x * A.getc());
 }
 
 template<typename Float> inline adjointu1<Float> operator*(const Float &x, const adjointu1<Float> &A) {
-  //  adjointu1<Float> res;
-  //  res.seta(x * A.geta());
   return adjointu1<Float>(x * A.geta());
 }
 
@@ -222,9 +214,6 @@ template<typename Float> inline adjointu1<Float> operator*(const Float &x, const
 template<typename Float, class Group>  adjointfield<Float, su2> operator*(const Float &x, const adjointfield<Float, Group> &A) {
   adjointfield<Float, Group> res(A.getLs(), A.getLt());
   for(size_t i = 0; i < A.getSize(); i++) {
-    //    res[i].seta( x * A[i].geta());
-    //    res[i].setb( x * A[i].getb());
-    //    res[i].setc( x * A[i].getc());
     res[i] = x * A[i];
   }
   return res;

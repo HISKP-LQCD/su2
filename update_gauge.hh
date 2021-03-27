@@ -5,7 +5,7 @@
 #include"expsu2.hh"
 #include<complex>
 
-template<class T> void update_gauge(hamiltonian_field<T> &h, const T dtau) {
+template<typename Float, class Group> void update_gauge(hamiltonian_field<Float, Group> &h, const Float dtau) {
   
   // update the gauge field
 #pragma omp parallel for
@@ -15,7 +15,7 @@ template<class T> void update_gauge(hamiltonian_field<T> &h, const T dtau) {
   return;
 }
 
-template<class T> void round_and_update_gauge(hamiltonian_field<T> &h, const T dtau, const size_t n) {
+template<typename Float, class Group> void round_and_update_gauge(hamiltonian_field<Float, Group> &h, const Float dtau, const size_t n) {
   
   // update the gauge field
   // round before update

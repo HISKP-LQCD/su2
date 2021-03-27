@@ -2,7 +2,7 @@
 #include"gaugeconfig.hh"
 #include"tensors.hh"
 #include"accum_type.hh"
-
+#include<iostream>
 
 
 #ifndef M_PI
@@ -124,6 +124,9 @@ template<class T> void energy_density(gaugeconfig<T> &U, double &res, double &Q)
               continue;
             }
             Q += eps4.eps_val[i]*retrace(G[ i1 ][ i2 ]*G[ i3 ][ i4 ] );
+            //            std::cout << "coord: " << x[0] << " " << x[1] << " " << x[2] << " " << x[3]  << std::endl;
+            //            std::cout << i1 << " " << i2 << " " << i3 << " " << i4 << " Q: " << Q << std::endl;
+            //            std::cout << trace(G[ i1 ][ i2 ]) << " " << trace(G[ i3 ][ i4 ]) << std::endl;
           }
         }
       }

@@ -15,19 +15,19 @@
 using std::vector;
 
 
-template<class URNG, class T> void md_update(gaugeconfig<su2> &U,
-                                             URNG &engine, 
-                                             md_params &params,
-                                             std::list<monomial<T>*> &monomial_list, 
-                                             integrator<T> &md_integ) {
-  adjointfield<T> momenta(U.getLs(), U.getLt());
+template<class URNG, typename Float, class Group> void md_update(gaugeconfig<Group> &U,
+                                                                 URNG &engine, 
+                                                                 md_params &params,
+                                                                 std::list<monomial<Float>*> &monomial_list, 
+                                                                 integrator<Float> &md_integ) {
+  adjointfield<Float, Group> momenta(U.getLs(), U.getLt());
   // generate standard normal distributed random momenta
   // normal distribution checked!
-  momenta = initnormal<URNG, T>(engine, U.getLs(), U.getLt());
+  momenta = initnormal<URNG, Float>(engine, U.getLs(), U.getLt());
 
-  std::uniform_real_distribution<T> uniform(0., 1.);
+  std::uniform_real_distribution<Float> uniform(0., 1.);
 
-  hamiltonian_field<T> h(momenta, U);
+  hamiltonian_field<Float, Group> h(momenta, U);
 
   // compute the initial Hamiltonian
   for (auto it = monomial_list.begin(); it != monomial_list.end(); it++) {
@@ -35,7 +35,7 @@ template<class URNG, class T> void md_update(gaugeconfig<su2> &U,
   }
 
   // keep a copy of original gauge field
-  gaugeconfig<su2> U_old(U);
+  gaugeconfig<Group> U_old(U);
 
   // perform MD evolution
   md_integ.integrate(monomial_list, h, params);
@@ -61,7 +61,7 @@ template<class URNG, class T> void md_update(gaugeconfig<su2> &U,
   // if wanted, perform a reversibility violation test.
   if(params.getrevtest()) {
     delta_H = 0.;
-    gaugeconfig<su2> U_save(U);
+    gaugeconfig<Group> U_save(U);
     h.momenta->flipsign();
     md_integ.integrate(monomial_list, h, params);
 

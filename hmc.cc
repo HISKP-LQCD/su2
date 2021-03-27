@@ -29,7 +29,7 @@ int main(int ac, char* av[]) {
   size_t integs;
 
   cout << "## HMC Algorithm for SU(2) gauge theory" << endl;
-  cout << "## (C) Carsten Urbach <urbach@hiskp.uni-bonn.de> (2017)" << endl;
+  cout << "## (C) Carsten Urbach <urbach@hiskp.uni-bonn.de> (2017, 2021)" << endl;
   cout << "## GIT branch " << GIT_BRANCH << " on commit " << GIT_COMMIT_HASH << endl << endl;  
 
   po::options_description desc("Allowed options");
@@ -69,8 +69,8 @@ int main(int ac, char* av[]) {
   cout << "## Plaquette after rnd trafo: " << plaquette/U.getVolume()/double(U.getNc())/6. << endl; 
 
   // generate list of monomials
-  gaugemonomial<double> gm(0);
-  kineticmonomial<double> km(0);
+  gaugemonomial<double, su2> gm(0);
+  kineticmonomial<double, su2> km(0);
   km.setmdpassive();
 
   std::list<monomial<double>*> monomial_list;

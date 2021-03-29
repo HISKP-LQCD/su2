@@ -112,15 +112,15 @@ int main(int ac, char* av[]) {
 
       // PRNG engine
       std::mt19937 engine(gparams.seed+i);
-      gaugemonomial<double> gm(0);
-      kineticmonomial<double> km(0);
+      gaugemonomial<double, su2> gm(0);
+      kineticmonomial<double, su2> km(0);
       km.setmdpassive();
       
-      std::list<monomial<double>*> monomial_list;
+      std::list<monomial<double, su2>*> monomial_list;
       monomial_list.push_back(&gm);
       monomial_list.push_back(&km);
       md_params mdparams(n_steps, tau);
-      integrator<double> * md_integ = set_integrator<double>(integs, exponent);
+      integrator<double, su2> * md_integ = set_integrator<double, su2>(integs, exponent);
 
       compute_lyapunov(U, engine, mdparams, monomial_list, *md_integ, os.str(), exponent);
       delete(md_integ);

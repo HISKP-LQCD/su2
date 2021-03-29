@@ -4,9 +4,9 @@
 #include"adjointfield.hh"
 #include<vector>
 
-template<class T> struct hamiltonian_field {
-  adjointfield<T> * momenta;
-  gaugeconfig<su2> * U;
-  hamiltonian_field(adjointfield<T> &momenta, gaugeconfig<su2> &U) :
+template<typename Float, class Group> struct hamiltonian_field {
+  adjointfield<Float, Group> * momenta;
+  gaugeconfig<Group> * U;
+  hamiltonian_field(adjointfield<Float, Group> &momenta, gaugeconfig<Group> &U) :
     momenta(&momenta), U(&U) {}
 };

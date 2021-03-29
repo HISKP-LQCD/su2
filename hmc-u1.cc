@@ -1,4 +1,5 @@
 #include"su2.hh"
+#include"u1.hh"
 #include"gaugeconfig.hh"
 #include"gauge_energy.hh"
 #include"random_gauge_trafo.hh"
@@ -28,7 +29,7 @@ int main(int ac, char* av[]) {
   double tau;
   size_t integs;
 
-  cout << "## HMC Algorithm for SU(2) gauge theory" << endl;
+  cout << "## HMC Algorithm for U(1) gauge theory" << endl;
   cout << "## (C) Carsten Urbach <urbach@hiskp.uni-bonn.de> (2017, 2021)" << endl;
   cout << "## GIT branch " << GIT_BRANCH << " on commit " << GIT_COMMIT_HASH << endl << endl;  
 
@@ -48,7 +49,7 @@ int main(int ac, char* av[]) {
     return err;
   }
 
-  gaugeconfig<su2> U(gparams.Ls, gparams.Lt, gparams.beta);
+  gaugeconfig<_u1> U(gparams.Ls, gparams.Lt, gparams.beta);
   if(gparams.restart) {
     err = U.load(gparams.configfilename);
     if(err != 0) {
@@ -70,15 +71,15 @@ int main(int ac, char* av[]) {
   md_params mdparams(n_steps, tau);
   
   // generate list of monomials
-  gaugemonomial<double, su2> gm(0);
-  kineticmonomial<double, su2> km(0);
+  gaugemonomial<double, _u1> gm(0);
+  kineticmonomial<double, _u1> km(0);
   km.setmdpassive();
 
-  std::list<monomial<double, su2>*> monomial_list;
+  std::list<monomial<double, _u1>*> monomial_list;
   monomial_list.push_back(&gm);
   monomial_list.push_back(&km);
 
-  integrator<double, su2> * md_integ = set_integrator<double, su2>(integs, exponent);
+  integrator<double, _u1> * md_integ = set_integrator<double, _u1>(integs, exponent);
 
   std::ofstream os;
   if(gparams.icounter == 0) 

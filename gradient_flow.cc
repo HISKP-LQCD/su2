@@ -13,7 +13,7 @@
 #include<fstream>
 #include<iomanip>
 
-void runge_kutta(hamiltonian_field<double> &h, monomial<double> &SW, const double eps) {
+void runge_kutta(hamiltonian_field<double, su2> &h, monomial<double, su2> &SW, const double eps) {
 
   double zfac[5] = { (-17.0)/(36.0), (8.0)/(9.0), (-3.0)/(4.0)};
   double expfac[3] = {-36.0/4./17.0, 1., -1.};
@@ -62,10 +62,10 @@ void gradient_flow(gaugeconfig<su2> &U, std::string const &path, const double tm
   E[2] = density;
 
   gaugeconfig<su2> Vt(U);
-  adjointfield<double> deriv(U.getLs(), U.getLt());
-  hamiltonian_field<double> h(deriv, Vt);
+  adjointfield<double, su2> deriv(U.getLs(), U.getLt());
+  hamiltonian_field<double, su2> h(deriv, Vt);
 
-  gaugemonomial<double> SW(0);
+  gaugemonomial<double, su2> SW(0);
 
   while(t[1] < tmax) {
     t[0] = t[2];

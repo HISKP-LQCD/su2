@@ -1,6 +1,12 @@
 #include"su2.hh"
 #include"u1.hh"
 #include"random_element.hh"
+#include"gaugeconfig.hh"
+#include"gauge_energy.hh"
+#include"random_gauge_trafo.hh"
+#include"parse_commandline.hh"
+#include"energy_density.hh"
+
 #include<iostream>
 #include<vector>
 
@@ -61,5 +67,50 @@ int main() {
 
   z = x * y;
   cout << z.det() << " = " << x.det() * y.det() << endl;
+
+  cout << "U(1) gauge invariance Plaquette and top. charge" << endl;
+  
+  gaugeconfig<_u1> cU(4, 4, 1.0);
+
+  hotstart(cU, 124665, 0.);
+
+  double plaquette = gauge_energy(cU);
+  double res = 0., Q = 0.;
+  cout << "Initital Plaquette: " << plaquette/cU.getVolume()/6. << endl; 
+  
+  random_gauge_trafo(cU, 654321);
+  plaquette = gauge_energy(cU);
+  cout << "Plaquette after rnd trafo: " << plaquette/cU.getVolume()/6. << endl; 
+
+  // set all links to 1
+  hotstart(cU, 124665, 0.);
+  // now a specific configuration
+  // for non-zero top charge
+  std::vector<size_t> xz = {1, 1, 1, 1};
+  cU(xz, 0).set(0);
+  cU(xz, 1).set(pi()/2.);
+
+  cU(xz, 2).set(pi()/2);
+  cU(xz, 3).set(0);
+
+  xz = {0, 1, 1, 1};
+  cU(xz, 0).set(pi());
+  xz = {1, 0, 1, 1};
+  cU(xz, 1).set(pi()/2.);
+
+  xz = {1, 1, 0, 0};
+  cU(xz, 2).set(pi());
+  //cU(xz, 2).set(0);
+  xz = {1, 1, 1, 0};
+  cU(xz, 3).set(pi()/2);
+
+  energy_density(cU, res, Q);
+
+  cout << "charge: " << Q << endl;
+  cout << "should be: 0.0126651" << endl;
+  random_gauge_trafo(cU, 654321);
+  Q = 0;
+  energy_density(cU, res, Q);
+  cout << "Charge after random gauge trafo: " << Q << endl;
   return(0);
 }

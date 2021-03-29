@@ -7,9 +7,9 @@
 #include<vector>
 #include<iostream>
 
-template<class T> void update_momenta(std::list<monomial<T>*> &monomial_list, 
-                                      adjointfield<T> &deriv, hamiltonian_field<T> &h, 
-                                      const double dtau) {
+template<typename Float, class Group> void update_momenta(std::list<monomial<Float, Group>*> &monomial_list, 
+                                                          adjointfield<Float, Group> &deriv, hamiltonian_field<Float, Group> &h, 
+                                                          const double dtau) {
 
   zeroadjointfield(deriv);
 
@@ -17,7 +17,7 @@ template<class T> void update_momenta(std::list<monomial<T>*> &monomial_list,
   // NOTE:
   // by using the intermediate field deriv we allow us to later
   // introduce more than one monomial per timescale
-  for (std::list<monomial<double>*>::iterator it = monomial_list.begin(); it != monomial_list.end(); it++) {
+  for (typename std::list<monomial<double, Group>*>::iterator it = monomial_list.begin(); it != monomial_list.end(); it++) {
     if((*it)->getmdactive() && ((*it)->getTimescale() == 0)) {
       (*it)->derivative(deriv, h, 1.);
     }
@@ -32,9 +32,9 @@ template<class T> void update_momenta(std::list<monomial<T>*> &monomial_list,
   return;
 }
 
-template<class T> void round_and_update_momenta(std::list<monomial<T>*> &monomial_list, 
-                                                adjointfield<T> &deriv, hamiltonian_field<T> &h, 
-                                                const double dtau, const size_t n) {
+template<typename Float, class Group> void round_and_update_momenta(std::list<monomial<Float, Group>*> &monomial_list, 
+                                                                    adjointfield<Float, Group> &deriv, hamiltonian_field<Float, Group> &h, 
+                                                                    const double dtau, const size_t n) {
   
   zeroadjointfield(deriv);
 
@@ -42,7 +42,7 @@ template<class T> void round_and_update_momenta(std::list<monomial<T>*> &monomia
   // NOTE:
   // by using the intermediate field deriv we allow us to later
   // introduce more than one monomial per timescale
-  for (std::list<monomial<double>*>::iterator it = monomial_list.begin(); it != monomial_list.end(); it++) {
+  for (typename std::list<monomial<double, Group>*>::iterator it = monomial_list.begin(); it != monomial_list.end(); it++) {
     if((*it)->getmdactive() && ((*it)->getTimescale() == 0)) {
       (*it)->derivative(deriv, h, 1.);
     }

@@ -123,13 +123,13 @@ template<typename Float> struct adjoint_type<Float, _u1> {
 template<typename Float, class Group> class adjointfield {
 public:
   using value_type = typename adjoint_type<Float, Group>::type;
-  adjointfield(const size_t Ls, const size_t Lt) : 
-    Ls(Ls), Lt(Lt), volume(Ls*Ls*Ls*Lt) {
+  adjointfield(const size_t Lx, const size_t Ly, const size_t Lz, const size_t Lt, const size_t ndims = 4) : 
+    Lx(Lx), Ly(Ly), Lz(Lz), Lt(Lt), volume(Lx*Ly*Lz*Lt), ndims(ndims) {
     data.resize(volume*4);
   }
   adjointfield(const adjointfield &U) :
-    Ls(U.getLs()), Lt(U.getLt()), volume(U.getVolume()) {
-    data.resize(volume*4);
+    Lx(U.getLx()), Ly(U.getLy()), Lz(U.getLz()), Lt(U.getLt()), volume(U.getVolume()), ndims(U.getndims()) {
+    data.resize(volume*ndims);
     for(size_t i = 0; i < getSize(); i++) {
       data[i] = U[i];
     }
@@ -140,20 +140,31 @@ public:
     }
   }
   size_t storage_size() const { return data.size() * sizeof(value_type); };
-  size_t getLs() const {
-    return(Ls);
+  size_t getLx() const {
+    return(Lx);
+  }
+  size_t getLy() const {
+    return(Ly);
+  }
+  size_t getLz() const {
+    return(Lz);
   }
   size_t getLt() const {
     return(Lt);
+  }
+  size_t getndims() const {
+    return(ndims);
   }
   size_t getVolume() const {
     return(volume);
   }
   size_t getSize() const {
-    return(volume*4);
+    return(volume*ndims);
   }
   void operator=(const adjointfield<Float, Group> &U) {
-    Ls = U.getLs();
+    Lx = U.getLx();
+    Ly = U.getLz();
+    Lz = U.getLz();
     Lt = U.getLt();
     volume = U.getVolume();
     data.resize(U.getSize());
@@ -187,17 +198,17 @@ public:
   }
 
 private:
-  size_t Ls, Lt, volume;
+  size_t Lx, Ly, Lz, Lt, volume, ndims;
   
   std::vector<value_type> data;
-  
+
   size_t getIndex(const size_t t, const size_t x, const size_t y, const size_t z, const size_t mu) const {
     size_t y0 = (t + Lt) % Lt;
-    size_t y1 = (x + Ls) % Ls;
-    size_t y2 = (y + Ls) % Ls;
-    size_t y3 = (z + Ls) % Ls;
-    size_t _mu = (mu + 4) % 4;
-    return( (((y0*Ls + y1)*Ls + y2)*Ls + y3)*4 + _mu );
+    size_t y1 = (x + Lx) % Lx;
+    size_t y2 = (y + Ly) % Ly;
+    size_t y3 = (z + Lz) % Lz;
+    size_t _mu = (mu + ndims) % ndims;
+    return( (((y0*Lx + y1)*Ly + y2)*Lz + y3)*ndims + _mu );
   }
 };
 
@@ -212,7 +223,7 @@ template<typename Float> inline adjointu1<Float> operator*(const Float &x, const
 
 
 template<typename Float, class Group>  adjointfield<Float, su2> operator*(const Float &x, const adjointfield<Float, Group> &A) {
-  adjointfield<Float, Group> res(A.getLs(), A.getLt());
+  adjointfield<Float, Group> res(A.getLx(), A.getLy(), A.getLz(), A.getLt());
   for(size_t i = 0; i < A.getSize(); i++) {
     res[i] = x * A[i];
   }

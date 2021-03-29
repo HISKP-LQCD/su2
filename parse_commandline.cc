@@ -11,8 +11,11 @@ namespace po = boost::program_options;
 void add_general_options(po::options_description &desc, general_params &params) {
   desc.add_options()
     ("help,h", "produce this help message")
-    ("spatialsize,L", po::value<size_t>(&params.Ls), "spatial lattice size")
-    ("temporalsize,T", po::value<size_t>(&params.Lt), "temporal lattice size")
+    ("spatialsizex,X", po::value<size_t>(&params.Lx), "spatial lattice size x > 0")
+    ("spatialsizey,Y", po::value<size_t>(&params.Ly), "spatial lattice size y > 0")
+    ("spatialsizez,Z", po::value<size_t>(&params.Lz), "spatial lattice size z > 0")
+    ("temporalsize,T", po::value<size_t>(&params.Lt), "temporal lattice size > 0")
+    ("ndims", po::value<size_t>(&params.ndims), "number of dimensions, 2 <= ndims <= 4")
     ("nsave", po::value<size_t>(&params.N_save)->default_value(1000), "N_save")
     ("nmeas,n", po::value<size_t>(&params.N_meas)->default_value(10), "total number of sweeps")
     ("counter", po::value<size_t>(&params.icounter)->default_value(0), "initial counter for updates")
@@ -37,8 +40,18 @@ int parse_commandline(int ac, char * av[], po::options_description &desc, genera
       std::cout << desc << std::endl;
       return 1;
     }
-    if (!vm.count("spatialsize") && !vm.count("help")) {
-      std::cerr << "spatial lattice size must be given!" << std::endl;
+    if (!vm.count("spatialsizex") && !vm.count("help")) {
+      std::cerr << "spatial lattice x-size must be given!" << std::endl;
+      std::cout << std::endl << desc << std::endl;
+      return 1;
+    }
+    if (!vm.count("spatialsizey") && !vm.count("help")) {
+      std::cerr << "spatial lattice y-size must be given!" << std::endl;
+      std::cout << std::endl << desc << std::endl;
+      return 1;
+    }
+    if (!vm.count("spatialsizez") && !vm.count("help")) {
+      std::cerr << "spatial lattice z-size must be given!" << std::endl;
       std::cout << std::endl << desc << std::endl;
       return 1;
     }
@@ -62,6 +75,26 @@ int parse_commandline(int ac, char * av[], po::options_description &desc, genera
     }
     if (vm.count("no-accept-reject")) {
       params.acceptreject = false;
+    }
+    if (!vm.count("ndims")) {
+      params.ndims = 4;
+    }
+    if (params.ndims > 4 || params.ndims < 2) {
+      std::cerr << "2 <= ndims <= 4!" << std::endl;
+      std::cout << std::endl << desc << std::endl;
+      return 1;
+    }
+    if (params.Lx < 1 || params.Ly < 1 || params.Lz < 1 || params.Lt < 1) {
+      std::cerr << "All box extends must be > 1!" << std::endl;
+      std::cout << std::endl << desc << std::endl;
+      return 1;
+    }
+    if (params.ndims == 2) {
+      params.Ly = 1;
+      params.Lz = 1;
+    }
+    if (params.ndims == 3) {
+      params.Lz = 1;
     }
     PrintVariableMap(vm);
   }

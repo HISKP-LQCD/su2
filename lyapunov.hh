@@ -30,13 +30,13 @@ template<typename Float, class URNG, class Group> void compute_lyapunov(gaugecon
 
   const size_t n = pow(10, d);
 
-  adjointfield<Float, Group> momenta(U.getLs(), U.getLt());
+  adjointfield<Float, Group> momenta(U.getLx(), U.getLy(), U.getLz(), U.getLt(), U.getndims());
   // generate standard normal distributed random momenta
   initnormal(engine, momenta);
   adjointfield<Float, Group> momenta2(momenta);
   
   // generate copy of U, but round to d decimal digits
-  gaugeconfig<su2> U2(U.getLs(), U.getLt(), U.getBeta());
+  gaugeconfig<su2> U2(U.getLx(), U.getLy(), U.getLz(), U.getLt(), U.getBeta());
   if(d != 0) {
     for(size_t i = 0; i < U.getSize(); i++) {
       U2[i] = U[i].round(n);

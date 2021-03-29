@@ -23,14 +23,14 @@ template<class T> double gauge_energy(gaugeconfig<T> &U) {
  
 #pragma omp for
     for(size_t x0 = 0; x0 < U.getLt(); x0++) {
-      for(size_t x1 = 0; x1 < U.getLs(); x1++) {
-        for(size_t x2 = 0; x2 < U.getLs(); x2++) {
-          for(size_t x3 = 0; x3 < U.getLs(); x3++) {
+      for(size_t x1 = 0; x1 < U.getLx(); x1++) {
+        for(size_t x2 = 0; x2 < U.getLy(); x2++) {
+          for(size_t x3 = 0; x3 < U.getLz(); x3++) {
             std::vector<size_t> x = {x0, x1, x2, x3};
             std::vector<size_t> xplusmu = x;
             std::vector<size_t> xplusnu = x;
-            for(size_t mu = 0; mu < 3; mu++) {
-              for(size_t nu = mu+1; nu < 4; nu++) {
+            for(size_t mu = 0; mu < U.getndims()-1; mu++) {
+              for(size_t nu = mu+1; nu < U.getndims(); nu++) {
                 xplusmu[mu] += 1;
                 xplusnu[nu] += 1;
                 tmp += retrace(U(x, mu) * U(xplusmu, nu) *

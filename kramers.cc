@@ -81,7 +81,7 @@ int main(int ac, char* av[]) {
   monomial_list.push_back(&gm);
   monomial_list.push_back(&km);
 
-  integrator<double, su2> * md_integ = set_integrator<double>(integs, exponent);
+  integrator<double, su2> * md_integ = set_integrator<double, su2>(integs, exponent);
 
   mdparams.setkmax(5);
   if(!gparams.acceptreject) mdparams.disableacceptreject();

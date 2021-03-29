@@ -120,7 +120,7 @@ template<typename Float> struct adjoint_type<Float, _u1> {
 };
 
 
-template<typename Float, class Group=su2> class adjointfield {
+template<typename Float, class Group> class adjointfield {
 public:
   using value_type = typename adjoint_type<Float, Group>::type;
   adjointfield(const size_t Ls, const size_t Lt) : 

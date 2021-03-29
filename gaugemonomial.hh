@@ -11,7 +11,7 @@
 #include<complex>
 
 // gauge monomial
-template<typename Float, class Group=su2> class gaugemonomial : public monomial<Float, Group> {
+template<typename Float, class Group> class gaugemonomial : public monomial<Float, Group> {
 public:
   gaugemonomial<Float, Group>(unsigned int _timescale) : monomial<Float, Group>::monomial(_timescale) {}
   // S_g = sum_x sum_{mu<nu} beta*(1- 1/Nc*Re[Tr[U_{mu nu}]])

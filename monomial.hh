@@ -3,7 +3,7 @@
 #include<vector>
 
 // mother class for monomials
-template<typename Float, class Group=su2> class monomial {
+template<typename Float, class Group> class monomial {
 public:
   double Hold, Hnew;
   monomial(unsigned int _timescale) : Hold(0.), Hnew(0.), timescale(_timescale), mdactive(true) {}
@@ -38,7 +38,7 @@ private:
   bool mdactive;
 };
 
-template<typename Float, class Group=su2> class kineticmonomial : public monomial<Float, Group> {
+template<typename Float, class Group> class kineticmonomial : public monomial<Float, Group> {
 public:
   kineticmonomial(unsigned int _timescale) : monomial<Float, Group>::monomial(_timescale) {}
   void heatbath(hamiltonian_field<Float, Group> const &h) override {

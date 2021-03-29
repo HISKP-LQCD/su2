@@ -14,7 +14,7 @@
 enum integrators { LEAPFROG = 0, LP_LEAPFROG = 1, OMF4 = 2, LP_OMF4 = 3, EULER = 4, RUTH = 5};
 
 // virtual integrator class
-template<typename Float, class Group=su2> class integrator{
+template<typename Float, class Group> class integrator{
 public:
   integrator() {}
   virtual void integrate(std::list<monomial<Float, Group>*> &monomial_list, hamiltonian_field<Float, Group> &h, 
@@ -202,7 +202,7 @@ public:
 };
 
 
-template<typename Float, class Group=su2> integrator<Float, Group>* set_integrator(const size_t integs, const size_t exponent) {
+template<typename Float, class Group> integrator<Float, Group>* set_integrator(const size_t integs, const size_t exponent) {
   integrator<Float, Group> * integ;
   if(static_cast<integrators>(integs) == LEAPFROG) {
     integ = new leapfrog<Float, Group>();

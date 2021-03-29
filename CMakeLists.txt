@@ -59,7 +59,6 @@ add_library(su2
     u1.cc
     su2.cc
     expsu2.cc
-    wilsonloop.cc
     print_program_options.cc
     parse_commandline.cc
 )

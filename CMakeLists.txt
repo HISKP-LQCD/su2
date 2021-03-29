@@ -60,7 +60,6 @@ add_library(su2
     su2.cc
     expsu2.cc
     wilsonloop.cc
-    gradient_flow.cc
     print_program_options.cc
     parse_commandline.cc
 )

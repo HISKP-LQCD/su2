@@ -27,7 +27,7 @@ int main(int ac, char* av[]) {
   double delta = 0.1;
 
   cout << "## Metropolis Algorithm for SU(2) gauge theory" << endl;
-  cout << "## (C) Carsten Urbach <urbach@hiskp.uni-bonn.de> (2017)" << endl;
+  cout << "## (C) Carsten Urbach <urbach@hiskp.uni-bonn.de> (2017,2020)" << endl;
   cout << "## GIT branch " << GIT_BRANCH << " on commit " << GIT_COMMIT_HASH << endl << endl;  
 
   po::options_description desc("Allowed options");
@@ -44,7 +44,7 @@ int main(int ac, char* av[]) {
     return err;
   }
 
-  gaugeconfig<su2> U(gparams.Ls, gparams.Lt, gparams.beta);
+  gaugeconfig<su2> U(gparams.Lx, gparams.Ly, gparams.Lz, gparams.Lt, gparams.ndims, gparams.beta);
   if(gparams.restart) {
     err = U.load(gparams.configfilename);
     if(err != 0) {
@@ -56,11 +56,13 @@ int main(int ac, char* av[]) {
   }
 
   double plaquette = gauge_energy(U);
-  cout << "Initital Plaquette: " << plaquette/U.getVolume()/double(U.getNc())/6. << endl; 
+  double fac = 2./U.getndims()/(U.getndims()-1);
+  const double normalisation = fac/U.getVolume()/double(U.getNc());
+  cout << "Initital Plaquette: " << plaquette*normalisation << endl; 
 
   random_gauge_trafo(U, 654321);
   plaquette = gauge_energy(U);
-  cout << "Plaquette after rnd trafo: " << plaquette/U.getVolume()/double(U.getNc())/6. << endl; 
+  cout << "Plaquette after rnd trafo: " << plaquette*normalisation << endl; 
 
   std::ofstream os;
   if(gparams.icounter == 0) 
@@ -74,18 +76,18 @@ int main(int ac, char* av[]) {
     double energy = gauge_energy(U);
     double E = 0., Q = 0.;
     energy_density(U, E, Q);
-    cout << i << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy/U.getVolume()/double(U.getNc())/6. << " " << Q << endl;
-    os << i << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy/U.getVolume()/double(U.getNc())/6. << " " << Q << endl;
+    cout << i << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy*normalisation << " " << Q << endl;
+    os << i << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy*normalisation << " " << Q << endl;
     if(i > 0 && (i % gparams.N_save) == 0) {
       std::ostringstream oss;
-      oss << "config." << gparams.Ls << "." << gparams.Lt << ".b" << gparams.beta << "." << i << std::ends;
+      oss << "config." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz << "." << gparams.Lt << ".b" << gparams.beta << "." << i << std::ends;
       U.save(oss.str());
     }
   }
-  cout << rate/static_cast<double>(gparams.N_meas) << endl;
+  cout << "## Acceptance rate " << rate/static_cast<double>(gparams.N_meas) << endl;
 
   std::ostringstream oss;
-  oss << "config." << gparams.Ls << "." << gparams.Lt << ".b" << U.getBeta() << ".final" << std::ends;
+  oss << "config." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz << "." << gparams.Lt << ".b" << U.getBeta() << ".final" << std::ends;
   U.save(oss.str());
 
   return(0);

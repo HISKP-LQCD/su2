@@ -13,9 +13,9 @@ double planar_wilsonloop_dir(gaugeconfig<su2> &U, const size_t r, const size_t t
 
   std::vector<size_t> x = {0, 0, 0, 0};
   for (x[0] = 0; x[0] < U.getLt(); x[0]++) {
-    for (x[1] = 0; x[1] < U.getLs(); x[1]++) {
-      for (x[2] = 0; x[2] < U.getLs(); x[2]++) {
-        for (x[3] = 0; x[3] < U.getLs(); x[3]++) {
+    for (x[1] = 0; x[1] < U.getLx(); x[1]++) {
+      for (x[2] = 0; x[2] < U.getLy(); x[2]++) {
+        for (x[3] = 0; x[3] < U.getLz(); x[3]++) {
           std::vector<size_t> xrun = x;
           su2 L(1., 0.);
           for (size_t _t = 0; _t < t; _t++) {
@@ -44,7 +44,7 @@ double planar_wilsonloop_dir(gaugeconfig<su2> &U, const size_t r, const size_t t
 
 double wilsonloop(gaugeconfig<su2> &U, const size_t r, const size_t t) {
   double loop = 0.;
-  for(size_t mu = 1; mu < 4; mu++) {
+  for(size_t mu = 1; mu < U.getndims(); mu++) {
     loop += planar_wilsonloop_dir(U, r, t, mu, 0);
   }
   return loop/U.getVolume()/double(U.getNc())/3.;
@@ -54,7 +54,7 @@ void compute_all_loops(gaugeconfig<su2> &U, std::string const &path) {
   std::ofstream os(path, std::ios::out);
   for(size_t t = 1; t < U.getLt(); t++) {
     os << t << " ";
-    for(size_t r = 1; r < U.getLs(); r++) {
+    for(size_t r = 1; r < U.getLx(); r++) {
       double loop = wilsonloop(U, r, t);
       os << std::scientific << std::setw(15) << loop << " ";
     }

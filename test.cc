@@ -16,13 +16,13 @@ using std::endl;
 
 
 int main() {
-  size_t Ls = 8, Lt = 16;
+  size_t Lx = 8, Ly = 8, Lz = 8, Lt = 16;
 
 
   cout << "Tests of SU(2)" << endl << endl;;
   
   vector<su2> config;
-  config.resize(Ls*Ls*Ls*Lt);
+  config.resize(Lx*Ly*Lz*Lt);
   
   // set all to 1
   for(auto i = config.begin(), end =config.end(); i < end; i++) {
@@ -70,7 +70,7 @@ int main() {
 
   cout << "U(1) gauge invariance Plaquette and top. charge" << endl;
   
-  gaugeconfig<_u1> cU(4, 4, 1.0);
+  gaugeconfig<_u1> cU(4, 4, 4, 4, 4, 1.0);
 
   hotstart(cU, 124665, 0.);
 

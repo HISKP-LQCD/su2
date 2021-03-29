@@ -62,9 +62,8 @@ void gradient_flow(gaugeconfig<su2> &U, std::string const &path, const double tm
   E[2] = density;
 
   gaugeconfig<su2> Vt(U);
-  adjointfield<double, su2> deriv(U.getLs(), U.getLt());
+  adjointfield<double, su2> deriv(U.getLx(), U.getLy(), U.getLz(), U.getLt(), U.getndims());
   hamiltonian_field<double, su2> h(deriv, Vt);
-
   gaugemonomial<double, su2> SW(0);
 
   while(t[1] < tmax) {

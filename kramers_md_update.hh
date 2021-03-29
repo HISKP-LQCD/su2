@@ -22,7 +22,7 @@ template<class URNG, typename Float, class Group> void kramers_md_update(gaugeco
                                                                          md_params &params,
                                                                          std::list<monomial<Float, Group>*> &monomial_list, 
                                                                          integrator<Float, Group> &md_integ) {
-  adjointfield<Float, Group> momenta(U.getLs(), U.getLt());
+  adjointfield<Float, Group> momenta(U.getLx(), U.getLy(), U.getLz(), U.getLt(), U.getndims());
   // generate standard normal distributed random momenta
   // normal distribution checked!
   initnormal(engine, momenta);
@@ -31,9 +31,9 @@ template<class URNG, typename Float, class Group> void kramers_md_update(gaugeco
   std::uniform_real_distribution<Float> uniform(0., 1.);
 
   const double gamma = params.getgamma();
-  adjointfield<Float, Group> eta(U.getLs(), U.getLt());
-  adjointfield<Float, Group> momenta_old(U.getLs(), U.getLt());
-  gaugeconfig<su2> U_old(U.getLs(), U.getLt(), U.getBeta());
+  adjointfield<Float, Group> eta(U.getLx(), U.getLy(), U.getLz(), U.getLt(), U.getndims());
+  adjointfield<Float, Group> momenta_old(U.getLx(), U.getLy(), U.getLz(), U.getLt(), U.getndims());
+  gaugeconfig<su2> U_old(U.getLx(), U.getLy(), U.getLz(), U.getLt(), U.getndims(), U.getBeta());
 
   for(size_t k = 0; k < params.getkmax(); k++) {
     // first momenta update

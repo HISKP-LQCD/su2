@@ -12,14 +12,14 @@ template<class T, class S> void get_staples(T &K, gaugeconfig<S> &U,
                                    const size_t mu) {
   vector<size_t> x1 = x, x2 = x;
   x1[mu] += 1;
-  for(size_t nu = 0; nu < 4; nu++) {
+  for(size_t nu = 0; nu < U.getndims(); nu++) {
     if(nu != mu) {
       x2[nu]++;
       K += U(x1, nu) * U(x2, mu).dagger() * U(x, nu).dagger();
       x2[nu]--;
     }
   }
-  for(size_t nu = 0; nu < 4; nu++) {
+  for(size_t nu = 0; nu < U.getndims(); nu++) {
     if(nu != mu) {
       x1[nu]--;
       x2[nu]--;

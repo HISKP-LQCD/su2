@@ -61,11 +61,12 @@ int main(int ac, char* av[]) {
     return err;
   }
 
-  gaugeconfig<su2> U(gparams.Ls, gparams.Lt, gparams.beta);
+
+  gaugeconfig<su2> U(gparams.Lx, gparams.Ly, gparams.Lz, gparams.Lt, gparams.ndims, gparams.beta);
 
   for(size_t i = gparams.icounter; i < gparams.N_meas*nstep+gparams.icounter; i+=nstep) {
     std::ostringstream os;
-    os << "config." << gparams.Ls << "." << gparams.Lt << ".b" << U.getBeta() << "." << i << std::ends;
+    os << "config." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz << "." << gparams.Lt << ".b" << U.getBeta() << "." << i << std::ends;
     U.load(os.str());
     
     double plaquette = gauge_energy(U);

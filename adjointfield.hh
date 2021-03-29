@@ -102,7 +102,7 @@ private:
 };
 
 template<typename Float=double> inline adjointu1<Float> get_deriv(Complex & A) {
-  return adjointu1<Float>(-std::imag(A));
+  return adjointu1<Float>(std::imag(A));
 }
 
 // The following class will be used to deliver the

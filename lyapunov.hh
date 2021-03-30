@@ -20,7 +20,7 @@ using std::vector;
 // starting from identical momenta
 // and up to rounding the same gauge fields
 
-template<typename Float, class URNG, class Group> void compute_lyapunov(gaugeconfig<su2> &U, 
+template<typename Float, class URNG, class Group> void compute_lyapunov(gaugeconfig<Group> &U, 
                                                                         URNG &engine, 
                                                                         md_params params,
                                                                         std::list<monomial<Float, Group>*> &monomial_list, 
@@ -36,7 +36,7 @@ template<typename Float, class URNG, class Group> void compute_lyapunov(gaugecon
   adjointfield<Float, Group> momenta2(momenta);
   
   // generate copy of U, but round to d decimal digits
-  gaugeconfig<su2> U2(U.getLx(), U.getLy(), U.getLz(), U.getLt(), U.getBeta());
+  gaugeconfig<Group> U2(U.getLx(), U.getLy(), U.getLz(), U.getLt(), U.getBeta());
   if(d != 0) {
     for(size_t i = 0; i < U.getSize(); i++) {
       U2[i] = U[i].round(n);

@@ -56,7 +56,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS} -D_USE_OMP_")
 # generated objects files or create a simple static library. The latter is done
 # here.
 add_library(su2
-    u1.cc
     su2.cc
     expsu2.cc
     print_program_options.cc
@@ -74,10 +73,11 @@ add_executable(u1-metropolis main-u1.cc)
 add_executable(su2-hmc hmc.cc)
 add_executable(u1-hmc hmc-u1.cc)
 add_executable(su2-kramers kramers.cc)
-add_executable(measure measure.cc)
+add_executable(su2-measure measure.cc)
+add_executable(u1-measure measure-u1.cc)
 add_executable(test-groups test.cc)
 
-foreach(target su2-hmc u1-hmc su2-metropolis u1-metropolis su2-kramers measure test-groups)
+foreach(target su2-hmc u1-hmc su2-metropolis u1-metropolis su2-kramers su2-measure u1-measure test-groups)
   if(Boost_FOUND)
     target_link_libraries(${target} su2 ${Boost_LIBRARIES})
   else()

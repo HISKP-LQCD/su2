@@ -22,6 +22,9 @@
 // -->   -->
 //        nu
 //
+// if !cloverdef only a single plaquette ist used instead of the
+// sum over the clover leafs
+//
 // checked for gauge invariance!
 //
 // energy density
@@ -41,7 +44,7 @@
 // if we take only the terms with \mu < \nu and \rho < \sigma, we need
 // to multiply by a factor of 4. All 4 terms come with the same sign.
 
-template<class T> void energy_density(gaugeconfig<T> &U, double &res, double &Q) {
+template<class T> void energy_density(gaugeconfig<T> &U, double &res, double &Q, bool cloverdef=true) {
   res = 0.;
   Q = 0.;
 
@@ -67,41 +70,41 @@ template<class T> void energy_density(gaugeconfig<T> &U, double &res, double &Q)
               x1[mu] -= 1;
               x2[nu] -= 1;
 
-              x1[mu] -= 1;
-              x1[nu] += 1;
-              x2[mu] -= 1;
-              leaf += U(x, nu) * U(x1, mu).dagger() *
-                U(x2, nu).dagger()*U(x2, mu);
-              x1[mu] += 1;
-              x1[nu] -= 1;
-              x2[mu] += 1;
-
-              x1[mu] -= 1;
-              x2[mu] -= 1;
-              x2[nu] -= 1;
-              x3[nu] -= 1;
-              leaf += U(x1, mu).dagger() * U(x2, nu).dagger() *
-                U(x2, mu)*U(x3, nu);
-              x1[mu] += 1;
-              x2[mu] += 1;
-              x2[nu] += 1;
-              x3[nu] += 1;
-              
-              x1[nu] -= 1;
-              x2[nu] -= 1;
-              x2[mu] += 1;
-              leaf += U(x1, nu).dagger() * U(x1, mu) *
-                U(x2, nu)*U(x, mu).dagger();
-              x1[nu] += 1;
-              x2[nu] += 1;
-              x2[mu] -= 1;
-
+              if(cloverdef) {
+                x1[mu] -= 1;
+                x1[nu] += 1;
+                x2[mu] -= 1;
+                leaf += U(x, nu) * U(x1, mu).dagger() *
+                  U(x2, nu).dagger()*U(x2, mu);
+                x1[mu] += 1;
+                x1[nu] -= 1;
+                x2[mu] += 1;
+                
+                x1[mu] -= 1;
+                x2[mu] -= 1;
+                x2[nu] -= 1;
+                x3[nu] -= 1;
+                leaf += U(x1, mu).dagger() * U(x2, nu).dagger() *
+                  U(x2, mu)*U(x3, nu);
+                x1[mu] += 1;
+                x2[mu] += 1;
+                x2[nu] += 1;
+                x3[nu] += 1;
+                
+                x1[nu] -= 1;
+                x2[nu] -= 1;
+                x2[mu] += 1;
+                leaf += U(x1, nu).dagger() * U(x1, mu) *
+                  U(x2, nu)*U(x, mu).dagger();
+                x1[nu] += 1;
+                x2[nu] += 1;
+                x2[mu] -= 1;
+              }
               // traceless and anti-hermitian
               // here we include a factor 1/2 already
               G[mu][nu] =  traceless_antiherm(leaf);
               // trace(G_{mu,nu}^a G_{mu,nu}^a)
-              // averaged over four plaquette Wilson loops 1./4./4.
-              res += retrace(G[mu][nu]*G[mu][nu])/16.;
+              res += retrace(G[mu][nu]*G[mu][nu]);
             }
           }
 
@@ -135,8 +138,11 @@ template<class T> void energy_density(gaugeconfig<T> &U, double &res, double &Q)
   // now we need to devide by 2, but we get a factor of two since we only
   // averaged mu < nu
   res = -res/U.getVolume();
+  // averaged over four plaquette Wilson loops 1./4./4.
+  if(cloverdef) res /= 16.;
   // factor 4 from summing only mu < nu and rho < sigma
-  // factor 1/16 from G_\mu\nu
-  Q =  -4. * Q  / ( 16. * 32.0 * M_PI * M_PI );
+  Q =  -4. * Q  / ( 32.0 * M_PI * M_PI );
+  // factor 1/16 from G_\mu\nu with clover definition
+  if(cloverdef) Q /= 16.;
 }
 

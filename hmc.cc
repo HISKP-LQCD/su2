@@ -60,11 +60,13 @@ int main(int ac, char* av[]) {
   }
   
   double plaquette = gauge_energy(U);
-  cout << "## Initital Plaquette: " << plaquette/U.getVolume()/double(U.getNc())/6. << endl; 
+  double fac = 2./U.getndims()/(U.getndims()-1);
+  const double normalisation = fac/U.getVolume()/double(U.getNc());
+  cout << "## Initital Plaquette: " << plaquette*normalisation << endl; 
 
   random_gauge_trafo(U, 654321);
   plaquette = gauge_energy(U);
-  cout << "## Plaquette after rnd trafo: " << plaquette/U.getVolume()/double(U.getNc())/6. << endl; 
+  cout << "## Plaquette after rnd trafo: " << plaquette*normalisation << endl; 
 
   // Molecular Dynamics parameters
   md_params mdparams(n_steps, tau);
@@ -99,7 +101,8 @@ int main(int ac, char* av[]) {
 
     double energy = gauge_energy(U);
     rate += mdparams.getaccept();
-    cout << i << " " << mdparams.getaccept() << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy/U.getVolume()/double(U.getNc())/6. << " " << std::setw(15) << mdparams.getdeltaH() << " " 
+    cout << i << " " << mdparams.getaccept() << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy*normalisation
+         << " " << std::setw(15) << mdparams.getdeltaH() << " " 
          << std::setw(15) << rate/static_cast<double>(i+1) << " ";
     if(mdparams.getrevtest()) {
       cout << mdparams.getdeltadeltaH();
@@ -107,7 +110,8 @@ int main(int ac, char* av[]) {
     else cout << "NA";
     cout << endl;
 
-    os << i << " " << mdparams.getaccept() << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy/U.getVolume()/double(U.getNc())/6. << " " << std::setw(15) << mdparams.getdeltaH() << " " 
+    os << i << " " << mdparams.getaccept() << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy*normalisation
+       << " " << std::setw(15) << mdparams.getdeltaH() << " " 
        << std::setw(15) << rate/static_cast<double>(i+1) << " ";
     if(mdparams.getrevtest()) {
       os << mdparams.getdeltadeltaH();

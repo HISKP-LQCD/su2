@@ -42,7 +42,7 @@ int main(int ac, char* av[]) {
     ("nsteps", po::value<size_t>(&n_steps)->default_value(1000), "n_steps")
     ("tau", po::value<double>(&tau)->default_value(1.), "trajectory length tau")
     ("exponent", po::value<size_t>(&exponent)->default_value(0), "exponent for rounding")
-    ("integrator", po::value<size_t>(&integs)->default_value(0), "itegration scheme to be used: 0=leapfrog, 1=lp_leapfrog, 2=omf4, 3=lp_omf4")
+    ("integrator", po::value<size_t>(&integs)->default_value(0), "itegration scheme to be used: 0=leapfrog, 1=lp_leapfrog, 2=omf4, 3=lp_omf4, 4=Euler, 5=RUTH, 6=omf2")
     ;
 
   int err = parse_commandline(ac, av, desc, gparams);

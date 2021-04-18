@@ -11,7 +11,7 @@
 #include<iostream>
 #include<cmath>
 
-enum integrators { LEAPFROG = 0, LP_LEAPFROG = 1, OMF4 = 2, LP_OMF4 = 3, EULER = 4, RUTH = 5};
+enum integrators { LEAPFROG = 0, LP_LEAPFROG = 1, OMF4 = 2, LP_OMF4 = 3, EULER = 4, RUTH = 5, OMF2 = 6};
 
 // virtual integrator class
 template<typename Float, class Group> class integrator{
@@ -76,6 +76,41 @@ public:
   }
 private:
   size_t n_prec;
+};
+
+// OMF2 integration scheme (also called 2MN, second order minimal norm)
+template<typename Float, class Group> class omf2 : public integrator<Float, Group> {
+public:
+  omf2() : lambda(0.1938) {}
+  void integrate(std::list<monomial<Float, Group>*> &monomial_list, hamiltonian_field<Float, Group> &h, 
+                 md_params const &params, const bool restore = true) {
+
+    adjointfield<Float, Group> deriv(h.U->getLx(), h.U->getLy(), h.U->getLz(), h.U->getLt(), h.U->getndims());
+    Float dtau = params.gettau()/Float(params.getnsteps());
+    Float oneminus2lambda = (1.-2.*lambda);
+
+    
+    // initial step for the momenta
+    update_momenta(monomial_list, deriv, h, lambda*dtau);
+    // nsteps-1 full steps
+    for(size_t i = 0; i < params.getnsteps()-1; i++) {
+      update_gauge(h, 0.5*dtau);
+      update_momenta(monomial_list, deriv, h, oneminus2lambda*dtau);
+      update_gauge(h, 0.5*dtau);
+      // double step for the momenta to avoid double computation
+      update_momenta(monomial_list, deriv, h, 2*lambda*dtau);
+    }
+    // almost one more full step
+    update_gauge(h, 0.5*dtau);
+    update_momenta(monomial_list, deriv, h, oneminus2lambda*dtau);
+    update_gauge(h, 0.5*dtau);
+    // final step in the momenta
+    update_momenta(monomial_list, deriv, h, lambda*dtau);
+    // restore SU
+    if(restore) h.U->restoreSU();
+  }
+private:
+  double lambda;
 };
 
 
@@ -230,6 +265,10 @@ template<typename Float, class Group> integrator<Float, Group>* set_integrator(c
   else if(static_cast<integrators>(integs) == RUTH) {
     integ = new ruth<Float, Group>();
     std::cerr << "ruth" << std::endl;
+  }
+  else if(static_cast<integrators>(integs) == OMF2) {
+    integ = new omf2<Float, Group>();
+    std::cerr << "omf2" << std::endl;
   }
   else {
     std::cerr << "Integrator does not match, using default" << std::endl;

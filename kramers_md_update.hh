@@ -18,14 +18,14 @@ using std::vector;
 
 
 template<class URNG, typename Float, class Group> void kramers_md_update(gaugeconfig<su2> &U,
-                                                                         URNG &engine, 
-                                                                         md_params &params,
+                                                                         md_params<URNG> &params,
                                                                          std::list<monomial<Float, Group>*> &monomial_list, 
-                                                                         integrator<Float, Group> &md_integ) {
+                                                                         integrator<Float, Group, URNG> &md_integ) {
   adjointfield<Float, Group> momenta(U.getLx(), U.getLy(), U.getLz(), U.getLt(), U.getndims());
+  URNG * engine = params.getengine();
   // generate standard normal distributed random momenta
   // normal distribution checked!
-  initnormal(engine, momenta);
+  initnormal(*engine, momenta);
 
   // for the accept reject step
   std::uniform_real_distribution<Float> uniform(0., 1.);
@@ -37,7 +37,7 @@ template<class URNG, typename Float, class Group> void kramers_md_update(gaugeco
 
   for(size_t k = 0; k < params.getkmax(); k++) {
     // first momenta update
-    initnormal<URNG, Float>(engine, eta);
+    initnormal<URNG, Float>(*engine, eta);
     Float epsilon = params.gettau()/Float(params.getnsteps());
     for(size_t i = 0; i < momenta.getSize(); i++) {
       momenta[i].seta(momenta[i].geta()*exp(-gamma*epsilon) + sqrt(1 - exp(-2*gamma*epsilon))*eta[i].geta());
@@ -77,7 +77,7 @@ template<class URNG, typename Float, class Group> void kramers_md_update(gaugeco
     params.setaccept(true);
     if(params.getacceptreject()) {
       if(delta_H > 0) {
-        if(uniform(engine) > exp(-delta_H)) {
+        if(uniform(*engine) > exp(-delta_H)) {
           params.setaccept(false);
         }
       }

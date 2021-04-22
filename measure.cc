@@ -120,8 +120,8 @@ int main(int ac, char* av[]) {
       std::list<monomial<double, su2>*> monomial_list;
       monomial_list.push_back(&gm);
       monomial_list.push_back(&km);
-      md_params mdparams(n_steps, tau);
-      integrator<double, su2> * md_integ = set_integrator<double, su2>(integs, exponent);
+      md_params<std::mt19937> mdparams(n_steps, tau);
+      integrator<double, su2, std::mt19937> * md_integ = set_integrator<double, su2, std::mt19937>(integs, exponent);
 
       compute_lyapunov(U, engine, mdparams, monomial_list, *md_integ, os.str(), exponent);
       delete(md_integ);

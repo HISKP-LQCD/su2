@@ -16,14 +16,15 @@ using std::vector;
 
 
 template<class URNG, typename Float, class Group> void md_update(gaugeconfig<Group> &U,
-                                                                 URNG &engine, 
-                                                                 md_params &params,
+                                                                 md_params<URNG> &params,
                                                                  std::list<monomial<Float, Group>*> &monomial_list, 
-                                                                 integrator<Float, Group> &md_integ) {
+                                                                 integrator<Float, Group, URNG> &md_integ) {
   adjointfield<Float, Group> momenta(U.getLx(), U.getLy(), U.getLz(), U.getLt(), U.getndims());
+  URNG * engine = params.getengine();
+
   // generate standard normal distributed random momenta
   // normal distribution checked!
-  initnormal(engine, momenta);
+  initnormal(*engine, momenta);
 
   std::uniform_real_distribution<Float> uniform(0., 1.);
 
@@ -53,7 +54,7 @@ template<class URNG, typename Float, class Group> void md_update(gaugeconfig<Gro
   // accept/reject step, if needed
   params.setaccept(true);
   if(delta_H > 0) {
-    if(uniform(engine) > exp(-delta_H)) {
+    if(uniform(*engine) > exp(-delta_H)) {
       params.setaccept(false);
     }
   }

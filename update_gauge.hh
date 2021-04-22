@@ -2,7 +2,7 @@
 
 #include"hamiltonian_field.hh"
 #include"su2.hh"
-#include"expsu2.hh"
+#include"exp_gauge.hh"
 #include<complex>
 
 template<typename Float, class Group> void update_gauge(hamiltonian_field<Float, Group> &h, const Float dtau) {

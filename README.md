@@ -1,7 +1,7 @@
 # A MCMC sampling package for lattice gauge theories
 
 This package implements Metropolis Monte Carlo and Hybrid Monte Carlo
-for SU(2) and U(1) gauge theories. 
+for SU(2) and U(1) gauge theories in `d=2,3,4` dimensions. 
 
 To compile, type
 

@@ -61,7 +61,7 @@ int main(int ac, char* av[]) {
     hotstart(U, gparams.seed, gparams.heat);
   }
   // Molecular Dynamics parameters
-  md_params mdparams(n_steps, tau);
+  md_params<std::mt19937> mdparams(n_steps, tau);
   mdparams.setkmax(k_max);
   mdparams.setgamma(gamma);
 
@@ -81,7 +81,7 @@ int main(int ac, char* av[]) {
   monomial_list.push_back(&gm);
   monomial_list.push_back(&km);
 
-  integrator<double, su2> * md_integ = set_integrator<double, su2>(integs, exponent);
+  integrator<double, su2, std::mt19937> * md_integ = set_integrator<double, su2, std::mt19937>(integs, exponent);
 
   mdparams.setkmax(5);
   if(!gparams.acceptreject) mdparams.disableacceptreject();
@@ -98,8 +98,9 @@ int main(int ac, char* av[]) {
 
     // PRNG engine  
     std::mt19937 engine(gparams.seed + i);
+    mdparams.setengine(&engine);
     // perform the MD update
-    kramers_md_update(U, engine, mdparams, monomial_list, *md_integ);
+    kramers_md_update(U, mdparams, monomial_list, *md_integ);
 
     double energy = gauge_energy(U);
     rate += mdparams.getaccept();

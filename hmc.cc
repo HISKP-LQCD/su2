@@ -40,7 +40,7 @@ int main(int ac, char* av[]) {
     ("nsteps", po::value<size_t>(&n_steps)->default_value(1000), "n_steps")
     ("tau", po::value<double>(&tau)->default_value(1.), "trajectory length tau")
     ("exponent", po::value<size_t>(&exponent)->default_value(0), "exponent for rounding")
-    ("integrator", po::value<size_t>(&integs)->default_value(0), "itegration scheme to be used: 0=leapfrog, 1=lp_leapfrog, 2=omf4, 3=lp_omf4, 4=Euler, 5=RUTH, 6=omf2")
+    ("integrator", po::value<size_t>(&integs)->default_value(0), "itegration scheme to be used: 0=leapfrog, 1=lp_leapfrog, 2=omf4, 3=lp_omf4, 4=Euler, 5=RUTH, 6=omf2, 7=temperedLeapfrog")
     ;
 
   int err = parse_commandline(ac, av, desc, gparams);
@@ -69,7 +69,7 @@ int main(int ac, char* av[]) {
   cout << "## Plaquette after rnd trafo: " << plaquette*normalisation << endl; 
 
   // Molecular Dynamics parameters
-  md_params mdparams(n_steps, tau);
+  md_params<std::mt19937> mdparams(n_steps, tau);
   
   // generate list of monomials
   gaugemonomial<double, su2> gm(0);
@@ -80,7 +80,7 @@ int main(int ac, char* av[]) {
   monomial_list.push_back(&gm);
   monomial_list.push_back(&km);
 
-  integrator<double, su2> * md_integ = set_integrator<double, su2>(integs, exponent);
+  integrator<double, su2, std::mt19937> * md_integ = set_integrator<double, su2, std::mt19937>(integs, exponent);
 
   std::ofstream os;
   if(gparams.icounter == 0) 
@@ -96,8 +96,9 @@ int main(int ac, char* av[]) {
     }
     // PRNG engine
     std::mt19937 engine(gparams.seed+i);
+    mdparams.setengine(&engine);
     // perform the MD update
-    md_update(U, engine, mdparams, monomial_list, *md_integ);
+    md_update(U, mdparams, monomial_list, *md_integ);
 
     double energy = gauge_energy(U);
     rate += mdparams.getaccept();

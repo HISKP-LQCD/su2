@@ -222,7 +222,7 @@ template<typename Float> inline adjointu1<Float> operator*(const Float &x, const
 }
 
 
-template<typename Float, class Group>  adjointfield<Float, su2> operator*(const Float &x, const adjointfield<Float, Group> &A) {
+template<typename Float, class Group>  adjointfield<Float, Group> operator*(const Float &x, const adjointfield<Float, Group> &A) {
   adjointfield<Float, Group> res(A.getLx(), A.getLy(), A.getLz(), A.getLt());
   for(size_t i = 0; i < A.getSize(); i++) {
     res[i] = x * A[i];

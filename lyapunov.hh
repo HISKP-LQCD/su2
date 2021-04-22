@@ -22,9 +22,9 @@ using std::vector;
 
 template<typename Float, class URNG, class Group> void compute_lyapunov(gaugeconfig<Group> &U, 
                                                                         URNG &engine, 
-                                                                        md_params params,
+                                                                        md_params<URNG> params,
                                                                         std::list<monomial<Float, Group>*> &monomial_list, 
-                                                                        integrator<Float, Group> &md_integ, 
+                                                                        integrator<Float, Group, URNG> &md_integ, 
                                                                         std::string const &path, 
                                                                         const size_t d = 12) {
 

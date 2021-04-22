@@ -1,12 +1,12 @@
 #pragma once
 
-class md_params {
+template<class URNG> class md_params {
 
 public:
   md_params(size_t _nsteps, double _tau, size_t n = 1000000000) : 
     nsteps(_nsteps), n_prec(n), kmax(5), exponent(16), tau(_tau), H(0.),
     deltaH(0.), deltadeltaH(0.), deltadeltaU(0.),
-    gamma(2.0),
+    gamma(2.0), omflambda(0.1938), temperedwidth(0.06),
     revtest(false), accept(true), acceptreject(true) {}
   size_t getnsteps() const {
     return nsteps;
@@ -93,6 +93,15 @@ public:
   size_t getexponent() const {
     return exponent;
   }
+  void setengine(URNG * _engine) {
+    engine = _engine;
+  }
+  URNG * getengine() {
+    return(engine);
+  }
+  double gettemperedwidth() {
+    return temperedwidth;
+  }
 private:
   size_t nsteps;
   size_t n_prec;
@@ -101,6 +110,9 @@ private:
   double tau;
   double H, deltaH, deltadeltaH, deltadeltaU;
   double gamma;
+  double omflambda;
+  double temperedwidth;
   bool revtest, accept, acceptreject;
+  URNG * engine;
 };
 

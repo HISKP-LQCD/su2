@@ -56,7 +56,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS} -D_USE_OMP_")
 # generated objects files or create a simple static library. The latter is done
 # here.
 add_library(su2
-    su2.cc
     exp_gauge.cc
     print_program_options.cc
     parse_commandline.cc

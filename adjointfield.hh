@@ -120,7 +120,7 @@ template<typename Float> struct adjoint_type<Float, _u1> {
 };
 
 
-template<typename Float, class Group> class adjointfield {
+template<typename Float, class Group, typename lint=int> class adjointfield {
 public:
   using value_type = typename adjoint_type<Float, Group>::type;
   adjointfield(const size_t Lx, const size_t Ly, const size_t Lz, const size_t Lt, const size_t ndims = 4) : 
@@ -173,19 +173,19 @@ public:
     }
   }
 
-  value_type &operator()(size_t const t, size_t const x, size_t const y, size_t const z, size_t const mu) {
+  value_type &operator()(lint const t, lint const x, lint const y, lint const z, size_t const mu) {
     return data[ getIndex(t, x, y, z, mu) ];
   }
 
-  const value_type &operator()(size_t const t, size_t const x, size_t const y, size_t const z, size_t const mu) const {
+  const value_type &operator()(lint const t, lint const x, lint const y, lint const z, size_t const mu) const {
     return data[ getIndex(t, x, y, z, mu) ];
   }
 
-  value_type &operator()(std::vector<size_t> const &coords, size_t const mu) {
+  value_type &operator()(std::vector<lint> const &coords, size_t const mu) {
     return data[ getIndex(coords[0], coords[1], coords[2], coords[3], mu) ];
   }
 
-  const value_type &operator()(std::vector<size_t> const &coords, size_t const mu) const {
+  const value_type &operator()(std::vector<lint> const &coords, size_t const mu) const {
     return data[ getIndex(coords[0], coords[1], coords[2], coords[3], mu) ];
   }
 
@@ -202,7 +202,7 @@ private:
   
   std::vector<value_type> data;
 
-  size_t getIndex(const size_t t, const size_t x, const size_t y, const size_t z, const size_t mu) const {
+  size_t getIndex(const lint t, const lint x, const lint y, const lint z, const size_t mu) const {
     size_t y0 = (t + Lt) % Lt;
     size_t y1 = (x + Lx) % Lx;
     size_t y2 = (y + Ly) % Ly;

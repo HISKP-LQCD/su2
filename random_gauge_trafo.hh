@@ -6,16 +6,16 @@
 #include<random>
 
 
-template<class T> void random_gauge_trafo(gaugeconfig<T> &U, const int seed) {
+template<class T, typename lint=int> void random_gauge_trafo(gaugeconfig<T> &U, const int seed) {
   std::mt19937 engine(seed);
   
   T rU, tmp;
-  std::vector<size_t> x = {0, 0, 0, 0};
+  std::vector<lint> x = {0, 0, 0, 0};
   for(x[0] = 0; x[0] < U.getLt(); x[0]++) {
     for(x[1] = 0; x[1] < U.getLx(); x[1]++) {
       for(x[2] = 0; x[2] < U.getLy(); x[2]++) {
         for(x[3] = 0; x[3] < U.getLz(); x[3]++) {
-          std::vector<size_t> xminusmu = x;
+          std::vector<lint> xminusmu = x;
           random_element(rU, engine, 1);
           for(size_t mu = 0; mu < U.getndims(); mu++) {
             U(x, mu) = rU * U(x, mu);

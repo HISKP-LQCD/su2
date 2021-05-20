@@ -44,7 +44,7 @@
 // if we take only the terms with \mu < \nu and \rho < \sigma, we need
 // to multiply by a factor of 4. All 4 terms come with the same sign.
 
-template<class T> void energy_density(gaugeconfig<T> &U, double &res, double &Q, bool cloverdef=true) {
+template<class T, typename lint=int> void energy_density(gaugeconfig<T> &U, double &res, double &Q, bool cloverdef=true) {
   res = 0.;
   Q = 0.;
 
@@ -52,14 +52,14 @@ template<class T> void energy_density(gaugeconfig<T> &U, double &res, double &Q,
   // Euclidean 4D totally anti-symemtric tensor 
   static epsilon4_t eps4 = new_epsilon4();
   
-  std::vector<size_t> x = {0, 0, 0, 0};
+  std::vector<lint> x = {0, 0, 0, 0};
   for(x[0] = 0; x[0] < U.getLt(); x[0]++) {
     for(x[1] = 0; x[1] < U.getLx(); x[1]++) {
       for(x[2] = 0; x[2] < U.getLy(); x[2]++) {
         for(x[3] = 0; x[3] < U.getLz(); x[3]++) {
-          std::vector<size_t> x1 = x;
-          std::vector<size_t> x2 = x;
-          std::vector<size_t> x3 = x;
+          std::vector<lint> x1 = x;
+          std::vector<lint> x2 = x;
+          std::vector<lint> x3 = x;
           accum G[4][4];
           for(size_t mu = 0; mu < U.getndims()-1; mu++) {
             for(size_t nu = mu+1; nu < U.getndims(); nu++) {

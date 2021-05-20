@@ -9,7 +9,7 @@
 //
 // checked for gauge invariance
 
-template<class T> double gauge_energy(gaugeconfig<T> &U) {
+template<class T, typename lint=int> double gauge_energy(gaugeconfig<T> &U) {
 
   double res = 0.;
 #ifdef _USE_OMP_
@@ -22,13 +22,13 @@ template<class T> double gauge_energy(gaugeconfig<T> &U) {
     double tmp = 0.;
  
 #pragma omp for
-    for(size_t x0 = 0; x0 < U.getLt(); x0++) {
-      for(size_t x1 = 0; x1 < U.getLx(); x1++) {
-        for(size_t x2 = 0; x2 < U.getLy(); x2++) {
-          for(size_t x3 = 0; x3 < U.getLz(); x3++) {
-            std::vector<size_t> x = {x0, x1, x2, x3};
-            std::vector<size_t> xplusmu = x;
-            std::vector<size_t> xplusnu = x;
+    for(lint x0 = 0; x0 < U.getLt(); x0++) {
+      for(lint x1 = 0; x1 < U.getLx(); x1++) {
+        for(lint x2 = 0; x2 < U.getLy(); x2++) {
+          for(lint x3 = 0; x3 < U.getLz(); x3++) {
+            std::vector<lint> x = {x0, x1, x2, x3};
+            std::vector<lint> xplusmu = x;
+            std::vector<lint> xplusnu = x;
             for(size_t mu = 0; mu < U.getndims()-1; mu++) {
               for(size_t nu = mu+1; nu < U.getndims(); nu++) {
                 xplusmu[mu] += 1;

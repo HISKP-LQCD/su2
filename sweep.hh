@@ -8,15 +8,15 @@
 #include<random>
 #include<vector>
 
-template<class URNG, class Group> double sweep(gaugeconfig<Group> &U, URNG &engine,
-                                               const double delta, 
-                                               const size_t N_hit, const double beta) {
+template<class URNG, class Group, typename lint=int> double sweep(gaugeconfig<Group> &U, URNG &engine,
+                                                                  const double delta, 
+                                                                  const size_t N_hit, const double beta) {
 
   std::uniform_real_distribution<double> uniform(0., 1.);
   typedef typename accum_type<Group>::type accum;
   size_t rate = 0;
   Group R;
-  std::vector<size_t> x = {0, 0, 0, 0};
+  std::vector<lint> x = {0, 0, 0, 0};
   for(x[0] = 0; x[0] < U.getLt(); x[0]++) {
     for(x[1] = 0; x[1] < U.getLx(); x[1]++) {
       for(x[2] = 0; x[2] < U.getLy(); x[2]++) {

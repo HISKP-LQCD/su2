@@ -86,7 +86,7 @@ int main() {
   hotstart(cU, 124665, 0.);
   // now a specific configuration
   // for non-zero top charge
-  std::vector<size_t> xz = {1, 1, 1, 1};
+  std::vector<int> xz = {1, 1, 1, 1};
   cU(xz, 0).set(0);
   cU(xz, 1).set(pi()/2.);
 

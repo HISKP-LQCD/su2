@@ -9,17 +9,17 @@
 #include<fstream>
 #include<iomanip>
 
-template<class Group=su2> double planar_wilsonloop_dir(gaugeconfig<Group> &U, const size_t r, const size_t t, 
-                                                       const size_t mu, const size_t nu) {
+template<class Group=su2, typename lint=int> double planar_wilsonloop_dir(gaugeconfig<Group> &U, const size_t r, const size_t t, 
+                                                                          const size_t mu, const size_t nu) {
   double loop = 0.;
   typedef typename accum_type<Group>::type accum;
   
-  std::vector<size_t> x = {0, 0, 0, 0};
+  std::vector<lint> x = {0, 0, 0, 0};
   for (x[0] = 0; x[0] < U.getLt(); x[0]++) {
     for (x[1] = 0; x[1] < U.getLx(); x[1]++) {
       for (x[2] = 0; x[2] < U.getLy(); x[2]++) {
         for (x[3] = 0; x[3] < U.getLz(); x[3]++) {
-          std::vector<size_t> xrun = x;
+          std::vector<lint> xrun = x;
           accum L(1., 0.);
           for (size_t _t = 0; _t < t; _t++) {
             L *= U(xrun, nu);

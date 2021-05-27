@@ -20,7 +20,7 @@ template<class URNG, typename Float, class Group> void md_update(gaugeconfig<Gro
                                                                  md_params &params,
                                                                  std::list<monomial<Float, Group>*> &monomial_list, 
                                                                  integrator<Float, Group> &md_integ) {
-  adjointfield<Float, Group> momenta(U.getLx(), U.getLy(), U.getLz(), U.getLt(), U.getndims());
+  adjointfield<typename adjoint_type<Float, Group>::type> momenta(U.getLx(), U.getLy(), U.getLz(), U.getLt(), U.getndims());
   // generate standard normal distributed random momenta
   // normal distribution checked!
   initnormal(engine, momenta);

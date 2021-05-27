@@ -1,7 +1,6 @@
 #pragma once
 
-#include"su2.hh"
-#include"u1.hh"
+#include"site_types.hh"
 #include"random_element.hh"
 #include<random>
 #include<vector>
@@ -10,7 +9,7 @@
 #include<complex>
 #include<iostream>
 #include<cassert>
-
+#include<typeinfo>
 using std::vector;
 
 template<class T> class gaugeconfig {
@@ -68,6 +67,14 @@ public:
     }
   }
 
+  //  template<class Q=T>
+  template<class Q = T, typename = std::enable_if_t< (typeid(Q) == typeid(su2)) > >
+  void flipsign() {
+    for(size_t i = 0; i < getSize(); i++) {
+      data[i].flipsign();
+    }
+  }
+ 
   void operator=(const gaugeconfig &U) {
     volume = U.getVolume();
     data.resize(U.getSize());

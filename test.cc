@@ -9,6 +9,7 @@
 
 #include<iostream>
 #include<vector>
+#include<typeinfo>
 
 using std::vector;
 using std::cout;
@@ -112,5 +113,7 @@ int main() {
   Q = 0;
   energy_density(cU, res, Q);
   cout << "Charge after random gauge trafo: " << Q << endl;
+
+  cout << typeid(U).name() << endl;
   return(0);
 }

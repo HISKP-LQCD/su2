@@ -10,7 +10,7 @@ public:
   monomial() : Hold(0.), Hnew(0.), timescale(0), mdactive(true) {}
   virtual void heatbath(hamiltonian_field<Float, Group> const &h) = 0;
   virtual void accept(hamiltonian_field<Float, Group> const &h) = 0;
-  virtual void derivative(adjointfield<Float, Group> &deriv, hamiltonian_field<Float, Group> const &h, const Float fac) const = 0;
+  virtual void derivative(adjointfield<typename adjoint_type<Float, Group>::type> &deriv, hamiltonian_field<Float, Group> const &h, const Float fac) const = 0;
   void reset() {
     Hold = 0.;
     Hnew = 0.;
@@ -47,7 +47,7 @@ public:
   void accept(hamiltonian_field<Float, Group> const &h) override {
     monomial<Float, Group>::Hnew = 0.5 * ((*h.momenta)*(*h.momenta));
   }
-  virtual void derivative(adjointfield<Float, Group> &deriv, hamiltonian_field<Float, Group> const &h, const Float fac) const {}
+  virtual void derivative(adjointfield<typename adjoint_type<Float, Group>::type> &deriv, hamiltonian_field<Float, Group> const &h, const Float fac) const {}
 };
 
 #include"gaugemonomial.hh"

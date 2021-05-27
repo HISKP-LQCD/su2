@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 2.8.11)
 project(su2 C CXX)
 project(su2hmc C CXX)
 
-add_definitions(--std=c++11)
+add_definitions(--std=c++14)
 
 ## here we generate version.hh
 ## to track the git version of the executables
@@ -56,7 +56,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS} -D_USE_OMP_")
 # generated objects files or create a simple static library. The latter is done
 # here.
 add_library(su2
-    exp_gauge.cc
     print_program_options.cc
     parse_commandline.cc
 )

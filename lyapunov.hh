@@ -30,10 +30,10 @@ template<typename Float, class URNG, class Group> void compute_lyapunov(gaugecon
 
   const size_t n = pow(10, d);
 
-  adjointfield<Float, Group> momenta(U.getLx(), U.getLy(), U.getLz(), U.getLt(), U.getndims());
+  adjointfield<typename adjoint_type<Float, Group>::type> momenta(U.getLx(), U.getLy(), U.getLz(), U.getLt(), U.getndims());
   // generate standard normal distributed random momenta
   initnormal(engine, momenta);
-  adjointfield<Float, Group> momenta2(momenta);
+  adjointfield<typename adjoint_type<Float, Group>::type> momenta2(momenta);
   
   // generate copy of U, but round to d decimal digits
   gaugeconfig<Group> U2(U.getLx(), U.getLy(), U.getLz(), U.getLt(), U.getBeta());

@@ -28,7 +28,7 @@ public:
   void integrate(std::list<monomial<Float, Group>*> &monomial_list, hamiltonian_field<Float, Group> &h, 
                  md_params const &params, const bool restore=true) {
 
-    adjointfield<Float, Group> deriv(h.U->getLx(), h.U->getLy(), h.U->getLz(), h.U->getLt(), h.U->getndims());
+    adjointfield<typename adjoint_type<Float, Group>::type> deriv(h.U->getLx(), h.U->getLy(), h.U->getLz(), h.U->getLt(), h.U->getndims());
     
     Float dtau = params.gettau()/Float(params.getnsteps());
     // initial half-step for the  momenta
@@ -55,7 +55,7 @@ public:
   lp_leapfrog(size_t n) : n_prec(n) {}
   void integrate(std::list<monomial<Float, Group>*> &monomial_list, hamiltonian_field<Float, Group> &h, 
                  md_params const &params, const bool restore = true) {
-    adjointfield<Float, Group> deriv(h.U->getLx(), h.U->getLy(), h.U->getLz(), h.U->getLt(), h.U->getndims());
+    adjointfield<typename adjoint_type<Float, Group>::type> deriv(h.U->getLx(), h.U->getLy(), h.U->getLz(), h.U->getLt(), h.U->getndims());
     const size_t N = pow(10, n_prec);
 
     Float dtau = params.gettau()/Float(params.getnsteps());
@@ -85,7 +85,7 @@ public:
   void integrate(std::list<monomial<Float, Group>*> &monomial_list, hamiltonian_field<Float, Group> &h, 
                  md_params const &params, const bool restore = true) {
 
-    adjointfield<Float, Group> deriv(h.U->getLx(), h.U->getLy(), h.U->getLz(), h.U->getLt(), h.U->getndims());
+    adjointfield<typename adjoint_type<Float, Group>::type> deriv(h.U->getLx(), h.U->getLy(), h.U->getLz(), h.U->getLt(), h.U->getndims());
     Float dtau = params.gettau()/Float(params.getnsteps());
     Float oneminus2lambda = (1.-2.*lambda);
 
@@ -121,7 +121,7 @@ public:
   void integrate(std::list<monomial<Float, Group>*> &monomial_list, hamiltonian_field<Float, Group> &h, 
                  md_params const &params, const bool restore = true) {
 
-    adjointfield<Float, Group> deriv(h.U->getLx(), h.U->getLy(), h.U->getLz(), h.U->getLt(), h.U->getndims());
+    adjointfield<typename adjoint_type<Float, Group>::type> deriv(h.U->getLx(), h.U->getLy(), h.U->getLz(), h.U->getLt(), h.U->getndims());
     Float dtau = params.gettau()/Float(params.getnsteps());
     Float eps[10] = {rho*dtau, lambda*dtau, 
                  theta*dtau, 0.5*(1-2.*(lambda+vartheta))*dtau, 
@@ -161,7 +161,7 @@ public:
   void integrate(std::list<monomial<Float, Group>*> &monomial_list, hamiltonian_field<Float, Group> &h, 
                  md_params const &params, const bool restore = true) {
 
-    adjointfield<Float, Group> deriv(h.U->getLx(), h.U->getLy(), h.U->getLz(), h.U->getLt(), h.U->getndims());
+    adjointfield<typename adjoint_type<Float, Group>::type> deriv(h.U->getLx(), h.U->getLy(), h.U->getLz(), h.U->getLt(), h.U->getndims());
     const size_t N = pow(10, n_prec);
 
     Float dtau = params.gettau()/Float(params.getnsteps());
@@ -203,7 +203,7 @@ public:
   void integrate(std::list<monomial<Float, Group>*> &monomial_list, hamiltonian_field<Float, Group> &h, 
                  md_params const &params, const bool restore = true) {
 
-    adjointfield<Float, Group> deriv(h.U->getLx(), h.U->getLy(), h.U->getLz(), h.U->getLt(), h.U->getndims());
+    adjointfield<typename adjoint_type<Float, Group>::type> deriv(h.U->getLx(), h.U->getLy(), h.U->getLz(), h.U->getLt(), h.U->getndims());
     Float dtau = params.gettau()/Float(params.getnsteps());
     // nsteps full steps
     for(size_t i = 0; i < params.getnsteps(); i++) {
@@ -222,7 +222,7 @@ public:
   void integrate(std::list<monomial<Float, Group>*> &monomial_list, hamiltonian_field<Float, Group> &h, 
                  md_params const &params, const bool restore = true) {
 
-    adjointfield<Float, Group> deriv(h.U->getLx(), h.U->getLy(), h.U->getLz(), h.U->getLt(), h.U->getndims());
+    adjointfield<typename adjoint_type<Float, Group>::type> deriv(h.U->getLx(), h.U->getLy(), h.U->getLz(), h.U->getLt(), h.U->getndims());
     
     Float dtau = params.gettau()/Float(params.getnsteps());
     // nsteps full steps

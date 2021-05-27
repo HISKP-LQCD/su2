@@ -5,8 +5,8 @@
 #include<vector>
 
 template<typename Float, class Group> struct hamiltonian_field {
-  adjointfield<Float, Group> * momenta;
+  adjointfield<typename adjoint_type<Float, Group>::type> * momenta;
   gaugeconfig<Group> * U;
-  hamiltonian_field(adjointfield<Float, Group> &momenta, gaugeconfig<Group> &U) :
+  hamiltonian_field(adjointfield<typename adjoint_type<Float, Group>::type> &momenta, gaugeconfig<Group> &U) :
     momenta(&momenta), U(&U) {}
 };

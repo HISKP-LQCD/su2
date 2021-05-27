@@ -120,9 +120,10 @@ template<typename Float> struct adjoint_type<Float, _u1> {
 };
 
 
-template<typename Float, class Group> class adjointfield {
+template<typename Adjoint> class adjointfield {
 public:
-  using value_type = typename adjoint_type<Float, Group>::type;
+  //using value_type = typename adjoint_type<Float, Group>::type;
+  using value_type = Adjoint;
   adjointfield(const size_t Lx, const size_t Ly, const size_t Lz, const size_t Lt, const size_t ndims = 4) : 
     Lx(Lx), Ly(Ly), Lz(Lz), Lt(Lt), volume(Lx*Ly*Lz*Lt), ndims(ndims) {
     data.resize(volume*4);
@@ -161,7 +162,7 @@ public:
   size_t getSize() const {
     return(volume*ndims);
   }
-  void operator=(const adjointfield<Float, Group> &U) {
+  void operator=(const adjointfield<Adjoint> &U) {
     Lx = U.getLx();
     Ly = U.getLz();
     Lz = U.getLz();
@@ -222,15 +223,15 @@ template<typename Float> inline adjointu1<Float> operator*(const Float &x, const
 }
 
 
-template<typename Float, class Group>  adjointfield<Float, su2> operator*(const Float &x, const adjointfield<Float, Group> &A) {
-  adjointfield<Float, Group> res(A.getLx(), A.getLy(), A.getLz(), A.getLt());
+template<typename Float, typename Adjoint>  adjointfield<Adjoint> operator*(const Float &x, const adjointfield<Adjoint> &A) {
+  adjointfield<Adjoint> res(A.getLx(), A.getLy(), A.getLz(), A.getLt());
   for(size_t i = 0; i < A.getSize(); i++) {
     res[i] = x * A[i];
   }
   return res;
 }
 
-template<typename Float> Float operator*(const adjointfield<Float, su2> &A, const adjointfield<Float, su2> &B) {
+template<typename Float> Float operator*(const adjointfield<adjointsu2<Float>> &A, const adjointfield<adjointsu2<Float>> &B) {
   Float res = 0.;
   assert(A.getSize() == B.getSize());
   for(size_t i = 0; i < A.getSize(); i++) {
@@ -239,7 +240,7 @@ template<typename Float> Float operator*(const adjointfield<Float, su2> &A, cons
   return res;
 }
 
-template<typename Float> Float operator*(const adjointfield<Float, _u1> &A, const adjointfield<Float, _u1> &B) {
+template<typename Float> Float operator*(const adjointfield<adjointu1<Float>> &A, const adjointfield<adjointu1<Float>> &B) {
   Float res = 0.;
   assert(A.getSize() == B.getSize());
   for(size_t i = 0; i < A.getSize(); i++) {
@@ -249,7 +250,7 @@ template<typename Float> Float operator*(const adjointfield<Float, _u1> &A, cons
 }
 
 
-template<class URNG, typename Float> void initnormal(URNG &engine, adjointfield<Float, su2> &A) {
+template<class URNG, typename Float> void initnormal(URNG &engine, adjointfield<adjointsu2<Float>> &A) {
   std::normal_distribution<double> normal(0., 1.);
   for(size_t i = 0; i < A.getSize(); i++) {
     A[i].seta(Float(normal(engine)));
@@ -259,7 +260,7 @@ template<class URNG, typename Float> void initnormal(URNG &engine, adjointfield<
   return;
 }
 
-template<class URNG, typename Float> void initnormal(URNG &engine, adjointfield<Float, _u1> &A) {
+template<class URNG, typename Float> void initnormal(URNG &engine, adjointfield<adjointu1<Float>> &A) {
   std::normal_distribution<double> normal(0., 1.);
   for(size_t i = 0; i < A.getSize(); i++) {
     A[i].seta(Float(normal(engine)));
@@ -267,7 +268,7 @@ template<class URNG, typename Float> void initnormal(URNG &engine, adjointfield<
   return;
 }
 
-template<typename Float, class Group> inline void zeroadjointfield(adjointfield<Float, Group> &A) {
+template<typename Adjoint> inline void zeroadjointfield(adjointfield<Adjoint> &A) {
   for(size_t i = 0; i < A.getSize(); i++) {
     A[i].setzero();
   }

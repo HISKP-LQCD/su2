@@ -63,7 +63,7 @@ template<class Group> void gradient_flow(gaugeconfig<Group> &U, std::string cons
   E[2] = density;
 
   gaugeconfig<Group> Vt(U);
-  adjointfield<double, Group> deriv(U.getLx(), U.getLy(), U.getLz(), U.getLt(), U.getndims());
+  adjointfield<typename adjoint_type<double, Group>::type> deriv(U.getLx(), U.getLy(), U.getLz(), U.getLt(), U.getndims());
   hamiltonian_field<double, Group> h(deriv, Vt);
   gaugemonomial<double, Group> SW(0);
 

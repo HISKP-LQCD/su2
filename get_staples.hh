@@ -46,13 +46,13 @@ void scalarmultiplyadd(_su2 &U1, _su2 U2, double c1, double c2) {
 
 template<class T, class S> void get_staples_anisotrope(T &K, gaugeconfig<S> &U,
                                    vector<size_t> const x,
-                                   const size_t mu, const double deltatau) {
+                                   const size_t mu, const double xi=1.0) {
   vector<size_t> x1 = x, x2 = x;
   double factor=0;
   x1[mu] += 1;
   for(size_t nu = 0; nu < U.getndims(); nu++) {
     if(nu != mu) {
-      factor=((nu==0)||(mu==0)?1.0/deltatau:deltatau);
+      factor=((nu==0)||(mu==0)?1.0/xi:xi);
       x2[nu]++;
       scalarmultiplyadd(K, U(x1, nu) * U(x2, mu).dagger() * U(x, nu).dagger(), 1.0, factor);
       x2[nu]--;
@@ -60,7 +60,7 @@ template<class T, class S> void get_staples_anisotrope(T &K, gaugeconfig<S> &U,
   }
   for(size_t nu = 0; nu < U.getndims(); nu++) {
     if(nu != mu) {
-      factor=((nu==0)||(mu==0)?1.0/deltatau:deltatau);
+      factor=((nu==0)||(mu==0)?1.0/xi:xi);
       x1[nu]--;
       x2[nu]--;
       scalarmultiplyadd(K, U(x1, nu).dagger() * U(x2, mu).dagger() * U(x2, nu), 1.0, factor);

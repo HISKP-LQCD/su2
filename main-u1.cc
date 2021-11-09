@@ -26,7 +26,7 @@ int main(int ac, char* av[]) {
 
   size_t N_hit = 10;
   double delta = 0.1;
-  double deltatau = 1.0;
+  double xi = 1.0;
 
   cout << "## Metropolis Algorithm for U(1) gauge theory" << endl;
   cout << "## (C) Carsten Urbach <urbach@hiskp.uni-bonn.de> (2017, 2021)" << endl;
@@ -39,7 +39,7 @@ int main(int ac, char* av[]) {
   desc.add_options()
     ("nhit", po::value<size_t>(&N_hit)->default_value(10), "N_hit")
     ("delta,d", po::value<double>(&delta), "delta")
-    ("tau", po::value<double>(&deltatau)->default_value(1.0), "deltatau, characteristic of anisotropy")
+    ("tau", po::value<double>(&xi)->default_value(1.0), "xi, characteristic of anisotropy")
     ;
 
   int err = parse_commandline(ac, av, desc, gparams);
@@ -76,7 +76,7 @@ int main(int ac, char* av[]) {
   double rate = 0.;
   for(size_t i = gparams.icounter; i < gparams.N_meas + gparams.icounter; i++) {
     std::mt19937 engine(gparams.seed+i);
-    rate += sweep(U, engine, delta, N_hit, gparams.beta, deltatau);
+    rate += sweep(U, engine, delta, N_hit, gparams.beta, xi);
     double energy = gauge_energy(U);
     double E = 0., Q = 0.;
     //~ energy_density(U, E, Q);

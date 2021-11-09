@@ -23,8 +23,7 @@ template<class URNG, class Group> double sweep(gaugeconfig<Group> &U, URNG &engi
         for(x[3] = 0; x[3] < U.getLz(); x[3]++) {
           for(size_t mu = 0; mu < U.getndims(); mu++) {
             accum K;
-            //~ get_staples(K, U, x, mu);
-            get_staples_anisotrope(K, U, x, mu, xi);
+            get_staples(K, U, x, mu, xi);
             for(size_t n = 0; n < N_hit; n++) {
               random_element(R, engine, delta);
               double deltaS = beta/static_cast<double>(U.getNc())*

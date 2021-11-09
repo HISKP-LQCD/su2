@@ -39,7 +39,7 @@ int main(int ac, char* av[]) {
   desc.add_options()
     ("nhit", po::value<size_t>(&N_hit)->default_value(10), "N_hit")
     ("delta,d", po::value<double>(&delta), "delta")
-    ("tau", po::value<double>(&xi)->default_value(1.0), "xi, characteristic of anisotropy")
+    ("xi", po::value<double>(&xi)->default_value(1.0), "xi, characteristic of anisotropy")
     ;
 
   int err = parse_commandline(ac, av, desc, gparams);
@@ -79,10 +79,10 @@ int main(int ac, char* av[]) {
     rate += sweep(U, engine, delta, N_hit, gparams.beta, xi);
     double energy = gauge_energy(U);
     double E = 0., Q = 0.;
-    //~ energy_density(U, E, Q);
+    energy_density(U, E, Q);
     cout << i << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy*normalisation << " " << Q << " ";
     os << i << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy*normalisation << " " << Q << " ";
-    //~ energy_density(U, E, Q, false);
+    energy_density(U, E, Q, false);
     cout << Q << endl;
     os << Q << endl;
     if(i > 0 && (i % gparams.N_save) == 0) {

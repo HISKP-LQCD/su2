@@ -36,7 +36,6 @@ public:
             for(size_t mu = 0; mu < h.U->getndims(); mu++) {
               accum S;
               get_staples(S, *h.U, x, mu);
-              //does it make sense to put get_staples_anisotrope here?
               S = (*h.U)(x, mu) * S;
               // the antihermitian traceless part
               // beta/N_c *(U*U^stap - (U*U^stap)^dagger)

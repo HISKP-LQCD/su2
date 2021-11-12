@@ -45,7 +45,7 @@ template<class Group=su2> double planar_wilsonloop_dir(gaugeconfig<Group> &U, co
   return loop;
 }
 
-template<class Group=su2> double wilsonloop_four_dir(gaugeconfig<Group> &U, std::vector<size_t> r) {
+template<class Group=su2> double wilsonloop_non_planar(gaugeconfig<Group> &U, std::vector<size_t> r) {
     //goes path outlined in r in direction t->x->y->z
   double loop = 0.;
   typedef typename accum_type<Group>::type accum;
@@ -98,19 +98,20 @@ template<class Group> void compute_all_loops(gaugeconfig<Group> &U, std::string 
   return;
 }
 
-template<class Group> void compute_all_paths(gaugeconfig<Group> &U, std::string const &path, 
+template<class Group> void compute_average_all_configs_non_planar(gaugeconfig<Group> &U, std::string const &path, 
         size_t lengthone, size_t lengthtwo, size_t lengththree) {
+            //compute wilson loops with all possible configurations to form R=sqrt(lengthone^2+lengthtwo^2+lengththree^2) in direction t-R-tdagger-Rdagger
   std::ofstream os(path, std::ios::app);
   double r=sqrt(lengthone*lengthone+lengthtwo*lengthtwo+lengththree*lengththree);
   for(size_t t = 1; t < U.getLt(); t++) {
     os << t << " " << std::scientific << std::setw(15) <<  r << " ";
     double loop = 0;
-    loop+=wilsonloop_four_dir(U, {t, lengthone, lengthtwo, lengththree}); //123
-    loop+=wilsonloop_four_dir(U, {t, lengthone, lengththree, lengthtwo}); //132
-    loop+=wilsonloop_four_dir(U, {t, lengthtwo, lengthone, lengththree}); //213
-    loop+=wilsonloop_four_dir(U, {t, lengthtwo, lengththree, lengthone}); //231
-    loop+=wilsonloop_four_dir(U, {t, lengththree, lengthone, lengthtwo}); //312
-    loop+=wilsonloop_four_dir(U, {t, lengththree, lengthtwo, lengthone}); //321
+    loop+=wilsonloop_non_planar(U, {t, lengthone, lengthtwo, lengththree}); //123
+    loop+=wilsonloop_non_planar(U, {t, lengthone, lengththree, lengthtwo}); //132
+    loop+=wilsonloop_non_planar(U, {t, lengthtwo, lengthone, lengththree}); //213
+    loop+=wilsonloop_non_planar(U, {t, lengthtwo, lengththree, lengthone}); //231
+    loop+=wilsonloop_non_planar(U, {t, lengththree, lengthone, lengthtwo}); //312
+    loop+=wilsonloop_non_planar(U, {t, lengththree, lengthtwo, lengthone}); //321
     os << std::scientific << std::setw(15) << loop/U.getVolume()/double(U.getNc())/6. << " ";
     
     os << std::endl;

@@ -65,7 +65,7 @@ int main(int ac, char* av[]) {
 
   for(size_t i = gparams.icounter; i < gparams.N_meas*nstep+gparams.icounter; i+=nstep) {
     std::ostringstream os;
-    os << "configu1." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz << "." << gparams.Lt << ".b" << U.getBeta() << "." << i << std::ends;
+    os << "configu1." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz << "." << gparams.Lt << ".b" << U.getBeta() << ".x" << gparams.xi << "." << i << std::ends;
     U.load(os.str());
     
     double plaquette = gauge_energy(U);
@@ -90,14 +90,6 @@ int main(int ac, char* av[]) {
       os.fill(prevf);
       os << ".dat" << std::ends;
       compute_spacial_loops(U, os.str());
-      for(size_t xp=0;xp<3; xp+=1){
-        for(size_t yp=0;yp<3; yp+=1){
-          for(size_t zp=0;zp<3; zp+=1){
-              if (xp==0&&yp==0&&zp==0){zp=1;}
-            compute_all_paths(U, os.str(), xp, yp, zp);
-          }
-        }
-      }
       cout << endl;
     }
     if(gradient) {

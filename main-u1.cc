@@ -26,7 +26,6 @@ int main(int ac, char* av[]) {
 
   size_t N_hit = 10;
   double delta = 0.1;
-  double xi = 1.0;
 
   cout << "## Metropolis Algorithm for U(1) gauge theory" << endl;
   cout << "## (C) Carsten Urbach <urbach@hiskp.uni-bonn.de> (2017, 2021)" << endl;
@@ -39,7 +38,6 @@ int main(int ac, char* av[]) {
   desc.add_options()
     ("nhit", po::value<size_t>(&N_hit)->default_value(10), "N_hit")
     ("delta,d", po::value<double>(&delta), "delta")
-    ("xi", po::value<double>(&xi)->default_value(1.0), "xi, characteristic of anisotropy")
     ;
 
   int err = parse_commandline(ac, av, desc, gparams);
@@ -76,7 +74,7 @@ int main(int ac, char* av[]) {
   double rate = 0.;
   for(size_t i = gparams.icounter; i < gparams.N_meas + gparams.icounter; i++) {
     std::mt19937 engine(gparams.seed+i);
-    rate += sweep(U, engine, delta, N_hit, gparams.beta, xi);
+    rate += sweep(U, engine, delta, N_hit, gparams.beta, gparams.xi, gparams.anisotrope);
     double energy = gauge_energy(U);
     double E = 0., Q = 0.;
     energy_density(U, E, Q);
@@ -87,14 +85,14 @@ int main(int ac, char* av[]) {
     os << Q << endl;
     if(i > 0 && (i % gparams.N_save) == 0) {
       std::ostringstream oss;
-      oss << "configu1." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz<< "." << gparams.Lt << ".b" << gparams.beta << "." << i << std::ends;
+      oss << "configu1." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz<< "." << gparams.Lt << ".b" << gparams.beta << ".x" << gparams.xi << "." << i << std::ends;
       U.save(oss.str());
     }
   }
   cout << "## Acceptance rate " << rate/static_cast<double>(gparams.N_meas) << endl;
 
   std::ostringstream oss;
-  oss << "configu1." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz<< "." << gparams.Lt << ".b" << U.getBeta() << ".final" << std::ends;
+  oss << "configu1." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz<< "." << gparams.Lt << ".b" << U.getBeta() << ".x" << gparams.xi << ".final" << std::ends;
   U.save(oss.str());
 
   return(0);

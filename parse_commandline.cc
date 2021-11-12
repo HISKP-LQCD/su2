@@ -24,6 +24,8 @@ void add_general_options(po::options_description &desc, general_params &params) 
     ("heat", po::value<double>(&params.heat)->default_value(1.), "randomness of the initial config, 1: hot, 0: cold")
     ("restart", "restart from an existing configuration")
     ("configname", po::value< std::string >(&params.configfilename), "configuration filename used in case of restart")
+    ("xi", po::value<double>(&params.xi)->default_value(1.0), "xi, characteristic of anisotropy")
+    ("anisotrope", po::value<bool>(&params.anisotrope)->default_value(false), "set whether the configurations are anisotrope")
     ;
   return;
 }

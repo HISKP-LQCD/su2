@@ -9,10 +9,10 @@
 
 template<class T, class S> void get_staples(T &K, gaugeconfig<S> &U,
                                    vector<size_t> const x,
-                                   const size_t mu, const double xi=1.0, bool anisotrope=false) {
+                                   const size_t mu, const double xi=1.0, bool anisotropic=false) {
   vector<size_t> x1 = x, x2 = x;
   x1[mu] += 1;
-  if(!anisotrope){
+  if(!anisotropic){
   for(size_t nu = 0; nu < U.getndims(); nu++) {
     if(nu != mu) {
       x2[nu]++;
@@ -30,7 +30,7 @@ template<class T, class S> void get_staples(T &K, gaugeconfig<S> &U,
     }
   }
   }
-  if(anisotrope){
+  if(anisotropic){
     double factor;
     for(size_t nu = 0; nu < U.getndims(); nu++) {
     if(nu != mu) {

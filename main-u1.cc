@@ -74,7 +74,7 @@ int main(int ac, char* av[]) {
   double rate = 0.;
   for(size_t i = gparams.icounter; i < gparams.N_meas + gparams.icounter; i++) {
     std::mt19937 engine(gparams.seed+i);
-    rate += sweep(U, engine, delta, N_hit, gparams.beta, gparams.xi, gparams.anisotrope);
+    rate += sweep(U, engine, delta, N_hit, gparams.beta, gparams.xi, gparams.anisotropic);
     double energy = gauge_energy(U);
     double E = 0., Q = 0.;
     energy_density(U, E, Q);
@@ -85,14 +85,14 @@ int main(int ac, char* av[]) {
     os << Q << endl;
     if(i > 0 && (i % gparams.N_save) == 0) {
       std::ostringstream oss;
-      oss << "configu1." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz<< "." << gparams.Lt << ".b" << gparams.beta << ".x" << gparams.xi << "." << i << std::ends;
+      oss << "configu1." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz<< "." << gparams.Lt << ".b" << std::fixed << gparams.beta << ".x" << gparams.xi << "." << i << std::ends;
       U.save(oss.str());
     }
   }
   cout << "## Acceptance rate " << rate/static_cast<double>(gparams.N_meas) << endl;
 
   std::ostringstream oss;
-  oss << "configu1." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz<< "." << gparams.Lt << ".b" << U.getBeta() << ".x" << gparams.xi << ".final" << std::ends;
+  oss << "configu1." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz<< "." << gparams.Lt << ".b" << std::fixed << U.getBeta() << ".x" << gparams.xi << ".final" << std::ends;
   U.save(oss.str());
 
   return(0);

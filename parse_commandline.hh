@@ -15,7 +15,7 @@ public:
   double xi;              
   bool restart;              
   bool acceptreject;
-  bool anisotrope;
+  bool anisotropic;
   std::string configfilename;
 };
 

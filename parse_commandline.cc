@@ -98,6 +98,9 @@ int parse_commandline(int ac, char * av[], po::options_description &desc, genera
     if (params.ndims == 3) {
       params.Lz = 1;
     }
+    if (params.xi != 1.0 && params.anisotropic == false) {
+        std::cerr << "anisotropy parameter xi != 1, but flag anisotropic is set to false. Programm will continue without anisotropy." << std::endl;
+    }
     PrintVariableMap(vm);
   }
   catch(std::exception& e) {

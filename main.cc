@@ -7,6 +7,10 @@
 #include"energy_density.hh"
 #include"version.hh"
 
+#ifdef _USE_OMP_
+#  include<omp.h>
+#endif
+
 #include<iostream>
 #include<iomanip>
 #include<fstream>
@@ -43,7 +47,18 @@ int main(int ac, char* av[]) {
   if(err > 0) {
     return err;
   }
-
+  
+  #ifdef _USE_OMP_
+  bool parallel = true;
+  #else
+  bool parallel = false;
+  #endif
+  if (gparams.Lt%2 != 0 && parallel){
+    std::cerr << "For parallel computing an even number of points in T is needed!" << std::endl;
+    omp_set_num_threads(1);
+    std::cerr << "Continuing with one thread." << std::endl;
+  }    
+      
   gaugeconfig<su2> U(gparams.Lx, gparams.Ly, gparams.Lz, gparams.Lt, gparams.ndims, gparams.beta);
   if(gparams.restart) {
     err = U.load(gparams.configfilename);
@@ -64,25 +79,38 @@ int main(int ac, char* av[]) {
   plaquette = gauge_energy(U);
   cout << "Plaquette after rnd trafo: " << plaquette*normalisation << endl; 
 
+  //set things up for parallel computing in sweep
+  #ifdef _USE_OMP_
+  int threads=omp_get_max_threads();
+  #else
+  int threads=1;
+  #endif    
+
   std::ofstream os;
   if(gparams.icounter == 0) 
     os.open("output.metropolis.data", std::ios::out);
   else
     os.open("output.metropolis.data", std::ios::app);
   double rate = 0.;
-  for(size_t i = gparams.icounter; i < gparams.N_meas + gparams.icounter; i++) {
-    std::mt19937 engine(gparams.seed+i);
-    rate += sweep(U, engine, delta, N_hit, gparams.beta);
+  for(size_t i = gparams.icounter; i < gparams.N_meas*threads + gparams.icounter; i+=threads) {
+    std::mt19937 * engines =new std::mt19937[threads];
+    for(size_t engine=0;engine<threads;engine+=1){
+      engines[engine].seed(gparams.seed+i);
+    }
+    size_t inew = (i-gparams.icounter)/threads+gparams.icounter;//counts loops, loop-variable needed too have one RNG per thread with different seeds 
+    //~ std::mt19937 engine(gparams.seed+i);
+    rate += sweep(U, engines, delta, N_hit, gparams.beta);
     double energy = gauge_energy(U);
     double E = 0., Q = 0.;
     energy_density(U, E, Q);
-    cout << i << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy*normalisation << " " << Q << endl;
-    os << i << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy*normalisation << " " << Q << endl;
-    if(i > 0 && (i % gparams.N_save) == 0) {
+    cout << inew << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy*normalisation << " " << Q << endl;
+    os << inew << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy*normalisation << " " << Q << endl;
+    if(inew > 0 && (inew % gparams.N_save) == 0) {
       std::ostringstream oss;
-      oss << "config." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz << "." << gparams.Lt << ".b" << gparams.beta << "." << i << std::ends;
+      oss << "config." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz << "." << gparams.Lt << ".b" << gparams.beta << "." << inew << std::ends;
       U.save(oss.str());
     }
+    delete engines;
   }
   cout << "## Acceptance rate " << rate/static_cast<double>(gparams.N_meas) << endl;
 

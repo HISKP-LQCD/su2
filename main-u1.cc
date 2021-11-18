@@ -99,13 +99,13 @@ int main(int ac, char* av[]) {
       engines[engine].seed(gparams.seed+i);
     }
     size_t inew = (i-gparams.icounter)/threads+gparams.icounter;//counts loops, loop-variable needed too have one RNG per thread with different seeds 
-    //~ std::mt19937 engine(gparams.seed+i);
     rate += sweep(U, engines, delta, N_hit, gparams.beta, gparams.xi, gparams.anisotropic);
-    double energy = gauge_energy(U);
+    double energy = gauge_energy(U, true);
     double E = 0., Q = 0.;
     energy_density(U, E, Q);
-    cout << inew << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy*normalisation << " " << Q << " ";
-    os << inew << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy*normalisation << " " << Q << " ";
+    //measuring spatial plaquettes only means only half of all plaquettes are measured, so need factor 2 for normalization to 1
+    cout << inew << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy*normalisation*2 << " " << Q << " ";
+    os << inew << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy*normalisation*2 << " " << Q << " ";
     energy_density(U, E, Q, false);
     cout << Q << endl;
     os << Q << endl;

@@ -95,7 +95,7 @@ int main(int ac, char* av[]) {
   for(size_t i = gparams.icounter; i < gparams.N_meas*threads + gparams.icounter; i+=threads) {
     std::mt19937 * engines =new std::mt19937[threads];
     for(size_t engine=0;engine<threads;engine+=1){
-      engines[engine].seed(gparams.seed+i);
+      engines[engine].seed(gparams.seed+i+engine);
     }
     size_t inew = (i-gparams.icounter)/threads+gparams.icounter;//counts loops, loop-variable needed too have one RNG per thread with different seeds 
     //~ std::mt19937 engine(gparams.seed+i);

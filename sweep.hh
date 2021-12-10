@@ -20,7 +20,6 @@ template<class URNG, class Group> double sweep(gaugeconfig<Group> &U, URNG * &en
   std::uniform_real_distribution<double> uniform(0., 1.);
   typedef typename accum_type<Group>::type accum;
   size_t rate = 0;
-  Group R;
   #ifdef _USE_OMP_
   int threads = omp_get_max_threads();
   static double * omp_acc = new double[threads];
@@ -31,9 +30,10 @@ template<class URNG, class Group> double sweep(gaugeconfig<Group> &U, URNG * &en
   int thread_num=0;  
   #endif  
   size_t temp=0;
-  #pragma omp for private (R)
+  #pragma omp for
   for(size_t x0 = 0; x0 < U.getLt(); x0+=2) {
 //OpenMP does not allow loop declaration as it was done for the other dimensions, still have to figure out why
+    Group R;
     for(size_t x1 = 0; x1 < U.getLx(); x1++) {
       for(size_t x2 = 0; x2 < U.getLy(); x2++) {
         for(size_t x3 = 0; x3 < U.getLz(); x3++) {
@@ -58,9 +58,10 @@ template<class URNG, class Group> double sweep(gaugeconfig<Group> &U, URNG * &en
       }
     }
   }
-  #pragma omp for private (R)
+  #pragma omp for
   for(size_t x0 = 1; x0 < U.getLt(); x0+=2) {
 //OpenMP does not allow loop declaration as it was done for the other dimensions, still have to figure out why
+    Group R;
     for(size_t x1 = 0; x1 < U.getLx(); x1++) {
       for(size_t x2 = 0; x2 < U.getLy(); x2++) {
         for(size_t x3 = 0; x3 < U.getLz(); x3++) {

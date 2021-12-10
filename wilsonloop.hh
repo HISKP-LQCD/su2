@@ -5,6 +5,9 @@
 #include"accum_type.hh"
 #include"su2.hh"
 #include"gaugeconfig.hh"
+#ifdef _USE_OMP_
+#  include<omp.h>
+#endif
 #include<vector>
 #include<fstream>
 #include<iomanip>
@@ -46,34 +49,58 @@ template<class Group=su2> double planar_wilsonloop_dir(gaugeconfig<Group> &U, co
 }
 
 template<class Group=su2> double wilsonloop_non_planar(gaugeconfig<Group> &U, std::vector<size_t> r) {
-    //goes path outlined in r in direction t->x->y->z
+    //goes path outlined in r in direction t->x->y->z, could go with other orders by using longer vector r and inserting zeros
+    //parallelized with code from gauge_energy
   double loop = 0.;
   typedef typename accum_type<Group>::type accum;
+  #ifdef _USE_OMP_
+  int threads = omp_get_max_threads();
+  static double * omp_acc = new double[threads];
+  #pragma omp parallel
+  {
+    int thread_num = omp_get_thread_num();
+  #endif
+  double tmp = 0.;
+  //needed if vector with directions contains more than 4 entries/if another order than t-x-y-z is wanted
+  int directionloop;
   
-  std::vector<size_t> x = {0, 0, 0, 0};
-  for (x[0] = 0; x[0] < U.getLt(); x[0]++) {
-    for (x[1] = 0; x[1] < U.getLx(); x[1]++) {
-      for (x[2] = 0; x[2] < U.getLy(); x[2]++) {
-        for (x[3] = 0; x[3] < U.getLz(); x[3]++) {
-          std::vector<size_t> xrun = x;
+  //~ std::vector<size_t> x = {0, 0, 0, 0};
+  #pragma omp for
+  for (size_t x0 = 0; x0 < U.getLt(); x0++) {
+    for (size_t x1 = 0; x1 < U.getLx(); x1++) {
+      for (size_t x2 = 0; x2 < U.getLy(); x2++) {
+        for (size_t x3 = 0; x3 < U.getLz(); x3++) {
+          std::vector<size_t> xrun = {x0, x1, x2, x3};
           accum L(1., 0.);
-          for(size_t direction=0;direction<r.size();direction++){
-            for (size_t length=0;length<r[direction]; length +=1){
-              L *= U(xrun, direction);
-              xrun[direction] +=1;
+          for(size_t direction=0; direction < r.size(); direction++){ 
+            directionloop=(direction+4)%4;
+            for (size_t length=0; length < r[direction]; length++){
+              L *= U(xrun, directionloop);
+              xrun[directionloop] +=1;
             }
           }
-          for(size_t direction=0;direction<r.size();direction++){
-            for (size_t length=0;length<r[direction]; length +=1){
-              xrun[direction] -=1;
-              L *= U(xrun, direction).dagger();
+          for(size_t direction=0; direction < r.size(); direction++){
+            directionloop=(direction+4)%4;
+            for (size_t length=0; length < r[direction]; length++){
+              xrun[directionloop] -=1;
+              L *= U(xrun, directionloop).dagger();
             } 
           }
-          loop += retrace(L);
+          tmp += retrace(L);
         }
       }
     }
   }
+  #ifdef _USE_OMP_
+    omp_acc[thread_num] = tmp;
+    loop = 0.;
+  }
+  for(size_t i = 0; i < threads; i++) {
+    loop += omp_acc[i];
+  }
+  #else
+  loop = tmp;
+  #endif
   return loop;
 }
 

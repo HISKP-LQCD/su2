@@ -85,8 +85,10 @@ int main(int ac, char* av[]) {
   int threads=omp_get_max_threads();
   #else
   int threads=1;
-  #endif    
-
+  #endif   
+  //cout << "threads " << threads << endl; 
+  size_t facnorm=gparams.ndims>2?gparams.ndims/(gparams.ndims-2):0;
+  
   std::ofstream os;
   if(gparams.icounter == 0) 
     os.open("output.u1-metropolis.data", std::ios::out);
@@ -96,7 +98,7 @@ int main(int ac, char* av[]) {
   for(size_t i = gparams.icounter; i < gparams.N_meas*threads + gparams.icounter; i+=threads) {
     std::mt19937 * engines =new std::mt19937[threads];
     for(size_t engine=0;engine<threads;engine+=1){
-      engines[engine].seed(gparams.seed+i);
+      engines[engine].seed(gparams.seed+i+engine);
     }
     size_t inew = (i-gparams.icounter)/threads+gparams.icounter;//counts loops, loop-variable needed too have one RNG per thread with different seeds 
     rate += sweep(U, engines, delta, N_hit, gparams.beta, gparams.xi, gparams.anisotropic);
@@ -104,8 +106,11 @@ int main(int ac, char* av[]) {
     double E = 0., Q = 0.;
     energy_density(U, E, Q);
     //measuring spatial plaquettes only means only half of all plaquettes are measured, so need factor 2 for normalization to 1
-    cout << inew << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy*normalisation*2 << " " << Q << " ";
-    os << inew << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy*normalisation*2 << " " << Q << " ";
+    cout << inew << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy*normalisation*facnorm << " " ;
+    os << inew << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy*normalisation*facnorm << " " ;
+    energy=gauge_energy(U, false);
+    cout << energy*normalisation << " " << Q << " ";
+    os << energy*normalisation << " " << Q << " ";
     energy_density(U, E, Q, false);
     cout << Q << endl;
     os << Q << endl;

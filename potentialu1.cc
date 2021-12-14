@@ -83,7 +83,7 @@ int main(int ac, char* av[]) {
   double loop;
   for(size_t i = gparams.icounter+nstep; i < gparams.N_meas*nstep+gparams.icounter; i+=nstep) {
     std::ostringstream os; 
-    os << "configu1." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz << "." << gparams.Lt << ".b" << std::scientific << U.getBeta() << ".x" << gparams.xi << "." << i << std::ends;
+    os << "configu1." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz << "." << gparams.Lt << ".b" << std::fixed << U.getBeta() << ".x" << gparams.xi << "." << i << std::ends;
     U.load(os.str());
     //smear lattice
     for (size_t smears=0 ; smears<n_apesmear ; smears +=1){

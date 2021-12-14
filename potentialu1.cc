@@ -83,7 +83,7 @@ int main(int ac, char* av[]) {
   double loop;
   for(size_t i = gparams.icounter+nstep; i < gparams.N_meas*nstep+gparams.icounter; i+=nstep) {
     std::ostringstream os; 
-    os << "configu1." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz << "." << gparams.Lt << ".b" << std::fixed << U.getBeta() << ".x" << gparams.xi << "." << i << std::ends;
+    os << "configu1." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz << "." << gparams.Lt << ".b" << std::scientific << U.getBeta() << ".x" << gparams.xi << "." << i << std::ends;
     U.load(os.str());
     //smear lattice
     for (size_t smears=0 ; smears<n_apesmear ; smears +=1){
@@ -101,7 +101,7 @@ int main(int ac, char* av[]) {
         loop=wilsonloop_non_planar(U, {t, x, 0, 0});
         loop+=wilsonloop_non_planar(U, {t, 0, x, 0});
         loop+=wilsonloop_non_planar(U, {t, 0, 0, x});
-        resultfile << std::setw(14) << std::fixed << loop/U.getVolume()/3.0 << "  " ; 
+        resultfile << std::setw(14) << std::scientific << loop/U.getVolume()/3.0 << "  " ; 
         
         loop= wilsonloop_non_planar(U, {t, x, 1, 0});
         loop+=wilsonloop_non_planar(U, {t, x, 0, 1});
@@ -109,7 +109,7 @@ int main(int ac, char* av[]) {
         loop+=wilsonloop_non_planar(U, {t, 0, x, 1});
         loop+=wilsonloop_non_planar(U, {t, 0, 1, x});
         loop+=wilsonloop_non_planar(U, {t, 1, 0, x});
-        resultfile << std::setw(14) << std::fixed << loop/U.getVolume()/6.0 << "  " ;
+        resultfile << std::setw(14) << std::scientific << loop/U.getVolume()/6.0 << "  " ;
       }
       for (size_t y=1 ; y<=gparams.Lx/2 ; y++){ 
         loop= wilsonloop_non_planar(U, {0, x, y, 0});
@@ -118,7 +118,7 @@ int main(int ac, char* av[]) {
         loop+=wilsonloop_non_planar(U, {0, 0, x, y});
         loop+=wilsonloop_non_planar(U, {0, 0, y, x});
         loop+=wilsonloop_non_planar(U, {0, y, 0, x});
-        resultfile << std::setw(14) << std::fixed << loop/U.getVolume()/6.0 << "  " ;
+        resultfile << std::setw(14) << std::scientific << loop/U.getVolume()/6.0 << "  " ;
         
         loop= wilsonloop_non_planar(U, {1, x, y, 0});
         loop+=wilsonloop_non_planar(U, {1, x, 0, y});
@@ -126,7 +126,7 @@ int main(int ac, char* av[]) {
         loop+=wilsonloop_non_planar(U, {1, 0, x, y});
         loop+=wilsonloop_non_planar(U, {1, 0, y, x});
         loop+=wilsonloop_non_planar(U, {1, y, 0, x});
-        resultfile << std::setw(14) << std::fixed << loop/U.getVolume()/6.0 << "  " ;
+        resultfile << std::setw(14) << std::scientific << loop/U.getVolume()/6.0 << "  " ;
       }
     resultfile << std::endl;
     resultfile.close(); 
@@ -141,20 +141,20 @@ int main(int ac, char* av[]) {
     for (size_t t=1 ; t<=gparams.Lt/2 ; t++){
         loop=wilsonloop_non_planar(U, {t, x, 0});
         loop+=wilsonloop_non_planar(U, {t, 0, x});
-        resultfile << std::setw(14) << std::fixed << loop/U.getVolume()/2.0 << "  " ; 
+        resultfile << std::setw(14) << std::scientific << loop/U.getVolume()/2.0 << "  " ; 
         
         loop= wilsonloop_non_planar(U, {t, x, 1});
         loop+=wilsonloop_non_planar(U, {t, 1, x});
-        resultfile << std::setw(14) << std::fixed << loop/U.getVolume()/2.0 << "  " ;
+        resultfile << std::setw(14) << std::scientific << loop/U.getVolume()/2.0 << "  " ;
       }
       for (size_t y=1 ; y<=gparams.Lx/2 ; y++){ 
         loop= wilsonloop_non_planar(U, {0, x, y});
         loop+=wilsonloop_non_planar(U, {0, y, x});
-        resultfile << std::setw(14) << std::fixed << loop/U.getVolume()/2.0 << "  " ;
+        resultfile << std::setw(14) << std::scientific << loop/U.getVolume()/2.0 << "  " ;
         
         loop= wilsonloop_non_planar(U, {1, x, y});
         loop+=wilsonloop_non_planar(U, {1, y, x});
-        resultfile << std::setw(14) << std::fixed << loop/U.getVolume()/2.0 << "  " ;
+        resultfile << std::setw(14) << std::scientific << loop/U.getVolume()/2.0 << "  " ;
       }
     resultfile << std::endl;
     resultfile.close(); 

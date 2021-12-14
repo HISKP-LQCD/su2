@@ -54,12 +54,17 @@ int main(int ac, char* av[]) {
   
   //~ open file for saving results
   std::ofstream resultfile;
-  char filename[100];
+  char filename[200];
   
   //~ print heads of columns: W(r, t), W(x, y)
   if(!append){
   for (size_t x=1 ; x<=gparams.Lx/2 ; x++){
+    if(gparams.ndims==4){
     sprintf(filename, "result.u1potential.Nt%lu.Ns%lu.b%f.xi%f.nape%lu.alpha%f.x%lu",gparams.Lt, gparams.Lx,U.getBeta(), gparams.xi, n_apesmear, alpha, x);
+    }
+    if(gparams.ndims==3){
+    sprintf(filename, "result2p1d.u1potential.Nt%lu.Ns%lu.b%f.xi%f.nape%lu.alpha%f.x%lu",gparams.Lt, gparams.Lx,U.getBeta(), gparams.xi, n_apesmear, alpha, x);
+    }
     resultfile.open(filename, std::ios::out);
     resultfile << "#";
     for (size_t t=1 ; t<=gparams.Lt/2 ; t++){
@@ -85,6 +90,7 @@ int main(int ac, char* av[]) {
       smearlatticeape(U, alpha, smearspacial);
     }
     //~ //calculate wilsonloops
+    if(gparams.ndims==4){
     for (size_t x=1 ; x<=gparams.Lx/2 ; x++){
       sprintf(filename, "result.u1potential.Nt%lu.Ns%lu.b%f.xi%f.nape%lu.alpha%f.x%lu",gparams.Lt, gparams.Lx,U.getBeta(), gparams.xi, n_apesmear, alpha, x);
       resultfile.open(filename, std::ios::app);
@@ -124,6 +130,35 @@ int main(int ac, char* av[]) {
       }
     resultfile << std::endl;
     resultfile.close(); 
+    }
+    }
+    if(gparams.ndims==3){
+    for (size_t x=1 ; x<=gparams.Lx/2 ; x++){
+      sprintf(filename, "result2p1d.u1potential.Nt%lu.Ns%lu.b%f.xi%f.nape%lu.alpha%f.x%lu",gparams.Lt, gparams.Lx,U.getBeta(), gparams.xi, n_apesmear, alpha, x);
+      resultfile.open(filename, std::ios::app);
+    
+    //Measure for two radii each time by changing one of the coordinates not needed for the measurement
+    for (size_t t=1 ; t<=gparams.Lt/2 ; t++){
+        loop=wilsonloop_non_planar(U, {t, x, 0});
+        loop+=wilsonloop_non_planar(U, {t, 0, x});
+        resultfile << std::setw(14) << std::fixed << loop/U.getVolume()/2.0 << "  " ; 
+        
+        loop= wilsonloop_non_planar(U, {t, x, 1});
+        loop+=wilsonloop_non_planar(U, {t, 1, x});
+        resultfile << std::setw(14) << std::fixed << loop/U.getVolume()/2.0 << "  " ;
+      }
+      for (size_t y=1 ; y<=gparams.Lx/2 ; y++){ 
+        loop= wilsonloop_non_planar(U, {0, x, y});
+        loop+=wilsonloop_non_planar(U, {0, y, x});
+        resultfile << std::setw(14) << std::fixed << loop/U.getVolume()/2.0 << "  " ;
+        
+        loop= wilsonloop_non_planar(U, {1, x, y});
+        loop+=wilsonloop_non_planar(U, {1, y, x});
+        resultfile << std::setw(14) << std::fixed << loop/U.getVolume()/2.0 << "  " ;
+      }
+    resultfile << std::endl;
+    resultfile.close(); 
+    }
     }
   }
   return(0);

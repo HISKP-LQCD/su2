@@ -123,6 +123,7 @@ private:
 template<class T> void gaugeconfig<T>::save(std::string const &path) const {
   std::ofstream ofs(path, std::ios::out | std::ios::binary);
   ofs.write(reinterpret_cast<char const *>(data.data()), storage_size());
+  ofs.close();
   return;
 }
 

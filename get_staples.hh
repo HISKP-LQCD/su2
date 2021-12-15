@@ -9,18 +9,22 @@
 
 template<class T, class S> void get_staples(T &K, gaugeconfig<S> &U,
                                    vector<size_t> const x,
-                                   const size_t mu, const double xi=1.0, bool anisotropic=false) {
+                                   const size_t mu, const double xi=1.0, bool anisotropic=false, bool spacial=false) {
+  size_t startnu=0;
+  if(spacial){
+      startnu=1;
+  }
   vector<size_t> x1 = x, x2 = x;
   x1[mu] += 1;
   if(!anisotropic){
-  for(size_t nu = 0; nu < U.getndims(); nu++) {
+  for(size_t nu = startnu; nu < U.getndims(); nu++) {
     if(nu != mu) {
       x2[nu]++;
       K += U(x1, nu) * U(x2, mu).dagger() * U(x, nu).dagger();
       x2[nu]--;
     }
   }
-  for(size_t nu = 0; nu < U.getndims(); nu++) {
+  for(size_t nu = startnu; nu < U.getndims(); nu++) {
     if(nu != mu) {
       x1[nu]--;
       x2[nu]--;
@@ -32,7 +36,7 @@ template<class T, class S> void get_staples(T &K, gaugeconfig<S> &U,
   }
   if(anisotropic){
     double factor;
-    for(size_t nu = 0; nu < U.getndims(); nu++) {
+    for(size_t nu = startnu; nu < U.getndims(); nu++) {
     if(nu != mu) {
       factor=(((nu==0)||(mu==0)) ? 1.0/xi : xi);
       x2[nu]++;
@@ -41,7 +45,7 @@ template<class T, class S> void get_staples(T &K, gaugeconfig<S> &U,
     }
     }
     //Maybe put both loops together so only one ?: operator is needed?
-    for(size_t nu = 0; nu < U.getndims(); nu++) {
+    for(size_t nu = startnu; nu < U.getndims(); nu++) {
     if(nu != mu) {
       factor=(((nu==0)||(mu==0)) ? 1.0/xi : xi);
       x1[nu]--;

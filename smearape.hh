@@ -19,6 +19,7 @@
 
 //prescription for smearing taken from https://arxiv.org/abs/hep-lat/0209159
 //not tested for SU2, for U1 lattice stays the same when smearing with alpha=1
+//~ template<class Group> void smearlatticeape(gaugeconfig<Group> &U, double alpha, const double xi=1.0, bool anisotropic=false, bool spacial=false){
 template<class Group> void smearlatticeape(gaugeconfig<Group> &U, double alpha, bool spacial=false){
   gaugeconfig<Group> Uold = U;
   typedef typename accum_type<Group>::type accum;
@@ -36,7 +37,8 @@ template<class Group> void smearlatticeape(gaugeconfig<Group> &U, double alpha, 
           std::vector<size_t> x = {x0, x1, x2, x3};  
           for(size_t mu = startmu; mu < U.getndims(); mu++) {
             accum K;
-            get_staples(K, Uold, x, mu);
+            //~ get_staples(K, Uold, x, mu, xi, anisotropic, spacial);
+            get_staples(K, Uold, x, mu, 1.0, false, spacial);
             K = K*(1-alpha)/2.0;
             Group Uprime(Uold(x, mu)*alpha+K);
             U(x, mu) = Uprime;
@@ -47,3 +49,4 @@ template<class Group> void smearlatticeape(gaugeconfig<Group> &U, double alpha, 
     }
   }      
 }
+

@@ -13,7 +13,7 @@
 #include<random>
 #include<vector>
 
-template<class URNG, class Group> double sweep(gaugeconfig<Group> &U, URNG * &engine,
+template<class URNG, class Group> double sweep(gaugeconfig<Group> &U, vector<URNG> engine,
                                                const double delta, 
                                                const size_t N_hit, const double beta, const double xi=1.0, bool anisotropic=false) {
 

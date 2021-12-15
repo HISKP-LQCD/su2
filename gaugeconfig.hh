@@ -131,6 +131,7 @@ template<class T> int gaugeconfig<T>::load(std::string const &path) {
   std::ifstream ifs(path, std::ios::in | std::ios::binary);
   if(ifs) {
     ifs.read(reinterpret_cast<char *>(data.data()), storage_size());
+    ifs.close();
     return 0;
   }
   else

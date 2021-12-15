@@ -93,12 +93,11 @@ int main(int ac, char* av[]) {
     os.open("output.metropolis.data", std::ios::app);
   double rate = 0.;
   for(size_t i = gparams.icounter; i < gparams.N_meas*threads + gparams.icounter; i+=threads) {
-    std::mt19937 * engines =new std::mt19937[threads];
+    std::vector<std::mt19937> engines(threads);
     for(size_t engine=0;engine<threads;engine+=1){
       engines[engine].seed(gparams.seed+i+engine);
     }
     size_t inew = (i-gparams.icounter)/threads+gparams.icounter;//counts loops, loop-variable needed too have one RNG per thread with different seeds 
-    //~ std::mt19937 engine(gparams.seed+i);
     rate += sweep(U, engines, delta, N_hit, gparams.beta);
     double energy = gauge_energy(U);
     double E = 0., Q = 0.;
@@ -110,7 +109,6 @@ int main(int ac, char* av[]) {
       oss << "config." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz << "." << gparams.Lt << ".b" << gparams.beta << "." << inew << std::ends;
       U.save(oss.str());
     }
-    delete engines;
   }
   cout << "## Acceptance rate " << rate/static_cast<double>(gparams.N_meas) << endl;
 

@@ -64,8 +64,6 @@ int main(int ac, char* av[]) {
 
   gaugeconfig<_u1> U(gparams.Lx, gparams.Ly, gparams.Lz, gparams.Lt, gparams.ndims, gparams.beta);
   
- 
-  
   double fac = 2./U.getndims()/(U.getndims()-1);
   const double normalisation = fac/U.getVolume();
   size_t facnorm=gparams.ndims>2?gparams.ndims/(gparams.ndims-2):0;
@@ -77,6 +75,11 @@ int main(int ac, char* av[]) {
   int threads=1;
   #endif   
   
+    
+//~ open files for saving results from loops, times
+  std::ofstream resultfile; 
+  char filenamepot[200];
+  
   char filename[100];
   sprintf(filename, "resultscalingNt%luNs%lubeta%fxi%fmaxthreads%dnmeas%lunsave%lu", gparams.Lt, gparams.Lx, gparams.beta, gparams.xi, threads, gparams.N_meas, gparams.N_save);
   std::ofstream os;
@@ -84,17 +87,21 @@ int main(int ac, char* av[]) {
   os << std::setw(14) << "##threads  " << "time_sweep  " << "speedup_sweep  " << "time_loops  " << "speedup_loops  " << std::endl;
   double rate = 0.;
   std::chrono::duration<double, std::micro> elapse_sweep_one, elapse_loop_one;
-  for(size_t measurement=1;measurement<10;measurement++){
+  
+  for(size_t measurement=0; measurement<2; measurement++){
   for(size_t thread=1;thread<=threads;thread++){
     hotstart(U, gparams.seed, gparams.heat);
     omp_set_num_threads(thread);
     auto start = std::chrono::high_resolution_clock::now();
+    
     for(size_t i = gparams.icounter; i < gparams.N_meas*thread + gparams.icounter; i+=thread) {
-      std::mt19937 * engines =new std::mt19937[thread];
+        
+      std::vector<std::mt19937> engines(thread);
       for(size_t engine=0;engine<thread;engine+=1){
         engines[engine].seed(gparams.seed+i+engine);
       }
       size_t inew = (i-gparams.icounter)/thread+gparams.icounter;//counts loops, loop-variable needed too have one RNG per thread with different seeds 
+      
       rate += sweep(U, engines, delta, N_hit, gparams.beta, gparams.xi, gparams.anisotropic);
       double energy = gauge_energy(U, true);
       double E = 0., Q = 0.;
@@ -106,19 +113,14 @@ int main(int ac, char* av[]) {
         oss << "configu1." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz<< "." << gparams.Lt << ".b" << std::fixed << gparams.beta << ".x" << gparams.xi << "." << inew << std::ends;
         U.save(oss.str());
       }
-      delete engines;
     }
+    
     auto end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::micro> elapsed_time= end-start;
     if(thread==1){
         elapse_sweep_one=elapsed_time;
     }
     os << thread << "  " << std::setw(14) << std::scientific << elapsed_time.count() << "  " << elapse_sweep_one.count()/elapsed_time.count();
-    
-      //~ open file for saving results
-  std::ofstream resultfile;
-  char filenamepot[200];
-  
   
   double loop;
   
@@ -173,7 +175,7 @@ int main(int ac, char* av[]) {
     }
     
     end = std::chrono::high_resolution_clock::now();
-    elapsed_time= end-start;
+    elapsed_time = end-start;
     if(thread==1){
         elapse_loop_one=elapsed_time;
     }
@@ -192,6 +194,6 @@ int main(int ac, char* av[]) {
  * measure nmeas configurations
  * for each configuration measure gauge energy and wilson loops
  * resultfile:
- * nthreads, time(sweeps), time(energy), time(wilson)
+ * nthreads, time(sweeps+energy),  time(wilson)
  * **/
 

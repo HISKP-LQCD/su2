@@ -53,7 +53,7 @@ if(spacial){startmu=1;};
   for(size_t i = 0; i < threads; i++) {
     res += omp_acc[i];
   }
-  delete [] omp_acc;
+  delete[] omp_acc;
 #else
   res = tmp;
 #endif

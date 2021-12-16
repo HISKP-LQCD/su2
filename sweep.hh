@@ -94,7 +94,7 @@ template<class URNG, class Group> double sweep(gaugeconfig<Group> &U, vector<URN
   for(size_t i = 0; i < threads; i++) {
     rate += omp_acc[i];
   }
-  delete [] omp_acc;
+  delete[] omp_acc;
   #else
   rate = temp;
   #endif

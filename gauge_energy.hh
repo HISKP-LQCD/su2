@@ -14,7 +14,7 @@ template<class T> double gauge_energy(gaugeconfig<T> &U, bool spacial=false) {
   double res = 0.;
 #ifdef _USE_OMP_
   int threads = omp_get_max_threads();
-  static double * omp_acc = new double[threads];
+  double * omp_acc = new double[threads];
 #pragma omp parallel
   {
     int thread_num = omp_get_thread_num();
@@ -53,6 +53,7 @@ if(spacial){startmu=1;};
   for(size_t i = 0; i < threads; i++) {
     res += omp_acc[i];
   }
+  delete [] omp_acc;
 #else
   res = tmp;
 #endif

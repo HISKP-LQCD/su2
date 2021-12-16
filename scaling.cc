@@ -86,9 +86,11 @@ int main(int ac, char* av[]) {
   os.open(filename, std::ios::out);
   os << std::setw(14) << "##threads  " << "time_sweep  " << "speedup_sweep  " << "time_loops  " << "speedup_loops  " << std::endl;
   double rate = 0.;
+  std::mt19937 blankrng;
+  std::vector<std::mt19937> engines(threads, blankrng);
   std::chrono::duration<double, std::micro> elapse_sweep_one, elapse_loop_one;
   
-  for(size_t measurement=0; measurement<2; measurement++){
+  for(size_t measurement=0; measurement<5; measurement++){
   for(size_t thread=1;thread<=threads;thread++){
     hotstart(U, gparams.seed, gparams.heat);
     omp_set_num_threads(thread);
@@ -96,7 +98,6 @@ int main(int ac, char* av[]) {
     
     for(size_t i = gparams.icounter; i < gparams.N_meas*thread + gparams.icounter; i+=thread) {
         
-      std::vector<std::mt19937> engines(thread);
       for(size_t engine=0;engine<thread;engine+=1){
         engines[engine].seed(gparams.seed+i+engine);
       }

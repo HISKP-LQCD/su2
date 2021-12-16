@@ -55,7 +55,7 @@ template<class Group=su2> double wilsonloop_non_planar(gaugeconfig<Group> &U, st
   typedef typename accum_type<Group>::type accum;
   #ifdef _USE_OMP_
   int threads = omp_get_max_threads();
-  static double * omp_acc = new double[threads];
+  double * omp_acc = new double[threads];
   #pragma omp parallel
   {
     int thread_num = omp_get_thread_num();
@@ -98,6 +98,7 @@ template<class Group=su2> double wilsonloop_non_planar(gaugeconfig<Group> &U, st
   for(size_t i = 0; i < threads; i++) {
     loop += omp_acc[i];
   }
+  delete [] omp_acc;
   #else
   loop = tmp;
   #endif

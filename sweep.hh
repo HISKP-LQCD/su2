@@ -22,7 +22,7 @@ template<class URNG, class Group> double sweep(gaugeconfig<Group> &U, vector<URN
   size_t rate = 0;
   #ifdef _USE_OMP_
   int threads = omp_get_max_threads();
-  static double * omp_acc = new double[threads];
+  double * omp_acc = new double[threads];
   #pragma omp parallel
   {
     int thread_num = omp_get_thread_num();
@@ -94,6 +94,7 @@ template<class URNG, class Group> double sweep(gaugeconfig<Group> &U, vector<URN
   for(size_t i = 0; i < threads; i++) {
     rate += omp_acc[i];
   }
+  delete [] omp_acc;
   #else
   rate = temp;
   #endif

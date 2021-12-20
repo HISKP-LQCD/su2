@@ -62,7 +62,7 @@ template<class Group=su2> double wilsonloop_non_planar(gaugeconfig<Group> &U, st
   #endif
   double tmp = 0.;
   //needed if vector with directions contains more than 4 entries/if another order than t-x-y-z is wanted
-  int directionloop;
+  size_t directionloop;
   
   //~ std::vector<size_t> x = {0, 0, 0, 0};
   #pragma omp for
@@ -73,14 +73,14 @@ template<class Group=su2> double wilsonloop_non_planar(gaugeconfig<Group> &U, st
           std::vector<size_t> xrun = {x0, x1, x2, x3};
           accum L(1., 0.);
           for(size_t direction=0; direction < r.size(); direction++){ 
-            directionloop=(direction+4)%4;
+            directionloop=(direction+U.getndims())%U.getndims();
             for (size_t length=0; length < r[direction]; length++){
               L *= U(xrun, directionloop);
               xrun[directionloop] +=1;
             }
           }
           for(size_t direction=0; direction < r.size(); direction++){
-            directionloop=(direction+4)%4;
+            directionloop=(direction+U.getndims())%U.getndims();
             for (size_t length=0; length < r[direction]; length++){
               xrun[directionloop] -=1;
               L *= U(xrun, directionloop).dagger();
@@ -159,4 +159,49 @@ template<class Group> void compute_spacial_loops(gaugeconfig<Group> &U, std::str
     os << std::endl;
   }
   return;
+}
+
+//~ template<class Group=su2> Group averagelink(gaugeconfig<Group> &U) {
+template<class Group=su2> double averagelink(gaugeconfig<Group> &U) {
+    //parallelized with code from gauge_energy
+  typedef typename accum_type<Group>::type accum;
+  //~ accum average(0.,0.);
+  double average=0;
+  #ifdef _USE_OMP_
+  int threads = omp_get_max_threads();
+  //~ accum * omp_acc = new accum[threads];
+  double * omp_acc = new double[threads];
+  #pragma omp parallel
+  {
+    int thread_num = omp_get_thread_num();
+  #endif
+  //~ accum tmp = 0.;
+  double tmp = 0.;
+  
+  #pragma omp for
+  for (size_t x0 = 0; x0 < U.getLt(); x0++) {
+    for (size_t x1 = 0; x1 < U.getLx(); x1++) {
+      for (size_t x2 = 0; x2 < U.getLy(); x2++) {
+        for (size_t x3 = 0; x3 < U.getLz(); x3++) {
+          std::vector<size_t> xrun = {x0, x1, x2, x3};
+          for(size_t mu=0; mu<U.getndims() ; mu++){
+            tmp+=retrace(U(xrun, mu));
+          }
+        }
+      }
+    }
+  }
+  #ifdef _USE_OMP_
+    omp_acc[thread_num] = tmp;
+  }
+  for(size_t i = 0; i < threads; i++) {
+    average += omp_acc[i];
+  }
+  delete[] omp_acc;
+  #else
+  average = tmp;
+  #endif
+  //~ Group avgroup(average*(1.0/U.getSize()));
+  //~ return avgroup;
+  return average/U.getSize();
 }

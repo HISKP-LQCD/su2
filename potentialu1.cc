@@ -54,16 +54,20 @@ int main(int ac, char* av[]) {
   
   //~ open file for saving results
   std::ofstream resultfile;
+  std::ofstream resultfilelink;
   char filename[200];
+  char filenamelink[200];
   
   //~ print heads of columns: W(r, t), W(x, y)
   if(!append){
   for (size_t x=1 ; x<=gparams.Lx/2 ; x++){
     if(gparams.ndims==4){
     sprintf(filename, "result.u1potential.Nt%lu.Ns%lu.b%f.xi%f.nape%lu.alpha%f.x%lu",gparams.Lt, gparams.Lx,U.getBeta(), gparams.xi, n_apesmear, alpha, x);
+    sprintf(filenamelink, "resultlink.u1potential.Nt%lu.Ns%lu.b%f.xi%f.nape%lu.alpha%f",gparams.Lt, gparams.Lx,U.getBeta(), gparams.xi, n_apesmear, alpha);
     }
     if(gparams.ndims==3){
     sprintf(filename, "result2p1d.u1potential.Nt%lu.Ns%lu.b%f.xi%f.nape%lu.alpha%f.x%lu",gparams.Lt, gparams.Lx,U.getBeta(), gparams.xi, n_apesmear, alpha, x);
+    sprintf(filenamelink, "result2p1dlink.u1potential.Nt%lu.Ns%lu.b%f.xi%f.nape%lu.alpha%f",gparams.Lt, gparams.Lx,U.getBeta(), gparams.xi, n_apesmear, alpha);
     }
     resultfile.open(filename, std::ios::out);
     resultfile << "#";
@@ -78,9 +82,12 @@ int main(int ac, char* av[]) {
     resultfile << std::endl; 
     resultfile.close();    
   }
+  resultfilelink.open(filenamelink, std::ios::out);
+  resultfilelink << "#average link" << std::endl;
+  resultfilelink.close();
   }
   
-  double loop;
+  double loop, testgaugeinvariance1, testgaugeinvariance2;
   for(size_t i = gparams.icounter+nstep; i < gparams.N_meas*nstep+gparams.icounter; i+=nstep) {
     std::ostringstream os; 
     os << "configu1." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz << "." << gparams.Lt << ".b" << std::fixed << U.getBeta() << ".x" << gparams.xi << "." << i << std::ends;
@@ -131,6 +138,11 @@ int main(int ac, char* av[]) {
     resultfile << std::endl;
     resultfile.close(); 
     }
+    sprintf(filenamelink, "resultlink.u1potential.Nt%lu.Ns%lu.b%f.xi%f.nape%lu.alpha%f",gparams.Lt, gparams.Lx,U.getBeta(), gparams.xi, n_apesmear, alpha);
+    resultfilelink.open(filenamelink, std::ios::out);
+    //~ //resultfilelink << retrace(averagelink(U)) << std::endl;
+    resultfilelink << averagelink(U) << std::endl;
+    resultfilelink.close();
     }
     if(gparams.ndims==3){
     for (size_t x=1 ; x<=gparams.Lx/2 ; x++){
@@ -159,7 +171,22 @@ int main(int ac, char* av[]) {
     resultfile << std::endl;
     resultfile.close(); 
     }
-    }
+    sprintf(filenamelink, "result2p1dlink.u1potential.Nt%lu.Ns%lu.b%f.xi%f.nape%lu.alpha%f",gparams.Lt, gparams.Lx,U.getBeta(), gparams.xi, n_apesmear, alpha);
+    resultfilelink.open(filenamelink, std::ios::app);
+    //~ //resultfilelink << retrace(averagelink(U)) << std::endl;
+    resultfilelink << averagelink(U) << std::endl;
+    resultfilelink.close();
+    //~ std::vector<size_t> path={1,2,3,4,5};
+    //~ testgaugeinvariance1=wilsonloop_non_planar(U, path);
+    //~ testgaugeinvariance2=planar_wilsonloop_dir(U, 1, 2, 0, 1);
+    //~ random_gauge_trafo(U, 123456);
+    //~ std::cout << " Difference nonplanar: " << std::setw(14) << std::scientific << testgaugeinvariance1-wilsonloop_non_planar(U, path) << std::endl;
+    //~ std::cout << " Difference planar   : " << std::setw(14) << std::scientific << testgaugeinvariance2-planar_wilsonloop_dir(U, 1, 2, 0, 1) << std::endl;
+    //~ for(size_t len=0;len<path.size();len++){
+      //~ std::cout << path[len] << " ";
+    //~ }
+    //~ std::cout << std::endl;
+  }
   }
   return(0);
 }

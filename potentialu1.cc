@@ -66,11 +66,12 @@ int main(int ac, char* av[]) {
     sprintf(filenamelink, "resultlink.u1potential.Nt%lu.Ns%lu.b%f.xi%f.nape%lu.alpha%f",gparams.Lt, gparams.Lx,U.getBeta(), gparams.xi, n_apesmear, alpha);
     }
     if(gparams.ndims==3){
-    sprintf(filename, "result2p1d.u1potential.Nt%lu.Ns%lu.b%f.xi%f.nape%lu.alpha%f.x%lu",gparams.Lt, gparams.Lx,U.getBeta(), gparams.xi, n_apesmear, alpha, x);
+    sprintf(filename, "result2p1d.u1potential.allnonplanar.Nt%lu.Ns%lu.b%f.xi%f.nape%lu.alpha%f.x%lu",gparams.Lt, gparams.Lx,U.getBeta(), gparams.xi, n_apesmear, alpha, x);
     sprintf(filenamelink, "result2p1dlink.u1potential.Nt%lu.Ns%lu.b%f.xi%f.nape%lu.alpha%f",gparams.Lt, gparams.Lx,U.getBeta(), gparams.xi, n_apesmear, alpha);
     }
     resultfile.open(filename, std::ios::out);
     resultfile << "#";
+    if(gparams.ndims==4){
     for (size_t t=1 ; t<=gparams.Lt/2 ; t++){
       resultfile << std::setw(5) << "W(x=" << std::setw(2) << x << ", t=" << std::setw(2) << t << ")  " ; 
       resultfile << std::setw(5) << "Wo(x=" << std::setw(2) << x << ", t=" << std::setw(2) << t << ")  " ; 
@@ -79,8 +80,20 @@ int main(int ac, char* av[]) {
       resultfile << std::setw(5) << "W(x=" << std::setw(2) << x << ", y=" << std::setw(2) << y << ")  " ; 
       resultfile << std::setw(5) << "Wo(x=" << std::setw(2) << x << ", y=" << std::setw(2) << y << ")  " ; 
     }
+    resultfile << "counter";
     resultfile << std::endl; 
-    resultfile.close();    
+    resultfile.close();  
+  }
+  if(gparams.ndims==3){
+    for (size_t t=0 ; t<=gparams.Lt/2 ; t++){
+      for (size_t y=0 ; y<=gparams.Ly/2 ; y++){
+        resultfile << std::setw(5) << "W(x=" << std::setw(2) << x << ", t=" << std::setw(2) << t << ", y=" << std::setw(2) << y << ")  " ;
+      }
+    }
+    resultfile << "counter";
+    resultfile << std::endl; 
+    resultfile.close();  
+  }  
   }
   resultfilelink.open(filenamelink, std::ios::out);
   resultfilelink << "#average link" << std::endl;
@@ -88,16 +101,19 @@ int main(int ac, char* av[]) {
   }
   
   double loop, testgaugeinvariance1, testgaugeinvariance2;
-  for(size_t i = gparams.icounter+nstep; i < gparams.N_meas*nstep+gparams.icounter; i+=nstep) {
+  for(size_t i = gparams.icounter; i < gparams.N_meas*nstep+gparams.icounter; i+=nstep) {
     std::ostringstream os; 
     os << "configu1." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz << "." << gparams.Lt << ".b" << std::fixed << U.getBeta() << ".x" << gparams.xi << "." << i << std::ends;
-    U.load(os.str());
+    err = U.load(os.str());
+    if(err != 0) {
+      return err;
+    }
     //smear lattice
     for (size_t smears=0 ; smears<n_apesmear ; smears +=1){
       smearlatticeape(U, alpha, smearspacial);
     }
     //~ //calculate wilsonloops
-    if(gparams.ndims==4){
+    if(gparams.ndims == 4){
     for (size_t x=1 ; x<=gparams.Lx/2 ; x++){
       sprintf(filename, "result.u1potential.Nt%lu.Ns%lu.b%f.xi%f.nape%lu.alpha%f.x%lu",gparams.Lt, gparams.Lx,U.getBeta(), gparams.xi, n_apesmear, alpha, x);
       resultfile.open(filename, std::ios::app);
@@ -135,39 +151,30 @@ int main(int ac, char* av[]) {
         loop+=wilsonloop_non_planar(U, {1, y, 0, x});
         resultfile << std::setw(14) << std::scientific << loop/U.getVolume()/6.0 << "  " ;
       }
+    resultfile << i;
     resultfile << std::endl;
     resultfile.close(); 
     }
     sprintf(filenamelink, "resultlink.u1potential.Nt%lu.Ns%lu.b%f.xi%f.nape%lu.alpha%f",gparams.Lt, gparams.Lx,U.getBeta(), gparams.xi, n_apesmear, alpha);
-    resultfilelink.open(filenamelink, std::ios::out);
+    resultfilelink.open(filenamelink, std::ios::app);
     //~ //resultfilelink << retrace(averagelink(U)) << std::endl;
     resultfilelink << averagelink(U) << std::endl;
     resultfilelink.close();
     }
-    if(gparams.ndims==3){
-    for (size_t x=1 ; x<=gparams.Lx/2 ; x++){
-      sprintf(filename, "result2p1d.u1potential.Nt%lu.Ns%lu.b%f.xi%f.nape%lu.alpha%f.x%lu",gparams.Lt, gparams.Lx,U.getBeta(), gparams.xi, n_apesmear, alpha, x);
+    if(gparams.ndims == 3){
+    for (size_t x = 1 ; x <= gparams.Lx/2 ; x++){
+      sprintf(filename, "result2p1d.u1potential.allnonplanar.Nt%lu.Ns%lu.b%f.xi%f.nape%lu.alpha%f.x%lu",gparams.Lt, gparams.Lx,U.getBeta(), gparams.xi, n_apesmear, alpha, x);
       resultfile.open(filename, std::ios::app);
     
     //Measure for two radii each time by changing one of the coordinates not needed for the measurement
-    for (size_t t=1 ; t<=gparams.Lt/2 ; t++){
-        loop=wilsonloop_non_planar(U, {t, x, 0});
-        loop+=wilsonloop_non_planar(U, {t, 0, x});
+    for (size_t t = 0 ; t <= gparams.Lt/2 ; t++){
+      for (size_t y = 0 ; y <= gparams.Ly/2 ; y++){
+        loop  = wilsonloop_non_planar(U, {t, x, y});
+        loop += wilsonloop_non_planar(U, {t, y, x});
         resultfile << std::setw(14) << std::scientific << loop/U.getVolume()/2.0 << "  " ; 
-        
-        loop= wilsonloop_non_planar(U, {t, x, 1});
-        loop+=wilsonloop_non_planar(U, {t, 1, x});
-        resultfile << std::setw(14) << std::scientific << loop/U.getVolume()/2.0 << "  " ;
       }
-      for (size_t y=1 ; y<=gparams.Lx/2 ; y++){ 
-        loop= wilsonloop_non_planar(U, {0, x, y});
-        loop+=wilsonloop_non_planar(U, {0, y, x});
-        resultfile << std::setw(14) << std::scientific << loop/U.getVolume()/2.0 << "  " ;
-        
-        loop= wilsonloop_non_planar(U, {1, x, y});
-        loop+=wilsonloop_non_planar(U, {1, y, x});
-        resultfile << std::setw(14) << std::scientific << loop/U.getVolume()/2.0 << "  " ;
-      }
+    }
+    resultfile << i;
     resultfile << std::endl;
     resultfile.close(); 
     }

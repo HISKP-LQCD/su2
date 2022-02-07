@@ -39,8 +39,7 @@ template<class Group> void smearlatticeape(gaugeconfig<Group> &U, double alpha, 
             accum K;
             //~ get_staples(K, Uold, x, mu, xi, anisotropic, spacial);
             get_staples(K, Uold, x, mu, 1.0, false, spacial);
-            K = K*(1-alpha)/2.0;
-            Group Uprime(Uold(x, mu)*alpha+K);
+            Group Uprime(Uold(x, mu)*alpha+K*(1-alpha)/2.0);
             U(x, mu) = Uprime;
             U(x, mu).restoreSU();
           }

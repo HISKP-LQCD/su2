@@ -32,7 +32,7 @@ template<class URNG, class Group> double sweep(gaugeconfig<Group> &U, vector<URN
   size_t temp=0;
   #pragma omp for
   for(size_t x0 = 0; x0 < U.getLt(); x0+=2) {
-//OpenMP does not allow loop declaration as it was done for the other dimensions, still have to figure out why
+//Cannot use elements of a vector as iteration variables in for-loop with OpenMP, so use dummy variables
     Group R;
     for(size_t x1 = 0; x1 < U.getLx(); x1++) {
       for(size_t x2 = 0; x2 < U.getLy(); x2++) {

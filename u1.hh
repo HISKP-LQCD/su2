@@ -19,7 +19,7 @@ public:
   friend Complex operator+(const _u1 &U1, const _u1 &U2);
   friend Complex operator-(const _u1 &U1, const _u1 &U2);
   friend _u1 operator*(const _u1 &U1, const _u1 &U2);
-  friend _u1 operator+(const _u1 &U1, const Complex c);
+  
   // implicit conversion operator to complex
   operator Complex() const {
     return(std::exp(a*Complex(0., 1.))); 
@@ -116,9 +116,4 @@ inline void operator+=(Complex & U1, const _u1 & U2) {
 
 inline void operator*=(Complex & U1, const _u1 & U2) {
   U1 *= std::exp(U2.geta()*Complex(0., 1.));
-}
-
-inline _u1 operator+(const _u1 &U1, const Complex c){
-    Complex cprime = c+std::exp(U1.geta()*Complex(0., 1.));
-    return _u1(std::arg(cprime));
 }

@@ -18,7 +18,7 @@ public:
 
   friend Complex operator+(const _u1 &U1, const _u1 &U2);
   friend Complex operator-(const _u1 &U1, const _u1 &U2);
-  friend _u1 operator*(const _u1 &U1, const _u1 &U2);
+  friend _u1 operator*(const _u1 &U1, const _u1 &U2); 
   
   // implicit conversion operator to complex
   operator Complex() const {

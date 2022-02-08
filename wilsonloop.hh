@@ -125,6 +125,7 @@ template<class Group> void compute_all_loops(gaugeconfig<Group> &U, std::string 
   return;
 }
 
+
 template<class Group> void compute_spacial_loops(gaugeconfig<Group> &U, std::string const &path) {
   std::ofstream os(path, std::ios::out);
   size_t r[2] = {2, 8};

@@ -70,7 +70,7 @@ int main(int ac, char* av[]) {
   if(err > 0) {
     return err;
   }
-
+  
 
   gaugeconfig<_u1> U(gparams.Lx, gparams.Ly, gparams.Lz, gparams.Lt, gparams.ndims, gparams.beta);
   

@@ -4,7 +4,6 @@
 #include"gauge_energy.hh"
 #include"energy_density.hh"
 #include"random_gauge_trafo.hh"
-#include"sweep.hh"
 #include"md_update.hh"
 #include"monomial.hh"
 #include"integrator.hh"

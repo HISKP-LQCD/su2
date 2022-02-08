@@ -11,9 +11,11 @@ public:
   size_t icounter;
   size_t seed; 
   double beta;               
-  double heat;               
+  double heat; 
+  double xi;              
   bool restart;              
   bool acceptreject;
+  bool anisotropic;
   std::string configfilename;
 };
 

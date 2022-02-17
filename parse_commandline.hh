@@ -15,6 +15,7 @@ public:
   bool restart;              
   bool acceptreject;
   std::string configfilename;
+  double m0; // quark bare mass (in lattice units)
 };
 
 void add_general_options(po::options_description &desc, general_params &params);

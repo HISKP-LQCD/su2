@@ -11,6 +11,9 @@
 #include"parse_commandline.hh"
 #include"version.hh"
 
+#include "detQpQm_monomial.hh"
+
+
 #include<iostream>
 #include<fstream>
 #include<iomanip>
@@ -29,6 +32,10 @@ int main(int ac, char* av[]) {
   size_t exponent;
   double tau;
   size_t integs;
+  double tolerance_cg;
+  size_t verbosity_cg;
+  size_t seed_pf;
+
 
   cout << "## HMC Algorithm for U(1) gauge theory" << endl;
   cout << "## (C) Carsten Urbach <urbach@hiskp.uni-bonn.de> (2017, 2021)" << endl;
@@ -43,7 +50,10 @@ int main(int ac, char* av[]) {
     ("tau", po::value<double>(&tau)->default_value(1.), "trajectory length tau")
     ("exponent", po::value<size_t>(&exponent)->default_value(0), "exponent for rounding")
     ("integrator", po::value<size_t>(&integs)->default_value(0), "itegration scheme to be used: 0=leapfrog, 1=lp_leapfrog, 2=omf4, 3=lp_omf4, 4=Euler, 5=RUTH, 6=omf2")
-    ;
+    ("tolerace_cg", po::value<double>(&tolerance_cg)->default_value(1e-14), "Tolerange for the cg solver for the dirac operator")
+    ("verbosity_cg", po::value<size_t>(&verbosity_cg)->default_value(2), "Verbosity for the cg solver for the dirac operator")
+    ("seed_pf", po::value<size_t>(&seed_pf)->default_value(0), "Seed for the evaluation of the fermion determinant")
+   ;
 
   int err = parse_commandline(ac, av, desc, gparams);
   if(err > 0) {
@@ -76,11 +86,15 @@ int main(int ac, char* av[]) {
   // generate list of monomials
   gaugemonomial<double, _u1> gm(0);
   kineticmonomial<double, _u1> km(0);
+  detQpQm_monomial_3d<double, _u1> detm(0, gparams.m0, tolerance_cg, verbosity_cg, seed_pf);
+
   km.setmdpassive();
 
   std::list<monomial<double, _u1>*> monomial_list;
   monomial_list.push_back(&gm);
   monomial_list.push_back(&km);
+  monomial_list.push_back(&detm);
+
 
   integrator<double, _u1> * md_integ = set_integrator<double, _u1>(integs, exponent);
 

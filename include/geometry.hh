@@ -23,16 +23,18 @@ public:
     size_t y1 = (x + Lx) % Lx;
     size_t y2 = (y + Ly) % Ly;
     size_t y3 = (z + Lz) % Lz;
-    return( ((t*Lx + x)*Ly + y)*Lz + z );
+    return( ((y0*Lx + y1)*Ly + y2)*Lz + y3 );
   }
-  void getCoordinate(size_t c[], const size_t index) const {
-    size_t x0 = index, x = index/Ls;
-    for(int i = 3; i >= 0; i--) {
-      c[i] = x0-x*Ls;
-      x0 = x;
-      x /= Ls;
-    }
-  }
+
+  // *** Ls variable is not defined ***
+  // void getCoordinate(size_t c[], const size_t index) const {
+  //   size_t x0 = index, x = index/Ls;
+  //   for(int i = 3; i >= 0; i--) {
+  //     c[i] = x0-x*Ls;
+  //     x0 = x;
+  //     x /= Ls;
+  //   }
+  // }
 
 private:
   size_t Lx, Ly, Lz, Lt;

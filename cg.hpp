@@ -1,6 +1,7 @@
 // cg.hpp
 /*
 This file defines a general purpose, templated class that applies the conjugate gradient (CG) algorithm for solving linear systems
+Please recall that convergence is guaranteed only for invertible hermitean matrices.
 It is assumed there are types LAvector and LAmatrix (LA=Linear Algebra) such that are defined:
   1.  template<class T> LAvector operator *(const LAmatrix&, const LAvector&) // A*v
   2.  template<class T> LAvector operator -(const LAvector&, const LAvector&) // a-b
@@ -12,8 +13,7 @@ It is assumed there are types LAvector and LAmatrix (LA=Linear Algebra) such tha
   8.  template<class Float, class T, class LAmatrix, LAvector> size_t LAmatrix::rows() const; // numer of rows 
   9.  template<class Float, class T, class LAmatrix, LAvector> size_t LAmatrix::cols() const; // numer of columns
   10. template<class Float, class T, class LAmatrix, LAvector> size_t LAvector::size() const; // vector's length 
-  11. template<class Float, class T, class LAmatrix, LAvector> void LAmatrix::add_row(const LAvector&); // add row to the matrix
-  12. template<class Float, class T, class LAmatrix, LAvector> void LAmatrix::operator =(const LAmatrix&); // add row to the matrix
+  11. template<class Float, class T, class LAmatrix, LAvector> void LAmatrix::operator =(const LAmatrix&); // add row to the matrix
 This kind of implementation allows for user-defined parallelization of matrix-vector multiplication, norm evaluation, etc.
 */
 
@@ -59,7 +59,7 @@ private:
         LAvector  b;
         LAvector  x; // solution to A*x = b
         bool sys_init = false; // true when A and b are initialized
-        LAmatrix curve_x; // trajectory
+        std::vector<LAvector> curve_x; // trajectory
         bool solved = false; // true when x has been found
 
     void check_solved() const {
@@ -91,6 +91,8 @@ public:
 
     void solve(const LAvector& x0, const Float& tol=1e-15, const size_t& verbosity=0){
 
+        std::cout << "verbosity"<<verbosity<<"\n";
+        std::cin.get();
 
         if(A.cols() != x0.size()){
             std::cerr << "Error. Invalid starting vector x0. Check the number of components:\n";
@@ -107,10 +109,10 @@ public:
         Float rk_norm = rk.norm();
 
         int num_iter = 0;
-        curve_x.add_row(xk);
+        curve_x.push_back(xk);
         while (rk_norm > tol) {
             const LAvector apk = A*pk;
-            const T rkrk = rk* rk;
+            const T rkrk = rk * rk;
 
             const T alpha = rkrk / (pk * apk);
             xk = xk + (alpha * pk);
@@ -119,8 +121,8 @@ public:
             pk = -rk + (beta * pk);
 
             num_iter += 1;
-            curve_x.add_row(xk);
-            rk_norm = norm(rk);
+            curve_x.push_back(xk);
+            rk_norm = rk.norm();
 
             if(verbosity > 1){
             std::cout << "Iteration: "<<num_iter<<" \t x = ";

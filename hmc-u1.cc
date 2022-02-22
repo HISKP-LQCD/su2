@@ -11,8 +11,7 @@
 #include"parse_commandline.hh"
 #include"version.hh"
 
-#include "detQpQm_monomial.hh"
-
+#include "detDdagD_monomial.hh"
 
 #include<iostream>
 #include<fstream>
@@ -86,14 +85,14 @@ int main(int ac, char* av[]) {
   // generate list of monomials
   gaugemonomial<double, _u1> gm(0);
   kineticmonomial<double, _u1> km(0);
-  detQpQm_monomial_3d<double, _u1> detm(0, gparams.m0, tolerance_cg, verbosity_cg, seed_pf);
+  detDdagD_monomial_4d<double, _u1> detDdagD(0, gparams.m0, tolerance_cg, seed_pf, verbosity_cg);
 
   km.setmdpassive();
 
   std::list<monomial<double, _u1>*> monomial_list;
   monomial_list.push_back(&gm);
   monomial_list.push_back(&km);
-  monomial_list.push_back(&detm);
+  monomial_list.push_back(&detDdagD);
 
 
   integrator<double, _u1> * md_integ = set_integrator<double, _u1>(integs, exponent);

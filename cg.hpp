@@ -75,7 +75,7 @@ public:
 
     LinearCG(const LAmatrix& _A, const LAvector& _b){
 
-        std::cout << "LinearCG initialization.\n";
+        // std::cout << "LinearCG initialization.\n";
 
         if (_A.rows() != _b.size())
         {
@@ -90,9 +90,6 @@ public:
 
 
     void solve(const LAvector& x0, const Float& tol=1e-15, const size_t& verbosity=0){
-
-        std::cout << "verbosity"<<verbosity<<"\n";
-        std::cin.get();
 
         if(A.cols() != x0.size()){
             std::cerr << "Error. Invalid starting vector x0. Check the number of components:\n";

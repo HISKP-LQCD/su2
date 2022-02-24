@@ -1,0 +1,427 @@
+\documentclass[12pt, a4paper]{article}
+\usepackage[utf8]{inputenc}
+
+\title{HMC for staggered fermions}
+\author{Simone Romiti}
+\date{\today}
+
+\usepackage{amsmath}
+
+\usepackage[backend=biber, sorting=none, backref=true]{biblatex} % Bibliography package
+\addbibresource{biblio.bib} % file with bibliographic items
+
+
+\usepackage{hyperref}
+\begin{document}
+
+%\newcommand{\HMCref}{
+%\href{https://www.sciencedirect.com/science/article/pii/0550321389903246}{[BKHMR]}.
+%}
+
+%\newcommand{\GLref}{
+%\href{https://link.springer.com/book/10.1007/978-3-642-01850-3}{[GL]}.
+%}
+
+
+
+
+\maketitle
+
+\section{Hybrid Monte Carlo for staggered fermions}
+
+We want to include staggered fermions \cite{BITAR1989377} in the action of a $U(1)$ theory in $2+1$ dimensions.
+
+\subsection{Steps of the implementation}
+
+The HMC consists of the following steps:
+
+\begin{enumerate}
+    \item 
+    \textbf{Heatbath}: 
+    Generation of random momenta
+    \item 
+    \textbf{Molecular Dynamics (MD)}: 
+    Evolution of the field configurations according to an effective Hamiltonian
+    \item
+    \textbf{Accept-Reject}: 
+    Acceptance of rejection of the final configuration 
+    according to some given probability distribution.
+\end{enumerate}
+%
+The inclusion of fermions in the action means the presence of the fermionic determinant in the partition function. 
+This can be evaluated as a gaussian integral over pseudo-fermionic degrees of freedom 
+(spinor structure but with bosonic algebra):
+
+\begin{equation}
+\text{det} D = 
+\int d \phi^{\dagger} d \phi 
+\, \text{exp}(-\phi^{\dagger} D^{-1} \phi)
+\end{equation}
+
+For staggered fermions the Dirac operator is
+
+\begin{equation}
+D(x,y) = G(x,y) + m \delta_{x,y} = \\ 
+=  \sum_{\mu} \frac{1}{2} \eta_{\mu}(x) 
+    [U_{\mu}(x) \delta_{x+\mu, y} -
+     U^{\dagger}_{\mu}(x-\mu) \delta_{x-\mu, y} ]
++ m \delta_{x, y}
+\end{equation}
+
+with $\eta_{\mu}(x) = \prod_{\nu<\mu} (-1)^{x_{\nu}}$.
+
+The fermionic action is:
+
+\begin{equation}
+S_F = \sum_{x, y} \bar{\psi}(x) D(x,y) \psi(y)
+\end{equation}
+
+\subsection{Numerical implementation}
+
+In order to generate pseudo-fermion fields with the heatbath method, is more convenient to evaluate instead (see eq. (10) of \cite{BITAR1989377}):
+
+$$
+\text{det} D^{\dagger} D = 
+\int d \phi^{\dagger} d \phi 
+\, \text{exp}(-\phi^{\dagger} (D^{\dagger} D)^{-1} \phi)
+$$
+
+interpreting the product of the determinants as coming from the degenerate $u$ and $d$ quarks. 
+Note that staggered Dirac operator is anti-hermitian 
+(see eq. (10.26) of \cite{gattringer2009quantum}), 
+so that the above integral is equivalent to $( \text{det} D)^2$.
+
+In practice, what we do is the following:
+
+\begin{enumerate}
+    \item
+    Generate a gaussian vector $R$ of $N$ components 
+    ($N$ is the number of lattice sites)
+    \item
+    Evaluate and store $\phi = D^{\dagger} R$.
+    \item
+    Evolve with the MD, keeping in mind that since:
+    $$
+    S_F = 
+    \phi^{\dagger} (D^{\dagger} D)^{-1} \phi = 
+    \phi^{\dagger} M^{-1} \phi
+    $$
+    
+    we have:
+    
+    \begin{equation} \label{eq:dSF.generic}
+    \delta S_F 
+    = - \phi^{\dagger} M^{-1} \cdot \delta M \cdot M^{-1} \phi 
+    = - \chi^{\dagger} \delta M \chi
+    \end{equation}
+
+    
+    where $\chi = M^{-1} \cdot \phi$.
+    \item
+    After the MD trajectory we compute the new $R^{\dagger} R$ :
+    $$
+    \vec{R} = D \vec{\chi} = D \cdot ( (D^{\dagger} D)^{-1} \cdot \vec{\phi})
+    $$
+    
+    where $\phi$ is the one computed at the beginning of the trajectory, 
+    and $D$, $D^{\dagger}$ are evaluated from the new gauge configuration. 
+    
+    Note that $\chi$ is evaluated first, 
+    so that we have to invert $(D^{\dagger} D)^{-1}$ and not $(D^{\dagger})^{-1}$ . 
+    This is done in order to having to invert an hemitian matrix for which, for instance, 
+    the Conjugate Gradient algorithm always converges.
+    
+    Note also that we don't find the inverse matrix explicitly, 
+    but its application to a given vector: 
+    if we want to compute $A^{-1} \vec{b}$, 
+    we find the numerical solution $\vec{x}$ to $A \vec{x} = \vec{b}$.
+\end{enumerate}
+
+  
+
+\subsection{Sparse matrix multiplication}
+
+The matrices we deal with in the HMC are sparse. 
+Instead of using a general-purpose library for their operations on vectors, 
+we use their explicit expressions. 
+The expression for the Dirac operator has been given above. 
+We report here the expressions for $D^{\dagger} D$.
+
+We can write: $D(x,y) = G(x,y) + m \delta_{x,y}$. 
+This leads to:
+
+$$
+(D^{\dagger} D) (x,y) = 
+\sum_{z} G^{\dagger}(x,z) G(z,y)
++ m [ G^{\dagger}(x,y) + G(x,y) ]
++ m^2 \delta_{x,y} \\
+= M_1 + M_2 + M_3
+$$
+
+The explicit expressions are:
+
+\begin{enumerate}
+\item
+\begin{equation}
+\begin{aligned}
+  M_1 
+  &= 
+  \frac{1}{4} \sum_{\mu, \nu} \eta_\mu(x)
+  [ 
+\\
+  &+ U_\mu^{\dagger}(x) U_\nu(x+\mu) 
+  \eta_{\nu}(x+\mu) \delta_{x+\mu+\nu, y}
+   \\
+  &- U_{\mu}^{\dagger}(x) U_{\nu}^{\dagger}(x) 
+  \eta_{\nu}(x+\mu) \delta_{x,y}
+  \\
+  &- U_{\mu}(x-\mu) U_{\nu}(x-\mu) 
+  \eta_{\nu}(x-\mu) \delta_{x-\mu-\nu,y}
+   \\
+  &+ U_{\mu}(x-\mu) U_{\nu}^{\dagger}(x-\mu-\nu) 
+  \eta_{\nu}(x-\mu) \delta_{x-\mu-\nu,y}
+  ]
+\end{aligned}
+\end{equation}
+
+\item
+\begin{equation}
+\begin{aligned}
+    M_2 = m \cdot \sum_{\mu} \frac{1}{2} \eta_{\mu}(x) 
+    \{
+      [ U_{\mu}(x) + U_{\mu}^{\dagger}(x) ] 
+      \delta_{x+\mu, y} -
+      [ U^{\dagger}_{\mu}(x-\mu) + U_{\mu}(x-\mu) ] 
+      \delta_{x-\mu, y}
+    \}  
+\end{aligned}
+\end{equation}
+
+\item  
+\begin{equation}
+  M_3 = m^2 \delta_{x,y}
+\end{equation}
+
+\end{enumerate}
+
+\subsection{Derivative with respect to the gauge field}
+
+The derivative with respect to $U_{\rho}(z)$ is defined as \cite{gattringer2009quantum}:
+%
+\begin{equation}
+\frac{\partial }{\partial U_{\rho}(z)} f(U_\mu(x))
+= \delta_{\mu \rho} \delta_{x, z} \sum_i T_i \frac{\partial}{\partial \omega_{\mu}^{i}} f(U)
+=  \delta_{\mu \rho} \delta_{x, z}  \sum_i T_i \frac{\partial}{\partial \omega} 
+f( e^{i \omega T_i} U)\big\vert_{\omega=0}
+\end{equation}
+
+In a $U(1)$ theory we have only one generator $T=1$, so:
+\begin{equation}
+\frac{\partial }{\partial U_{\rho}(z)} f(U_{\mu}(x))
+=  \delta_{\mu \rho} \delta_{x, z}  \frac{\partial}{\partial \omega} f( e^{i \omega} U)\big\vert_{\omega=0}
+\end{equation}
+
+Therefore:
+\begin{align}
+\frac{\partial }{\partial U_{\rho}(z)} U_{\mu}(x) = 
+i U_{\mu}(x) \delta_{\mu \rho} \delta_{x, z}
+\\
+\frac{\partial }{\partial U_{\rho}(z)} U^\dagger_{\mu}(x) = 
+-i U^\dagger_{\mu}(x) \delta_{\mu \rho} \delta_{x, z}
+\end{align}
+
+It is also easy to verify that this derivative satisfy the Leibniz rule for the derivative of products.
+
+Applying the above result we get the following results:
+
+\begin{equation}
+\frac{\partial D(x,y)}{\partial U_{\rho}(z)} =  
+=  \sum_{\mu} \frac{1}{2} \eta_{\mu}(x) 
+    [i U_{\mu}(x) \delta_{x,z} \delta_{x+\mu, y}
+     + i U^{\dagger}_{\mu}(x-\mu) \delta_{x-\mu,z} \delta_{x-\mu, y} ]
+\end{equation}
+
+\begin{equation}
+\frac{\partial D^{\dagger}(x,y)}{\partial U_{\rho}(z)} =  
+=  \sum_{\mu} \frac{1}{2} \eta_{\mu}(x) 
+    [-i U^{\dagger}_{\mu}(x) \delta_{x,z} \delta_{x+\mu, y}
+     - i U_{\mu}(x-\mu) \delta_{x-\mu,z} \delta_{x-\mu, y} ]
+\end{equation}
+
+According to eq. (12) of \cite{BITAR1989377}, we evaluate the fermionic force $F_{\mu}(x)$ 
+\footnote{
+Is it correct to say that this is the quantity that we add to deriv(x, mu) in the code?
+}
+as:
+%
+\begin{equation}
+F_{\mu}(x) = 
+2 T
+\left[ 
+U_{\mu}(x) \frac{\partial S_F}{\partial U_{\mu}(x)} 
+\right]
+\end{equation}
+%
+Where $T$ is defined by eq. (5) of \cite{BITAR1989377}
+\footnote{Is it correct that in our code this is implemented by get\_ deriv $<>$() ?}
+%
+With the notation of eq. \eqref{eq:dSF.generic} we write 
+(compare with eq. (8.44) of \cite{gattringer2009quantum}):
+%
+\begin{equation}
+\frac{\partial S_F}{\partial U_{\mu}(x)}
+= 
+- \chi^{\dagger}
+\left( 
+\frac{\partial D}{\partial U_{\mu}(x)} D^{\dagger}
++
+\frac{\partial D^{\dagger}}{\partial U_{\mu}(x)} D
+\right) 
+\chi
+\end{equation}
+
+
+
+
+
+%
+%\begin{enumerate}
+%    \item 
+%For $M_1$ we find:
+%  
+%\begin{equation}
+%\begin{aligned}
+%  &\frac{\partial M_1}{\partial U_{\rho}(z)} 
+%  = 
+%  \frac{1}{4} \sum_{\mu, \nu} \eta_\mu(x)
+%  [ 
+%\\
+%  &
+%  + (-i) U_\mu^{\dagger}(x) \delta_{x,z} U_\nu(x+\mu) 
+%  \eta_{\nu}(x+\mu) \delta_{x+\mu+\nu, y}
+%  \\
+%  &+ U_\mu^{\dagger}(x) (+i) U_\nu(x+\mu) \delta_{x+\mu, y} 
+%  \eta_{\nu}(x+\mu) \delta_{x+\mu+\nu, y}
+%   \\
+%  & - (-i) U_{\mu}^{\dagger}(x) \delta_{x,z} U_{\nu}^{\dagger}(x) 
+%  \eta_{\nu}(x+\mu) \delta_{x,y}
+%  \\
+%  &- (+i) U_{\mu}^{\dagger}(x) U_{\nu}^{\dagger}(x) \delta_{x,z} 
+%  \eta_{\nu}(x+\mu) \delta_{x,y}
+%  \\
+%  &
+%  - (+i) U_{\mu}(x-\mu) \delta_{x-\mu, z} U_{\nu}(x-\mu) 
+%  \eta_{\nu}(x-\mu) \delta_{x-\mu-\nu,y}
+%  \\
+%  &- U_{\mu}(x-\mu) (+i) U_{\nu}(x-\mu) \delta_{x-\mu, z} 
+%  \eta_{\nu}(x-\mu) \delta_{x-\mu-\nu,y}
+%   \\
+%  &
+%  + (+i) U_{\mu}(x-\mu) \delta_{x-\mu, z} U_{\nu}^{\dagger}(x-\mu-\nu) 
+%  \eta_{\nu}(x-\mu) \delta_{x-\mu-\nu,y}
+%  \\
+%  &+ U_{\mu}(x-\mu) (-i) U_{\nu}^{\dagger}(x-\mu-\nu) \delta_{x-\mu-\nu, z} 
+%  \eta_{\nu}(x-\mu) \delta_{x-\mu-\nu,y}
+%  ]
+%\end{aligned}
+%\end{equation}
+%
+%\item
+%We have:
+%  
+%\begin{equation}
+%    \sum_{x, y} 
+%    \phi^{\dagger}(x) 
+%    \frac{\delta M_2(x, y)}{\delta U_{\rho}(z)} 
+%    \phi(y)
+%    \\ =
+%    m \frac{1}{2} \eta_\rho(z) 
+%    \left(
+%    1 + (-i) U^{\dagger}_{\rho}(z)
+%    \right)
+%    \left[
+%    \phi^{\dagger}(z) \phi(z+\mu)
+%    -\phi^{\dagger}(z+\mu) \phi(z)
+%    \right]
+%\end{equation}
+%
+%
+%In fact:
+%\begin{enumerate}
+%    \item 
+%    \begin{equation}
+%    %\frac{\delta D(x, y)}{\delta U_{\rho}(z)} =
+%    \frac{\delta G(x, y)}{\delta U_{\rho}(z)} =
+%    \frac{1}{2} \eta_\rho(z) 
+%    \left[ 
+%    \delta_{x,z} \delta_{y, z+\mu} -
+%    \delta_{x,z+\mu} \delta_{y, z} 
+%    (-i) U^{\dagger}_{\rho}(z) 
+%    \right]
+%    \end{equation}
+%    
+%    implying:
+%    
+%    \begin{equation}
+%    \sum_{x, y} 
+%    \phi^{\dagger}(x) 
+%    \frac{\delta G(x, y)}{\delta U_{\rho}(z)} 
+%    \phi(y)
+%    \\=
+%    \frac{1}{2} \eta_\rho(z) 
+%    \left[
+%    \phi^{\dagger}(z) \phi(z+\mu) 
+%    -\phi^{\dagger}(z+\mu) 
+%    (-i) U^{\dagger}_{\rho}(z) \phi(z)
+%    \right]
+%    \end{equation}
+%    %
+%    \item
+%    %
+%    \begin{equation}
+%    \frac{\delta G^{\dagger}(x, y)}{\delta U_{\rho}(z)} =
+%    \frac{1}{2} \eta_\rho(z) 
+%    \left[
+%    (-i) U^{\dagger}_{\rho}(z)
+%    \delta_{x,z} \delta_{y, z+\mu} -
+%    \delta_{x,z+\mu} \delta_{y, z} 
+%    \right]
+%    \end{equation}
+%    
+%    implying:
+%    
+%    \begin{equation}
+%    \sum_{x, y} 
+%    \phi^{\dagger}(x) 
+%    \frac{\delta G^{\dagger}(x, y)}{\delta U_{\rho}(z)} 
+%    \phi(y)
+%    \\ =
+%    \frac{1}{2} \eta_\rho(z) 
+%    \left[
+%    \phi^{\dagger}(z) \phi(z+\mu) 
+%    (-i) U^{\dagger}_{\rho}(z)
+%    -\phi^{\dagger}(z+\mu) \phi(z)
+%    \right]
+%    \end{equation}
+%%
+%\item
+%%
+%And of course:
+%\begin{equation}
+%\frac{\delta M_3}{\delta U_{\rho}(z)} = 0
+%\end{equation}
+%\end{enumerate}
+
+%\end{enumerate}
+
+
+
+
+
+
+
+
+\printbibliography
+
+
+\end{document}

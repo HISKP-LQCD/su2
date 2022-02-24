@@ -106,63 +106,9 @@ void derivative(adjointfield<Float, Group> &deriv,
       for(size_t x2 = 0; x2 < Ly; x2++) {
         for(size_t x3 = 0; x3 < Lz; x3++) {
           const std::vector<size_t> x = {x0, x1, x2, x3};
-          // std::vector<size_t> xm = x; // will be x+mu
-          // std::vector<size_t> xp = x; // sill be x-mu
-          // std::vector<size_t> xpm = x; // will be x + mu - nu
-          // std::vector<size_t> xmm = x; // will be x - mu - nu
-          // std::vector<size_t> xmp = x; // will be  x - mu + nu
-          // std::vector<size_t> xpp = x; // will be  x + mu + nu
-
-          // accum conj_chi_x = conj(chi(x, dims)); 
           
-          accum D;
-
           for(size_t mu = 0; mu < nd; mu++) {
-          //   xp[mu] += 1; // x + mu
-          //   xm[mu] -= 1; // x - mu
-          //   xpp[mu] += 1; // see later in the loop
-          //   xpm[mu] += 1; // see later in the loop
-          //   xmp[mu] -= 1; // see later in the loop
-          //   xmm[mu] -= 1; // see later in the loop
-          //   //
-          //   const Float fact_mu   = (1.0/2.0) * staggered::eta(x, mu);
-          //   for(size_t nu = 0; nu < nd; nu++) {
-          //     xpp[mu] += 1; // x+mu+nu
-          //     xpm[mu] -= 1; // x+mu-nu
-          //     xmp[mu] += 1; // x-mu+nu
-          //     xmm[mu] -= 1; // x-mu-nu
-
-          //     const Float fact_nu_p = (1.0/2.0) * staggered::eta(xp, nu);
-          //     const Float fact_nu_m = (1.0/2.0) * staggered::eta(xm, nu);
-
-          //     const Float fact1 = fact_mu * fact_nu_p;
-          //     const Float fact2 = fact_mu * fact_nu_m;
-
-          //     accum D11, D12, D21, D22; 
-
-          //     D11 = + conj_chi_x * fact1 * (*h.U)(x, mu).dagger() * (*h.U)(xp, mu) * chi(xpp, dims);
-          //     D += D11;
-              
-          //     D12 = - conj_chi_x * fact1 * (*h.U)(x, mu).dagger() * (*h.U)(xpm, mu).dagger() * chi(xmm, dims);
-          //     D += D12;
-
-          //     D21 = - conj_chi_x * fact2 * (*h.U)(xm, mu) * (*h.U)(xm, mu) * chi(xmm, dims);              
-          //     D += D21;
-
-          //     D22 = + conj_chi_x * fact2 * (*h.U)(xm, mu) * (*h.U)(xmm, mu).dagger() * chi(xmm, dims);
-          //     D += D22;
-
-          //     xpp[mu] -= 1; // x+mu again
-          //     xpm[mu] += 1; // x+mu again
-          //     xmp[mu] -= 1; // x-mu again
-          //     xmm[mu] += 1; // x-mu again
-          //   }
-
-          //   accum E1 = + conj_chi_x * (*this).m0 * fact_mu * ( (*h.U)(x, mu) + (*h.U)(x, mu).dagger() ) * chi(xp, dims);
-          //   D += E1;
-
-          //   accum E2 = - conj_chi_x * (*this).m0 * fact_mu * ( (*h.U)(xm, mu).dagger() + (*h.U)(xm, mu) ) * chi(xm, dims);
-          //   D += E2;
+          accum derSF; // derivative of S_F with respect to U_{\mu}(x)
 
           const staggered::spinor_lat_4d<Float, Complex> chi1 = staggered::apply_Ddag(h.U, (*this).m0, chi);
           const staggered::spinor_lat_4d<Float, Complex> chi2 = staggered::apply_der_Ddag(x, mu, h.U, (*this).m0, chi);
@@ -171,16 +117,10 @@ void derivative(adjointfield<Float, Group> &deriv,
             staggered::apply_D(h.U, (*this).m0, chi2);
 
           // see eq. (12) of https://www.sciencedirect.com/science/article/pii/0550321389903246
-          D = staggered::complex_dot_product(chi, chi_prime);
-          D = 2.0 * (*h.U)(x, mu) * D;
-          deriv(x, mu) += get_deriv<Float>(D); 
-
-            // xm[mu] += 1; // =x again
-            // xp[mu] -= 1; // =x again
-            // xpp[mu] -= 1; // =x again
-            // xpm[mu] -= 1; // =x again
-            // xmp[mu] += 1; // =x again
-            // xmm[mu] += 1; // =x again
+          derSF = staggered::complex_dot_product(chi, chi_prime);
+          derSF = - 2.0 * (*h.U)(x, mu) * derSF;
+          
+          deriv(x, mu) += get_deriv<Float>(derSF);
           }
         }
       }

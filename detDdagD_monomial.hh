@@ -111,22 +111,21 @@ public:
         for (size_t x2 = 0; x2 < Ly; x2++) {
           for (size_t x3 = 0; x3 < Lz; x3++) {
             const std::vector<size_t> x = {x0, x1, x2, x3};
-
             for (size_t mu = 0; mu < nd; mu++) {
               accum derSF; // derivative of S_F with respect to U_{\mu}(x)
 
               const staggered::spinor_lat_4d<Float, Complex> chi1 =
                 staggered::apply_Ddag(h.U, (*this).m0, chi);
-              const staggered::spinor_lat_4d<Float, Complex> chi2 =
-                staggered::apply_der_Ddag(x, mu, h.U, (*this).m0, chi);
+              // const staggered::spinor_lat_4d<Float, Complex> chi2 =
+              //   staggered::apply_der_Ddag(x, mu, h.U, (*this).m0, chi);
               const staggered::spinor_lat_4d<Float, Complex> chi_prime =
-                staggered::apply_der_D(x, mu, h.U, (*this).m0, chi1) +
-                staggered::apply_D(h.U, (*this).m0, chi2);
+                staggered::apply_der_D(x, mu, h.U, (*this).m0, chi1);
+                // + staggered::apply_D(h.U, (*this).m0, chi2);
 
               // see eq. (12) of
               // https://www.sciencedirect.com/science/article/pii/0550321389903246
-              derSF = staggered::complex_dot_product(chi, chi_prime);
-              derSF = -2.0 * (*h.U)(x, mu) * derSF;
+              derSF = - 2.0 * staggered::complex_dot_product(chi, chi_prime).real();
+              derSF = - 2.0 * (*h.U)(x, mu) * derSF;
 
               deriv(x, mu) += get_deriv<Float>(derSF);
             }

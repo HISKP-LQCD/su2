@@ -280,145 +280,66 @@ With the notation of eq. \eqref{eq:dSF.generic} we write
 \left( 
 \frac{\partial D}{\partial U_{\mu}(x)} D^{\dagger}
 +
-\frac{\partial D^{\dagger}}{\partial U_{\mu}(x)} D
+D \frac{\partial D^{\dagger}}{\partial U_{\mu}(x)}
 \right) 
 \chi
 \end{equation}
 
-
-
-
-
+We observe that since
 %
-%\begin{enumerate}
-%    \item 
-%For $M_1$ we find:
-%  
-%\begin{equation}
-%\begin{aligned}
-%  &\frac{\partial M_1}{\partial U_{\rho}(z)} 
-%  = 
-%  \frac{1}{4} \sum_{\mu, \nu} \eta_\mu(x)
-%  [ 
+\begin{equation}
+\frac{\partial D^{\dagger}(x,y)}{\partial U_{\rho}(z)} =
+\left(
+\frac{\partial D(x,y)}{\partial U_{\rho}(z)}
+\right)^{\dagger}
+\quad ,
+\end{equation}
+%
+we have:
+%
+\begin{equation}
+\begin{aligned}
+\frac{\partial S_F}{\partial U_{\mu}(x)}
+&= 
+- \chi^{\dagger}
+\left( 
+\frac{\partial D}{\partial U_{\mu}(x)} D^{\dagger}
++
+D \left(\frac{\partial D}{\partial U_{\mu}(x)} \right)^{\dagger} 
+\right) 
+\chi
 %\\
-%  &
-%  + (-i) U_\mu^{\dagger}(x) \delta_{x,z} U_\nu(x+\mu) 
-%  \eta_{\nu}(x+\mu) \delta_{x+\mu+\nu, y}
-%  \\
-%  &+ U_\mu^{\dagger}(x) (+i) U_\nu(x+\mu) \delta_{x+\mu, y} 
-%  \eta_{\nu}(x+\mu) \delta_{x+\mu+\nu, y}
-%   \\
-%  & - (-i) U_{\mu}^{\dagger}(x) \delta_{x,z} U_{\nu}^{\dagger}(x) 
-%  \eta_{\nu}(x+\mu) \delta_{x,y}
-%  \\
-%  &- (+i) U_{\mu}^{\dagger}(x) U_{\nu}^{\dagger}(x) \delta_{x,z} 
-%  \eta_{\nu}(x+\mu) \delta_{x,y}
-%  \\
-%  &
-%  - (+i) U_{\mu}(x-\mu) \delta_{x-\mu, z} U_{\nu}(x-\mu) 
-%  \eta_{\nu}(x-\mu) \delta_{x-\mu-\nu,y}
-%  \\
-%  &- U_{\mu}(x-\mu) (+i) U_{\nu}(x-\mu) \delta_{x-\mu, z} 
-%  \eta_{\nu}(x-\mu) \delta_{x-\mu-\nu,y}
-%   \\
-%  &
-%  + (+i) U_{\mu}(x-\mu) \delta_{x-\mu, z} U_{\nu}^{\dagger}(x-\mu-\nu) 
-%  \eta_{\nu}(x-\mu) \delta_{x-\mu-\nu,y}
-%  \\
-%  &+ U_{\mu}(x-\mu) (-i) U_{\nu}^{\dagger}(x-\mu-\nu) \delta_{x-\mu-\nu, z} 
-%  \eta_{\nu}(x-\mu) \delta_{x-\mu-\nu,y}
-%  ]
-%\end{aligned}
-%\end{equation}
+%&
+=
+- \chi^{\dagger}
+\frac{\partial D}{\partial U_{\mu}(x)} D^{\dagger}
+\chi
++
+\chi^{\dagger}
+\left(\frac{\partial D}{\partial U_{\mu}(x)} D^{\dagger}
+ \right)^{\dagger}
+\chi
+\\
+&= 
+- \chi^{\dagger}
+\frac{\partial D}{\partial U_{\mu}(x)} D^{\dagger}
+\chi
++
+\left(
+\chi^{\dagger}
+\frac{\partial D}{\partial U_{\mu}(x)} D^{\dagger}
+\chi
+\right)^\dagger
+= 
+- 2 \operatorname{Re} 
+\left(
+\chi^{\dagger}
+\frac{\partial D}{\partial U_{\mu}(x)} D^{\dagger}
+\chi
+\right)
+\end{aligned}
+\end{equation}
 %
-%\item
-%We have:
-%  
-%\begin{equation}
-%    \sum_{x, y} 
-%    \phi^{\dagger}(x) 
-%    \frac{\delta M_2(x, y)}{\delta U_{\rho}(z)} 
-%    \phi(y)
-%    \\ =
-%    m \frac{1}{2} \eta_\rho(z) 
-%    \left(
-%    1 + (-i) U^{\dagger}_{\rho}(z)
-%    \right)
-%    \left[
-%    \phi^{\dagger}(z) \phi(z+\mu)
-%    -\phi^{\dagger}(z+\mu) \phi(z)
-%    \right]
-%\end{equation}
-%
-%
-%In fact:
-%\begin{enumerate}
-%    \item 
-%    \begin{equation}
-%    %\frac{\delta D(x, y)}{\delta U_{\rho}(z)} =
-%    \frac{\delta G(x, y)}{\delta U_{\rho}(z)} =
-%    \frac{1}{2} \eta_\rho(z) 
-%    \left[ 
-%    \delta_{x,z} \delta_{y, z+\mu} -
-%    \delta_{x,z+\mu} \delta_{y, z} 
-%    (-i) U^{\dagger}_{\rho}(z) 
-%    \right]
-%    \end{equation}
-%    
-%    implying:
-%    
-%    \begin{equation}
-%    \sum_{x, y} 
-%    \phi^{\dagger}(x) 
-%    \frac{\delta G(x, y)}{\delta U_{\rho}(z)} 
-%    \phi(y)
-%    \\=
-%    \frac{1}{2} \eta_\rho(z) 
-%    \left[
-%    \phi^{\dagger}(z) \phi(z+\mu) 
-%    -\phi^{\dagger}(z+\mu) 
-%    (-i) U^{\dagger}_{\rho}(z) \phi(z)
-%    \right]
-%    \end{equation}
-%    %
-%    \item
-%    %
-%    \begin{equation}
-%    \frac{\delta G^{\dagger}(x, y)}{\delta U_{\rho}(z)} =
-%    \frac{1}{2} \eta_\rho(z) 
-%    \left[
-%    (-i) U^{\dagger}_{\rho}(z)
-%    \delta_{x,z} \delta_{y, z+\mu} -
-%    \delta_{x,z+\mu} \delta_{y, z} 
-%    \right]
-%    \end{equation}
-%    
-%    implying:
-%    
-%    \begin{equation}
-%    \sum_{x, y} 
-%    \phi^{\dagger}(x) 
-%    \frac{\delta G^{\dagger}(x, y)}{\delta U_{\rho}(z)} 
-%    \phi(y)
-%    \\ =
-%    \frac{1}{2} \eta_\rho(z) 
-%    \left[
-%    \phi^{\dagger}(z) \phi(z+\mu) 
-%    (-i) U^{\dagger}_{\rho}(z)
-%    -\phi^{\dagger}(z+\mu) \phi(z)
-%    \right]
-%    \end{equation}
-%%
-%\item
-%%
-%And of course:
-%\begin{equation}
-%\frac{\delta M_3}{\delta U_{\rho}(z)} = 0
-%\end{equation}
-%\end{enumerate}
-
-%\end{enumerate}
-
 
 
 

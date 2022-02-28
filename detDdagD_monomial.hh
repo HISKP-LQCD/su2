@@ -85,6 +85,7 @@ void accept(hamiltonian_field<Float, Group> const &h) override {
  * S_F  = \phi^{\dagger} * M^{-1} * \phi 
  * dS_F = \phi^{\dagger} * M^{-1} * dM * M^{-1} * \phi = \chi^{\dagger} * dM * \chi  
  * where \chi = M^{-1} * \phi
+ * and M = D^{\dagger}*D
  * see eq. (8.44) of Gattringer&Lang
  */
 void derivative(adjointfield<Float, Group> &deriv,

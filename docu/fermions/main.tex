@@ -150,13 +150,17 @@ We report here the expressions for $D^{\dagger} D$.
 We can write: $D(x,y) = G(x,y) + m \delta_{x,y}$. 
 This leads to:
 
-$$
-(D^{\dagger} D) (x,y) = 
+\begin{equation}
+\begin{aligned}
+(D^{\dagger} D) (x,y) 
+&= 
 \sum_{z} G^{\dagger}(x,z) G(z,y)
 + m [ G^{\dagger}(x,y) + G(x,y) ]
-+ m^2 \delta_{x,y} \\
-= M_1 + M_2 + M_3
-$$
++ m^2 \delta_{x,y} 
+\\
+&= M_1(x,y) + M_2(x,y) + M_3(x,y)
+\end{aligned}
+\end{equation}
 
 The explicit expressions are:
 
@@ -164,7 +168,7 @@ The explicit expressions are:
 \item
 \begin{equation}
 \begin{aligned}
-  M_1 
+  M_1(x,y)
   &= 
   \frac{1}{4} \sum_{\mu, \nu} \eta_\mu(x)
   [ 
@@ -187,7 +191,8 @@ The explicit expressions are:
 \item
 \begin{equation}
 \begin{aligned}
-    M_2 = m \cdot \sum_{\mu} \frac{1}{2} \eta_{\mu}(x) 
+    M_2(x,y) 
+    = m \cdot \sum_{\mu} \frac{1}{2} \eta_{\mu}(x) 
     \{
       [ U_{\mu}(x) + U_{\mu}^{\dagger}(x) ] 
       \delta_{x+\mu, y} -
@@ -197,9 +202,9 @@ The explicit expressions are:
 \end{aligned}
 \end{equation}
 
-\item  
+\item
 \begin{equation}
-  M_3 = m^2 \delta_{x,y}
+  M_3(x,y) = m^2 \delta_{x,y}
 \end{equation}
 
 \end{enumerate}

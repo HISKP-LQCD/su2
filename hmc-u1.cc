@@ -51,7 +51,7 @@ int main(int ac, char* av[]) {
     ("integrator", po::value<size_t>(&integs)->default_value(0), "itegration scheme to be used: 0=leapfrog, 1=lp_leapfrog, 2=omf4, 3=lp_omf4, 4=Euler, 5=RUTH, 6=omf2")
     ("tolerace_cg", po::value<double>(&tolerance_cg)->default_value(1e-14), "Tolerange for the cg solver for the dirac operator")
     ("verbosity_cg", po::value<size_t>(&verbosity_cg)->default_value(2), "Verbosity for the cg solver for the dirac operator")
-    ("seed_pf", po::value<size_t>(&seed_pf)->default_value(0), "Seed for the evaluation of the fermion determinant")
+    ("seed_pf", po::value<size_t>(&seed_pf)->default_value(97234719), "Seed for the evaluation of the fermion determinant")
    ;
 
   int err = parse_commandline(ac, av, desc, gparams);
@@ -103,6 +103,16 @@ int main(int ac, char* av[]) {
   else 
     os.open("output.hmc.data", std::ios::app);
 
+
+
+  std::cout << "Normalization factor: A = 2/(d*(d-1)*N_lat*N_c) = "
+    << std::scientific << std::setw(18) << std::setprecision(15) 
+    << normalisation << "\n";
+  std::cout << "Acceptance rate parcentage: rho = rate/(i+1)\n";
+
+  std::cout << "i "<< "getaccept "<<"E*A "<<"dH "<<"rho "<<"ddH "<<"Q"<<"\n";
+
+
   double rate = 0.;
   for(size_t i = gparams.icounter; i < gparams.N_meas+gparams.icounter; i++) {
     mdparams.disablerevtest();
@@ -118,6 +128,7 @@ int main(int ac, char* av[]) {
     double E = 0., Q = 0.;
     energy_density(U, E, Q);
     rate += mdparams.getaccept();
+
     cout << i << " " << mdparams.getaccept() << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy*normalisation
          << " " << std::setw(15) << mdparams.getdeltaH() << " " 
          << std::setw(15) << rate/static_cast<double>(i+1) << " ";

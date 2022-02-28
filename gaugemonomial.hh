@@ -40,6 +40,7 @@ public:
               // the antihermitian traceless part
               // beta/N_c *(U*U^stap - (U*U^stap)^dagger)
               // in get_deriv
+              
               deriv(x, mu) += fac*h.U->getBeta()/double(h.U->getNc()) * get_deriv<double>(S);
             }
           }

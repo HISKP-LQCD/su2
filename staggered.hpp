@@ -326,8 +326,8 @@ spinor_lat_4d<Float, Type> apply_D(gaugeconfig<Group>* U, const Float& m, const 
             xm[mu] -= 1; // x - mu
             xp[mu] += 1; // x + mu
             
-            phi(x, dims) += (1.0/2.0) * eta_x_mu * (*U)(x, mu) * psi(xp, dims);
-            phi(x, dims) -= (1.0/2.0) * eta_x_mu * (*U)(x, mu).dagger() * psi(xm, dims);
+            phi(x, dims) += + (1.0/2.0) * eta_x_mu * (*U)(x, mu) * psi(xp, dims)
+                            - (1.0/2.0) * eta_x_mu * (*U)(x, mu).dagger() * psi(xm, dims);
 
             xm[mu] += 1; // =x again
             xp[mu] -= 1; // =x again
@@ -363,8 +363,8 @@ spinor_lat_4d<Float, Type> apply_Ddag(gaugeconfig<Group>* U, const Float& m, con
             xm[mu] -= 1; // x - mu
             xp[mu] += 1; // x + mu
             
-            phi(x, dims) += (1.0/2.0) * eta_x_mu * (*U)(x, mu).dagger() * psi(xp, dims);
-            phi(x, dims) -= (1.0/2.0) * eta_x_mu * (*U)(x, mu) * psi(xm, dims);
+            phi(x, dims) += + (1.0/2.0) * eta_x_mu * (*U)(x, mu).dagger() * psi(xp, dims)
+                            - (1.0/2.0) * eta_x_mu * (*U)(x, mu) * psi(xm, dims);
 
             xm[mu] += 1; // =x again
             xp[mu] -= 1; // =x again

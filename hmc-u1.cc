@@ -31,6 +31,7 @@ int main(int ac, char* av[]) {
   size_t exponent;
   double tau;
   size_t integs;
+  bool no_fermions;
   double tolerance_cg;
   size_t verbosity_cg;
   size_t seed_pf;
@@ -49,6 +50,7 @@ int main(int ac, char* av[]) {
     ("tau", po::value<double>(&tau)->default_value(1.), "trajectory length tau")
     ("exponent", po::value<size_t>(&exponent)->default_value(0), "exponent for rounding")
     ("integrator", po::value<size_t>(&integs)->default_value(0), "itegration scheme to be used: 0=leapfrog, 1=lp_leapfrog, 2=omf4, 3=lp_omf4, 4=Euler, 5=RUTH, 6=omf2")
+    ("no_fermions", po::value<bool>(&no_fermions)->default_value(0), "Bool flag indicating if we're ignoring the fermionic action.")
     ("tolerace_cg", po::value<double>(&tolerance_cg)->default_value(1e-14), "Tolerange for the cg solver for the dirac operator")
     ("verbosity_cg", po::value<size_t>(&verbosity_cg)->default_value(2), "Verbosity for the cg solver for the dirac operator")
     ("seed_pf", po::value<size_t>(&seed_pf)->default_value(97234719), "Seed for the evaluation of the fermion determinant")
@@ -92,8 +94,10 @@ int main(int ac, char* av[]) {
   std::list<monomial<double, _u1>*> monomial_list;
   monomial_list.push_back(&gm);
   monomial_list.push_back(&km);
-  monomial_list.push_back(&detDdagD);
 
+  if(!no_fermions){// not neglecting S_F
+    monomial_list.push_back(&detDdagD);
+  }
 
   integrator<double, _u1> * md_integ = set_integrator<double, _u1>(integs, exponent);
 

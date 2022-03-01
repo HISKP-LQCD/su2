@@ -113,9 +113,9 @@ int main(int ac, char *av[]) {
   else
     os.open("output.hmc.data", std::ios::app);
 
-  std::cout << "Normalization factor: A = 2/(d*(d-1)*N_lat*N_c) = " << std::scientific
+  std::cout << "## Normalization factor: A = 2/(d*(d-1)*N_lat*N_c) = " << std::scientific
             << std::setw(18) << std::setprecision(15) << normalisation << "\n";
-  std::cout << "Acceptance rate parcentage: rho = rate/(i+1)\n";
+  std::cout << "## Acceptance rate parcentage: rho = rate/(i+1)\n";
 
   std::cout << "i "
             << "getaccept "

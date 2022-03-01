@@ -24,7 +24,7 @@ $(PDF): $(TEX)
 
 clean:
 	@rm *~ *.gz *.fls *.fdb_latexmk *.log *.aux *.xml \
-	*.bbl *.blg *.out diagram.* *.bcf *.mp  \
+	*.bbl *.blg *.out diagram.* *.bcf *.mp  *.dvi \
 	2> /dev/null || true
 	
 

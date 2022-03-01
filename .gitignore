@@ -35,3 +35,5 @@ su2hmc
 build/
 
 docu/*.pdf
+docu/fermions/*.pdf
+docu/fermions/*.dvi

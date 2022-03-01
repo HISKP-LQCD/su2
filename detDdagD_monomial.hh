@@ -115,11 +115,11 @@ public:
               accum derSF; // derivative of S_F with respect to U_{\mu}(x)
 
               const staggered::spinor_lat_4d<Float, Complex> chi1 =
-                staggered::apply_Ddag(h.U, (*this).m0, chi);
+                staggered::apply_D(h.U, (*this).m0, chi);
               // const staggered::spinor_lat_4d<Float, Complex> chi2 =
               //   staggered::apply_der_Ddag(x, mu, h.U, (*this).m0, chi);
               const staggered::spinor_lat_4d<Float, Complex> chi_prime =
-                staggered::apply_der_D(x, mu, h.U, (*this).m0, chi1);
+                staggered::apply_der_Ddag(x, mu, h.U, (*this).m0, chi1);
                 // + staggered::apply_D(h.U, (*this).m0, chi2);
 
               // see eq. (12) of

@@ -278,9 +278,9 @@ With the notation of eq. \eqref{eq:dSF.generic} we write
 = 
 - \chi^{\dagger}
 \left( 
-\frac{\partial D}{\partial U_{\mu}(x)} D^{\dagger}
+\frac{\partial D^{\dagger}}{\partial U_{\mu}(x)} D
 +
-D \frac{\partial D^{\dagger}}{\partial U_{\mu}(x)}
+D^{\dagger} \frac{\partial D}{\partial U_{\mu}(x)}
 \right) 
 \chi
 \end{equation}
@@ -298,48 +298,32 @@ We observe that since
 we have:
 %
 \begin{equation}
-\begin{aligned}
 \frac{\partial S_F}{\partial U_{\mu}(x)}
-&= 
+= 
 - \chi^{\dagger}
 \left( 
-\frac{\partial D}{\partial U_{\mu}(x)} D^{\dagger}
--
-D \left(\frac{\partial D}{\partial U_{\mu}(x)} \right)^{\dagger} 
+\frac{\partial D^{\dagger}}{\partial U_{\mu}(x)} 
+D
++
+\left(
+\frac{\partial D^{\dagger}}{\partial U_{\mu}(x)}
+D
+\right)^\dagger
 \right) 
 \chi
-%\\
-%&
-=
-- \chi^{\dagger}
-\frac{\partial D}{\partial U_{\mu}(x)} D^{\dagger}
-\chi
--
-\chi^{\dagger}
-\left(\frac{\partial D}{\partial U_{\mu}(x)} D^{\dagger}
- \right)^{\dagger}
-\chi
-\\
-&= 
-- \chi^{\dagger}
-\frac{\partial D}{\partial U_{\mu}(x)} D^{\dagger}
-\chi
--
-\left(
-\chi^{\dagger}
-\frac{\partial D}{\partial U_{\mu}(x)} D^{\dagger}
-\chi
-\right)^\dagger
-= 
-- 2 \operatorname{Re} 
-\left(
-\chi^{\dagger}
-\frac{\partial D}{\partial U_{\mu}(x)} D^{\dagger}
-\chi
-\right)
-\end{aligned}
 \end{equation}
 %
+Calling $Q = \frac{\partial D^{\dagger}}{\partial U_{\mu}(x)}
+D$, the above equation leads to:
+%
+\begin{equation}
+\frac{\partial S_F}{\partial U_{\mu}(x)}
+= - \chi^{\dagger}( Q + Q^\dagger ) \chi 
+= - 2 \operatorname{Re} \left( \chi^{\dagger} Q  \chi \right)
+= - 2 \operatorname{Re} \left( \chi^{\dagger}  \frac{\partial D^{\dagger}}{\partial U_{\mu}(x)} D  \chi \right)
+\end{equation}
+%
+
 
 
 

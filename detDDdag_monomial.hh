@@ -1,4 +1,4 @@
-// detDdagD_monomial
+// detDDdag_monomial
 // Evaluation of det(D*D^{\dagger}) with the pseudo-fermion action
 // as in eq. (10) of https://www.sciencedirect.com/science/article/pii/0550321389903246
 // or s eq. (8.9) of https://link.springer.com/book/10.1007/978-3-642-01850-3
@@ -18,9 +18,9 @@
 
 #include "staggered.hpp" // spinor object
 
-// detDdagD monomial_4d : evaluation of det(D^{\dagger}*D) through pseudo-fermions
+// detDDdag monomial : evaluation of det(D*D^{\dagger}) through pseudo-fermions
 template <typename Float, class Group>
-class detDdagD_monomial_4d : public monomial<Float, Group> {
+class detDDdag_monomial : public monomial<Float, Group> {
   typedef std::complex<Float> Complex;
 
 public:
@@ -33,7 +33,7 @@ public:
   // pseudo-fermion field phi, kept constant along the MD trajectory
   staggered::spinor_lat<Float, Complex> phi;
 
-  detDdagD_monomial_4d<Float, Group>(unsigned int _timescale,
+  detDDdag_monomial<Float, Group>(unsigned int _timescale,
                                      const Float &m0_val,
                                      const Float &tolerance,
                                      const size_t &seed,
@@ -59,7 +59,7 @@ public:
       staggered::gaussian_spinor_normalized<Float, Complex>(
         dims, N, 0.0, 1.0 / sqrt(2), SEED); // e^{-x^2} has sigma=1/sqrt(2)
     // applying the operator D^{\dagger} to R
-    (*this).phi = staggered::apply_Ddag<Float, Complex, Group>(h.U, (*this).m0, R);
+    (*this).phi = staggered::apply_D<Float, Complex, Group>(h.U, (*this).m0, R);
 
     monomial<Float, Group>::Hold = R.norm_squared(); // R^{\dagger}*R is real
     return;
@@ -67,21 +67,21 @@ public:
 
   /**
    * After the MD trajectory we compute the new R^{\dagger}*R :
-   * R = D*chi = D * ( (D^{\dagger}*D)^{-1} * phi ),
+   * R = D*chi = D * ( (D*D^{\dagger})^{-1} * phi ),
    * where phi is the one computed at the beginning of the trajectory
    * and D, D^{\dagger} are evaluated from the new gauge config
    */
   void accept(hamiltonian_field<Float, Group> const &h) override {
-    // Operator D^{\dagger}*D . Hermitian and invertible -> can apply the CG inversion
+    // Operator D*D^{\dagger} . Hermitian and invertible -> can apply the CG inversion
 
-    const staggered::DdagD_matrix_lat<Float, Complex, Group> DdagD(h.U, (*this).m0);
+    const staggered::DDdag_matrix_lat<Float, Complex, Group> DDdag(h.U, (*this).m0);
 
     // applying Ddag*D to \chi
     const staggered::spinor_lat<Float, Complex> chi =
-      DdagD.inv((*this).phi, TOLERANCE, VERBOSITY, SEED);
+      DDdag.inv((*this).phi, TOLERANCE, VERBOSITY, SEED);
 
     const staggered::spinor_lat<Float, Complex> R =
-      staggered::apply_D(h.U, (*this).m0, chi);
+      staggered::apply_Ddag(h.U, (*this).m0, chi);
 
     monomial<Float, Group>::Hnew = R.norm_squared(); // R^{\dagger}*R is real
     return;
@@ -91,7 +91,7 @@ public:
    * S_F  = \phi^{\dagger} * M^{-1} * \phi
    * dS_F = \phi^{\dagger} * M^{-1} * dM * M^{-1} * \phi = \chi^{\dagger} * dM * \chi
    * where \chi = M^{-1} * \phi
-   * and M = D^{\dagger}*D
+   * and M = D*D^{\dagger}
    * see eq. (8.44) of Gattringer&Lang
    */
   void derivative(adjointfield<Float, Group> &deriv,
@@ -99,10 +99,16 @@ public:
                   const Float fac = 1.) const override {
     typedef typename accum_type<Group>::type accum;
 
-    const staggered::DdagD_matrix_lat<Float, Complex, Group> DdagD(h.U, (*this).m0);
+    const staggered::DDdag_matrix_lat<Float, Complex, Group> DDdag(h.U, (*this).m0);
+
+
+    std::complex<double> x = staggered::complex_dot_product(phi, DDdag*(*this).phi );
+    std::cout << "x " << x << " " << x.real() << " " << x.imag() << "\n";
+    abort();
+
 
     const staggered::spinor_lat<Float, Complex> chi =
-      DdagD.inv((*this).phi, TOLERANCE, VERBOSITY, SEED);
+      DDdag.inv((*this).phi, TOLERANCE, VERBOSITY, SEED);
 
     const size_t Lt = h.U->getLt(), Lx = h.U->getLx(), Ly = h.U->getLy(),
                  Lz = h.U->getLz();
@@ -115,12 +121,12 @@ public:
     const Complex i(0.0, 1.0);
 
 #pragma omp parallel for
-    for (size_t x0 = 0; x0 < Lt; x0++) {
-      for (size_t x1 = 0; x1 < Lx; x1++) {
-        for (size_t x2 = 0; x2 < Ly; x2++) {
-          for (size_t x3 = 0; x3 < Lz; x3++) {
-            const std::vector<size_t> x = {x0, x1, x2, x3};
-            std::vector<size_t> xm = x, xp = x;
+    for (int x0 = 0; x0 < Lt; x0++) {
+      for (int x1 = 0; x1 < Lx; x1++) {
+        for (int x2 = 0; x2 < Ly; x2++) {
+          for (int x3 = 0; x3 < Lz; x3++) {
+            const std::vector<int> x = {x0, x1, x2, x3};
+            std::vector<int> xm = x, xp = x;
             for (size_t mu = 0; mu < nd; mu++) {
               xm[mu]--; // x - mu
               xp[mu]++; // x + mu

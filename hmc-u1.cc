@@ -11,7 +11,7 @@
 #include "u1.hh"
 #include "version.hh"
 
-#include "detDdagD_monomial.hh"
+#include "detDDdag_monomial.hh"
 
 #include <boost/program_options.hpp>
 #include <fstream>
@@ -92,7 +92,7 @@ int main(int ac, char *av[]) {
   // generate list of monomials
   gaugemonomial<double, _u1> gm(0);
   kineticmonomial<double, _u1> km(0);
-  detDdagD_monomial_4d<double, _u1> detDdagD(0, gparams.m0, tolerance_cg, seed_pf,
+  detDDdag_monomial<double, _u1> detDDdag(0, gparams.m0, tolerance_cg, seed_pf,
                                              verbosity_cg);
 
   km.setmdpassive();
@@ -102,7 +102,7 @@ int main(int ac, char *av[]) {
   monomial_list.push_back(&km);
 
   if (!no_fermions) { // not neglecting S_F
-    monomial_list.push_back(&detDdagD);
+    monomial_list.push_back(&detDDdag);
   }
 
   integrator<double, _u1> *md_integ = set_integrator<double, _u1>(integs, exponent);

@@ -81,9 +81,9 @@ S_F = \sum_{x, y} \bar{\psi}(x) D(x,y) \psi(y)
 In order to generate pseudo-fermion fields with the heatbath method, is more convenient to evaluate instead (see eq. (10) of \cite{BITAR1989377}):
 
 $$
-\text{det} D^{\dagger} D = 
+\text{det} D D^{\dagger} = 
 \int d \phi^{\dagger} d \phi 
-\, \text{exp}(-\phi^{\dagger} (D^{\dagger} D)^{-1} \phi)
+\, \text{exp}(-\phi^{\dagger} (D D^{\dagger})^{-1} \phi)
 $$
 
 interpreting the product of the determinants as coming from the degenerate $u$ and $d$ quarks. 
@@ -95,15 +95,15 @@ In practice, what we do is the following:
 
 \begin{enumerate}
     \item
-    Generate a gaussian vector $R$ of $N$ components 
-    ($N$ is the number of lattice sites)
+    Generate a gaussian vector $R$ of $n$ components, where 
+    $n$ is the number of lattice sites.
     \item
-    Evaluate and store $\phi = D^{\dagger} R$.
+    Evaluate and store $\phi = D R$.
     \item
     Evolve with the MD, keeping in mind that since:
     $$
     S_F = 
-    \phi^{\dagger} (D^{\dagger} D)^{-1} \phi = 
+    \phi^{\dagger} (D D^{\dagger})^{-1} \phi = 
     \phi^{\dagger} M^{-1} \phi
     $$
     
@@ -120,15 +120,16 @@ In practice, what we do is the following:
     \item
     After the MD trajectory we compute the new $R^{\dagger} R$ :
     $$
-    \vec{R} = D \vec{\chi} = D \cdot ( (D^{\dagger} D)^{-1} \cdot \vec{\phi})
+    \vec{R} = D^{\dagger} \vec{\chi} 
+    = D^{\dagger} \cdot ( (D D^{\dagger})^{-1} \cdot \vec{\phi})
     $$
     
     where $\phi$ is the one computed at the beginning of the trajectory, 
     and $D$, $D^{\dagger}$ are evaluated from the new gauge configuration. 
     
     Note that $\chi$ is evaluated first, 
-    so that we have to invert $(D^{\dagger} D)^{-1}$ and not $(D^{\dagger})^{-1}$ . 
-    This is done in order to having to invert an hemitian matrix for which, for instance, 
+    so that we have to invert $(D D^{\dagger})^{-1}$ and not $D^{-1}$ . 
+    This is done in order to having to invert an hermitian matrix for which, for instance, 
     the Conjugate Gradient algorithm always converges.
     
     Note also that we don't find the inverse matrix explicitly, 
@@ -152,10 +153,10 @@ This leads to:
 
 \begin{equation}
 \begin{aligned}
-(D^{\dagger} D) (x,y) 
+(D D^{\dagger}) (x,y) 
 &= 
-\sum_{z} G^{\dagger}(x,z) G(z,y)
-+ m [ G^{\dagger}(x,y) + G(x,y) ]
+\sum_{z} G(x,z) G^{\dagger}(z,y)
++ m [ G(x,y) + G^{\dagger}(x,y) ]
 + m^2 \delta_{x,y} 
 \\
 &= M_1(x,y) + M_2(x,y) + M_3(x,y)
@@ -173,17 +174,17 @@ The explicit expressions are:
   \frac{1}{4} \sum_{\mu, \nu} \eta_\mu(x)
   [ 
 \\
-  &+ U_\mu^{\dagger}(x) U_\nu(x+\mu) 
-  \eta_{\nu}(x+\mu) \delta_{x+\mu+\nu, y}
+  &+ U_\mu(x) U^{\dagger}_\nu(x+\mu-\nu) 
+  \eta_{\nu}(x+\mu-\nu) \delta_{x+\mu-\nu, y}
    \\
-  &- U_{\mu}^{\dagger}(x) U_{\nu}^{\dagger}(x) 
-  \eta_{\nu}(x+\mu) \delta_{x,y}
+  &- U_{\mu}(x) U_{\nu}(x+\mu) 
+  \eta_{\nu}(x+\mu+\nu) \delta_{x+\mu+\nu,y}
   \\
-  &- U_{\mu}(x-\mu) U_{\nu}(x-\mu) 
-  \eta_{\nu}(x-\mu) \delta_{x-\mu-\nu,y}
+  &- U^{\dagger}_{\mu}(x-\mu) U^{\dagger}_{\nu}(x-\mu-\nu) 
+  \eta_{\nu}(x-\mu-\nu) \delta_{x-\mu-\nu,y}
    \\
-  &+ U_{\mu}(x-\mu) U_{\nu}^{\dagger}(x-\mu-\nu) 
-  \eta_{\nu}(x-\mu) \delta_{x-\mu-\nu,y}
+  &+ U^{\dagger}_{\mu}(x-\mu) U_{\nu}(x-\mu) 
+  \eta_{\nu}(x-\mu+\nu) \delta_{x-\mu+\nu,y}
   ]
 \end{aligned}
 \end{equation}

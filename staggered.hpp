@@ -26,7 +26,7 @@ namespace staggered {
 
   // eta_{\mu}(x) as in eq. (16) of https://arxiv.org/pdf/2112.14640.pdf
   // or eq. (8) of https://www.sciencedirect.com/science/article/pii/0550321389903246
-  inline double eta(const std::vector<size_t> &x, const size_t &mu) {
+  inline double eta(const std::vector<int> &x, const size_t &mu) {
     double s = 0;
     for (int nu = 0; nu < mu; nu++) {
       s += x[nu];
@@ -48,7 +48,7 @@ namespace staggered {
   }
 
   // overload : x={x0,x1,x2,x3}, dims={Lt,Lx,Ly,Lz}
-  size_t txyz_to_index(const std::vector<size_t> &x, const std::vector<size_t> &dims) {
+  size_t txyz_to_index(const std::vector<int> &x, const std::vector<size_t> &dims) {
     return txyz_to_index(x[0], x[1], x[2], x[3], dims[0], dims[1], dims[2], dims[3]);
   }
 
@@ -65,12 +65,12 @@ namespace staggered {
     Type &operator()(const size_t &i) { return Psi[i]; }
     Type operator()(const size_t &i) const { return Psi[i]; }
 
-    Type &operator()(const std::vector<size_t> &x) {
+    Type &operator()(const std::vector<int> &x) {
       const size_t i = txyz_to_index(x, dims);
       return (*this)[i];
     }
 
-    Type operator()(const std::vector<size_t> &x) const {
+    Type operator()(const std::vector<int> &x) const {
       const size_t i = txyz_to_index(x, dims);
       return (*this)[i];
     }
@@ -116,8 +116,8 @@ namespace staggered {
   // a + lambda*b
   template <class Float, class Type, class Type_lambda>
   spinor_lat<Float, Type> a_plus_lambda_b(const spinor_lat<Float, Type> &a,
-                                             const Type_lambda &lambda,
-                                             const spinor_lat<Float, Type> &b) {
+                                          const Type_lambda &lambda,
+                                          const spinor_lat<Float, Type> &b) {
     const int N = a.size();
     spinor_lat<Float, Type> c(a.get_dims(), N);
     for (size_t i = 0; i < N; i++) {
@@ -128,13 +128,13 @@ namespace staggered {
 
   template <class Float, class Type>
   spinor_lat<Float, Type> operator+(const spinor_lat<Float, Type> &a,
-                                       const spinor_lat<Float, Type> &b) {
+                                    const spinor_lat<Float, Type> &b) {
     return a_plus_lambda_b(a, 1.0, b);
   }
 
   template <class Float, class Type>
   spinor_lat<Float, Type> operator-(const spinor_lat<Float, Type> &a,
-                                       const spinor_lat<Float, Type> &b) {
+                                    const spinor_lat<Float, Type> &b) {
     return a_plus_lambda_b(a, -1.0, b);
   }
 
@@ -147,14 +147,14 @@ namespace staggered {
 
   template <class Float, class Type>
   spinor_lat<Float, Type> gaussian_spinor_normalized(const std::vector<size_t> &dims,
-                                                        const size_t &n,
-                                                        const Float &avr,
-                                                        const Float &sigma,
-                                                        const size_t &seed) {
+                                                     const size_t &n,
+                                                     const Float &avr,
+                                                     const Float &sigma,
+                                                     const size_t &seed) {
     std::normal_distribution<Float> dis{avr, sigma};
     std::mt19937 gen_re(seed), gen_im(seed + 1);
     spinor_lat<Float, Type> psi_gauss(dims,
-                                         n); // spacetime dimensions are irrelevant here
+                                      n); // spacetime dimensions are irrelevant here
     Type norm2 = 0.0;
     for (size_t i = 0; i < n; i++) { // lattice points
       Type x = dis(gen_re);
@@ -180,14 +180,13 @@ namespace staggered {
   }
 
   template <class Float, class Type>
-  Type operator*(const spinor_lat<Float, Type> &A,
-                 const spinor_lat<Float, Type> &B) {
+  Type operator*(const spinor_lat<Float, Type> &A, const spinor_lat<Float, Type> &B) {
     return complex_dot_product(A, B);
   }
 
   template <class Float, class Type>
   spinor_lat<Float, Type> operator*(const Type &lambda,
-                                       const spinor_lat<Float, Type> &psi) {
+                                    const spinor_lat<Float, Type> &psi) {
     const spinor_lat<Float, Type> v(psi.get_dims(), psi.size());
     return a_plus_lambda_b(v, lambda, psi);
   }
@@ -197,15 +196,15 @@ namespace staggered {
   }
 
   // class for D^{\dagger}*D
-  template <class Float, class Type, class Group> class DdagD_matrix_lat {
+  template <class Float, class Type, class Group> class DDdag_matrix_lat {
   public:
     gaugeconfig<Group> *U;
     Float m;
 
-    DdagD_matrix_lat() {}
-    ~DdagD_matrix_lat() {}
+    DDdag_matrix_lat() {}
+    ~DDdag_matrix_lat() {}
 
-    DdagD_matrix_lat(gaugeconfig<Group> *_U, const Float &_m) {
+    DDdag_matrix_lat(gaugeconfig<Group> *_U, const Float &_m) {
       U = _U;
       m = _m;
     }
@@ -215,12 +214,12 @@ namespace staggered {
     size_t cols() const { return this->rows(); }
 
     spinor_lat<Float, Type> inv(const spinor_lat<Float, Type> &psi,
-                                   const Float &tol,
-                                   const size_t &verb,
-                                   const size_t &seed) const {
+                                const Float &tol,
+                                const size_t &verb,
+                                const size_t &seed) const {
       typedef spinor_lat<Float, Type> LAvector;
 
-      typedef DdagD_matrix_lat<Float, Type, Group> LAmatrix;
+      typedef DDdag_matrix_lat<Float, Type, Group> LAmatrix;
       cg::LinearCG<Float, Type, LAmatrix, LAvector> LCG((*this), psi);
       const size_t N = psi.size();
 
@@ -236,9 +235,20 @@ namespace staggered {
     }
   };
 
+  /**
+   * @brief (D*D^{\dagger})*psi
+   *
+   * @tparam Float : double
+   * @tparam Type : std::complex<double>
+   * @tparam Group : su1 or su2
+   * @param M : wrapper for D*D^{\dagger} matrix.
+   *  Contains the information only about the configuration U and the quark mass
+   * @param psi : spinor to which we apply D*D^{\dagger}
+   * @return spinor_lat<Float, Type>
+   */
   template <class Float, class Type, class Group>
-  spinor_lat<Float, Type> operator*(const DdagD_matrix_lat<Float, Type, Group> &M,
-                                       const spinor_lat<Float, Type> &psi) {
+  spinor_lat<Float, Type> operator*(const DDdag_matrix_lat<Float, Type, Group> &M,
+                                    const spinor_lat<Float, Type> &psi) {
     gaugeconfig<Group> *U = M.U;
     const Float m = M.m;
 
@@ -249,65 +259,79 @@ namespace staggered {
     const int N = psi.size();
     spinor_lat<Float, Type> phi(dims, N);
 #pragma omp parallel for
-    for (size_t x0 = 0; x0 < Lt; x0++) {
-      for (size_t x1 = 0; x1 < Lx; x1++) {
-        for (size_t x2 = 0; x2 < Ly; x2++) {
-          for (size_t x3 = 0; x3 < Lz; x3++) {
-            const std::vector<size_t> x = {x0, x1, x2, x3};
-            std::vector<size_t> xm = x; // will be x-mu
-            std::vector<size_t> xp = x; // will be x+mu
-            std::vector<size_t> xpp = x; // will be  x + mu + nu
-            std::vector<size_t> xpm = x; // will be x + mu - nu
-            std::vector<size_t> xmp = x; // will be  x - mu + nu
-            std::vector<size_t> xmm = x; // will be x - mu - nu
+    for (int x0 = 0; x0 < Lt; x0++) {
+      for (int x1 = 0; x1 < Lx; x1++) {
+        for (int x2 = 0; x2 < Ly; x2++) {
+          for (int x3 = 0; x3 < Lz; x3++) {
+            const std::vector<int> x = {x0, x1, x2, x3};
+            std::vector<int> xm = x; // will be x-mu
+            std::vector<int> xp = x; // will be x+mu
+            std::vector<int> xpp = x; // will be  x + mu + nu
+            std::vector<int> xpm = x; // will be x + mu - nu
+            std::vector<int> xmp = x; // will be  x - mu + nu
+            std::vector<int> xmm = x; // will be x - mu - nu
             for (size_t mu = 0; mu < nd; mu++) {
               xp[mu]++; // x + mu
               xm[mu]--; // x - mu
+
               xpp[mu]++; // see later in the loop
               xpm[mu]++; // see later in the loop
               xmp[mu]--; // see later in the loop
               xmm[mu]--; // see later in the loop
-              //
-              const Float fact_mu = (1.0 / 2.0) * eta(x, mu);
+
+              const Float fact_eta_x_mu = (1.0 / 2.0) * eta(x, mu);
+              const Float fact_eta_xp_mu = (1.0 / 2.0) * eta(xp, mu);
+              const Float fact_eta_xm_mu = (1.0 / 2.0) * eta(xm, mu);
+
               for (size_t nu = 0; nu < nd; nu++) {
                 xpp[nu]++; // x+mu+nu
                 xpm[nu]--; // x+mu-nu
                 xmp[nu]++; // x-mu+nu
                 xmm[nu]--; // x-mu-nu
 
-                const Float fact_nu_p = (1.0 / 2.0) * eta(xp, nu);
-                const Float fact_nu_m = (1.0 / 2.0) * eta(xm, nu);
+                std::cout << "mu " << mu << " nu " << nu << "\n";
+                std::cout << "x: " << x[0] << "," << x[1] << "," << x[2] << "," << x[3]
+                          << "\n";
+                std::cout << "xpp: " << xpp[0] << "," << xpp[1] << "," << xpp[2] << ","
+                          << xpp[3] << "\n";
+                std::cout << "xmm: " << xmm[0] << "," << xmm[1] << "," << xmm[2] << ","
+                          << xmm[3] << "\n";
 
-                const Float fact1 = fact_mu * fact_nu_p;
-                const Float fact2 = fact_mu * fact_nu_m;
+                const Float fact_nu_pp = (1.0 / 2.0) * eta(xpp, nu);
+                const Float fact_nu_pm = (1.0 / 2.0) * eta(xpm, nu);
+                const Float fact_nu_mp = (1.0 / 2.0) * eta(xmp, nu);
+                const Float fact_nu_mm = (1.0 / 2.0) * eta(xmm, nu);
 
+                phi(x) += +fact_eta_x_mu * fact_nu_pm * (*U)(x, mu) *
+                          (*U)(xpm, nu).dagger() * psi(xpm);
                 phi(x) +=
-                  +fact1 * (*U)(x, mu).dagger() * (*U)(xp, nu) * psi(xpp);
-                phi(x) +=
-                  -fact1 * (*U)(x, mu).dagger() * (*U)(xpm, nu).dagger() * psi(xpm);
-                phi(x) += -fact2 * (*U)(xm, mu) * (*U)(xm, nu) * psi(xmp);
-                phi(x) +=
-                  +fact2 * (*U)(xm, mu) * (*U)(xmm, nu).dagger() * psi(xmm);
+                  -fact_eta_x_mu * fact_nu_pp * (*U)(x, mu) * (*U)(xp, nu) * psi(xpp);
+                phi(x) += -fact_eta_x_mu * fact_nu_mm * (*U)(xm, mu).dagger() *
+                          (*U)(xmm, nu).dagger() * psi(xmm);
+                phi(x) += +fact_eta_x_mu * fact_nu_mp * (*U)(xm, mu).dagger() *
+                          (*U)(xm, nu) * psi(xmp);
 
                 xpp[nu]--; // x+mu again
                 xpm[nu]++; // x+mu again
                 xmp[nu]--; // x-mu again
                 xmm[nu]++; // x-mu again
               }
-              //
-              phi(x) +=
-                +m * fact_mu * ((*U)(x, mu) + (*U)(x, mu).dagger()) * psi(xp);
-              phi(x) +=
-                -m * fact_mu * ((*U)(xm, mu).dagger() + (*U)(xm, mu)) * psi(xm);
+              // adding the contributions from m*(G(x,y) + G^{\dagger}(x,y))
+              phi(x) += +m * fact_eta_x_mu * (*U)(x, mu) * psi(xp);
+              phi(x) += -m * fact_eta_x_mu * (*U)(xm, mu).dagger() * psi(xm);
+
+              phi(x) += +m * fact_eta_xm_mu * (*U)(xm, mu).dagger() * psi(xm);
+              phi(x) += -m * fact_eta_xp_mu * (*U)(x, mu) * psi(xp);
 
               xm[mu]++; // =x again
               xp[mu]--; // =x again
+
               xpp[mu]--; // =x again
               xpm[mu]--; // =x again
               xmp[mu]++; // =x again
               xmm[mu]++; // =x again
             }
-            //
+            // adding the contribution from m^2*delta_{x,y}
             phi(x) += std::pow(m, 2.0) * psi(x);
           }
         }
@@ -328,20 +352,19 @@ namespace staggered {
     const int N = psi.size();
     spinor_lat<Float, Type> phi(dims, N);
 #pragma omp parallel for
-    for (size_t x0 = 0; x0 < Lt; x0++) {
-      for (size_t x1 = 0; x1 < Lx; x1++) {
-        for (size_t x2 = 0; x2 < Ly; x2++) {
-          for (size_t x3 = 0; x3 < Lz; x3++) {
-            const std::vector<size_t> x = {x0, x1, x2, x3};
-            std::vector<size_t> xm = x, xp = x;
+    for (int x0 = 0; x0 < Lt; x0++) {
+      for (int x1 = 0; x1 < Lx; x1++) {
+        for (int x2 = 0; x2 < Ly; x2++) {
+          for (int x3 = 0; x3 < Lz; x3++) {
+            const std::vector<int> x = {x0, x1, x2, x3};
+            std::vector<int> xm = x, xp = x;
             for (size_t mu = 0; mu < nd; mu++) {
               const Float eta_x_mu = eta(x, mu);
               xm[mu]--; // x - mu
               xp[mu]++; // x + mu
 
-              phi(x) +=
-                +(1.0 / 2.0) * eta_x_mu * (*U)(x, mu) * psi(xp) -
-                (1.0 / 2.0) * eta_x_mu * (*U)(x, mu).dagger() * psi(xm);
+              phi(x) += +(1.0 / 2.0) * eta_x_mu * (*U)(x, mu) * psi(xp);
+              phi(x) += -(1.0 / 2.0) * eta_x_mu * (*U)(x, mu).dagger() * psi(xm);
 
               xm[mu]++; // =x again
               xp[mu]--; // =x again
@@ -356,9 +379,8 @@ namespace staggered {
 
   // returns the reslut of D^{\dagger}*psi, where D is the Dirac operator
   template <class Float, class Type, class Group>
-  spinor_lat<Float, Type> apply_Ddag(gaugeconfig<Group> *U,
-                                        const Float &m,
-                                        const spinor_lat<Float, Type> &psi) {
+  spinor_lat<Float, Type>
+  apply_Ddag(gaugeconfig<Group> *U, const Float &m, const spinor_lat<Float, Type> &psi) {
     const size_t Lt = U->getLt(), Lx = U->getLx(), Ly = U->getLy(), Lz = U->getLz();
     const std::vector<size_t> dims = psi.get_dims(); // vector of dimensions
     const size_t nd = U->getndims();
@@ -366,20 +388,21 @@ namespace staggered {
     const int N = psi.size();
     spinor_lat<Float, Type> phi(dims, N);
 #pragma omp parallel for
-    for (size_t x0 = 0; x0 < Lt; x0++) {
-      for (size_t x1 = 0; x1 < Lx; x1++) {
-        for (size_t x2 = 0; x2 < Ly; x2++) {
-          for (size_t x3 = 0; x3 < Lz; x3++) {
-            const std::vector<size_t> x = {x0, x1, x2, x3};
-            std::vector<size_t> xm = x, xp = x;
+    for (int x0 = 0; x0 < Lt; x0++) {
+      for (int x1 = 0; x1 < Lx; x1++) {
+        for (int x2 = 0; x2 < Ly; x2++) {
+          for (int x3 = 0; x3 < Lz; x3++) {
+            const std::vector<int> x = {x0, x1, x2, x3};
+            std::vector<int> xm = x, xp = x;
             for (size_t mu = 0; mu < nd; mu++) {
-              const Float eta_x_mu = eta(x, mu);
               xm[mu]--; // x - mu
               xp[mu]++; // x + mu
 
-              phi(x) +=
-                +(1.0 / 2.0) * eta_x_mu * (*U)(x, mu).dagger() * psi(xp) -
-                (1.0 / 2.0) * eta_x_mu * (*U)(x, mu) * psi(xm);
+              const Float eta_xm_mu = eta(xm, mu);
+              const Float eta_xp_mu = eta(xp, mu);
+
+              phi(x) += +(1.0 / 2.0) * eta_xm_mu * (*U)(xm, mu).dagger() * psi(xm);
+              phi(x) += -(1.0 / 2.0) * eta_xp_mu * (*U)(x, mu) * psi(xp);
 
               xm[mu]++; // =x again
               xp[mu]--; // =x again

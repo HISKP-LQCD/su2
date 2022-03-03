@@ -102,13 +102,9 @@ public:
     const staggered::DDdag_matrix_lat<Float, Complex, Group> DDdag(h.U, (*this).m0);
 
 
-    std::complex<double> x = staggered::complex_dot_product(phi, DDdag*(*this).phi );
-    std::cout << "x " << x << " " << x.real() << " " << x.imag() << "\n";
-    abort();
-
-
     const staggered::spinor_lat<Float, Complex> chi =
       DDdag.inv((*this).phi, TOLERANCE, VERBOSITY, SEED);
+
 
     const size_t Lt = h.U->getLt(), Lx = h.U->getLx(), Ly = h.U->getLy(),
                  Lz = h.U->getLz();
@@ -116,7 +112,7 @@ public:
     const size_t nd = h.U->getndims();
 
     const staggered::spinor_lat<Float, Complex> chi1 =
-      staggered::apply_D(h.U, (*this).m0, chi);
+      staggered::apply_Ddag(h.U, (*this).m0, chi);
 
     const Complex i(0.0, 1.0);
 
@@ -132,15 +128,15 @@ public:
               xp[mu]++; // x + mu
 
               const Float eta_x_mu = staggered::eta(x, mu);
-              const Float eta_xm_mu = staggered::eta(xm, mu);
+              const Float eta_xp_mu = staggered::eta(xp, mu);
 
-              const Complex v_x =
+              const Complex v_xp =
                 (1.0 / 2.0) * eta_x_mu * (+i) * (*h.U)(x, mu) * chi1(xp);
-              const Complex v_xm =
-                -(1.0 / 2.0) * eta_xm_mu * (-i) * (*h.U)(x, mu).dagger() * chi1(xm);
+              const Complex v_x =
+                -(1.0 / 2.0) * eta_xp_mu * (-i) * (*h.U)(x, mu).dagger() * chi1(x);
 
               // derivative of S_F with respect to U_{\mu}(x)
-              accum derSF = conj(chi(x)) * v_x + conj(chi(xm)) * v_xm;
+              accum derSF = conj(chi(x)) * v_xp + conj(chi(xp)) * v_x;
               derSF *= -1.0;
 
               derSF *= i; // get_deriv gives the imaginary part: Re(z) = Im(i*z)

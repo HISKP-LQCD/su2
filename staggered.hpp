@@ -257,86 +257,91 @@ namespace staggered {
     const size_t nd = U->getndims();
 
     const int N = psi.size();
-    spinor_lat<Float, Type> phi(dims, N);
-#pragma omp parallel for
-    for (int x0 = 0; x0 < Lt; x0++) {
-      for (int x1 = 0; x1 < Lx; x1++) {
-        for (int x2 = 0; x2 < Ly; x2++) {
-          for (int x3 = 0; x3 < Lz; x3++) {
-            const std::vector<int> x = {x0, x1, x2, x3};
-            std::vector<int> xm = x; // will be x-mu
-            std::vector<int> xp = x; // will be x+mu
-            std::vector<int> xpp = x; // will be  x + mu + nu
-            std::vector<int> xpm = x; // will be x + mu - nu
-            std::vector<int> xmp = x; // will be  x - mu + nu
-            std::vector<int> xmm = x; // will be x - mu - nu
-            for (size_t mu = 0; mu < nd; mu++) {
-              xp[mu]++; // x + mu
-              xm[mu]--; // x - mu
+    // spinor_lat<Float, Type> phi(dims, N);
+    spinor_lat<Float, Type> phi = apply_D(U, m, apply_Ddag(U, m, psi));
+// #pragma omp parallel for
+//     for (int x0 = 0; x0 < Lt; x0++) {
+//       for (int x1 = 0; x1 < Lx; x1++) {
+//         for (int x2 = 0; x2 < Ly; x2++) {
+//           for (int x3 = 0; x3 < Lz; x3++) {
+//             const std::vector<int> x = {x0, x1, x2, x3};
+//             std::vector<int> xm = x; // will be x-mu
+//             std::vector<int> xp = x; // will be x+mu
+//             std::vector<int> xpp = x; // will be  x + mu + nu
+//             std::vector<int> xpm = x; // will be x + mu - nu
+//             std::vector<int> xmp = x; // will be  x - mu + nu
+//             std::vector<int> xmm = x; // will be x - mu - nu
+//             for (size_t mu = 0; mu < nd; mu++) {
+//               xp[mu]++; // x + mu
+//               xm[mu]--; // x - mu
 
-              xpp[mu]++; // see later in the loop
-              xpm[mu]++; // see later in the loop
-              xmp[mu]--; // see later in the loop
-              xmm[mu]--; // see later in the loop
+//               xpp[mu]++; // see later in the loop
+//               xpm[mu]++; // see later in the loop
+//               xmp[mu]--; // see later in the loop
+//               xmm[mu]--; // see later in the loop
 
-              const Float fact_eta_x_mu = (1.0 / 2.0) * eta(x, mu);
-              const Float fact_eta_xp_mu = (1.0 / 2.0) * eta(xp, mu);
-              const Float fact_eta_xm_mu = (1.0 / 2.0) * eta(xm, mu);
+//               const Float fact_eta_x_mu = (1.0 / 2.0) * eta(x, mu);
+//               const Float fact_eta_xp_mu = (1.0 / 2.0) * eta(xp, mu);
+//               const Float fact_eta_xm_mu = (1.0 / 2.0) * eta(xm, mu);
 
-              for (size_t nu = 0; nu < nd; nu++) {
-                xpp[nu]++; // x+mu+nu
-                xpm[nu]--; // x+mu-nu
-                xmp[nu]++; // x-mu+nu
-                xmm[nu]--; // x-mu-nu
+//               for (size_t nu = 0; nu < nd; nu++) {
+//                 xpp[nu]++; // x+mu+nu
+//                 xpm[nu]--; // x+mu-nu
+//                 xmp[nu]++; // x-mu+nu
+//                 xmm[nu]--; // x-mu-nu
 
-                std::cout << "mu " << mu << " nu " << nu << "\n";
-                std::cout << "x: " << x[0] << "," << x[1] << "," << x[2] << "," << x[3]
-                          << "\n";
-                std::cout << "xpp: " << xpp[0] << "," << xpp[1] << "," << xpp[2] << ","
-                          << xpp[3] << "\n";
-                std::cout << "xmm: " << xmm[0] << "," << xmm[1] << "," << xmm[2] << ","
-                          << xmm[3] << "\n";
+//                 std::cout << "mu " << mu << " nu " << nu << "\n";
+//                 std::cout << "x: " << x[0] << "," << x[1] << "," << x[2] << "," << x[3]
+//                           << "\n";
+//                 std::cout << "xpp: " << xpp[0] << "," << xpp[1] << "," << xpp[2] << ","
+//                           << xpp[3] << "\n";
+//                 std::cout << "xmm: " << xmm[0] << "," << xmm[1] << "," << xmm[2] << ","
+//                           << xmm[3] << "\n";
 
-                const Float fact_nu_pp = (1.0 / 2.0) * eta(xpp, nu);
-                const Float fact_nu_pm = (1.0 / 2.0) * eta(xpm, nu);
-                const Float fact_nu_mp = (1.0 / 2.0) * eta(xmp, nu);
-                const Float fact_nu_mm = (1.0 / 2.0) * eta(xmm, nu);
 
-                phi(x) += +fact_eta_x_mu * fact_nu_pm * (*U)(x, mu) *
-                          (*U)(xpm, nu).dagger() * psi(xpm);
-                phi(x) +=
-                  -fact_eta_x_mu * fact_nu_pp * (*U)(x, mu) * (*U)(xp, nu) * psi(xpp);
-                phi(x) += -fact_eta_x_mu * fact_nu_mm * (*U)(xm, mu).dagger() *
-                          (*U)(xmm, nu).dagger() * psi(xmm);
-                phi(x) += +fact_eta_x_mu * fact_nu_mp * (*U)(xm, mu).dagger() *
-                          (*U)(xm, nu) * psi(xmp);
 
-                xpp[nu]--; // x+mu again
-                xpm[nu]++; // x+mu again
-                xmp[nu]--; // x-mu again
-                xmm[nu]++; // x-mu again
-              }
-              // adding the contributions from m*(G(x,y) + G^{\dagger}(x,y))
-              phi(x) += +m * fact_eta_x_mu * (*U)(x, mu) * psi(xp);
-              phi(x) += -m * fact_eta_x_mu * (*U)(xm, mu).dagger() * psi(xm);
+//                 const Float fact_nu_pp = (1.0 / 2.0) * eta(xpp, nu);
+//                 const Float fact_nu_pm = (1.0 / 2.0) * eta(xpm, nu);
+//                 const Float fact_nu_mp = (1.0 / 2.0) * eta(xmp, nu);
+//                 const Float fact_nu_mm = (1.0 / 2.0) * eta(xmm, nu);
 
-              phi(x) += +m * fact_eta_xm_mu * (*U)(xm, mu).dagger() * psi(xm);
-              phi(x) += -m * fact_eta_xp_mu * (*U)(x, mu) * psi(xp);
+//                 std::cout << "factors " << fact_nu_pp - fact_nu_mm << "\n";
 
-              xm[mu]++; // =x again
-              xp[mu]--; // =x again
+//                 phi(x) += +fact_eta_x_mu * fact_nu_pm * (*U)(x, mu) *
+//                           (*U)(xpm, nu).dagger() * psi(xpm);
+//                 phi(x) +=
+//                   -fact_eta_x_mu * fact_nu_pp * (*U)(x, mu) * (*U)(xp, nu) * psi(xpp);
+//                 phi(x) += -fact_eta_x_mu * fact_nu_mm * (*U)(xm, mu).dagger() *
+//                           (*U)(xmm, nu).dagger() * psi(xmm);
+//                 phi(x) += +fact_eta_x_mu * fact_nu_mp * (*U)(xm, mu).dagger() *
+//                           (*U)(xm, nu) * psi(xmp);
 
-              xpp[mu]--; // =x again
-              xpm[mu]--; // =x again
-              xmp[mu]++; // =x again
-              xmm[mu]++; // =x again
-            }
-            // adding the contribution from m^2*delta_{x,y}
-            phi(x) += std::pow(m, 2.0) * psi(x);
-          }
-        }
-      }
-    }
+//                 xpp[nu]--; // x+mu again
+//                 xpm[nu]++; // x+mu again
+//                 xmp[nu]--; // x-mu again
+//                 xmm[nu]++; // x-mu again
+//               }
+//               // adding the contributions from m*(G(x,y) + G^{\dagger}(x,y))
+//               phi(x) += +m * fact_eta_x_mu * (*U)(x, mu) * psi(xp);
+//               phi(x) += -m * fact_eta_x_mu * (*U)(xm, mu).dagger() * psi(xm);
+
+//               phi(x) += +m * fact_eta_xm_mu * (*U)(xm, mu).dagger() * psi(xm);
+//               phi(x) += -m * fact_eta_xp_mu * (*U)(x, mu) * psi(xp);
+
+//               xm[mu]++; // =x again
+//               xp[mu]--; // =x again
+
+//               xpp[mu]--; // =x again
+//               xpm[mu]--; // =x again
+//               xmp[mu]++; // =x again
+//               xmm[mu]++; // =x again
+//             }
+//             // adding the contribution from m^2*delta_{x,y}
+//             phi(x) += std::pow(m, 2.0) * psi(x);
+//           }
+//         }
+//       }
+//     }
     //
     return phi;
   }
@@ -364,7 +369,7 @@ namespace staggered {
               xp[mu]++; // x + mu
 
               phi(x) += +(1.0 / 2.0) * eta_x_mu * (*U)(x, mu) * psi(xp);
-              phi(x) += -(1.0 / 2.0) * eta_x_mu * (*U)(x, mu).dagger() * psi(xm);
+              phi(x) += -(1.0 / 2.0) * eta_x_mu * (*U)(xm, mu).dagger() * psi(xm);
 
               xm[mu]++; // =x again
               xp[mu]--; // =x again

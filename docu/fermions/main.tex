@@ -129,7 +129,7 @@ In practice, what we do is the following:
     
     Note that $\chi$ is evaluated first, 
     so that we have to invert $(D D^{\dagger})^{-1}$ and not $D^{-1}$ . 
-    This is done in order to having to invert an hermitian matrix for which, for instance, 
+    This is done in order to invert an hermitian matrix for which, for instance, 
     the Conjugate Gradient algorithm always converges.
     
     Note also that we don't find the inverse matrix explicitly, 
@@ -140,75 +140,75 @@ In practice, what we do is the following:
 
   
 
-\subsection{Sparse matrix multiplication}
-
-The matrices we deal with in the HMC are sparse. 
-Instead of using a general-purpose library for their operations on vectors, 
-we use their explicit expressions. 
-The expression for the Dirac operator has been given above. 
-We report here the expressions for $D^{\dagger} D$.
-
-We can write: $D(x,y) = G(x,y) + m \delta_{x,y}$. 
-This leads to:
-
-\begin{equation}
-\begin{aligned}
-(D D^{\dagger}) (x,y) 
-&= 
-\sum_{z} G(x,z) G^{\dagger}(z,y)
-+ m [ G(x,y) + G^{\dagger}(x,y) ]
-+ m^2 \delta_{x,y} 
-\\
-&= M_1(x,y) + M_2(x,y) + M_3(x,y)
-\end{aligned}
-\end{equation}
-
-The explicit expressions are:
-
-\begin{enumerate}
-\item
-\begin{equation}
-\begin{aligned}
-  M_1(x,y)
-  &= 
-  \frac{1}{4} \sum_{\mu, \nu} \eta_\mu(x)
-  [ 
-\\
-  &+ U_\mu(x) U^{\dagger}_\nu(x+\mu-\nu) 
-  \eta_{\nu}(x+\mu-\nu) \delta_{x+\mu-\nu, y}
-   \\
-  &- U_{\mu}(x) U_{\nu}(x+\mu) 
-  \eta_{\nu}(x+\mu+\nu) \delta_{x+\mu+\nu,y}
-  \\
-  &- U^{\dagger}_{\mu}(x-\mu) U^{\dagger}_{\nu}(x-\mu-\nu) 
-  \eta_{\nu}(x-\mu-\nu) \delta_{x-\mu-\nu,y}
-   \\
-  &+ U^{\dagger}_{\mu}(x-\mu) U_{\nu}(x-\mu) 
-  \eta_{\nu}(x-\mu+\nu) \delta_{x-\mu+\nu,y}
-  ]
-\end{aligned}
-\end{equation}
-
-\item
-\begin{equation}
-\begin{aligned}
-    M_2(x,y) 
-    = m \cdot \sum_{\mu} \frac{1}{2} \eta_{\mu}(x) 
-    \{
-      [ U_{\mu}(x) + U_{\mu}^{\dagger}(x) ] 
-      \delta_{x+\mu, y} -
-      [ U^{\dagger}_{\mu}(x-\mu) + U_{\mu}(x-\mu) ] 
-      \delta_{x-\mu, y}
-    \}  
-\end{aligned}
-\end{equation}
-
-\item
-\begin{equation}
-  M_3(x,y) = m^2 \delta_{x,y}
-\end{equation}
-
-\end{enumerate}
+%\subsection{Sparse matrix multiplication}
+%
+%The matrices we deal with in the HMC are sparse. 
+%Instead of using a general-purpose library for their operations on vectors, 
+%we use their explicit expressions. 
+%The expression for the Dirac operator has been given above. 
+%We report here the expressions for $D^{\dagger} D$.
+%
+%We can write: $D(x,y) = G(x,y) + m \delta_{x,y}$. 
+%This leads to:
+%
+%\begin{equation}
+%\begin{aligned}
+%(D D^{\dagger}) (x,y) 
+%&= 
+%\sum_{z} G(x,z) G^{\dagger}(z,y)
+%+ m [ G(x,y) + G^{\dagger}(x,y) ]
+%+ m^2 \delta_{x,y} 
+%\\
+%&= M_1(x,y) + M_2(x,y) + M_3(x,y)
+%\end{aligned}
+%\end{equation}
+%
+%The explicit expressions are:
+%
+%\begin{enumerate}
+%\item
+%\begin{equation}
+%\begin{aligned}
+%  M_1(x,y)
+%  &= 
+%  \frac{1}{4} \sum_{\mu, \nu} \eta_\mu(x)
+%  [ 
+%\\
+%  &+ U_\mu(x) U^{\dagger}_\nu(x+\mu-\nu) 
+%  \eta_{\nu}(x+\mu-\nu) \delta_{x+\mu-\nu, y}
+%   \\
+%  &- U_{\mu}(x) U_{\nu}(x+\mu) 
+%  \eta_{\nu}(x+\mu+\nu) \delta_{x+\mu+\nu,y}
+%  \\
+%  &- U^{\dagger}_{\mu}(x-\mu) U^{\dagger}_{\nu}(x-\mu-\nu) 
+%  \eta_{\nu}(x-\mu-\nu) \delta_{x-\mu-\nu,y}
+%   \\
+%  &+ U^{\dagger}_{\mu}(x-\mu) U_{\nu}(x-\mu) 
+%  \eta_{\nu}(x-\mu+\nu) \delta_{x-\mu+\nu,y}
+%  ]
+%\end{aligned}
+%\end{equation}
+%
+%\item
+%\begin{equation}
+%\begin{aligned}
+%    M_2(x,y) 
+%    = m \cdot \sum_{\mu} \frac{1}{2} \eta_{\mu}(x) 
+%    \{
+%      [ U_{\mu}(x) + U_{\mu}^{\dagger}(x) ] 
+%      \delta_{x+\mu, y} -
+%      [ U^{\dagger}_{\mu}(x-\mu) + U_{\mu}(x-\mu) ] 
+%      \delta_{x-\mu, y}
+%    \}  
+%\end{aligned}
+%\end{equation}
+%
+%\item
+%\begin{equation}
+%  M_3(x,y) = m^2 \delta_{x,y}
+%\end{equation}
+%
+%\end{enumerate}
 
 \subsection{Derivative with respect to the gauge field}
 
@@ -254,22 +254,21 @@ Applying the above result we get the following results:
      - i U_{\mu}(x-\mu) \delta_{x-\mu,z} \delta_{x-\mu, y} ]
 \end{equation}
 
-According to eq. (12) of \cite{BITAR1989377}, we evaluate the fermionic force $F_{\mu}(x)$ 
-\footnote{
-Is it correct to say that this is the quantity that we add to deriv(x, mu) in the code?
-}
-as:
+%According to eq. (12) of \cite{BITAR1989377}, we evaluate the fermionic force $F_{\mu}(x)$ 
+%\footnote{
+%Is it correct to say that this is the quantity that we add to deriv(x, mu) in the code?
+%}
+%as:
+The fermionic force $F_{\mu}(x)$ is:
 %
 \begin{equation}
 F_{\mu}(x) = 
-2 T
-\left[ 
-U_{\mu}(x) \frac{\partial S_F}{\partial U_{\mu}(x)} 
-\right]
+ = \frac{\partial S_F}{\partial U_{\mu}(x)}
+ = \phi^\dagger \frac{\partial (D D^{\dagger})}{\partial U_{\mu}(x)} \phi
 \end{equation}
 %
-Where $T$ is defined by eq. (5) of \cite{BITAR1989377}
-\footnote{Is it correct that in our code this is implemented by get\_ deriv $<>$() ?}
+%Where $T$ is defined by eq. (5) of \cite{BITAR1989377}
+%\footnote{Is it correct that in our code this is implemented by get\_ deriv $<>$() ?}
 %
 With the notation of eq. \eqref{eq:dSF.generic} we write 
 (compare with eq. (8.44) of \cite{gattringer2009quantum}):
@@ -279,9 +278,9 @@ With the notation of eq. \eqref{eq:dSF.generic} we write
 = 
 - \chi^{\dagger}
 \left( 
-\frac{\partial D^{\dagger}}{\partial U_{\mu}(x)} D
+\frac{\partial D}{\partial U_{\mu}(x)} D^{\dagger}
 +
-D^{\dagger} \frac{\partial D}{\partial U_{\mu}(x)}
+D \frac{\partial D^{\dagger}}{\partial U_{\mu}(x)}
 \right) 
 \chi
 \end{equation}
@@ -303,25 +302,26 @@ we have:
 = 
 - \chi^{\dagger}
 \left( 
-\frac{\partial D^{\dagger}}{\partial U_{\mu}(x)} 
-D
+\frac{\partial D}{\partial U_{\mu}(x)} 
+D^{\dagger}
 +
 \left(
-\frac{\partial D^{\dagger}}{\partial U_{\mu}(x)}
-D
-\right)^\dagger
+\frac{\partial D}{\partial U_{\mu}(x)} 
+D^{\dagger} \right)^\dagger
 \right) 
 \chi
 \end{equation}
 %
-Calling $Q = \frac{\partial D^{\dagger}}{\partial U_{\mu}(x)}
-D$, the above equation leads to:
+Calling 
+$Q = \frac{\partial D}{\partial U_{\mu}(x)}
+D^{\dagger}$, 
+the above equation leads to:
 %
 \begin{equation}
 \frac{\partial S_F}{\partial U_{\mu}(x)}
 = - \chi^{\dagger}( Q + Q^\dagger ) \chi 
 = - 2 \operatorname{Re} \left( \chi^{\dagger} Q  \chi \right)
-= - 2 \operatorname{Re} \left( \chi^{\dagger}  \frac{\partial D^{\dagger}}{\partial U_{\mu}(x)} D  \chi \right)
+= - 2 \operatorname{Re} \left( \chi^{\dagger}  \frac{\partial D}{\partial U_{\mu}(x)} D^{\dagger}  \chi \right)
 \end{equation}
 %
 

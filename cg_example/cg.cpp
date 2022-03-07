@@ -2,52 +2,50 @@
 
 #include <complex>
 
-#include "./LA.hpp"
 #include "../cg.hpp"
-// #include "./cg_invert.hpp"
+#include "./LA.hpp"
+// #include "./cg_invert.hpp" // DEPRECATED
 
 typedef std::complex<double> Type;
 
-typedef matrix<Type> LAmatrix;
-typedef std::vector<Type> LAvector;
+const Type i(0.0, 1.0);
+
+typedef LA::LAmatrix<Type> LAmatrix;
+typedef LA::LAvector<double, Type> LAvector;
 
 int main(int argc, char const *argv[]) {
+  LAmatrix A(0, 0);
+  A.add_row((std::vector<Type>){1.0, 2.0+i, 1.0});
+  A.add_row((std::vector<Type>){2.0-i, 5.0, -6.0 + 6.0*i});
+  A.add_row((std::vector<Type>){1.0, -6.0 - 6.0*i, -6.0});
 
-        LAmatrix A = (std::vector<LAvector>) {
-                {1.0, 2.0, 1.0},
-                {2.0, 5.0, -6.0},
-                {1.0, -6.0, -6.0}
-                };
-        
-        std::cout << "A=" << '\n';
-        cg::print_LAmatrix<Type, LAmatrix, LAvector>(A, ",");
-        const std::vector<Type> x_star = {10.0, 11.0, -1.0};
-        const std::vector<Type> x0 = {5e+5, -1e+7, 0.0};
+//   A.add_row((std::vector<Type>){1.0, 2.0, 1.0});
+//   A.add_row((std::vector<Type>){2.0, 5.0, -6.0});
+//   A.add_row((std::vector<Type>){1.0, -6.0, -6.0});
 
-        const std::vector<Type> b = A*x_star;
+  std::cout << "A=" << '\n';
+  cg::print_LAmatrix<Type, LAmatrix, LAvector>(A, ",");
+  const LAvector x_star = (std::vector<Type>){10.0, 11.0, -1.0};
+  const LAvector x0 = (std::vector<Type>){5e+5, -1e+7, 0.0};
 
+  const LAvector b = A * x_star;
 
-        std::cout << "The solution found by the cg is:" << '\n';
+  std::cout << "The solution found by the cg is:" << '\n';
 
-        cg::LinearCG<double, Type, LAmatrix, LAvector>  LCG(A, b);
-        LCG.solve(x0, 1e-15, 2);
+  cg::LinearCG<double, Type, LAmatrix, LAvector> LCG(A, b);
+  LCG.solve(x0, 1e-16, 1);
 
-        std::cout << "The solution should be:" << '\n';
-        cg::print_LAvector<Type, LAvector>(x_star, ",");
+  std::cout << "Exact solution: x = ";
+  cg::print_LAvector<Type, LAvector>(x_star, ",");
 
-        // // std::cin.get();
-        // std::cout << "Computing the inverse:" << '\n';
-        // const int n_hits = 15;
-        // cg::inverter<Type, LAmatrix, LAvector> CGI(A, n_hits, 1);
-        // CGI.invert(1e-15, 1);
-        // std::cout << "The solution found with the inverter is:" << '\n';
-        // LAmatrix B = CGI.get_inverse();
-        // cg::print_LAvector<Type, LAvector>(B*b, ",");
+  // // std::cin.get();
+  // std::cout << "Computing the inverse:" << '\n';
+  // const int n_hits = 15;
+  // cg::inverter<Type, LAmatrix, LAvector> CGI(A, n_hits, 1);
+  // CGI.invert(1e-15, 1);
+  // std::cout << "The solution found with the inverter is:" << '\n';
+  // LAmatrix B = CGI.get_inverse();
+  // cg::print_LAvector<Type, LAvector>(B*b, ",");
 
-
-
-
-
-
-        return 0;
+  return 0;
 }

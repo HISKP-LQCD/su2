@@ -1,24 +1,21 @@
-#include "energy_density.hh"
-#include "gauge_energy.hh"
-#include "gaugeconfig.hh"
-#include "integrator.hh"
-#include "md_update.hh"
-#include "monomial.hh"
-#include "parse_commandline.hh"
-#include "random_gauge_trafo.hh"
-#include "su2.hh"
-#include "sweep.hh"
-#include "u1.hh"
-#include "version.hh"
+#include"su2.hh"
+#include"u1.hh"
+#include"gaugeconfig.hh"
+#include"gauge_energy.hh"
+#include"energy_density.hh"
+#include"random_gauge_trafo.hh"
+#include"md_update.hh"
+#include"monomial.hh"
+#include"integrator.hh"
+#include"parse_commandline.hh"
+#include"version.hh"
 
-#include "detDDdag_monomial.hh"
-
-#include <boost/program_options.hpp>
-#include <fstream>
-#include <iomanip>
-#include <iostream>
-#include <random>
-#include <sstream>
+#include<iostream>
+#include<fstream>
+#include<iomanip>
+#include<sstream>
+#include<random>
+#include<boost/program_options.hpp>
 
 namespace po = boost::program_options;
 using std::cout;

@@ -118,6 +118,7 @@ namespace cg {
       int num_iter = 0;
       curve_x.push_back(xk);
       while (rk_norm > tol) {
+
         const LAvector apk = A * pk;
         const T rkrk = rk.dot(rk);
 
@@ -134,15 +135,19 @@ namespace cg {
 
         if (verbosity > 1) {
           std::cout << "Iteration: " << num_iter << " \t x = ";
-          print_LAvector<T>(xk, ",");
+          if (verbosity > 2) {
+            print_LAvector<T>(xk, ",");
+          }
           std::cout << "residual rk.norm() = " << rk_norm << "\t;\t";
-          std::cout << "(A*x - b).norm() = " << ((A * xk) - b).norm() << "\n";
+          std::cout << "(b - A*x).norm() = " << (b - A * xk).norm() << "\n";
         }
       }
 
-      if (rk_norm < ((A * xk) - b).norm()) {
+      const Float ex_res = (b - A * xk).norm(); // exact residual
+
+      if (rk_norm < ex_res) {
         if (verbosity > 1) {
-          std::cout << "\nRoundoff error detected: (rk - apk) != ((A*xk) - b).norm() . "
+          std::cout << "\nRoundoff error detected: (rk - A*pk) != (b - A*xk).norm() . "
                        "Repeating the  the CG.\n\n";
         }
         this->solve(xk, tol, verbosity); // repeat the CG starting from the found solution

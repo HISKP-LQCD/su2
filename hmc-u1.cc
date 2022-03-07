@@ -17,6 +17,8 @@
 #include<random>
 #include<boost/program_options.hpp>
 
+#include "detDDdag_monomial.hh"
+
 namespace po = boost::program_options;
 using std::cout;
 using std::endl;

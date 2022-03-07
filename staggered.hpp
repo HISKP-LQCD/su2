@@ -105,6 +105,10 @@ namespace staggered {
 
     void operator+=(const spinor_lat<Float, Type> &psi) { (*this) = (*this) + psi; }
 
+    Type dot(const spinor_lat& b) const{
+      return complex_dot_product((*this), b); // (*this)^{\dagger} * b
+    }
+
     Float norm_squared() const {
       return complex_dot_product((*this), (*this)).real(); // A^{\dagger} * A is real
     }

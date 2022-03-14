@@ -53,8 +53,8 @@ int main(int ac, char *av[]) {
                              "2=omf4, 3=lp_omf4, 4=Euler, 5=RUTH, 6=omf2")(
     "no_fermions", po::value<bool>(&no_fermions)->default_value(0),
     "Bool flag indicating if we're ignoring the fermionic action.")(
-    "tolerace_cg", po::value<double>(&tolerance_cg)->default_value(1e-14),
-    "Tolerange for the cg solver for the dirac operator")(
+    "tolerace_cg", po::value<double>(&tolerance_cg)->default_value(1e-15),
+    "Tolerance for the cg solver for the dirac operator")(
     "verbosity_cg", po::value<size_t>(&verbosity_cg)->default_value(2),
     "Verbosity for the cg solver for the dirac operator")(
     "seed_pf", po::value<size_t>(&seed_pf)->default_value(97234719),

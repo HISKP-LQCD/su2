@@ -20,7 +20,9 @@
 #include "su2.hh"
 #include "u1.hh"
 
-#include "cg.hpp" // given A(matrix) and b(vector), find x = A^{-1}*b
+// given A(matrix) and b(vector), find x = A^{-1}*b
+#include "cg.hpp" // conjugate gradient 
+#include "BiCGStab.hpp" // Bi Conjugate Gradient
 
 namespace staggered {
 
@@ -224,7 +226,7 @@ namespace staggered {
       typedef spinor_lat<Float, Type> LAvector;
 
       typedef DDdag_matrix_lat<Float, Type, Group> LAmatrix;
-      cg::LinearCG<Float, Type, LAmatrix, LAvector> LCG((*this), psi);
+      BiCGStab::LinearBiCGStab<Float, Type, LAmatrix, LAvector> LCG((*this), psi);
       const size_t N = psi.size();
 
       const LAvector phi0 = staggered::gaussian_spinor_normalized<Float, Complex>(

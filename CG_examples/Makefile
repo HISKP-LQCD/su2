@@ -5,12 +5,12 @@ all: cg BiCGStab
 
 
 cg:
-	g++ cg.cpp -o cg.exe
+	g++ CG.cpp -o CG.exe
 
 
 BiCGStab:
 	g++ BiCGStab.cpp -o BiCGStab.exe
 
 
-clear:
-	rm cg.exe
+clean:
+	rm *.exe

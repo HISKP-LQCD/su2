@@ -1,9 +1,9 @@
-// BiCGStab.hpp
+// CG.hpp
 /*
 Simone Romiti - simone.romiti@uni-bonn.de
 
-Bi Conjugate Gradient method
-Reference: sec. 8.8.4 of
+Conjugate Gradient method
+Reference: sec. 8.8.2 of
 Degrand-Lattice Methods for Quantum Chromodynamics
 https://www.worldscientific.com/worldscibooks/10.1142/6065
 */
@@ -15,7 +15,7 @@ https://www.worldscientific.com/worldscibooks/10.1142/6065
 
 #include "CG_solver.hpp"
 
-namespace BiCGStab {
+namespace CG {
   using namespace CG_solver;
 
   /**
@@ -26,12 +26,12 @@ namespace BiCGStab {
    * @LAmatrix, @LAvector = types of matrix and vector
    */
   template <class Float, class T, class LAmatrix, class LAvector>
-  class LinearBiCGStab : public LinearCG_solver<Float, T, LAmatrix, LAvector> {
+  class LinearCG : public LinearCG_solver<Float, T, LAmatrix, LAvector> {
   public:
-    LinearBiCGStab() {}
-    ~LinearBiCGStab() {}
+    LinearCG() {}
+    ~LinearCG() {}
 
-    LinearBiCGStab(const LAmatrix &_A, const LAvector &_b) { this->init_system(_A, _b); }
+    LinearCG(const LAmatrix &_A, const LAvector &_b) { this->init_system(_A, _b); }
 
     void
     solve(const LAvector &x0, const Float &tol = 1e-15, const size_t &verbosity = 0) {
@@ -39,32 +39,27 @@ namespace BiCGStab {
 
       const LAvector b = (*this).b;
       const LAmatrix A = (*this).A;
+
       LAvector xk = x0; // initial vector
-      LAvector r0 = b - A * xk; // residual vector
-      LAvector rk = r0;
+      LAvector rk = b - A * xk; //(A * xk) - b; // residual vector
       LAvector pk = rk;
       Float rk_norm = rk.norm();
 
       int num_iter = 0;
-      ((*this).curve_x).push_back(xk);
+      (*this).curve_x.push_back(xk);
       while (rk_norm > tol) {
         const LAvector apk = A * pk;
-        const T r0rk = r0.dot(rk);
+        const T rkrk = rk.dot(rk);
 
-        const T alpha = r0.dot(rk) / r0.dot(apk);
-        const LAvector s = rk - alpha * apk;
-        const LAvector t = A * s;
+        const T alpha = rk.dot(rk) / pk.dot(apk);
+        xk = xk + (alpha * pk);
+        rk = rk - (alpha * apk);
 
-        const T omega = t.dot(s) / t.dot(t);
-
-        rk = s - omega * (A * s);
-        xk = xk + omega * s + alpha * pk;
-
-        const T beta = (r0.dot(rk) / r0rk) * (alpha / omega);
-        pk = rk + beta * pk - beta * omega * apk;
+        const T beta = rk.dot(rk) / rkrk;
+        pk = rk + (beta * pk);
 
         num_iter += 1;
-        ((*this).curve_x).push_back(xk);
+        (*this).curve_x.push_back(xk);
         rk_norm = rk.norm();
 
         if (verbosity > 1) {
@@ -83,15 +78,8 @@ namespace BiCGStab {
       if (rk_norm < ex_res) {
         if (verbosity > 1) {
           std::cout << "\nRoundoff error detected: (rk - A*pk) != (b - A*xk).norm() . "
-                       "Repeating the  the BiCGStab.\n\n";
+                       "Repeating the  the CG.\n\n";
         }
-
-        // LinearBiCGStab<Float, T, LAmatrix, LAvector> Lloop(A, b-A*xk);
-        // LAvector dx0;
-        // dx0.resize(xk.size());
-        // Lloop.solve(dx0, tol, verbosity);
-        // xk = xk + Lloop.get_solution();
-        // std::cout << "ciao2\n";
         this->solve(xk, tol, verbosity); // repeat the CG starting from the found solution
                                          // until (rk - apk) == ((A*xk) - b).norm()
       } else {
@@ -105,6 +93,6 @@ namespace BiCGStab {
       }
     }
 
-  }; // class LinearBiCGStab
+  }; // class LinearCG
 
-} // namespace BiCGStab
+} // namespace CG

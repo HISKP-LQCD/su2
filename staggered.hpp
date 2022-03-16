@@ -1,7 +1,9 @@
 // staggered.hpp
 /**
- * Staggered fermions
- */
+ Simone Romiti - simone.romiti@uni-bonn.de
+
+ Staggered fermions routines
+*/
 
 #pragma once
 
@@ -21,20 +23,45 @@
 #include "u1.hh"
 
 // given A(matrix) and b(vector), find x = A^{-1}*b
-#include "cg.hpp" // conjugate gradient 
+#include "CG.hpp" // standard conjugate gradient 
 #include "BiCGStab.hpp" // Bi Conjugate Gradient
+
+// std::vector<double> g_vec_eta_x_mu; // values of \eta_{\mu}(x)
 
 namespace staggered {
 
   // eta_{\mu}(x) as in eq. (16) of https://arxiv.org/pdf/2112.14640.pdf
   // or eq. (8) of https://www.sciencedirect.com/science/article/pii/0550321389903246
-  inline double eta(const std::vector<int> &x, const size_t &mu) {
+  double eta(const std::vector<int> &x, const size_t &mu) {
     double s = 0;
     for (int nu = 0; nu < mu; nu++) {
       s += x[nu];
     }
     return std::pow(-1.0, s);
   }
+
+//   /* fills the array arr_eta */
+//   void generate_eta_x_mu(const std::vector<size_t>& dims, const size_t &ndims) {
+//     const size_t Lt = dims[0], Lx = dims[1], Ly = dims[2], Lz = dims[3];
+//     size_t N = Lt*Lx*Ly*Lz*ndims;
+//     g_vec_eta_x_mu.resize(N);
+//     const geometry_d g(Lx, Ly, Lz, Lt, ndims); // note the order
+// #pragma omp parallel for
+//     for (int x0 = 0; x0 < Lt; x0++) {
+//       for (int x1 = 0; x1 < Lx; x1++) {
+//         for (int x2 = 0; x2 < Ly; x2++) {
+//           for (int x3 = 0; x3 < Lz; x3++) {
+//             const std::vector<int> x = {x0, x1, x2, x3};
+//             for (size_t mu = 0; mu < ndims; mu++) {
+//               const size_t i = g.getIndex(x0, x1, x2, x3);
+//               g_vec_eta_x_mu[i] = eta(x, mu);
+//             }
+//           }
+//         }
+//       }
+//     }
+//     return;
+//   }
 
   // index of the lattice point given the dimensions
   size_t txyz_to_index(const size_t &t,
@@ -226,11 +253,12 @@ namespace staggered {
       typedef spinor_lat<Float, Type> LAvector;
 
       typedef DDdag_matrix_lat<Float, Type, Group> LAmatrix;
-      BiCGStab::LinearBiCGStab<Float, Type, LAmatrix, LAvector> LCG((*this), psi);
+//      BiCGStab::LinearBiCGStab<Float, Type, LAmatrix, LAvector> LCG((*this), psi);
+      CG::LinearCG<Float, Type, LAmatrix, LAvector> LCG((*this), psi);
       const size_t N = psi.size();
 
       const LAvector phi0 = staggered::gaussian_spinor_normalized<Float, Complex>(
-        psi.get_dims(), N, 0.0, 1.0, seed);
+        psi.get_dims(), N, 0.0, 10.0, seed);
 
       if (verb > 1) {
         std::cout << "Calling the CG solver.\n";
@@ -259,12 +287,12 @@ namespace staggered {
     const Float m = M.m;
 
     const size_t Lt = U->getLt(), Lx = U->getLx(), Ly = U->getLy(), Lz = U->getLz();
-    const std::vector<size_t> dims = psi.get_dims(); // vector of dimensions
     const size_t nd = U->getndims();
+    const std::vector<size_t> dims = psi.get_dims(); // vector of dimensions
 
     const int N = psi.size();
-    // spinor_lat<Float, Type> phi(dims, N);
     spinor_lat<Float, Type> phi = apply_D(U, m, apply_Ddag(U, m, psi));
+//  spinor_lat<Float, Type> phi(dims, N);
 // #pragma omp parallel for
 //     for (int x0 = 0; x0 < Lt; x0++) {
 //       for (int x1 = 0; x1 < Lx; x1++) {
@@ -296,22 +324,20 @@ namespace staggered {
 //                 xmp[nu]++; // x-mu+nu
 //                 xmm[nu]--; // x-mu-nu
 
-//                 std::cout << "mu " << mu << " nu " << nu << "\n";
-//                 std::cout << "x: " << x[0] << "," << x[1] << "," << x[2] << "," << x[3]
-//                           << "\n";
-//                 std::cout << "xpp: " << xpp[0] << "," << xpp[1] << "," << xpp[2] << ","
-//                           << xpp[3] << "\n";
-//                 std::cout << "xmm: " << xmm[0] << "," << xmm[1] << "," << xmm[2] << ","
-//                           << xmm[3] << "\n";
-
-
+//                 // std::cout << "mu " << mu << " nu " << nu << "\n";
+//                 // std::cout << "x: " << x[0] << "," << x[1] << "," << x[2] << "," << x[3]
+//                 //           << "\n";
+//                 // std::cout << "xpp: " << xpp[0] << "," << xpp[1] << "," << xpp[2] << ","
+//                 //           << xpp[3] << "\n";
+//                 // std::cout << "xmm: " << xmm[0] << "," << xmm[1] << "," << xmm[2] << ","
+//                 //           << xmm[3] << "\n";
 
 //                 const Float fact_nu_pp = (1.0 / 2.0) * eta(xpp, nu);
 //                 const Float fact_nu_pm = (1.0 / 2.0) * eta(xpm, nu);
 //                 const Float fact_nu_mp = (1.0 / 2.0) * eta(xmp, nu);
 //                 const Float fact_nu_mm = (1.0 / 2.0) * eta(xmm, nu);
 
-//                 std::cout << "factors " << fact_nu_pp - fact_nu_mm << "\n";
+//                 // std::cout << "factors " << fact_nu_pp - fact_nu_mm << "\n";
 
 //                 phi(x) += +fact_eta_x_mu * fact_nu_pm * (*U)(x, mu) *
 //                           (*U)(xpm, nu).dagger() * psi(xpm);
@@ -348,7 +374,7 @@ namespace staggered {
 //         }
 //       }
 //     }
-    //
+
     return phi;
   }
 
@@ -357,8 +383,8 @@ namespace staggered {
   spinor_lat<Float, Type>
   apply_D(gaugeconfig<Group> *U, const Float &m, const spinor_lat<Float, Type> &psi) {
     const size_t Lt = U->getLt(), Lx = U->getLx(), Ly = U->getLy(), Lz = U->getLz();
-    const std::vector<size_t> dims = psi.get_dims(); // vector of dimensions
     const size_t nd = U->getndims();
+    const std::vector<size_t> dims = psi.get_dims(); // vector of dimensions
 
     const int N = psi.size();
     spinor_lat<Float, Type> phi(dims, N);
@@ -393,8 +419,8 @@ namespace staggered {
   spinor_lat<Float, Type>
   apply_Ddag(gaugeconfig<Group> *U, const Float &m, const spinor_lat<Float, Type> &psi) {
     const size_t Lt = U->getLt(), Lx = U->getLx(), Ly = U->getLy(), Lz = U->getLz();
-    const std::vector<size_t> dims = psi.get_dims(); // vector of dimensions
     const size_t nd = U->getndims();
+    const std::vector<size_t> dims = psi.get_dims(); // vector of dimensions
 
     const int N = psi.size();
     spinor_lat<Float, Type> phi(dims, N);

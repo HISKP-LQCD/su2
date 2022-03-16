@@ -1,10 +1,10 @@
 // CG_solver.hpp
 /*
+Simone Romiti - simone.romiti@uni-bonn.de
+
 This file defines a general purpose, templated class that is the basis for conjugate
 gradient (CG) algorithms for solving linear systems. Please recall that convergence is
-guaranteed only for invertible hermitean matrices. Reference: sec. 8.8.2 of
-Degrand-Lattice Methods for Quantum Chromodynamics
-https://www.worldscientific.com/worldscibooks/10.1142/6065
+guaranteed only for invertible hermitean matrices.
 
 It is assumed there are types LAvector and
 LAmatrix (LA=Linear Algebra) such that are defined:
@@ -58,7 +58,7 @@ namespace CG_solver {
   }
 
   /**
-   * Conjugate Gradient method class
+   * Base class for Conjugate Gradient methods
    * @Float = type for the residual
    * @T = type stored inside vectors and matrices.
    * The method T::real(), which gives the real part, must have been implemented

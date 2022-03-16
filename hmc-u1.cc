@@ -149,7 +149,7 @@ int main(int ac, char *av[]) {
       cout << mdparams.getdeltadeltaH();
     } else
       cout << "NA";
-    cout << " " << Q << " " << endl;
+    cout << " " << Q << endl;
 
     os << i << " " << mdparams.getaccept() << " " << std::scientific << std::setw(18)
        << std::setprecision(15) << energy * normalisation << " " << std::setw(15)

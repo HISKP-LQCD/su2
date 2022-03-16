@@ -1,9 +1,14 @@
 // detDDdag_monomial
-// Evaluation of det(D*D^{\dagger}) with the pseudo-fermion action
-// as in eq. (10) of https://www.sciencedirect.com/science/article/pii/0550321389903246
-// or s eq. (8.9) of https://link.springer.com/book/10.1007/978-3-642-01850-3
+/*
+  Simone Romiti - simone.romiti@uni-bonn.de
+
+  Evaluation of det(D*D^{\dagger}) with the pseudo-fermion action
+  as in eq. (10) of https://www.sciencedirect.com/science/article/pii/0550321389903246
+  or s eq. (8.9) of https://link.springer.com/book/10.1007/978-3-642-01850-3
+*/
 
 #pragma once
+
 #include "adjointfield.hh"
 #include "gauge_energy.hh"
 #include "gaugeconfig.hh"
@@ -100,7 +105,6 @@ public:
     typedef typename accum_type<Group>::type accum;
 
     const staggered::DDdag_matrix_lat<Float, Complex, Group> DDdag(h.U, (*this).m0);
-
 
     const staggered::spinor_lat<Float, Complex> chi =
       DDdag.inv((*this).phi, TOLERANCE, VERBOSITY, SEED);

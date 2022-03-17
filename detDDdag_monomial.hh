@@ -31,6 +31,7 @@ class detDDdag_monomial : public monomial<Float, Group> {
 public:
   Float m0; // bare mass (in lattice units)
 
+  std::string SOLVER; // type of the SOLVER
   Float TOLERANCE; // tolerance of the CG solver
   size_t VERBOSITY; // verbosity of the CG solver
   size_t SEED; // seed of the random number generator
@@ -40,12 +41,14 @@ public:
 
   detDDdag_monomial<Float, Group>(unsigned int _timescale,
                                      const Float &m0_val,
+                                     const std::string& solver,
                                      const Float &tolerance,
                                      const size_t &seed,
                                      const size_t &verb)
     : monomial<Float, Group>::monomial(_timescale) {
     m0 = m0_val;
 
+    SOLVER = solver;
     TOLERANCE = tolerance;
     SEED = seed;
     VERBOSITY = verb;
@@ -83,7 +86,7 @@ public:
 
     // applying Ddag*D to \chi
     const staggered::spinor_lat<Float, Complex> chi =
-      DDdag.inv((*this).phi, TOLERANCE, VERBOSITY, SEED);
+      DDdag.inv((*this).phi, SOLVER, TOLERANCE, VERBOSITY, SEED);
 
     const staggered::spinor_lat<Float, Complex> R =
       staggered::apply_Ddag(h.U, (*this).m0, chi);
@@ -107,7 +110,7 @@ public:
     const staggered::DDdag_matrix_lat<Float, Complex, Group> DDdag(h.U, (*this).m0);
 
     const staggered::spinor_lat<Float, Complex> chi =
-      DDdag.inv((*this).phi, TOLERANCE, VERBOSITY, SEED);
+      DDdag.inv((*this).phi, SOLVER, TOLERANCE, VERBOSITY, SEED);
 
 
     const size_t Lt = h.U->getLt(), Lx = h.U->getLx(), Ly = h.U->getLy(),

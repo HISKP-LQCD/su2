@@ -31,6 +31,7 @@ int main(int ac, char *av[]) {
   double tau;
   size_t integs;
   bool no_fermions;
+  std::string solver;
   double tolerance_cg;
   size_t verbosity_cg;
   size_t seed_pf;
@@ -53,10 +54,12 @@ int main(int ac, char *av[]) {
                              "2=omf4, 3=lp_omf4, 4=Euler, 5=RUTH, 6=omf2")(
     "no_fermions", po::value<bool>(&no_fermions)->default_value(0),
     "Bool flag indicating if we're ignoring the fermionic action.")(
-    "tolerace_cg", po::value<double>(&tolerance_cg)->default_value(1e-15),
-    "Tolerance for the cg solver for the dirac operator")(
+    "solver", po::value<std::string>(&solver)->default_value("CG"),
+    "Type of solver: CG, BiCGStab")(
+    "tolerace_cg", po::value<double>(&tolerance_cg)->default_value(1e-10),
+    "Tolerance for the solver for the dirac operator")(
     "verbosity_cg", po::value<size_t>(&verbosity_cg)->default_value(2),
-    "Verbosity for the cg solver for the dirac operator")(
+    "Verbosity for the solver for the dirac operator")(
     "seed_pf", po::value<size_t>(&seed_pf)->default_value(97234719),
     "Seed for the evaluation of the fermion determinant");
 
@@ -91,7 +94,7 @@ int main(int ac, char *av[]) {
   // generate list of monomials
   gaugemonomial<double, _u1> gm(0);
   kineticmonomial<double, _u1> km(0);
-  detDDdag_monomial<double, _u1> detDDdag(0, gparams.m0, tolerance_cg, seed_pf,
+  detDDdag_monomial<double, _u1> detDDdag(0, gparams.m0, solver, tolerance_cg, seed_pf,
                                              verbosity_cg);
 
   km.setmdpassive();

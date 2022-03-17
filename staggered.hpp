@@ -22,6 +22,8 @@
 #include "su2.hh"
 #include "u1.hh"
 
+#include "solver_type.hh" // generic type of solver
+
 // given A(matrix) and b(vector), find x = A^{-1}*b
 #include "CG.hpp" // standard conjugate gradient 
 #include "BiCGStab.hpp" // Bi Conjugate Gradient
@@ -247,14 +249,23 @@ namespace staggered {
     size_t cols() const { return this->rows(); }
 
     spinor_lat<Float, Type> inv(const spinor_lat<Float, Type> &psi,
+                                const std::string& solver,
                                 const Float &tol,
                                 const size_t &verb,
                                 const size_t &seed) const {
       typedef spinor_lat<Float, Type> LAvector;
 
       typedef DDdag_matrix_lat<Float, Type, Group> LAmatrix;
-//      BiCGStab::LinearBiCGStab<Float, Type, LAmatrix, LAvector> LCG((*this), psi);
-      CG::LinearCG<Float, Type, LAmatrix, LAvector> LCG((*this), psi);
+
+      typedef CG::LinearCG<Float, Type, LAmatrix, LAvector> cg;        
+      typedef typename solver_type<cg>::type svr_type;
+      if (solver=="BiCGStab"){
+        typedef BiCGStab::LinearBiCGStab<Float, Type, LAmatrix, LAvector> bcgstab;
+        typedef typename solver_type<bcgstab>::type svr_type;
+      }
+
+      svr_type SVR((*this), psi);
+
       const size_t N = psi.size();
 
       const LAvector phi0 = staggered::gaussian_spinor_normalized<Float, Complex>(
@@ -264,8 +275,8 @@ namespace staggered {
         std::cout << "Calling the CG solver.\n";
       }
 
-      LCG.solve(phi0, tol, verb);
-      return LCG.get_solution();
+      SVR.solve(phi0, tol, verb);
+      return SVR.get_solution();
     }
   };
 

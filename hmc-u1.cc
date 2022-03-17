@@ -33,7 +33,7 @@ int main(int ac, char *av[]) {
   bool no_fermions;
   std::string solver;
   double tolerance_cg;
-  size_t verbosity_cg;
+  size_t solver_verbosity;
   size_t seed_pf;
 
   cout << "## HMC Algorithm for U(1) gauge theory" << endl;
@@ -58,7 +58,7 @@ int main(int ac, char *av[]) {
     "Type of solver: CG, BiCGStab")(
     "tolerace_cg", po::value<double>(&tolerance_cg)->default_value(1e-10),
     "Tolerance for the solver for the dirac operator")(
-    "verbosity_cg", po::value<size_t>(&verbosity_cg)->default_value(2),
+    "solver_verbosity", po::value<size_t>(&solver_verbosity)->default_value(0),
     "Verbosity for the solver for the dirac operator")(
     "seed_pf", po::value<size_t>(&seed_pf)->default_value(97234719),
     "Seed for the evaluation of the fermion determinant");
@@ -95,7 +95,7 @@ int main(int ac, char *av[]) {
   gaugemonomial<double, _u1> gm(0);
   kineticmonomial<double, _u1> km(0);
   detDDdag_monomial<double, _u1> detDDdag(0, gparams.m0, solver, tolerance_cg, seed_pf,
-                                             verbosity_cg);
+                                             solver_verbosity);
 
   km.setmdpassive();
 

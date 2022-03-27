@@ -84,7 +84,7 @@ public:
 
     const staggered::DDdag_matrix_lat<Float, Complex, Group> DDdag(h.U, (*this).m0);
 
-    // applying Ddag*D to \chi
+    // applying D*Ddag to \phi
     const staggered::spinor_lat<Float, Complex> chi =
       DDdag.inv((*this).phi, SOLVER, TOLERANCE, VERBOSITY, SEED);
 
@@ -145,8 +145,10 @@ public:
               // derivative of S_F with respect to U_{\mu}(x)
               accum derSF = conj(chi(x)) * v_xp + conj(chi(xp)) * v_x;
               derSF *= -1.0;
+              derSF *= 2.0;
 
               derSF *= i; // get_deriv gives the imaginary part: Re(z) = Im(i*z)
+              // std::cout << "derSF : " << derSF << "\n";
               deriv(x, mu) += get_deriv<Float>(derSF);
 
               xm[mu]++; // =x again

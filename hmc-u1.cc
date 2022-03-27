@@ -17,6 +17,8 @@
 #include<random>
 #include<boost/program_options.hpp>
 
+#include <boost/filesystem.hpp>
+
 #include "detDDdag_monomial.hh"
 
 namespace po = boost::program_options;
@@ -35,6 +37,7 @@ int main(int ac, char *av[]) {
   double tolerance_cg;
   size_t solver_verbosity;
   size_t seed_pf;
+  std::string outdir;
 
   cout << "## HMC Algorithm for U(1) gauge theory" << endl;
   cout << "## (C) Carsten Urbach <urbach@hiskp.uni-bonn.de> (2017, 2021)" << endl;
@@ -61,13 +64,17 @@ int main(int ac, char *av[]) {
     "solver_verbosity", po::value<size_t>(&solver_verbosity)->default_value(0),
     "Verbosity for the solver for the dirac operator")(
     "seed_pf", po::value<size_t>(&seed_pf)->default_value(97234719),
-    "Seed for the evaluation of the fermion determinant");
+    "Seed for the evaluation of the fermion determinant")(
+    "outdir", po::value<std::string>(&outdir)->default_value("."),
+    "Output directory");
 
   int err = parse_commandline(ac, av, desc, gparams);
   if (err > 0) {
     return err;
   }
 
+  boost::filesystem::create_directory(outdir);
+  
   gaugeconfig<_u1> U(gparams.Lx, gparams.Ly, gparams.Lz, gparams.Lt, gparams.ndims,
                      gparams.beta);
   if (gparams.restart) {
@@ -111,9 +118,9 @@ int main(int ac, char *av[]) {
 
   std::ofstream os;
   if (gparams.icounter == 0)
-    os.open("output.hmc.data", std::ios::out);
+    os.open(outdir+"/output.hmc.data", std::ios::out);
   else
-    os.open("output.hmc.data", std::ios::app);
+    os.open(outdir+"/output.hmc.data", std::ios::app);
 
   std::cout << "## Normalization factor: A = 2/(d*(d-1)*N_lat*N_c) = " << std::scientific
             << std::setw(18) << std::setprecision(15) << normalisation << "\n";
@@ -164,11 +171,11 @@ int main(int ac, char *av[]) {
       os << "NA";
     os << " " << Q << " " << endl;
 
-    if (i > 0 && (i % gparams.N_save) == 0) {
+    if (i > 0 && (i % gparams.N_save) == 0) {// saving U after each N_save trajectories
       std::ostringstream oss;
       oss << "config." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz << "."
           << gparams.Lt << ".b" << gparams.beta << "." << i << std::ends;
-      U.save(oss.str());
+      U.save(outdir+"/"+oss.str());
     }
   }
   cout << "## Acceptance rate: " << rate / static_cast<double>(gparams.N_meas) << endl;
@@ -176,6 +183,6 @@ int main(int ac, char *av[]) {
   std::ostringstream oss;
   oss << "config." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz << "."
       << gparams.Lt << ".b" << U.getBeta() << ".final" << std::ends;
-  U.save(oss.str());
+  U.save(outdir+"/"+oss.str());
   return (0);
 }

@@ -66,7 +66,10 @@ int main(int ac, char* av[]) {
   for(size_t i = gparams.icounter; i < gparams.N_meas*nstep+gparams.icounter; i+=nstep) {
     std::ostringstream os;
     os << "config_u1." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz << "." << gparams.Lt << ".b" << U.getBeta() << "." << i << std::ends;
-    U.load(os.str());
+    int ierrU =  U.load(os.str());
+    if(ierrU == 1){ // cannot load gauge config
+      continue;
+    }
     
     double plaquette = gauge_energy(U);
     double density = 0., Q=0.;

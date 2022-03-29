@@ -5,9 +5,13 @@
 #include"accum_type.hh"
 #include"su2.hh"
 #include"gaugeconfig.hh"
+
+#include "include/geometry.hh"
+
 #include<vector>
 #include<fstream>
 #include<iomanip>
+
 
 /**
  * @brief Planar Wilson loop
@@ -30,7 +34,7 @@
  * @param nu 2nd direction of the loop
  * @return double 
  */
-template<class Group=su2> double planar_wilsonloop_dir(gaugeconfig<Group> &U, const size_t r, const size_t t, 
+template<class Group=su2> double planar_wilsonloop_dir(const gaugeconfig<Group> &U, const size_t r, const size_t t, 
                                                        const size_t mu, const size_t nu) {
   double loop = 0.;
   typedef typename accum_type<Group>::type accum;
@@ -75,10 +79,10 @@ template<class Group=su2> double planar_wilsonloop_dir(gaugeconfig<Group> &U, co
  * @param t temporal extent of the loops
  * @return double 
  */
-template<class Group> double wilsonloop(gaugeconfig<Group> &U, const size_t r, const size_t t) {
+template<class Group> double wilsonloop(const gaugeconfig<Group> &U, const size_t r, const size_t t) {
   double loop = 0.;
   const size_t ndims = U.getndims();
-  #pragma omp parallel for reduction(+: loop)
+#pragma omp parallel for reduction(+: loop)
   for(size_t mu = 1; mu < ndims; mu++) {
     loop += planar_wilsonloop_dir(U, r, t, mu, 0);
   }
@@ -88,16 +92,28 @@ template<class Group> double wilsonloop(gaugeconfig<Group> &U, const size_t r, c
 /**
  * @brief saving all planar loop of the lattice grid 
  * Computing and printing averages of all planar loops 
- * for all possible spatial and temporal extents
+ * for all possible spatial and temporal extents. It is assumed that Lx==Ly==Lz
  * @tparam Group 
  * @param U gauge config 
  * @param path path of the output file
  */
-template<class Group> void compute_all_loops(gaugeconfig<Group> &U, std::string const &path) {
+template<class Group> void compute_all_loops(const gaugeconfig<Group> &U, std::string const &path) {
+
+  // checking the spatial symmetry of the lattice
+  const size_t Lt = U.getLt(), Lx = U.getLx();
+
   std::ofstream os(path, std::ios::out);
-  for(size_t t = 1; t < U.getLt(); t++) {
+  // printing a header specifying what columns contain
+  os << "t";
+  for(size_t r = 1; r < Lx; r++) {
+    os << " " << "r=" << r;
+  }
+  os << "\n";
+
+  // printing the data in the format t L(r=1) L(r=2) ... L(r=Lx-1)
+  for(size_t t = 1; t < Lt; t++) {
     os << t << " ";
-    for(size_t r = 1; r < U.getLx(); r++) {
+    for(size_t r = 1; r < Lx; r++) {
       double loop = wilsonloop(U, r, t);
       os << std::scientific << std::setw(15) << loop << " ";
     }

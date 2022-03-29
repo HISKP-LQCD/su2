@@ -36,6 +36,7 @@ namespace staggered {
   // or eq. (8) of https://www.sciencedirect.com/science/article/pii/0550321389903246
   double eta(const std::vector<int> &x, const size_t &mu) {
     double s = 0;
+// TO BE TESTED #pragma omp parallel for reduction(+: s)
     for (int nu = 0; nu < mu; nu++) {
       s += x[nu];
     }

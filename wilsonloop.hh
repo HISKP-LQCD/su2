@@ -9,6 +9,27 @@
 #include<fstream>
 #include<iomanip>
 
+/**
+ * @brief Planar Wilson loop
+ * Evaluation of the sum of all planar Wilson loop with the 1st vertex in any point of the lattice. 
+ * (NOTE: by traslational invariance, they're all the same analytically)  
+ * See eq. (3.50) of https://link.springer.com/book/10.1007/978-3-642-01850-3 for reference.
+ * 
+ * (0,0) -> 
+ * (0, t*\hat{\nu}) -> 
+ * (t*\hat{\nu}, r*\hat{\mu} + t*\hat{nu}) -> 
+ * (r*\hat{\mu} + t*\hat{nu}, r*\hat{\mu}) ->
+ * (r*\hat{\mu}, 0) -> (0,0)
+ * 
+ * 's' ant 't' are meant to be respectively the spatial and temporal number of lattice points
+ * @tparam Group 
+ * @param U gauge configuration pointer
+ * @param r number of steps in the \mu direction
+ * @param t number of steps in the \nu direction
+ * @param mu 1st direction of the loop
+ * @param nu 2nd direction of the loop
+ * @return double 
+ */
 template<class Group=su2> double planar_wilsonloop_dir(gaugeconfig<Group> &U, const size_t r, const size_t t, 
                                                        const size_t mu, const size_t nu) {
   double loop = 0.;
@@ -45,14 +66,33 @@ template<class Group=su2> double planar_wilsonloop_dir(gaugeconfig<Group> &U, co
   return loop;
 }
 
+/**
+ * @brief average of Wilson loops over all spatial directions 
+ * (0 is the temporal direction)
+ * @tparam Group 
+ * @param U gauge configuration
+ * @param r spatial extent of the loops
+ * @param t temporal extent of the loops
+ * @return double 
+ */
 template<class Group> double wilsonloop(gaugeconfig<Group> &U, const size_t r, const size_t t) {
   double loop = 0.;
-  for(size_t mu = 1; mu < U.getndims(); mu++) {
+  const size_t ndims = U.getndims();
+  #pragma omp parallel for reduction(+: loop)
+  for(size_t mu = 1; mu < ndims; mu++) {
     loop += planar_wilsonloop_dir(U, r, t, mu, 0);
   }
-  return loop/U.getVolume()/double(U.getNc())/3.;
+  return loop/U.getVolume()/double(U.getNc())/ndims;
 }
 
+/**
+ * @brief saving all planar loop of the lattice grid 
+ * Computing and printing averages of all planar loops 
+ * for all possible spatial and temporal extents
+ * @tparam Group 
+ * @param U gauge config 
+ * @param path path of the output file
+ */
 template<class Group> void compute_all_loops(gaugeconfig<Group> &U, std::string const &path) {
   std::ofstream os(path, std::ios::out);
   for(size_t t = 1; t < U.getLt(); t++) {

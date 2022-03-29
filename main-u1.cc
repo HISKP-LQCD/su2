@@ -85,14 +85,14 @@ int main(int ac, char* av[]) {
     os << Q << endl;
     if(i > 0 && (i % gparams.N_save) == 0) {
       std::ostringstream oss;
-      oss << "configu1." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz<< "." << gparams.Lt << ".b" << gparams.beta << "." << i << std::ends;
+      oss << "config_u1." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz<< "." << gparams.Lt << ".b" << gparams.beta << "." << i << std::ends;
       U.save(oss.str());
     }
   }
   cout << "## Acceptance rate " << rate/static_cast<double>(gparams.N_meas) << endl;
 
   std::ostringstream oss;
-  oss << "configu1." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz<< "." << gparams.Lt << ".b" << U.getBeta() << ".final" << std::ends;
+  oss << "config_u1." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz<< "." << gparams.Lt << ".b" << U.getBeta() << ".final" << std::ends;
   U.save(oss.str());
 
   return(0);

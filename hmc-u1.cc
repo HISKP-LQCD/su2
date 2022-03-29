@@ -173,7 +173,7 @@ int main(int ac, char *av[]) {
 
     if (i > 0 && (i % gparams.N_save) == 0) {// saving U after each N_save trajectories
       std::ostringstream oss;
-      oss << "config." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz << "."
+      oss << "config_u1." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz << "."
           << gparams.Lt << ".b" << gparams.beta << "." << i << std::ends;
       U.save(outdir+"/"+oss.str());
     }
@@ -181,7 +181,7 @@ int main(int ac, char *av[]) {
   cout << "## Acceptance rate: " << rate / static_cast<double>(gparams.N_meas) << endl;
 
   std::ostringstream oss;
-  oss << "config." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz << "."
+  oss << "config_u1." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz << "."
       << gparams.Lt << ".b" << U.getBeta() << ".final" << std::ends;
   U.save(outdir+"/"+oss.str());
   return (0);

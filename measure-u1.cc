@@ -21,6 +21,8 @@
 
 namespace po = boost::program_options;
 
+#include <boost/filesystem.hpp>
+
 using std::cout;
 using std::endl;
 
@@ -36,6 +38,7 @@ int main(int ac, char* av[]) {
   size_t exponent;
   double tau;
   size_t integs;
+  std::string confdir;
 
   cout << "## Measuring Tool for U(1) gauge theory" << endl;
   cout << "## (C) Carsten Urbach <urbach@hiskp.uni-bonn.de> (2017)" << endl;
@@ -53,19 +56,20 @@ int main(int ac, char* av[]) {
     ("tau", po::value<double>(&tau)->default_value(1.), "trajectory length tau")
     ("exponent", po::value<size_t>(&exponent)->default_value(0), "exponent for rounding")
     ("integrator", po::value<size_t>(&integs)->default_value(0), "itegration scheme to be used: 0=leapfrog, 1=lp_leapfrog, 2=omf4, 3=lp_omf4")
-    ;
+    ("confdir", po::value<std::string>(&confdir)->default_value("."), "Directory containing the gauge configurations");
 
   int err = parse_commandline(ac, av, desc, gparams);
   if(err > 0) {
     return err;
   }
 
+  boost::filesystem::create_directories(confdir);
 
   gaugeconfig<_u1> U(gparams.Lx, gparams.Ly, gparams.Lz, gparams.Lt, gparams.ndims, gparams.beta);
 
   for(size_t i = gparams.icounter; i < gparams.N_meas*nstep+gparams.icounter; i+=nstep) {
     std::ostringstream os;
-    os << "config_u1." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz << "." << gparams.Lt << ".b" << U.getBeta() << "." << i << std::ends;
+    os << confdir + "/config_u1." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz << "." << gparams.Lt << ".b" << U.getBeta() << "." << i << std::ends;
     int ierrU =  U.load(os.str());
     if(ierrU == 1){ // cannot load gauge config
       continue;
@@ -85,7 +89,7 @@ int main(int ac, char* av[]) {
     
     if(Wloop) {
       std::ostringstream os;
-      os << "wilsonloop.";
+      os << confdir + "/wilsonloop.";
       auto prevw = os.width(6);
       auto prevf = os.fill('0');
       os << i;
@@ -96,7 +100,7 @@ int main(int ac, char* av[]) {
     }
     if(gradient) {
       std::ostringstream os;
-      os << "gradient_flow.";
+      os << confdir + "/gradient_flow.";
       auto prevw = os.width(6);
       auto prevf = os.fill('0');
       os << i;

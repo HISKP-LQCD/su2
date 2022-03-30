@@ -34,10 +34,6 @@ int main(int ac, char* av[]) {
   bool gradient;
   bool lyapunov;
   double tmax;
-  size_t n_steps;
-  size_t exponent;
-  double tau;
-  size_t integs;
   std::string confdir;
 
   cout << "## Measuring Tool for U(1) gauge theory" << endl;
@@ -52,10 +48,6 @@ int main(int ac, char* av[]) {
     ("gradient", po::value<bool>(&gradient)->default_value(false), "measure Grandient flow")
     ("nstep", po::value<size_t>(&nstep)->default_value(1), "measure each nstep config")
     ("tmax", po::value<double>(&tmax)->default_value(9.99), "tmax for gradient flow")
-    ("nsteps", po::value<size_t>(&n_steps)->default_value(1000), "n_steps")
-    ("tau", po::value<double>(&tau)->default_value(1.), "trajectory length tau")
-    ("exponent", po::value<size_t>(&exponent)->default_value(0), "exponent for rounding")
-    ("integrator", po::value<size_t>(&integs)->default_value(0), "itegration scheme to be used: 0=leapfrog, 1=lp_leapfrog, 2=omf4, 3=lp_omf4")
     ("confdir", po::value<std::string>(&confdir)->default_value("."), "Directory containing the gauge configurations");
 
   int err = parse_commandline(ac, av, desc, gparams);

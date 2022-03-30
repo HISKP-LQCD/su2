@@ -167,7 +167,7 @@ int main(int ac, char *av[]) {
       os << mdparams.getdeltadeltaH();
     } else
       os << "NA";
-    os << " " << Q << " " << endl;
+    os << " " << Q << endl;
 
     if (i > 0 && (i % gparams.N_save) == 0) {// saving U after each N_save trajectories
       std::ostringstream oss;

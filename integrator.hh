@@ -244,34 +244,34 @@ template<typename Float, class Group> integrator<Float, Group>* set_integrator(c
   integrator<Float, Group> * integ;
   if(static_cast<integrators>(integs) == LEAPFROG) {
     integ = new leapfrog<Float, Group>();
-    std::cerr << "leapfrog" << std::endl;
+    std::cout << "leapfrog" << std::endl;
   }
   else if(static_cast<integrators>(integs) == LP_LEAPFROG) {
     integ = new lp_leapfrog<Float, Group>(exponent);
-    std::cerr << "lp_leapfrog" << std::endl;
+    std::cout << "lp_leapfrog" << std::endl;
   }
   else if(static_cast<integrators>(integs) == OMF4) {
     integ = new omf4<Float, Group>();
-    std::cerr << "omf4" << std::endl;
+    std::cout << "omf4" << std::endl;
   }
   else if(static_cast<integrators>(integs) == LP_OMF4) {
     integ = new lp_omf4<Float, Group>(exponent);
-    std::cerr << "lp_omf4" << std::endl;
+    std::cout << "lp_omf4" << std::endl;
   }
   else if(static_cast<integrators>(integs) == EULER) {
     integ = new euler<Float, Group>();
-    std::cerr << "euler" << std::endl;
+    std::cout << "euler" << std::endl;
   }
   else if(static_cast<integrators>(integs) == RUTH) {
     integ = new ruth<Float, Group>();
-    std::cerr << "ruth" << std::endl;
+    std::cout << "ruth" << std::endl;
   }
   else if(static_cast<integrators>(integs) == OMF2) {
     integ = new omf2<Float, Group>();
-    std::cerr << "omf2" << std::endl;
+    std::cout << "omf2" << std::endl;
   }
   else {
-    std::cerr << "Integrator does not match, using default" << std::endl;
+    std::cout << "Integrator does not match, using default" << std::endl;
     integ = new leapfrog<Float, Group>();
   }
   return integ;

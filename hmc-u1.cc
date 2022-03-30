@@ -126,14 +126,12 @@ int main(int ac, char *av[]) {
             << std::setw(18) << std::setprecision(15) << normalisation << "\n";
   std::cout << "## Acceptance rate parcentage: rho = rate/(i+1)\n";
 
-  std::cout << "i "
-            << "getaccept "
-            << "E*A "
-            << "dH "
-            << "rho "
-            << "ddH "
-            << "Q"
-            << "\n";
+  std::stringstream ss_head; // header: column names in the output
+  ss_head<<"i"<<" "<<"getaccept"<<" "<< "E*A"<<" "<<"dH"<<" "<<"rho"<<" "<<"ddH"<<" "<<"Q"<<"\n";
+
+  std::string ss_head_str = ss_head.str();
+  std::cout << ss_head_str;
+  os << ss_head_str;
 
   double rate = 0.;
   for (size_t i = gparams.icounter; i < gparams.N_meas + gparams.icounter; i++) {

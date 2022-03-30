@@ -65,7 +65,7 @@ inline double retrace(const Complex c) {
 }
 
 inline Complex trace(const Complex c) {
-  return(c);
+  return(c); // for U(1) the trace operator acts trivially
 }
 
 template<> struct accum_type<_u1> {

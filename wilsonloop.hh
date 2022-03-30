@@ -15,17 +15,27 @@
 
 /**
  * @brief Planar Wilson loop
- * Evaluation of the sum of all planar Wilson loop with the 1st vertex in any point of the lattice. 
- * (NOTE: by traslational invariance, they're all the same analytically)  
- * See eq. (3.50) of https://link.springer.com/book/10.1007/978-3-642-01850-3 for reference.
- * 
+ * Evaluation of the sum of all planar Wilson loop,
+ * averaged over both orientations,
+ * with the 1st vertex in any point of the lattice.
+ * e.g. , starting from the origin:
  * (0,0) -> 
  * (0, t*\hat{\nu}) -> 
  * (t*\hat{\nu}, r*\hat{\mu} + t*\hat{nu}) -> 
  * (r*\hat{\mu} + t*\hat{nu}, r*\hat{\mu}) ->
  * (r*\hat{\mu}, 0) -> (0,0)
- * 
+ *
  * 's' ant 't' are meant to be respectively the spatial and temporal number of lattice points
+ *
+ * Notes: 
+ *
+ * 1. By traslational invariance, they're all the same analytically)
+ *    See eq. (3.50) of https://link.springer.com/book/10.1007/978-3-642-01850-3 for reference.
+ * 2. Complex conjugation of links simply reverses the loop orientation 
+ *    [see e.g. eq. (2.34) and sec. 3.3.3 of https://link.springer.com/book/10.1007/978-3-642-01850-3]
+ *    This corresponds to the interchange of quark and antiquark.
+ *    Both orientations are valid in order to determine the static potential.
+ * 
  * @tparam Group 
  * @param U gauge configuration pointer
  * @param r number of steps in the \mu direction
@@ -62,7 +72,7 @@ template<class Group=su2> double planar_wilsonloop_dir(const gaugeconfig<Group> 
             xrun[mu] -= 1;
             L *= U(xrun, mu).dagger();
           }
-          loop += retrace(L);
+          loop += retrace(L); // taking the real part averages over the 2 orientations
         }
       }
     }

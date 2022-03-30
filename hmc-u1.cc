@@ -73,7 +73,7 @@ int main(int ac, char *av[]) {
     return err;
   }
 
-  boost::filesystem::create_directory(outdir);
+  boost::filesystem::create_directories(outdir);
   
   gaugeconfig<_u1> U(gparams.Lx, gparams.Ly, gparams.Lz, gparams.Lt, gparams.ndims,
                      gparams.beta);

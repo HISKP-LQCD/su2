@@ -74,7 +74,7 @@ int main(int ac, char* av[]) {
   if(err > 0) {
     return err;
   }
-
+  
 
   gaugeconfig<_u1> U(gparams.Lx, gparams.Ly, gparams.Lz, gparams.Lt, gparams.ndims, gparams.beta);
   
@@ -158,9 +158,11 @@ int main(int ac, char* av[]) {
     }
   }
 
+
   for(size_t i = gparams.icounter; i < gparams.N_meas*nstep+gparams.icounter; i+=nstep) {
     std::ostringstream os;
     os << "configu1." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz << "." << gparams.Lt << ".b" << std::fixed << U.getBeta() << ".x" << gparams.xi << "." << i << std::ends;
+
     err = U.load(os.str());
     if(err != 0) {
       return err;
@@ -226,7 +228,6 @@ int main(int ac, char* av[]) {
           for (size_t x = 1 ; x <= gparams.Lx*sizeloops ; x++){
             loop  = wilsonloop_non_planar(U, {0, x, y, 0});
             loop += wilsonloop_non_planar(U, {0, x, 0, y});
-            //~ loop += wilsonloop_non_planar(U, {0, y, x});
             resultfile << std::setw(14) << std::scientific << loop/U.getVolume()/2.0 << "  " ;
           }
         }
@@ -240,7 +241,7 @@ int main(int ac, char* av[]) {
         for (size_t t = 1 ; t <= gparams.Lt*sizeloops ; t++){
           for (size_t x = 1 ; x <= gparams.Lx*sizeloops ; x++){
             loop  = wilsonloop_non_planar(U, {t, x, 0});
-            resultfile << std::setw(14) << std::scientific << loop/U.getVolume()/1.0 << "  " ;
+            resultfile << std::setw(14) << std::scientific << loop/U.getVolume() << "  " ;
           }
         }
         resultfile << i;
@@ -252,7 +253,7 @@ int main(int ac, char* av[]) {
           for (size_t x = 1 ; x <= gparams.Lx*sizeloops ; x++){
             loop  = wilsonloop_non_planar(U, {0, x, y});
             //~ loop += wilsonloop_non_planar(U, {0, y, x});
-            resultfile << std::setw(14) << std::scientific << loop/U.getVolume()/1.0 << "  " ;
+            resultfile << std::setw(14) << std::scientific << loop/U.getVolume() << "  " ;
           }
         }
         resultfile << i;
@@ -271,7 +272,7 @@ int main(int ac, char* av[]) {
         for (size_t x = 1 ; x <= maxsizenonplanar ; x++){
           for (size_t y = 1 ; y <= maxsizenonplanar ; y++){
             loop  = wilsonloop_non_planar(U, {t, x, y});
-            resultfile << std::setw(14) << std::scientific << loop/U.getVolume()/1.0 << "  " ;
+            resultfile << std::setw(14) << std::scientific << loop/U.getVolume() << "  " ;
           }
         }
       }
@@ -281,7 +282,7 @@ int main(int ac, char* av[]) {
     }
   }
   }
-    
+
   }
 
   return(0);

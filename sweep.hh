@@ -13,16 +13,20 @@
 #include<random>
 #include<vector>
 
-template<class URNG, class Group> double sweep(gaugeconfig<Group> &U, vector<URNG> engine,
+
+template<class URNG, class Group> std::vector<double> sweep(gaugeconfig<Group> &U, vector<URNG> engine,
                                                const double delta, 
-                                               const size_t N_hit, const double beta, const double xi=1.0, bool anisotropic=false) {
+                                               const size_t N_hit, const double beta,
+                                               const double xi=1.0, bool anisotropic=false) {
 
   std::uniform_real_distribution<double> uniform(0., 1.);
   typedef typename accum_type<Group>::type accum;
   size_t rate = 0;
+  size_t rate_time = 0;
   #ifdef _USE_OMP_
   int threads = omp_get_max_threads();
   double * omp_acc = new double[threads];
+  double * omp_acc_time = new double[threads];
   #pragma omp parallel
   {
     int thread_num = omp_get_thread_num();
@@ -30,6 +34,7 @@ template<class URNG, class Group> double sweep(gaugeconfig<Group> &U, vector<URN
   int thread_num=0;  
   #endif  
   size_t temp=0;
+  size_t temp_time=0;
   #pragma omp for
   for(size_t x0 = 0; x0 < U.getLt(); x0+=2) {
 //Cannot use elements of a vector as iteration variables in for-loop with OpenMP, so use dummy variables
@@ -51,6 +56,9 @@ template<class URNG, class Group> double sweep(gaugeconfig<Group> &U, vector<URN
                 U(x, mu) = U(x, mu) * R;
                 U(x, mu).restoreSU();
                 temp += 1;
+                if(mu == 0){
+                  temp_time += 1;
+                }
               }
             }
           }
@@ -79,6 +87,9 @@ template<class URNG, class Group> double sweep(gaugeconfig<Group> &U, vector<URN
                 U(x, mu) = U(x, mu) * R;
                 U(x, mu).restoreSU();
                 temp += 1;
+                if(mu == 0){
+                  temp_time += 1;
+                }
               }
             }
           }
@@ -89,15 +100,21 @@ template<class URNG, class Group> double sweep(gaugeconfig<Group> &U, vector<URN
   //maybe try out reduction(+: temp) in pragma at some point? But still need if-construct to close bracket
   #ifdef _USE_OMP_
     omp_acc[thread_num] = temp;
+    omp_acc_time[thread_num] = temp_time;
     rate = 0.;
+    rate_time = 0.;
   }
   for(size_t i = 0; i < threads; i++) {
     rate += omp_acc[i];
+    rate_time += omp_acc_time[i];
   }
   delete[] omp_acc;
+  delete[] omp_acc_time;
   #else
   rate = temp;
+  rate_time = temp_time;
   #endif
-  return( double(rate)/double(N_hit)/double(U.getSize()));
+  std::vector<double> res = { double(rate)/double(N_hit)/double(U.getSize()) , double(rate_time)/double(N_hit)/double(U.getVolume()) };
+  return res;
 }
 

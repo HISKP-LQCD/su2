@@ -7,6 +7,7 @@
 #include"parse_commandline.hh"
 #include"energy_density.hh"
 #include"version.hh"
+#include"vectorfunctions.hh"
 #include"wilsonloop.hh"
 
 #ifdef _USE_OMP_
@@ -26,6 +27,7 @@ using std::vector;
 using std::cout;
 using std::endl;
 namespace po = boost::program_options;
+using Complex = std::complex<double>;
 
 int main(int ac, char* av[]) {
   general_params gparams;
@@ -83,14 +85,17 @@ int main(int ac, char* av[]) {
   char filename[100];
   sprintf(filename, "resultscalingNt%luNs%lubeta%fxi%fmaxthreads%dnmeas%lunsave%lu", gparams.Lt, gparams.Lx, gparams.beta, gparams.xi, threads, gparams.N_meas, gparams.N_save);
   std::ofstream os;
+  std::ofstream acceptancerates;
   os.open(filename, std::ios::out);
   os << std::setw(14) << "##threads  " << "time_sweep  " << "speedup_sweep  " << "time_loops  " << "speedup_loops  " << std::endl;
-  double rate = 0.;
+  std::vector<double> rate = {0., 0.};
+  
   std::mt19937 blankrng;
   std::vector<std::mt19937> engines(threads, blankrng);
   std::chrono::duration<double, std::micro> elapse_sweep_one, elapse_loop_one;
   
-  for(size_t measurement=0; measurement<5; measurement++){
+  
+  for(size_t measurement=0; measurement<2; measurement++){
   for(size_t thread=1;thread<=threads;thread++){
     hotstart(U, gparams.seed, gparams.heat);
     omp_set_num_threads(thread);
@@ -102,6 +107,7 @@ int main(int ac, char* av[]) {
         engines[engine].seed(gparams.seed+i+engine);
       }
       size_t inew = (i-gparams.icounter)/thread+gparams.icounter;//counts loops, loop-variable needed too have one RNG per thread with different seeds 
+    
       
       rate += sweep(U, engines, delta, N_hit, gparams.beta, gparams.xi, gparams.anisotropic);
       double energy = gauge_energy(U, true);
@@ -173,6 +179,31 @@ int main(int ac, char* av[]) {
     resultfile.close(); 
     }
     }
+    if(gparams.ndims == 3){
+        sprintf(filename, "result2p1d.u1potential.scaling.Nt%lu.Ns%lu.b%f.xi%f.finedistance",gparams.Lt, gparams.Lx,U.getBeta(), gparams.xi);
+        resultfile.open(filename, std::ios::app);
+        for (size_t t = 1 ; t <= gparams.Lt/2 ; t++){
+          for (size_t x = 1 ; x <= gparams.Lx/2 ; x++){
+            loop  = wilsonloop_non_planar(U, {t, x, 0});
+            resultfile << std::setw(14) << std::scientific << loop/U.getVolume()/1.0 << "  " ;
+          }
+        }
+        resultfile << i;
+        resultfile << std::endl; 
+        resultfile.close();
+        sprintf(filename, "result2p1d.u1potential.scaling.Nt%lu.Ns%lu.b%f.xi%f.coarsedistance",gparams.Lt, gparams.Lx,U.getBeta(), gparams.xi);
+        resultfile.open(filename, std::ios::app);
+        for (size_t y = 1 ; y <= gparams.Ly/2 ; y++){
+          for (size_t x = 1 ; x <= gparams.Lx/2 ; x++){
+            loop  = wilsonloop_non_planar(U, {0, x, y});
+            //~ loop += wilsonloop_non_planar(U, {0, y, x});
+            resultfile << std::setw(14) << std::scientific << loop/U.getVolume()/1.0 << "  " ;
+          }
+        }
+        resultfile << i;
+        resultfile << std::endl; 
+        resultfile.close();
+      }
     }
     
     end = std::chrono::high_resolution_clock::now();
@@ -186,7 +217,14 @@ int main(int ac, char* av[]) {
 }
  
   os.close();
-  return(0);
+  cout << "## Acceptance rate " << rate[0]/static_cast<double>(gparams.N_meas) << " temporal acceptance rate " << rate[1]/static_cast<double>(gparams.N_meas) << endl;
+  acceptancerates.open("acceptancerates.data", std::ios::app);
+  acceptancerates << rate[0]/static_cast<double>(gparams.N_meas) << " " << rate[1]/static_cast<double>(gparams.N_meas) << " "
+   << gparams.beta << " " << gparams.Lx << " " << gparams.Lt << " " << gparams.xi << " " 
+   << delta << " " << gparams.heat << " " << threads << " " << N_hit << " " << gparams.N_meas << " " << gparams.seed << " " << endl;
+  acceptancerates.close();
+  
+return(0);
 }
 
 /**

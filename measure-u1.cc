@@ -75,7 +75,7 @@ int main(int ac, char* av[]) {
   if(err > 0) {
     return err;
   }
-
+  
 
   gaugeconfig<_u1> U(gparams.Lx, gparams.Ly, gparams.Lz, gparams.Lt, gparams.ndims, gparams.beta);
   
@@ -159,9 +159,11 @@ int main(int ac, char* av[]) {
     }
   }
 
+
   for(size_t i = gparams.icounter; i < gparams.N_meas*nstep+gparams.icounter; i+=nstep) {
     std::ostringstream os;
     os << "configu1." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz << "." << gparams.Lt << ".b" << std::fixed << U.getBeta() << ".x" << gparams.xi << "." << i << std::ends;
+
     err = U.load(os.str());
     if(err != 0) {
       return err;
@@ -283,6 +285,7 @@ int main(int ac, char* av[]) {
   }
   }
     
+
   }
 
   return(0);

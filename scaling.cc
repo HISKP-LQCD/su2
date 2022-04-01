@@ -29,6 +29,12 @@ using std::endl;
 namespace po = boost::program_options;
 using Complex = std::complex<double>;
 
+/**
+ * This programm is intended to determine the optimal number of threads to use for generating configurations using MCMC
+ * and for measuring the wilson-Loops needed to determine the potential
+ * for the time measurements, the chrono-library is used, the rest of the code is copied from main-u1.cc and measure-u1.cc
+ * */
+
 int main(int ac, char* av[]) {
   general_params gparams;
 
@@ -36,7 +42,7 @@ int main(int ac, char* av[]) {
   double delta = 0.1;
 
   cout << "## Measuring the scaling of parallelization of the U(1) functions" << endl;
-  //~ cout << "## (C) Carsten Urbach <urbach@hiskp.uni-bonn.de> (2017, 2021)" << endl;
+  cout << "## (C) Christiane Gross 2021, 2022" << endl;
   cout << "## GIT branch " << GIT_BRANCH << " on commit " << GIT_COMMIT_HASH << endl << endl;  
 
   po::options_description desc("Allowed options");
@@ -95,6 +101,21 @@ int main(int ac, char* av[]) {
   std::chrono::duration<double, std::micro> elapse_sweep_one, elapse_loop_one;
   
   
+  /**
+   * the measurements are done twice to be able to adjust for variations in the cores
+   * for each possible number of threads:
+   * the initial configuration is set
+   * time measurement start
+   * main-u1: configurations are generated with sweep, plaquette is measured, configurations are saved
+   * time measurement end
+   * duration is calculated
+   * time measurement start
+   * measure-u1: configurations are read in, loops are calculated and saved
+   * this uses an old version of the selected loops that are measured, but the scaling should be the same
+   * time measurement end
+   * duration is calculated
+   * time is measured by storing system time at start and end and calculating the difference
+   * */
   for(size_t measurement=0; measurement<2; measurement++){
   for(size_t thread=1;thread<=threads;thread++){
     hotstart(U, gparams.seed, gparams.heat);
@@ -106,14 +127,14 @@ int main(int ac, char* av[]) {
       for(size_t engine=0;engine<thread;engine+=1){
         engines[engine].seed(gparams.seed+i+engine);
       }
-      size_t inew = (i-gparams.icounter)/thread+gparams.icounter;//counts loops, loop-variable needed too have one RNG per thread with different seeds 
-    
+    //inew counts loops, loop-variable needed to have one RNG per thread with different seeds for every measurement
+      size_t inew = (i-gparams.icounter)/thread+gparams.icounter;
       
       rate += sweep(U, engines, delta, N_hit, gparams.beta, gparams.xi, gparams.anisotropic);
       double energy = gauge_energy(U, true);
       double E = 0., Q = 0.;
       energy_density(U, E, Q);
-      //measuring spatial plaquettes only means only half of all plaquettes are measured, so need factor 2 for normalization to 1
+      //measuring spatial plaquettes only means only (ndims-1)/ndims of all plaquettes are measured, so need facnorm for normalization to 1
       cout << inew << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy*normalisation*facnorm << "  " << Q << endl;
       if(inew > 0 && (inew % gparams.N_save) == 0) {
         std::ostringstream oss;

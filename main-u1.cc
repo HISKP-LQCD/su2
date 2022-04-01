@@ -55,12 +55,17 @@ int main(int ac, char* av[]) {
   #else
   bool parallel = false;
   #endif
+  /**
+   * the parallelisation of the sweep-function first iterates over all odd points in t and then over all even points
+   * because the nearest neighbours must not change during the updates, this is not possible for an uneven number of points in T
+   * */
   if (gparams.Lt%2 != 0 && parallel){
     std::cerr << "For parallel computing an even number of points in T is needed!" << std::endl;
     omp_set_num_threads(1);
     std::cerr << "Continuing with one thread." << std::endl;
   } 
 
+  // load/set initial configuration
   gaugeconfig<_u1> U(gparams.Lx, gparams.Ly, gparams.Lz, gparams.Lt, gparams.ndims, gparams.beta);
   if(gparams.restart) {
     err = U.load(gparams.configfilename);
@@ -71,10 +76,13 @@ int main(int ac, char* av[]) {
   else {
     hotstart(U, gparams.seed, gparams.heat);
   }
-
+  
+  // check gauge invariance, set up factors needed to normalise plaquette, spacial plaquette
   double plaquette = gauge_energy(U);
   double fac = 2./U.getndims()/(U.getndims()-1);
   const double normalisation = fac/U.getVolume();
+  size_t facnorm = (gparams.ndims > 2) ? gparams.ndims/(gparams.ndims-2) : 0;
+  
   cout << "## Initital Plaquette: " << plaquette*normalisation << endl; 
 
   random_gauge_trafo(U, 654321);
@@ -88,7 +96,6 @@ int main(int ac, char* av[]) {
   int threads=1;
   #endif   
   //cout << "threads " << threads << endl; 
-  size_t facnorm = (gparams.ndims > 2) ? gparams.ndims/(gparams.ndims-2) : 0;
   
   std::ofstream os;
   std::ofstream acceptancerates;
@@ -98,17 +105,24 @@ int main(int ac, char* av[]) {
     os.open("output.u1-metropolis.data", std::ios::app);
   std::vector<double> rate = {0., 0.};
   
+  /**
+   * do measurements:
+   * sweep: do N_hit Metropolis-Updates of every link in the lattice
+   * calculate plaquette, spacial plaquette, energy density and write to stdout and output-file
+   * save every nave configuration
+   * */
   for(size_t i = gparams.icounter; i < gparams.N_meas*threads + gparams.icounter; i+=threads) {
     std::vector<std::mt19937> engines(threads);
     for(size_t engine=0;engine<threads;engine+=1){
       engines[engine].seed(gparams.seed+i+engine);
     }
-    size_t inew = (i-gparams.icounter)/threads+gparams.icounter;//counts loops, loop-variable needed too have one RNG per thread with different seeds 
+    //inew counts loops, loop-variable needed to have one RNG per thread with different seeds for every measurement
+    size_t inew = (i-gparams.icounter)/threads+gparams.icounter;
     rate += sweep(U, engines, delta, N_hit, gparams.beta, gparams.xi, gparams.anisotropic);
     double energy = gauge_energy(U, true);
     double E = 0., Q = 0.;
     energy_density(U, E, Q);
-    //measuring spatial plaquettes only means only half of all plaquettes are measured, so need factor 2 for normalization to 1
+    //measuring spatial plaquettes only means only (ndims-1)/ndims of all plaquettes are measured, so need facnorm for normalization to 1
     cout << inew << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy*normalisation*facnorm << " " ;
     os << inew << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy*normalisation*facnorm << " " ;
     energy=gauge_energy(U, false);
@@ -123,6 +137,7 @@ int main(int ac, char* av[]) {
       U.save(oss.str());
     }
   }
+  // save acceptance rates to additional file to keep track of measurements
   cout << "## Acceptance rate " << rate[0]/static_cast<double>(gparams.N_meas) << " temporal acceptance rate " << rate[1]/static_cast<double>(gparams.N_meas) << endl;
   acceptancerates.open("acceptancerates.data", std::ios::app);
   acceptancerates << rate[0]/static_cast<double>(gparams.N_meas) << " " << rate[1]/static_cast<double>(gparams.N_meas) << " "

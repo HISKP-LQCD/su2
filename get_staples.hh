@@ -6,6 +6,13 @@
 // U^staples = \sum_{nu != mu} U_nu(x+mu) U_mu(x+nu)^dagger + U_nu(x)^dagger
 //             + sum__{nu != mu} U_nu(x+mu-nu)^dagger U_mu(x-nu)^dagger U_nu(x-nu)
 // 
+/**
+ * calculates the staples surrounding the link at position x and direction mu
+ * For anisotropic lattices, the action requires weighting the temporal and spacial plaquettes differently,
+ * see e.g. https://arxiv.org/abs/hep-lat/0209159. This is achieved by including this factor in the staples
+ * For other cases, only the staples involving only spatial links are needed,
+ * then the summation starts at nu=1 to exclude temporal links
+ * */
 
 template<class T, class S> void get_staples(T &K, gaugeconfig<S> &U,
                                    vector<size_t> const x,

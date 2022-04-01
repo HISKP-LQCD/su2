@@ -63,11 +63,11 @@ int main(int ac, char* av[]) {
     ("integrator", po::value<size_t>(&integs)->default_value(0), "itegration scheme to be used: 0=leapfrog, 1=lp_leapfrog, 2=omf4, 3=lp_omf4")
     ("append", po::value<bool>(&append)->default_value(false), "are measurements for potential appended to an existing file, or should it be overwritten?")
     ("sizeloops", po::value<double>(&sizeloops)->default_value(0.5), "Wilson-Loops are measured up to this fraction of the lattice extent")
-    ("napesmears", po::value<size_t>(&n_apesmear)->default_value(0), "number of APE smearings done on the lattice before measurement")
+    ("napesmears", po::value<size_t>(&n_apesmear)->default_value(0), "number of APE smearings done on the lattice before measurement. APE-smearing is done before measuring the potential and small potential, it does not affect the gradient flow and Wilson-loops")
     ("apealpha", po::value<double>(&alpha)->default_value(1.0), "parameter alpha for APE smearings")
     ("spacialsmear", po::value<bool>(&smearspacial)->default_value(false), "should smearing be done only for spacial links?")
-    ("potential", po::value<bool>(&potential)->default_value(false), "measure potential")
-    ("potentialsmall", po::value<bool>(&potentialsmall)->default_value(false), "measure all nonplanar potentials with maximum extent 4 in 2+1 D")
+    ("potential", po::value<bool>(&potential)->default_value(false), "measure potential: the loops W(x, t, y=z=0) and W(x, y, t=z=0) are measured with a maximum size of lattice extent * sizeloops, and written to separate files. Only available for ndims=3,4")
+    ("potentialsmall", po::value<bool>(&potentialsmall)->default_value(false), "The loops W(x, t, y) are measured up to x, y=min(4, lattice extent), t <= Lt * sizeloops and saved to one file. Only available for ndim=3")
     ;
 
   int err = parse_commandline(ac, av, desc, gparams);
@@ -84,6 +84,7 @@ int main(int ac, char* av[]) {
   double loop;
   size_t maxsizenonplanar = (gparams.Lx < 4) ? gparams.Lx : 4;
   
+  // write explanatory headers into result-files
   if(potential) {
       //~ open file for saving results
     
@@ -138,7 +139,7 @@ int main(int ac, char* av[]) {
       return 0;
     }
     
-    //~ print heads of columns: W(r, t), W(x, y)
+    //~ print heads of columns
     if(!append && (gparams.ndims == 3)){
       if(gparams.ndims == 3){
         sprintf(filename, "result2p1d.u1potential.Nt%lu.Ns%lu.b%f.xi%f.nape%lu.alpha%fnonplanar",gparams.Lt, gparams.Lx,U.getBeta(), gparams.xi, n_apesmear, alpha);
@@ -158,7 +159,14 @@ int main(int ac, char* av[]) {
     }
   }
 
-
+/** 
+ * do the measurements themselves: 
+ * load each configuration, check for gauge invariance
+ * if selected, measure Wilson-Loop and gradient flow
+ * if chosen, do APE-smearing
+ * if selected, then measure potential and small potential
+ * the "small potential" are the nonplanar loops, but only with small extent in x, y
+ * */
   for(size_t i = gparams.icounter; i < gparams.N_meas*nstep+gparams.icounter; i+=nstep) {
     std::ostringstream os;
     os << "configu1." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz << "." << gparams.Lt << ".b" << std::fixed << U.getBeta() << ".x" << gparams.xi << "." << i << std::ends;

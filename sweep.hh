@@ -13,6 +13,20 @@
 #include<random>
 #include<vector>
 
+/**
+ * go through the entire lattice
+ * do N_hit Metropolis-Updates of every link (accept proposed change with probabilty min(1, exp(-deltaS)))
+ * update only changes one link, not the surrounding links, but for the action, every plaquette including this link is needed
+ * -> sum up the unchanged part in staples, ony have to be calculated once for every link
+ * If the lattice is anisotropic with anisotropy xi, the action weights the temporal (including links in direction 0) 
+ * and spatial links differently, this is implemented in get_staples.hh.
+ * For the update, the nearest neighbour links have to be constant, so parallelization is not trivial.
+ * It is done by first updating all even time slices and then all odd time slices.
+ * The overall acceptance rate, as well as the acceptance rate of the temporal links, are measured and returned.
+ * An update means replacing one link U -> R*U, where R is a random element. 
+ * The acceptance rate can be tuned with delta, which determines the possible regions from which R is drawn.
+ * Is it more efficient to use two of eevery variable fro measuring the rates, or would it be better to use vectors for everything?
+ * */
 
 template<class URNG, class Group> std::vector<double> sweep(gaugeconfig<Group> &U, vector<URNG> engine,
                                                const double delta, 

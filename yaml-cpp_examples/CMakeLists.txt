@@ -23,8 +23,10 @@ set(
     ${yaml_src_dir}/build/
     ${yaml_src_dir}/build/lib/
 )
-link_directories(${link_dir})
+
 add_executable(yce main.cpp)
+
+target_link_directories(yce PUBLIC ${link_dir})
 target_link_libraries(yce libyaml-cpp.a)
 
 

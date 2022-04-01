@@ -13,10 +13,17 @@ fi
 mkdir -p build/debug
 mkdir -p build/release
 
+YAML_SRC_PATH=/opt/yaml-cpp/ # change it with your path
+
 pushd build/debug
-cmake ../.. -DCMAKE_BUILD_TYPE=Debug
+cmake \
+  ../.. -DCMAKE_BUILD_TYPE=Debug \
+  -D YAML_SRC=$YAML_SRC_PATH 
 popd
 
+
 pushd build/release
-cmake ../.. -DCMAKE_BUILD_TYPE=Release
+cmake \
+  ../.. -DCMAKE_BUILD_TYPE=Release \
+  -D YAML_SRC=$YAML_SRC_PATH 
 popd

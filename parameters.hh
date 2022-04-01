@@ -28,7 +28,7 @@ namespace global_parameters {
     double heat = 1.0; // randomness of the initial config, 1: hot, 0: cold
     bool restart = false; // restart from an existing configuration
     bool acceptreject = true; // use accept-reject
-    std::string configfilename; // configuration filename used in case of restart
+    std::string configfilename=""; // configuration filename used in case of restart
   };
 
   /* optional parameters for the hmc the in U(1) theory */

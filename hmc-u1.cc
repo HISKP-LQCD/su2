@@ -8,7 +8,7 @@
 #include"monomial.hh"
 #include"integrator.hh"
 #include"parse_commandline.hh"
-//#include"parse_input_file.hh"
+#include"parse_input_file.hh"
 #include"version.hh"
 
 #include<iostream>
@@ -17,7 +17,6 @@
 #include<sstream>
 #include<random>
 #include<boost/program_options.hpp>
-
 #include <boost/filesystem.hpp>
 
 #include "detDDdag_monomial.hh"
@@ -35,7 +34,25 @@ int main(int ac, char *av[]) {
   namespace gp = global_parameters;
   gp::general gparams; // general parameters
   gp::hmc_u1 hmc_params; // hmc parameters
-  int err = parse_command_line_and_init(ac, av, gparams, hmc_params);
+
+  std::string input_file; // yaml input file path
+  po::options_description desc("Allowed options");
+  desc.add_options()("help,h", "produce this help message")(
+    "file,f", po::value<std::string>(&input_file)->default_value("NONE"),
+    "yaml input file");
+  po::variables_map vm;
+  po::store(po::parse_command_line(ac, av, desc), vm);
+  po::notify(vm);
+
+  if (vm.count("help")) {
+    cout << desc << "\n";
+    return 0;
+  }
+
+  int err = parse_input_file(input_file, gparams, hmc_params);
+  if (err > 0) {
+    return 1;
+  }
 
   boost::filesystem::create_directories(boost::filesystem::absolute(hmc_params.outdir));
   

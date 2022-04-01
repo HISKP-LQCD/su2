@@ -8,7 +8,7 @@
 namespace po = boost::program_options;
 
 
-void add_general_options(po::options_description &desc, general_params &params) {
+void add_general_options(po::options_description &desc, gp::general &params) {
   desc.add_options()
     ("help,h", "produce this help message")
     ("spatialsizex,X", po::value<size_t>(&params.Lx), "spatial lattice size x > 0")
@@ -29,7 +29,7 @@ void add_general_options(po::options_description &desc, general_params &params) 
   return;
 }
 
-int parse_commandline(int ac, char * av[], po::options_description &desc, general_params &params) {
+int parse_commandline(int ac, char * av[], po::options_description &desc, gp::general &params) {
   try {
     po::variables_map vm;
     po::store(po::parse_command_line(ac, av, desc), vm);
@@ -107,4 +107,31 @@ int parse_commandline(int ac, char * av[], po::options_description &desc, genera
     std::cerr << "Exception of unknown type!\n";
   }
   return(0);
+}
+
+int parse_command_line_and_init(int ac, char *av[], gp::general& gparams, gp::hmc_u1& hmc_params) {
+  po::options_description desc("Allowed options");
+  add_general_options(desc, gparams);
+  // add HMC specific options
+  desc.add_options()("nrev", po::value<size_t>(&hmc_params.N_rev)->default_value(0),
+                     "frequenz of reversibility tests N_rev, 0: not reversibility test")(
+    "nsteps", po::value<size_t>(&hmc_params.n_steps)->default_value(1000), "n_steps")(
+    "tau", po::value<double>(&hmc_params.tau)->default_value(1.), "trajectory length tau")(
+    "exponent", po::value<size_t>(&hmc_params.exponent)->default_value(0),
+    "exponent for rounding")("integrator", po::value<size_t>(&hmc_params.integs)->default_value(0),
+                             "itegration scheme to be used: 0=leapfrog, 1=lp_leapfrog, "
+                             "2=omf4, 3=lp_omf4, 4=Euler, 5=RUTH, 6=omf2")(
+    "no_fermions", po::value<bool>(&hmc_params.no_fermions)->default_value(0),
+    "Bool flag indicating if we're ignoring the fermionic action.")(
+    "solver", po::value<std::string>(&hmc_params.solver)->default_value("CG"),
+    "Type of solver: CG, BiCGStab")(
+    "tolerace_cg", po::value<double>(&hmc_params.tolerance_cg)->default_value(1e-10),
+    "Tolerance for the solver for the dirac operator")(
+    "solver_verbosity", po::value<size_t>(&hmc_params.solver_verbosity)->default_value(0),
+    "Verbosity for the solver for the dirac operator")(
+    "seed_pf", po::value<size_t>(&hmc_params.seed_pf)->default_value(97234719),
+    "Seed for the evaluation of the fermion determinant")(
+    "outdir", po::value<std::string>(&hmc_params.outdir)->default_value("."), "Output directory");
+
+  return parse_commandline(ac, av, desc, gparams);
 }

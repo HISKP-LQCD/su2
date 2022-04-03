@@ -18,7 +18,7 @@ namespace global_parameters {
     size_t Ly; // spatial lattice size y > 0
     size_t Lz; // spatial lattice size z > 0
     size_t Lt; // temporal lattice size > 0
-    size_t ndims; // number of dimensions, 2 <= ndims <= 4
+    size_t ndims=4; // number of dimensions, 2 <= ndims <= 4
     size_t N_save = 1000; // N_save
     size_t N_meas = 10; // total number of sweeps
     size_t icounter = 0; // initial counter for updates

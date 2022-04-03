@@ -1,6 +1,10 @@
 # yaml arguments parsing
 
 Examples and tests of .yaml input files parsing.
+This folder also contains examples of input files for the various programs:
+
+* hmc-u1.input.example
+* ... (to be completed)
 
 ## Instructions
 
@@ -10,6 +14,11 @@ Examples and tests of .yaml input files parsing.
    1. ```config.yaml```:
         ``` yaml
         p1: 4
+
+        n1:
+          x : 3
+          y : 4
+
         p2: ciao
         ```
     2. ```build_project.sh```

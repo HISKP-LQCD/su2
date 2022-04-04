@@ -11,8 +11,7 @@ To compile, open the file
 
 and set the value of the variable YAML_SRC_PATH to the path of your yaml-cpp source directory. Then run the above file with ```bash```. 
 
-in the source directory. Then type make in `build/debug/` or
-`build/release/` directories.
+Then type make in `build/debug/` or `build/release/` directories.
 
 There are several executables being build. Invoking them with the `-h`
 option will give instructions on command line parameters. 

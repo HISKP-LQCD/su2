@@ -7,15 +7,15 @@ geometry:
   Y : 4
   Z : 1
   T : 4
-  ndims : 3
+  ndims : 4
 
 action:
   beta :  1.9
   mass: 0.1
 
 #hmc parameters
-hmc_trajectories:
-  nsave: 1000
+hmc:
+  nsave: 1
   nmeas: 10
   counter: 0
   seed: 93746

@@ -1,0 +1,23 @@
+# Input file example for the measure-u1 program
+
+# general parameters
+
+geometry:
+  X : 4
+  Y : 4
+  Z : 1
+  T : 4
+  ndims : 4
+
+action:
+  beta :  1.9
+
+# measure parameters
+
+measure:
+  nmeas : 10
+  nstep : 1
+  Wloop : true
+  gradient :  true
+  #tmax : 1.0
+  confdir : "./"

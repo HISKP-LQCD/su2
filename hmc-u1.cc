@@ -7,7 +7,6 @@
 #include"md_update.hh"
 #include"monomial.hh"
 #include"integrator.hh"
-#include"parse_commandline.hh"
 #include"parse_input_file.hh"
 #include"version.hh"
 
@@ -33,7 +32,7 @@ int main(int ac, char *av[]) {
 
   namespace gp = global_parameters;
   gp::general gparams; // general parameters
-  gp::hmc_u1 hmc_params; // hmc parameters
+  gp::hmc_u1 hparams; // hmc parameters
 
   std::string input_file; // yaml input file path
   po::options_description desc("Allowed options");
@@ -49,22 +48,23 @@ int main(int ac, char *av[]) {
     return 0;
   }
 
-  int err = parse_input_file(input_file, gparams, hmc_params);
+  namespace in_hmc = input_file_parsing::u1::hmc;
+  int err = in_hmc::parse_input_file(input_file, gparams, hparams);
   if (err > 0) {
     return 1;
   }
 
-  boost::filesystem::create_directories(boost::filesystem::absolute(hmc_params.outdir));
+  boost::filesystem::create_directories(boost::filesystem::absolute(hparams.outdir));
   
   gaugeconfig<_u1> U(gparams.Lx, gparams.Ly, gparams.Lz, gparams.Lt, gparams.ndims,
                      gparams.beta);
-  if (gparams.restart) {
-    err = U.load(gparams.configfilename);
+  if (hparams.restart) {
+    err = U.load(hparams.configfilename);
     if (err != 0) {
       return err;
     }
   } else {
-    hotstart(U, gparams.seed, gparams.heat);
+    hotstart(U, hparams.seed, hparams.heat);
   }
 
   double plaquette = gauge_energy(U);
@@ -77,14 +77,14 @@ int main(int ac, char *av[]) {
   cout << "## Plaquette after rnd trafo: " << plaquette * normalisation << endl;
 
   // Molecular Dynamics parameters
-  md_params mdparams(hmc_params.n_steps, hmc_params.tau);
+  md_params mdparams(hparams.n_steps, hparams.tau);
 
   // generate list of monomials
   gaugemonomial<double, _u1> gm(0);
   kineticmonomial<double, _u1> km(0);
-  detDDdag_monomial<double, _u1> detDDdag(0, gparams.m0, hmc_params.solver,
-                                          hmc_params.tolerance_cg, hmc_params.seed_pf,
-                                          hmc_params.solver_verbosity);
+  detDDdag_monomial<double, _u1> detDDdag(0, gparams.m0, hparams.solver,
+                                          hparams.tolerance_cg, hparams.seed_pf,
+                                          hparams.solver_verbosity);
 
   km.setmdpassive();
 
@@ -92,17 +92,17 @@ int main(int ac, char *av[]) {
   monomial_list.push_back(&gm);
   monomial_list.push_back(&km);
 
-  if (!hmc_params.no_fermions) { // including S_F (fermionic) in the action
+  if (!hparams.no_fermions) { // including S_F (fermionic) in the action
     monomial_list.push_back(&detDDdag);
   }
 
-  integrator<double, _u1> *md_integ = set_integrator<double, _u1>(hmc_params.integs, hmc_params.exponent);
+  integrator<double, _u1> *md_integ = set_integrator<double, _u1>(hparams.integs, hparams.exponent);
 
   std::ofstream os;
-  if (gparams.icounter == 0)
-    os.open(hmc_params.outdir+"/output.hmc.data", std::ios::out);
+  if (hparams.icounter == 0)
+    os.open(hparams.outdir+"/output.hmc.data", std::ios::out);
   else
-    os.open(hmc_params.outdir+"/output.hmc.data", std::ios::app);
+    os.open(hparams.outdir+"/output.hmc.data", std::ios::app);
 
   std::cout << "## Normalization factor: A = 2/(d*(d-1)*N_lat*N_c) = " << std::scientific
             << std::setw(18) << std::setprecision(15) << normalisation << "\n";
@@ -116,13 +116,13 @@ int main(int ac, char *av[]) {
   os << ss_head_str;
 
   double rate = 0.;
-  for (size_t i = gparams.icounter; i < gparams.N_meas + gparams.icounter; i++) {
+  for (size_t i = hparams.icounter; i < hparams.N_meas + hparams.icounter; i++) {
     mdparams.disablerevtest();
-    if (i > 0 && hmc_params.N_rev != 0 && (i) % hmc_params.N_rev == 0) {
+    if (i > 0 && hparams.N_rev != 0 && (i) % hparams.N_rev == 0) {
       mdparams.enablerevtest();
     }
     // PRNG engine
-    std::mt19937 engine(gparams.seed + i);
+    std::mt19937 engine(hparams.seed + i);
     // perform the MD update
     md_update(U, engine, mdparams, monomial_list, *md_integ);
 
@@ -151,18 +151,18 @@ int main(int ac, char *av[]) {
       os << "NA";
     os << " " << Q << endl;
 
-    if (i > 0 && (i % gparams.N_save) == 0) {// saving U after each N_save trajectories
+    if (i > 0 && (i % hparams.N_save) == 0) {// saving U after each N_save trajectories
       std::ostringstream oss;
       oss << "config_u1." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz << "."
           << gparams.Lt << ".b" << gparams.beta << "." << i << std::ends;
-      U.save(hmc_params.outdir+"/"+oss.str());
+      U.save(hparams.outdir+"/"+oss.str());
     }
   }
-  cout << "## Acceptance rate: " << rate / static_cast<double>(gparams.N_meas) << endl;
+  cout << "## Acceptance rate: " << rate / static_cast<double>(hparams.N_meas) << endl;
 
   std::ostringstream oss;
   oss << "config_u1." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz << "."
       << gparams.Lt << ".b" << U.getBeta() << ".final" << std::ends;
-  U.save(hmc_params.outdir+"/"+oss.str());
+  U.save(hparams.outdir+"/"+oss.str());
   return (0);
 }

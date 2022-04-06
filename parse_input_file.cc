@@ -67,17 +67,11 @@ namespace input_file_parsing {
   }
 
   namespace u1 {
+    namespace Yp = YAML_parsing;
 
-    namespace hmc {
-      int parse_input_file(const std::string &file,
-                           gp::physics &pparams,
-                           gp::hmc_u1 &hparams) {
-        const YAML::Node nd = YAML::LoadFile(file);
+    int parse_geometry(const YAML::Node &nd, gp::physics &pparams){
 
-        namespace Yp = YAML_parsing;
-        std::cout << "## Parsing input file: " << file << "\n";
-
-        // geometry parameters
+        // physics parameters
         Yp::read_verb<size_t>(pparams.Lx, nd["geometry"], "X");
         Yp::read_verb<size_t>(pparams.Ly, nd["geometry"], "Y");
         Yp::read_verb<size_t>(pparams.Lz, nd["geometry"], "Z");
@@ -88,6 +82,18 @@ namespace input_file_parsing {
         if (gerr > 0) {
           return gerr;
         }
+
+        return gerr;
+    }
+
+    namespace hmc {
+      int parse_input_file(const std::string &file,
+                           gp::physics &pparams,
+                           gp::hmc_u1 &hparams) {
+        std::cout << "## Parsing input file: " << file << "\n";
+        const YAML::Node nd = YAML::LoadFile(file);
+
+        parse_geometry(nd, pparams);
 
         if (nd["begin_monomials"]) {
           const YAML::Node &nBM = nd["begin_monomials"];
@@ -141,33 +147,29 @@ namespace input_file_parsing {
       int parse_input_file(const std::string &file,
                            gp::physics &pparams,
                            gp::measure_u1 &mparams) {
+        std::cout << "## Parsing input file: " << file << "\n";
+  std::cout << "check 0" << "\n";
+
         const YAML::Node nd = YAML::LoadFile(file);
 
-        namespace Yp = YAML_parsing;
-        std::cout << "## Parsing input file: " << file << "\n";
+  std::cout << "check 1" << "\n";
 
-        // physics parameters
-        Yp::read_verb<size_t>(pparams.Lx, nd["geometry"], "X");
-        Yp::read_verb<size_t>(pparams.Ly, nd["geometry"], "Y");
-        Yp::read_verb<size_t>(pparams.Lz, nd["geometry"], "Z");
-        Yp::read_verb<size_t>(pparams.Lt, nd["geometry"], "T");
-        Yp::read_verb<size_t>(pparams.ndims, nd["geometry"], "ndims");
+        parse_geometry(nd, pparams);
+  std::cout << "check 2" << "\n";
 
-        int gerr = validate_geometry(pparams);
-        if (gerr > 0) {
-          return gerr;
-        }
-        Yp::read_verb<double>(pparams.beta, nd["action"], "beta");
+        // beta value from the gauge action
+        Yp::read_verb<double>(pparams.beta, nd["begin_monomials"]["gauge"], "beta");
 
+  std::cout << "check 3" << "\n";
         // measure-u1 parameters
-        Yp::read_opt_verb<size_t>(mparams.nmeas, nd["measure"], "nmeas");
-        Yp::read_opt_verb<size_t>(mparams.nstep, nd["measure"], "nstep");
-        Yp::read_opt_verb<bool>(mparams.Wloop, nd["measure"], "Wloop");
-        Yp::read_opt_verb<bool>(mparams.gradient, nd["measure"], "gradient");
-        if (mparams.gradient) {
-          Yp::read_opt_verb<double>(mparams.tmax, nd["measure"], "tmax");
+        const YAML::Node &nMS = nd["begin_measurements"];
+        Yp::read_opt_verb<size_t>(mparams.nmeas, nMS, "nmeas");
+        Yp::read_opt_verb<size_t>(mparams.nstep, nMS, "nstep");
+        Yp::read_opt_verb<bool>(mparams.Wloop, nMS, "Wloop");
+        if (nMS["gradient"]) {
+          Yp::read_opt_verb<double>(mparams.tmax, nMS["gradient"], "tmax");
         }
-        Yp::read_opt_verb<std::string>(mparams.confdir, nd["measure"], "confdir");
+        Yp::read_opt_verb<std::string>(mparams.confdir, nMS, "confdir");
 
         return 0;
       }

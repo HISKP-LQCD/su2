@@ -53,7 +53,7 @@ namespace YAML_parsing {
  * attributes of structures needed for the various programs. The structures are passed as
  * reference to the functions. Their structure is:
  * @param file input file path
- * @param gparams global parameter structure
+ * @param pparams physics parameter structure
  * @param xxx_params xxx program-specific parameter structure (e.g. xxx=hmc_params)
  * @return int error value
  */
@@ -64,25 +64,33 @@ namespace input_file_parsing {
   /**
    * @brief check geometry parameters
    * Check if the lattice spacetime extensions are sensible and consistent with the number
-   * of dimensions (d). It is checked 2<=d. For 2<d<4, spatial dimensions of 'gparams' are
+   * of dimensions (d). It is checked 2<=d. For 2<d<4, spatial dimensions of 'pparams' are
    * flattened according to the following priority order: Lz, Ly, Lx
    * @param file
-   * @param gparams
+   * @param pparams
    * @return int
    */
-  int validate_geometry(gp::physics &gparams);
+  int validate_geometry(gp::physics &pparams);
 
   namespace u1 {
 
+  /**
+   * @brief parsing geometrical parameters
+   * Parsing the spacetime lattice extensions and number of dimensions from theinput file
+   * @param pparams physics parameter structure
+   * @return int error value
+   */
+    int parse_geometry(const YAML::Node &nd, gp::physics &pparams);
+
     namespace hmc {
       int parse_input_file(const std::string &file,
-                           gp::physics &gparams,
+                           gp::physics &pparams,
                            gp::hmc_u1 &hmc_params);
     }
 
     namespace measure {
       int parse_input_file(const std::string &file,
-                           gp::physics &gparams,
+                           gp::physics &pparams,
                            gp::measure_u1 &mparams);
 
     } // namespace measure

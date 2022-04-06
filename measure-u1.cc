@@ -23,14 +23,10 @@ namespace po = boost::program_options;
 
 #include <boost/filesystem.hpp>
 
-using std::cout;
-using std::endl;
-
-
 int main(int ac, char* av[]) {
-  cout << "## Measuring Tool for U(1) gauge theory" << endl;
-  cout << "## (C) Carsten Urbach <urbach@hiskp.uni-bonn.de> (2017)" << endl;
-  cout << "## GIT branch " << GIT_BRANCH << " on commit " << GIT_COMMIT_HASH << endl << endl;
+  std::cout << "## Measuring Tool for U(1) gauge theory" << std::endl;
+  std::cout << "## (C) Carsten Urbach <urbach@hiskp.uni-bonn.de> (2017)" << std::endl;
+  std::cout << "## GIT branch " << GIT_BRANCH << " on commit " << GIT_COMMIT_HASH << std::endl;
 
   namespace gp = global_parameters;
   gp::physics pparams; // physics parameters
@@ -47,7 +43,7 @@ int main(int ac, char* av[]) {
   po::notify(vm);
 
   if (vm.count("help")) {
-    cout << desc << "\n";
+    std::cout << desc << "\n";
     return 0;
   }
 
@@ -72,14 +68,14 @@ int main(int ac, char* av[]) {
     double plaquette = gauge_energy(U);
     double density = 0., Q=0.;
     energy_density(U, density, Q);
-    cout << "## Initial Plaquette: " << plaquette/U.getVolume()/double(U.getNc())/6. << endl; 
-    cout << "## Initial Energy density: " << density << endl;
+    std::cout << "## Initial Plaquette: " << plaquette/U.getVolume()/double(U.getNc())/6. << std::endl; 
+    std::cout << "## Initial Energy density: " << density << std::endl;
     
     random_gauge_trafo(U, mparams.seed);
     plaquette = gauge_energy(U);
     energy_density(U, density, Q);
-    cout << "## Plaquette after rnd trafo: " << std::scientific << std::setw(15) << plaquette/U.getVolume()/double(U.getNc())/6. << endl; 
-    cout << "## Energy density: " << density << endl;
+    std::cout << "## Plaquette after rnd trafo: " << std::scientific << std::setw(15) << plaquette/U.getVolume()/double(U.getNc())/6. << std::endl; 
+    std::cout << "## Energy density: " << density << std::endl;
     
     if(mparams.Wloop) {
       std::ostringstream os;

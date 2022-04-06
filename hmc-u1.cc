@@ -55,9 +55,6 @@ int main(int ac, char *av[]) {
 
   boost::filesystem::create_directories(boost::filesystem::absolute(hparams.outdir));
   
-  std::cout << pparams.Lx << " " << pparams.Ly << " " << pparams.Lz 
-  << " " << pparams.Lt << " " << pparams.ndims << " " << pparams.beta << "\n";
-
   gaugeconfig<_u1> U(pparams.Lx, pparams.Ly, pparams.Lz, pparams.Lt, pparams.ndims,
                      pparams.beta);
   if (hparams.restart) {

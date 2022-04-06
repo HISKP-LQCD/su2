@@ -70,19 +70,19 @@ namespace input_file_parsing {
    * @param gparams
    * @return int
    */
-  int validate_geometry(gp::general &gparams);
+  int validate_geometry(gp::physics &gparams);
 
   namespace u1 {
 
     namespace hmc {
       int parse_input_file(const std::string &file,
-                           gp::general &gparams,
+                           gp::physics &gparams,
                            gp::hmc_u1 &hmc_params);
     }
 
     namespace measure {
       int parse_input_file(const std::string &file,
-                           gp::general &gparams,
+                           gp::physics &gparams,
                            gp::measure_u1 &mparams);
 
     } // namespace measure

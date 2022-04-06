@@ -46,21 +46,21 @@ namespace YAML_parsing {
 
 namespace input_file_parsing {
 
-  int validate_geometry(gp::general &gparams) {
-    if (gparams.ndims > 4 || gparams.ndims < 2) {
+  int validate_geometry(gp::physics &pparams) {
+    if (pparams.ndims > 4 || pparams.ndims < 2) {
       std::cerr << "2 <= ndims <= 4!" << std::endl;
       return 1;
     }
-    if (gparams.Lx < 1 || gparams.Ly < 1 || gparams.Lz < 1 || gparams.Lt < 1) {
+    if (pparams.Lx < 1 || pparams.Ly < 1 || pparams.Lz < 1 || pparams.Lt < 1) {
       std::cerr << "All box extends must be > 1!" << std::endl;
       return 1;
     }
-    if (gparams.ndims == 2) { // flattening 'y' and 'z' directions
-      gparams.Ly = 1;
-      gparams.Lz = 1;
+    if (pparams.ndims == 2) { // flattening 'y' and 'z' directions
+      pparams.Ly = 1;
+      pparams.Lz = 1;
     }
-    if (gparams.ndims == 3) { // flattening 'z' direction
-      gparams.Lz = 1;
+    if (pparams.ndims == 3) { // flattening 'z' direction
+      pparams.Lz = 1;
     }
 
     return 0;
@@ -70,48 +70,66 @@ namespace input_file_parsing {
 
     namespace hmc {
       int parse_input_file(const std::string &file,
-                           gp::general &gparams,
+                           gp::physics &pparams,
                            gp::hmc_u1 &hparams) {
         const YAML::Node nd = YAML::LoadFile(file);
 
         namespace Yp = YAML_parsing;
         std::cout << "## Parsing input file: " << file << "\n";
 
-        // general parameters
-        Yp::read_verb<size_t>(gparams.Lx, nd["geometry"], "X");
-        Yp::read_verb<size_t>(gparams.Ly, nd["geometry"], "Y");
-        Yp::read_verb<size_t>(gparams.Lz, nd["geometry"], "Z");
-        Yp::read_verb<size_t>(gparams.Lt, nd["geometry"], "T");
-        Yp::read_verb<size_t>(gparams.ndims, nd["geometry"], "ndims");
+        // geometry parameters
+        Yp::read_verb<size_t>(pparams.Lx, nd["geometry"], "X");
+        Yp::read_verb<size_t>(pparams.Ly, nd["geometry"], "Y");
+        Yp::read_verb<size_t>(pparams.Lz, nd["geometry"], "Z");
+        Yp::read_verb<size_t>(pparams.Lt, nd["geometry"], "T");
+        Yp::read_verb<size_t>(pparams.ndims, nd["geometry"], "ndims");
 
-        int gerr = validate_geometry(gparams);
+        int gerr = validate_geometry(pparams);
         if (gerr > 0) {
           return gerr;
         }
 
-        Yp::read_verb<double>(gparams.beta, nd["action"], "beta");
-        Yp::read_verb<double>(gparams.m0, nd["action"], "mass");
+        if (nd["begin_monomials"]) {
+          const YAML::Node &nBM = nd["begin_monomials"];
+          if (nBM["gauge"]) {
+            pparams.include_gauge = true;
+            Yp::read_verb<double>(pparams.beta, nBM["gauge"], "beta");
+          }
+          // note: initializing the D*Ddag monomial makes sense only with a valid Dirac
+          // operator
+          if (nd["begin_operators"]["staggered"] && nBM["staggered_det_DDdag"]) {
+            pparams.include_staggered_fermions = true;
+            const YAML::Node &nBO = nd["begin_operators"];
 
-        Yp::read_verb<size_t>(hparams.N_save, nd["hmc"], "nsave");
-        Yp::read_verb<size_t>(hparams.N_meas, nd["hmc"], "nmeas");
-        Yp::read_verb<size_t>(hparams.icounter, nd["hmc"], "counter");
-        Yp::read_verb<size_t>(hparams.seed, nd["hmc"], "seed");
-        Yp::read_verb<double>(hparams.heat, nd["hmc"], "heat");
-        Yp::read_verb<std::string>(hparams.configfilename, nd["hmc"], "configname");
+            Yp::read_verb<double>(pparams.m0, nBO["staggered"], "mass");
+
+            Yp::read_opt_verb<std::string>(hparams.solver, nBM["staggered_det_DDdag"],
+                                           "solver");
+            Yp::read_opt_verb<double>(hparams.tolerance_cg, nBM["staggered_det_DDdag"],
+                                      "tolerance_cg");
+            Yp::read_opt_verb<size_t>(hparams.solver_verbosity,
+                                      nBM["staggered_det_DDdag"], "solver_verbosity");
+            Yp::read_opt_verb<size_t>(hparams.seed_pf, nBM["staggered_det_DDdag"],
+                                      "seed_pf");
+          }
+        }
 
         // hmc-u1 parameters
-        Yp::read_opt_verb<size_t>(hparams.N_rev, nd["hmc"], "N_rev");
-        Yp::read_opt_verb<size_t>(hparams.n_steps, nd["hmc"], "n_steps");
-        Yp::read_opt_verb<double>(hparams.tau, nd["hmc"], "tau");
-        Yp::read_opt_verb<size_t>(hparams.exponent, nd["hmc"], "exponent");
-        Yp::read_opt_verb<size_t>(hparams.integs, nd["hmc"], "integs");
-        Yp::read_opt_verb<bool>(hparams.no_fermions, nd["hmc"], "no_fermions");
-        Yp::read_opt_verb<std::string>(hparams.solver, nd["hmc"], "solver");
-        Yp::read_opt_verb<double>(hparams.tolerance_cg, nd["hmc"], "tolerance_cg");
-        Yp::read_opt_verb<size_t>(hparams.solver_verbosity, nd["hmc"],
-                                  "solver_verbosity");
-        Yp::read_opt_verb<size_t>(hparams.seed_pf, nd["hmc"], "seed_pf");
+        Yp::read_verb<size_t>(hparams.N_save, nd["hmc"], "n_save");
+        Yp::read_verb<size_t>(hparams.N_meas, nd["hmc"], "n_meas");
+        Yp::read_verb<size_t>(hparams.icounter, nd["hmc"], "counter");
+        Yp::read_verb<double>(hparams.heat, nd["hmc"], "heat");
+        Yp::read_opt_verb<size_t>(hparams.seed, nd["hmc"], "seed");
+        Yp::read_opt_verb<std::string>(hparams.configfilename, nd["hmc"], "configname");
         Yp::read_opt_verb<std::string>(hparams.outdir, nd["hmc"], "outdir");
+
+        // integrator parameters
+        Yp::read_opt_verb<size_t>(hparams.N_rev, nd["begin_integrator"], "N_rev");
+        Yp::read_opt_verb<size_t>(hparams.n_steps, nd["begin_integrator"], "n_steps");
+        Yp::read_opt_verb<double>(hparams.tau, nd["begin_integrator"], "tau");
+        Yp::read_opt_verb<size_t>(hparams.exponent, nd["begin_integrator"], "exponent");
+        Yp::read_opt_verb<std::string>(hparams.integrator, nd["begin_integrator"],
+                                       "name");
 
         return 0;
       }
@@ -121,25 +139,25 @@ namespace input_file_parsing {
     namespace measure {
 
       int parse_input_file(const std::string &file,
-                           gp::general &gparams,
+                           gp::physics &pparams,
                            gp::measure_u1 &mparams) {
         const YAML::Node nd = YAML::LoadFile(file);
 
         namespace Yp = YAML_parsing;
         std::cout << "## Parsing input file: " << file << "\n";
 
-        // general parameters
-        Yp::read_verb<size_t>(gparams.Lx, nd["geometry"], "X");
-        Yp::read_verb<size_t>(gparams.Ly, nd["geometry"], "Y");
-        Yp::read_verb<size_t>(gparams.Lz, nd["geometry"], "Z");
-        Yp::read_verb<size_t>(gparams.Lt, nd["geometry"], "T");
-        Yp::read_verb<size_t>(gparams.ndims, nd["geometry"], "ndims");
+        // physics parameters
+        Yp::read_verb<size_t>(pparams.Lx, nd["geometry"], "X");
+        Yp::read_verb<size_t>(pparams.Ly, nd["geometry"], "Y");
+        Yp::read_verb<size_t>(pparams.Lz, nd["geometry"], "Z");
+        Yp::read_verb<size_t>(pparams.Lt, nd["geometry"], "T");
+        Yp::read_verb<size_t>(pparams.ndims, nd["geometry"], "ndims");
 
-        int gerr = validate_geometry(gparams);
+        int gerr = validate_geometry(pparams);
         if (gerr > 0) {
           return gerr;
         }
-        Yp::read_verb<double>(gparams.beta, nd["action"], "beta");
+        Yp::read_verb<double>(pparams.beta, nd["action"], "beta");
 
         // measure-u1 parameters
         Yp::read_opt_verb<size_t>(mparams.nmeas, nd["measure"], "nmeas");

@@ -21,17 +21,16 @@
 #include "detDDdag_monomial.hh"
 
 namespace po = boost::program_options;
-using std::cout;
 using std::endl;
 
 int main(int ac, char *av[]) {
 
-  cout << "## HMC Algorithm for U(1) gauge theory" << endl;
-  cout << "## (C) Carsten Urbach <urbach@hiskp.uni-bonn.de> (2017, 2021)" << endl;
-  cout << "## GIT branch " << GIT_BRANCH << " on commit " << GIT_COMMIT_HASH << endl;
+  std::cout << "## HMC Algorithm for U(1) gauge theory" << std::endl;
+  std::cout << "## (C) Carsten Urbach <urbach@hiskp.uni-bonn.de> (2017, 2021)" << std::endl;
+  std::cout << "## GIT branch " << GIT_BRANCH << " on commit " << GIT_COMMIT_HASH << std::endl;
 
   namespace gp = global_parameters;
-  gp::general gparams; // general parameters
+  gp::physics pparams; // physics parameters
   gp::hmc_u1 hparams; // hmc parameters
 
   std::string input_file; // yaml input file path
@@ -44,59 +43,70 @@ int main(int ac, char *av[]) {
   po::notify(vm);
 
   if (vm.count("help")) {
-    cout << desc << "\n";
+    std::cout << desc << "\n";
     return 0;
   }
 
   namespace in_hmc = input_file_parsing::u1::hmc;
-  int err = in_hmc::parse_input_file(input_file, gparams, hparams);
+  int err = in_hmc::parse_input_file(input_file, pparams, hparams);
   if (err > 0) {
     return 1;
   }
 
   boost::filesystem::create_directories(boost::filesystem::absolute(hparams.outdir));
   
-  gaugeconfig<_u1> U(gparams.Lx, gparams.Ly, gparams.Lz, gparams.Lt, gparams.ndims,
-                     gparams.beta);
+  std::cout << pparams.Lx << " " << pparams.Ly << " " << pparams.Lz 
+  << " " << pparams.Lt << " " << pparams.ndims << " " << pparams.beta << "\n";
+
+  gaugeconfig<_u1> U(pparams.Lx, pparams.Ly, pparams.Lz, pparams.Lt, pparams.ndims,
+                     pparams.beta);
   if (hparams.restart) {
+    std::cout << "restart " <<hparams.restart << "\n";
     err = U.load(hparams.configfilename);
     if (err != 0) {
       return err;
     }
   } else {
+    std::cout << "hotstart "<<hparams.seed<<" "<< hparams.heat<<"\n";
     hotstart(U, hparams.seed, hparams.heat);
   }
 
   double plaquette = gauge_energy(U);
   double fac = 2. / U.getndims() / (U.getndims() - 1);
   const double normalisation = fac / U.getVolume() / double(U.getNc());
-  cout << "## Initital Plaquette: " << plaquette * normalisation << endl;
+  std::cout << "## Initital Plaquette: " << plaquette * normalisation << std::endl;
 
   random_gauge_trafo(U, 654321);
   plaquette = gauge_energy(U);
-  cout << "## Plaquette after rnd trafo: " << plaquette * normalisation << endl;
+  std::cout << "## Plaquette after rnd trafo: " << plaquette * normalisation << std::endl;
 
   // Molecular Dynamics parameters
   md_params mdparams(hparams.n_steps, hparams.tau);
 
   // generate list of monomials
-  gaugemonomial<double, _u1> gm(0);
-  kineticmonomial<double, _u1> km(0);
-  detDDdag_monomial<double, _u1> detDDdag(0, gparams.m0, hparams.solver,
-                                          hparams.tolerance_cg, hparams.seed_pf,
-                                          hparams.solver_verbosity);
-
-  km.setmdpassive();
-
   std::list<monomial<double, _u1> *> monomial_list;
-  monomial_list.push_back(&gm);
+  gaugemonomial<double, _u1> gm(0);
+
+  kineticmonomial<double, _u1> km(0);
+  km.setmdpassive();
   monomial_list.push_back(&km);
 
-  if (!hparams.no_fermions) { // including S_F (fermionic) in the action
+  detDDdag_monomial<double, _u1> detDDdag(0, pparams.m0, hparams.solver,
+                                            hparams.tolerance_cg, hparams.seed_pf,
+                                            hparams.solver_verbosity);
+
+
+  if (pparams.include_gauge) {
+    monomial_list.push_back(&gm);
+  }
+
+  if (pparams.include_staggered_fermions) { // including S_F (fermionic) in the action
     monomial_list.push_back(&detDDdag);
   }
 
-  integrator<double, _u1> *md_integ = set_integrator<double, _u1>(hparams.integs, hparams.exponent);
+
+  // setting up the integrator
+  integrator<double, _u1> *md_integ = set_integrator<double, _u1>(hparams.integrator, hparams.exponent);
 
   std::ofstream os;
   if (hparams.icounter == 0)
@@ -131,15 +141,15 @@ int main(int ac, char *av[]) {
     energy_density(U, E, Q);
     rate += mdparams.getaccept();
 
-    cout << i << " " << mdparams.getaccept() << " " << std::scientific << std::setw(18)
+    std::cout << i << " " << mdparams.getaccept() << " " << std::scientific << std::setw(18)
          << std::setprecision(15) << energy * normalisation << " " << std::setw(15)
          << mdparams.getdeltaH() << " " << std::setw(15)
          << rate / static_cast<double>(i + 1) << " ";
     if (mdparams.getrevtest()) {
-      cout << mdparams.getdeltadeltaH();
+      std::cout << mdparams.getdeltadeltaH();
     } else
-      cout << "NA";
-    cout << " " << Q << endl;
+      std::cout << "NA";
+    std::cout << " " << Q << std::endl;
 
     os << i << " " << mdparams.getaccept() << " " << std::scientific << std::setw(18)
        << std::setprecision(15) << energy * normalisation << " " << std::setw(15)
@@ -149,20 +159,20 @@ int main(int ac, char *av[]) {
       os << mdparams.getdeltadeltaH();
     } else
       os << "NA";
-    os << " " << Q << endl;
+    os << " " << Q << std::endl;
 
     if (i > 0 && (i % hparams.N_save) == 0) {// saving U after each N_save trajectories
       std::ostringstream oss;
-      oss << "config_u1." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz << "."
-          << gparams.Lt << ".b" << gparams.beta << "." << i << std::ends;
+      oss << "config_u1." << pparams.Lx << "." << pparams.Ly << "." << pparams.Lz << "."
+          << pparams.Lt << ".b" << pparams.beta << "." << i << std::ends;
       U.save(hparams.outdir+"/"+oss.str());
     }
   }
-  cout << "## Acceptance rate: " << rate / static_cast<double>(hparams.N_meas) << endl;
+  std::cout << "## Acceptance rate: " << rate / static_cast<double>(hparams.N_meas) << std::endl;
 
   std::ostringstream oss;
-  oss << "config_u1." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz << "."
-      << gparams.Lt << ".b" << U.getBeta() << ".final" << std::ends;
+  oss << "config_u1." << pparams.Lx << "." << pparams.Ly << "." << pparams.Lz << "."
+      << pparams.Lt << ".b" << U.getBeta() << ".final" << std::ends;
   U.save(hparams.outdir+"/"+oss.str());
   return (0);
 }

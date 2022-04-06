@@ -33,7 +33,7 @@ int main(int ac, char* av[]) {
   cout << "## GIT branch " << GIT_BRANCH << " on commit " << GIT_COMMIT_HASH << endl << endl;
 
   namespace gp = global_parameters;
-  gp::general gparams; // general parameters
+  gp::physics pparams; // physics parameters
   gp::measure_u1 mparams; // measure parameters
 
   std::string input_file; // yaml input file path
@@ -52,18 +52,18 @@ int main(int ac, char* av[]) {
   }
 
   namespace in_meas = input_file_parsing::u1::measure;
-  int err = in_meas::parse_input_file(input_file, gparams, mparams);
+  int err = in_meas::parse_input_file(input_file, pparams, mparams);
   if (err > 0) {
     return err;
   }
 
   boost::filesystem::create_directories(boost::filesystem::absolute(mparams.confdir));
 
-  gaugeconfig<_u1> U(gparams.Lx, gparams.Ly, gparams.Lz, gparams.Lt, gparams.ndims, gparams.beta);
+  gaugeconfig<_u1> U(pparams.Lx, pparams.Ly, pparams.Lz, pparams.Lt, pparams.ndims, pparams.beta);
 
   for(size_t i = mparams.icounter; i < mparams.nmeas*mparams.nstep+mparams.icounter; i+=mparams.nstep) {
     std::ostringstream os;
-    os << mparams.confdir + "/config_u1." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz << "." << gparams.Lt << ".b" << U.getBeta() << "." << i << std::ends;
+    os << mparams.confdir + "/config_u1." << pparams.Lx << "." << pparams.Ly << "." << pparams.Lz << "." << pparams.Lt << ".b" << U.getBeta() << "." << i << std::ends;
     int ierrU =  U.load(os.str());
     if(ierrU == 1){ // cannot load gauge config
       continue;

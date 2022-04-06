@@ -146,9 +146,9 @@ int main(int ac, char* av[]) {
       }
       resultfile.open(filename, std::ios::out);
       resultfile << "##";
-      for (size_t t = 1 ; t <= gparams.Lt*sizeloops ; t++){
-        for (size_t x = 1 ; x <= maxsizenonplanar ; x++){
-          for (size_t y = 1 ; y <= maxsizenonplanar ; y++){
+      for (size_t t = 0 ; t <= gparams.Lt*sizeloops ; t++){
+        for (size_t x = 0 ; x <= maxsizenonplanar ; x++){
+          for (size_t y = 0 ; y <= maxsizenonplanar ; y++){
             resultfile << "W(x=" << x << ",t=" << t << ",y=" << y << ")  " ;
           }
         }
@@ -235,7 +235,7 @@ int main(int ac, char* av[]) {
         for (size_t y = 1 ; y <= gparams.Ly*sizeloops ; y++){
           for (size_t x = 1 ; x <= gparams.Lx*sizeloops ; x++){
             loop  = wilsonloop_non_planar(U, {0, x, y, 0});
-            loop += wilsonloop_non_planar(U, {0, x, 0, y});
+            //~ loop += wilsonloop_non_planar(U, {0, x, 0, y});
             resultfile << std::setw(14) << std::scientific << loop/U.getVolume()/2.0 << "  " ;
           }
         }
@@ -249,6 +249,7 @@ int main(int ac, char* av[]) {
         for (size_t t = 1 ; t <= gparams.Lt*sizeloops ; t++){
           for (size_t x = 1 ; x <= gparams.Lx*sizeloops ; x++){
             loop  = wilsonloop_non_planar(U, {t, x, 0});
+            //~ loop  += wilsonloop_non_planar(U, {t, 0, x});
             resultfile << std::setw(14) << std::scientific << loop/U.getVolume() << "  " ;
           }
         }
@@ -276,9 +277,9 @@ int main(int ac, char* av[]) {
         sprintf(filename, "result2p1d.u1potential.Nt%lu.Ns%lu.b%f.xi%f.nape%lu.alpha%fnonplanar",gparams.Lt, gparams.Lx,U.getBeta(), gparams.xi, n_apesmear, alpha);
       }
       resultfile.open(filename, std::ios::app);
-      for (size_t t = 1 ; t <= gparams.Lt*sizeloops ; t++){
-        for (size_t x = 1 ; x <= maxsizenonplanar ; x++){
-          for (size_t y = 1 ; y <= maxsizenonplanar ; y++){
+      for (size_t t = 0 ; t <= gparams.Lt*sizeloops ; t++){
+        for (size_t x = 0 ; x <= maxsizenonplanar ; x++){
+          for (size_t y = 0 ; y <= maxsizenonplanar ; y++){
             loop  = wilsonloop_non_planar(U, {t, x, y});
             resultfile << std::setw(14) << std::scientific << loop/U.getVolume() << "  " ;
           }

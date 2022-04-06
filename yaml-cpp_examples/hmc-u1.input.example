@@ -1,35 +1,42 @@
 # Input file example for the u1-hmc program
 
-# general parameters
-
 geometry:
   X : 4
   Y : 4
   Z : 1
   T : 4
-  ndims : 4
+  ndims : 3
 
-action:
-  beta :  1.9
-  mass: 0.1
-
-#hmc parameters
+# hmc parameters
 hmc:
-  nsave: 1
-  nmeas: 10
-  counter: 0
   seed: 93746
+  n_save: 1
+  n_meas: 10
   heat: 1
+  n_rev: 1
+  counter: 0
   configname: ""
-  N_rev: 1
-  n_steps: 3
-  #tau: 1.
-  exponent: 0
-  integs: 0
-  no_fermions: true
-  solver: 0 
-  tolerance_cg: 1e-10
-  solver_verbosity : 0
-  seed_pf: 22346363
   outdir: "./"
+
+begin_integrator:
+  name: leapfrog
+  n_steps: 3
+  tau: 1.0
+  exponent: 0
+
+begin_operators: 
+  staggered:
+    mass: 0.1
+
+begin_monomials:
+  gauge:
+    beta: 1.9
+  staggered_det_DDdag:
+    tolerance_cg: 1e-10
+    solver_verbosity : 0
+    seed_pf: 22346363
+    solver: CG
+
+
+
 

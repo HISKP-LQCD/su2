@@ -12,6 +12,7 @@
 #include <iostream>
 #include <random>
 #include <vector>
+#include <array>
 
 using std::vector;
 
@@ -23,7 +24,7 @@ public:
               const size_t Ly,
               const size_t Lz,
               const size_t Lt,
-              const size_t ndims = 4,
+              const size_t ndims = spacetime_lattice::nd_max,
               const double beta = 0)
     : Lx(Lx),
       Ly(Ly),
@@ -97,12 +98,12 @@ public:
     return data[getIndex(coords[0], coords[1], coords[2], coords[3], mu)];
   }
 
-  value_type &operator()(const std::vector<int> &x, const size_t &mu) {
+  value_type &operator()(const std::array<int, spacetime_lattice::nd_max> &x, const size_t &mu) {
     const geometry g(Lx, Ly, Lz, Lt); // note the order
     return data[g.getIndex(x[0], x[1], x[2], x[3])];
   }
 
-  const value_type &operator()(const std::vector<int> &x, const size_t &mu) const {
+  const value_type &operator()(const std::array<int, spacetime_lattice::nd_max> &x, const size_t &mu) const {
     const geometry g(Lx, Ly, Lz, Lt); // note the order
     return data[g.getIndex(x[0], x[1], x[2], x[3])];
   }

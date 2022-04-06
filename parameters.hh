@@ -53,6 +53,9 @@ namespace global_parameters {
     size_t solver_verbosity = 0; // Verbosity for the solver for the dirac operator
     size_t seed_pf = 97234719; // Seed for the evaluation of the fermion determinant
     std::string outdir = "."; // Output directory
+
+    std::string conf_basename = "config_u1"; // root of the output files names
+    size_t beta_str_width = 4; // length of the beta value config filename  
   };
 
   /* optional parameters for the hmc the in U(1) theory */
@@ -66,6 +69,9 @@ namespace global_parameters {
     bool gradient = false; // wether to measure the gredient flow or not
     double tmax = 1.0; // tmax for gradient flow"
     std::string confdir = "./"; // directory where gauge configurations are stored
+
+    std::string conf_basename = "config_u1"; // root of the output files names
+    size_t beta_str_width = 4; // length of the beta value config filename  
   };
 
 } // namespace global_parameters

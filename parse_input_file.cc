@@ -128,6 +128,8 @@ namespace input_file_parsing {
         Yp::read_opt_verb<size_t>(hparams.seed, nd["hmc"], "seed");
         Yp::read_opt_verb<std::string>(hparams.configfilename, nd["hmc"], "configname");
         Yp::read_opt_verb<std::string>(hparams.outdir, nd["hmc"], "outdir");
+        Yp::read_opt_verb<std::string>(hparams.conf_basename, nd["hmc"], "conf_basename");
+        Yp::read_opt_verb<size_t>(hparams.beta_str_width, nd["hmc"], "beta_str_width");
 
         // integrator parameters
         Yp::read_opt_verb<size_t>(hparams.N_rev, nd["begin_integrator"], "N_rev");
@@ -136,6 +138,7 @@ namespace input_file_parsing {
         Yp::read_opt_verb<size_t>(hparams.exponent, nd["begin_integrator"], "exponent");
         Yp::read_opt_verb<std::string>(hparams.integrator, nd["begin_integrator"],
                                        "name");
+
 
         return 0;
       }
@@ -148,19 +151,13 @@ namespace input_file_parsing {
                            gp::physics &pparams,
                            gp::measure_u1 &mparams) {
         std::cout << "## Parsing input file: " << file << "\n";
-  std::cout << "check 0" << "\n";
-
         const YAML::Node nd = YAML::LoadFile(file);
 
-  std::cout << "check 1" << "\n";
-
         parse_geometry(nd, pparams);
-  std::cout << "check 2" << "\n";
 
         // beta value from the gauge action
         Yp::read_verb<double>(pparams.beta, nd["begin_monomials"]["gauge"], "beta");
 
-  std::cout << "check 3" << "\n";
         // measure-u1 parameters
         const YAML::Node &nMS = nd["begin_measurements"];
         Yp::read_opt_verb<size_t>(mparams.nmeas, nMS, "nmeas");
@@ -170,6 +167,9 @@ namespace input_file_parsing {
           Yp::read_opt_verb<double>(mparams.tmax, nMS["gradient"], "tmax");
         }
         Yp::read_opt_verb<std::string>(mparams.confdir, nMS, "confdir");
+
+        Yp::read_opt_verb<std::string>(mparams.conf_basename, nMS, "conf_basename");
+        Yp::read_opt_verb<size_t>(mparams.beta_str_width, nMS, "beta_str_width");
 
         return 0;
       }

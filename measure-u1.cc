@@ -57,9 +57,16 @@ int main(int ac, char* av[]) {
 
   gaugeconfig<_u1> U(pparams.Lx, pparams.Ly, pparams.Lz, pparams.Lt, pparams.ndims, pparams.beta);
 
+    const std::string conf_basename = mparams.conf_basename;
+    std::stringstream ss_basename;
+    ss_basename << mparams.conf_basename << ".";
+    ss_basename << pparams.Lx << "." << pparams.Ly << "." << pparams.Lz << "."
+                << pparams.Lt;
+    ss_basename << ".b" << std::fixed << std::setprecision(mparams.beta_str_width)
+                << pparams.beta;
   for(size_t i = mparams.icounter; i < mparams.nmeas*mparams.nstep+mparams.icounter; i+=mparams.nstep) {
     std::ostringstream os;
-    os << mparams.confdir + "/config_u1." << pparams.Lx << "." << pparams.Ly << "." << pparams.Lz << "." << pparams.Lt << ".b" << U.getBeta() << "." << i << std::ends;
+    os << ss_basename.str() << "." << i << std::ends;
     int ierrU =  U.load(os.str());
     if(ierrU == 1){ // cannot load gauge config
       continue;

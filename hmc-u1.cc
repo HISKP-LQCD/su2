@@ -123,6 +123,15 @@ int main(int ac, char *av[]) {
   os << ss_head_str;
 
   double rate = 0.;
+
+  const std::string conf_basename = hparams.conf_basename;
+  std::stringstream ss_basename;
+  ss_basename << hparams.conf_basename << ".";
+  ss_basename << pparams.Lx << "." << pparams.Ly << "." << pparams.Lz << "."
+              << pparams.Lt;
+  ss_basename << ".b" << std::fixed << std::setprecision(hparams.beta_str_width)
+              << pparams.beta;
+
   for (size_t i = hparams.icounter; i < hparams.N_meas + hparams.icounter; i++) {
     mdparams.disablerevtest();
     if (i > 0 && hparams.N_rev != 0 && (i) % hparams.N_rev == 0) {
@@ -158,18 +167,18 @@ int main(int ac, char *av[]) {
       os << "NA";
     os << " " << Q << std::endl;
 
-    if (i > 0 && (i % hparams.N_save) == 0) {// saving U after each N_save trajectories
-      std::ostringstream oss;
-      oss << "config_u1." << pparams.Lx << "." << pparams.Ly << "." << pparams.Lz << "."
-          << pparams.Lt << ".b" << pparams.beta << "." << i << std::ends;
-      U.save(hparams.outdir+"/"+oss.str());
+    if (i > 0 && (i % hparams.N_save) == 0) { // saving U after each N_save trajectories
+      std::ostringstream oss_i;
+      oss_i << ss_basename.str() << "." << i << std::ends;
+      U.save(hparams.outdir + "/" + oss_i.str());
     }
   }
-  std::cout << "## Acceptance rate: " << rate / static_cast<double>(hparams.N_meas) << std::endl;
+  std::cout << "## Acceptance rate: " << rate / static_cast<double>(hparams.N_meas)
+            << std::endl;
 
   std::ostringstream oss;
-  oss << "config_u1." << pparams.Lx << "." << pparams.Ly << "." << pparams.Lz << "."
-      << pparams.Lt << ".b" << U.getBeta() << ".final" << std::ends;
-  U.save(hparams.outdir+"/"+oss.str());
+  oss << ss_basename.str() << ".final" << std::ends;
+  U.save(hparams.outdir + "/" + oss.str());
+
   return (0);
 }

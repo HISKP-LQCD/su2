@@ -26,5 +26,5 @@ begin_measurements:
     append : false
     n_apesmears : 0
     alpha : 1.0
-    smearspacial : true
-    sizeloops : 0.5
+    smear_spatial_only : true
+    sizeWloops : 0.5

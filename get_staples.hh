@@ -11,14 +11,14 @@
  * For anisotropic lattices, the action requires weighting the temporal and spacial plaquettes differently,
  * see e.g. https://arxiv.org/abs/hep-lat/0209159. This is achieved by including this factor in the staples
  * For other cases, only the staples involving only spatial links are needed,
- * then the summation starts at nu=1 to exclude temporal links
+ * then the summation starts at nu=1 to exclude temporal links. This is done by setting spatial_only to true
  * */
 
 template<class T, class S> void get_staples(T &K, gaugeconfig<S> &U,
                                    vector<size_t> const x,
-                                   const size_t mu, const double xi=1.0, bool anisotropic=false, bool spacial=false) {
+                                   const size_t mu, const double xi=1.0, bool anisotropic=false, bool spatial_only=false) {
   size_t startnu=0;
-  if(spacial){
+  if(spatial_only){
       startnu=1;
   }
   vector<size_t> x1 = x, x2 = x;

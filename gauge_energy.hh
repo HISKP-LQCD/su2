@@ -8,8 +8,10 @@
 // \sum_mu \sum_nu<mu tr(P_{mu nu})
 //
 // checked for gauge invariance
+//if spatial_only, only the plaquettes with mu, nu > 0 are calculated
 
-template<class T> double gauge_energy(gaugeconfig<T> &U, bool spacial=false) {
+
+template<class T> double gauge_energy(gaugeconfig<T> &U, bool spatial_only=false) {
 
   double res = 0.;
 #ifdef _USE_OMP_
@@ -22,7 +24,7 @@ template<class T> double gauge_energy(gaugeconfig<T> &U, bool spacial=false) {
     double tmp = 0.;
     
 size_t startmu=0;
-if(spacial){startmu=1;};
+if(spatial_only){startmu=1;};
  
 #pragma omp for
     for(size_t x0 = 0; x0 < U.getLt(); x0++) {

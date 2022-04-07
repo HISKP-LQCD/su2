@@ -75,11 +75,11 @@ namespace global_parameters {
     bool potential = false; //measure potential: the loops W(x, t, y=z=0) and W(x, y, t=z=0) are measured with a maximum size of lattice extent * sizeloops, and written to separate files. Only available for ndims=3,4
     bool potentialsmall = false; //The loops W(x, t, y) are measured up to x, y=min(4, lattice extent), t <= Lt * sizeloops and saved to one file. Only available for ndim=3
     bool append = false; //are measurements for potential appended to an existing file, or should it be overwritten?
-    double sizeloops = 0.5; //Wilson-Loops are measured up to this fraction of the lattice extent
+    double sizeWloops = 0.5; //Wilson-Loops are measured up to this fraction of the lattice extent
     size_t n_apesmear = 0; //number of APE smearings done on the lattice before measurement. 
     //APE-smearing is done before measuring the potential and small potential, it does not affect the gradient flow and Wilson-loops
     double alpha = 1.0; //parameter alpha for APE smearings
-    bool smearspacial = false; //should smearing be done only for spacial links?
+    bool smear_spatial_only = false; //should smearing be done only for spacial links?
 
     std::string conf_basename = "config_u1"; // root of the output files names
     size_t beta_str_width = 6; // length of the beta value config filename  

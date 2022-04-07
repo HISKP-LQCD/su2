@@ -97,8 +97,8 @@ int main(int ac, char* av[]) {
       }
       resultfile.open(filename, std::ios::out);
       resultfile << "##";
-      for (size_t t = 1 ; t <= pparams.Lt*mparams.sizeloops ; t++){
-          for (size_t x = 1 ; x <= pparams.Lx*mparams.sizeloops ; x++){
+      for (size_t t = 1 ; t <= pparams.Lt*mparams.sizeWloops ; t++){
+          for (size_t x = 1 ; x <= pparams.Lx*mparams.sizeWloops ; x++){
           resultfile << "W(x=" << x << ",t=" << t << ",y=" << 0 << ")  " ;
           }
       }
@@ -113,8 +113,8 @@ int main(int ac, char* av[]) {
       }
       resultfile.open(filename, std::ios::out);
       resultfile << "##";
-      for (size_t y = 1 ; y <= pparams.Ly*mparams.sizeloops ; y++){
-          for (size_t x = 1 ; x <= pparams.Lx*mparams.sizeloops ; x++){
+      for (size_t y = 1 ; y <= pparams.Ly*mparams.sizeWloops ; y++){
+          for (size_t x = 1 ; x <= pparams.Lx*mparams.sizeWloops ; x++){
           resultfile << "W(x=" << x << ",t=" << 0 << ",y=" << y << ")  " ;
           }
       }
@@ -141,7 +141,7 @@ int main(int ac, char* av[]) {
       }
       resultfile.open(filename, std::ios::out);
       resultfile << "##";
-      for (size_t t = 0 ; t <= pparams.Lt*mparams.sizeloops ; t++){
+      for (size_t t = 0 ; t <= pparams.Lt*mparams.sizeWloops ; t++){
         for (size_t x = 0 ; x <= maxsizenonplanar ; x++){
           for (size_t y = 0 ; y <= maxsizenonplanar ; y++){
             resultfile << "W(x=" << x << ",t=" << t << ",y=" << y << ")  " ;
@@ -208,15 +208,15 @@ int main(int ac, char* av[]) {
     if(mparams.potential || mparams.potentialsmall){
         //smear lattice
       for (size_t smears = 0 ; smears < mparams.n_apesmear ; smears +=1){
-        smearlatticeape(U, mparams.alpha, mparams.smearspacial);
+        smearlatticeape(U, mparams.alpha, mparams.smear_spatial_only);
       }
     if(mparams.potential) {
       //~ //calculate wilsonloops for potential
       if(pparams.ndims == 4){
         sprintf(filename, "result3p1d.u1potential.rotated.Nt%lu.Ns%lu.b%f.xi%f.nape%lu.alpha%ffinedistance",pparams.Lt, pparams.Lx,U.getBeta(), pparams.xi, mparams.n_apesmear, mparams.alpha);
         resultfile.open(filename, std::ios::app);
-        for (size_t t = 1 ; t <= pparams.Lt*mparams.sizeloops ; t++){
-          for (size_t x = 1 ; x <= pparams.Lx*mparams.sizeloops ; x++){
+        for (size_t t = 1 ; t <= pparams.Lt*mparams.sizeWloops ; t++){
+          for (size_t x = 1 ; x <= pparams.Lx*mparams.sizeWloops ; x++){
             loop  = wilsonloop_non_planar(U, {t, x, 0, 0});
             resultfile << std::setw(14) << std::scientific << loop/U.getVolume() << "  " ;
           }
@@ -227,8 +227,8 @@ int main(int ac, char* av[]) {
         
         sprintf(filename, "result3p1d.u1potential.rotated.Nt%lu.Ns%lu.b%f.xi%f.nape%lu.alpha%fcoarsedistance",pparams.Lt, pparams.Lx,U.getBeta(), pparams.xi, mparams.n_apesmear, mparams.alpha);
         resultfile.open(filename, std::ios::app);
-        for (size_t y = 1 ; y <= pparams.Ly*mparams.sizeloops ; y++){
-          for (size_t x = 1 ; x <= pparams.Lx*mparams.sizeloops ; x++){
+        for (size_t y = 1 ; y <= pparams.Ly*mparams.sizeWloops ; y++){
+          for (size_t x = 1 ; x <= pparams.Lx*mparams.sizeWloops ; x++){
             loop  = wilsonloop_non_planar(U, {0, x, y, 0});
             loop += wilsonloop_non_planar(U, {0, x, 0, y});
             resultfile << std::setw(14) << std::scientific << loop/U.getVolume()/2.0 << "  " ;
@@ -241,8 +241,8 @@ int main(int ac, char* av[]) {
       if(pparams.ndims == 3){
         sprintf(filename, "result2p1d.u1potential.rotated.Nt%lu.Ns%lu.b%f.xi%f.nape%lu.alpha%ffinedistance",pparams.Lt, pparams.Lx,U.getBeta(), pparams.xi, mparams.n_apesmear, mparams.alpha);
         resultfile.open(filename, std::ios::app);
-        for (size_t t = 1 ; t <= pparams.Lt*mparams.sizeloops ; t++){
-          for (size_t x = 1 ; x <= pparams.Lx*mparams.sizeloops ; x++){
+        for (size_t t = 1 ; t <= pparams.Lt*mparams.sizeWloops ; t++){
+          for (size_t x = 1 ; x <= pparams.Lx*mparams.sizeWloops ; x++){
             loop  = wilsonloop_non_planar(U, {t, x, 0});
             //~ loop  += wilsonloop_non_planar(U, {t, 0, x});
             resultfile << std::setw(14) << std::scientific << loop/U.getVolume() << "  " ;
@@ -254,8 +254,8 @@ int main(int ac, char* av[]) {
         
         sprintf(filename, "result2p1d.u1potential.rotated.Nt%lu.Ns%lu.b%f.xi%f.nape%lu.alpha%fcoarsedistance",pparams.Lt, pparams.Lx,U.getBeta(), pparams.xi, mparams.n_apesmear, mparams.alpha);
         resultfile.open(filename, std::ios::app);
-        for (size_t y = 1 ; y <= pparams.Ly*mparams.sizeloops ; y++){
-          for (size_t x = 1 ; x <= pparams.Lx*mparams.sizeloops ; x++){
+        for (size_t y = 1 ; y <= pparams.Ly*mparams.sizeWloops ; y++){
+          for (size_t x = 1 ; x <= pparams.Lx*mparams.sizeWloops ; x++){
             loop  = wilsonloop_non_planar(U, {0, x, y});
             //~ loop += wilsonloop_non_planar(U, {0, y, x});
             resultfile << std::setw(14) << std::scientific << loop/U.getVolume() << "  " ;
@@ -272,7 +272,7 @@ int main(int ac, char* av[]) {
         sprintf(filename, "result2p1d.u1potential.Nt%lu.Ns%lu.b%f.xi%f.nape%lu.alpha%fnonplanar",pparams.Lt, pparams.Lx,U.getBeta(), pparams.xi, mparams.n_apesmear, mparams.alpha);
       }
       resultfile.open(filename, std::ios::app);
-      for (size_t t = 0 ; t <= pparams.Lt*mparams.sizeloops ; t++){
+      for (size_t t = 0 ; t <= pparams.Lt*mparams.sizeWloops ; t++){
         for (size_t x = 0 ; x <= maxsizenonplanar ; x++){
           for (size_t y = 0 ; y <= maxsizenonplanar ; y++){
             loop  = wilsonloop_non_planar(U, {t, x, y});

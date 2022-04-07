@@ -158,8 +158,10 @@ namespace input_file_parsing {
 
         // beta, xi value from the gauge action
         Yp::read_verb<double>(pparams.beta, nd["begin_monomials"]["gauge"], "beta");
-        Yp::read_verb<double>(pparams.xi, nd["begin_monomials"]["gauge"], "xi");
-        Yp::read_verb<bool>(pparams.anisotropic, nd["begin_monomials"]["gauge"], "anisotropic");
+        Yp::read_opt_verb<bool>(pparams.anisotropic, nd["begin_monomials"]["gauge"], "anisotropic");
+        if(pparams.anisotropic){
+          Yp::read_opt_verb<double>(pparams.xi, nd["begin_monomials"]["gauge"], "xi");
+        }
 
         // measure-u1 parameters
         const YAML::Node &nMS = nd["begin_measurements"];
@@ -176,10 +178,10 @@ namespace input_file_parsing {
           Yp::read_opt_verb<bool>(mparams.potential, nMS["potential"], "potential");
           Yp::read_opt_verb<bool>(mparams.potentialsmall, nMS["potential"], "potentialsmall");
           Yp::read_opt_verb<bool>(mparams.append, nMS["potential"], "append");
-          Yp::read_opt_verb<bool>(mparams.smearspacial, nMS["potential"], "smearspacial");
+          Yp::read_opt_verb<bool>(mparams.smear_spatial_only, nMS["potential"], "smear_spatial_only");
           Yp::read_opt_verb<size_t>(mparams.n_apesmear, nMS["potential"], "n_apesmear");
           Yp::read_opt_verb<double>(mparams.alpha, nMS["potential"], "alpha");
-          Yp::read_opt_verb<double>(mparams.sizeloops, nMS["potential"], "sizeloops");
+          Yp::read_opt_verb<double>(mparams.sizeWloops, nMS["potential"], "sizeWloops");
         }
         
         Yp::read_opt_verb<std::string>(mparams.confdir, nMS, "confdir");

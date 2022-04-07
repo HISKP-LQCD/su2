@@ -21,8 +21,8 @@
 //not tested for SU2, for U1 lattice stays the same when smearing with alpha=1
 //norm is the number of staples which are used in the summation
 //if spacial=true, only the staples with mu>=1 are smeared and taken into account for the staples
-template<class Group> void smearlatticeape(gaugeconfig<Group> &U, double alpha, bool spacial=false){
-  if (U.getndims() == 2 && spacial){
+template<class Group> void smearlatticeape(gaugeconfig<Group> &U, double alpha, bool spatial_only=false){
+  if (U.getndims() == 2 && spatial_only){
     std::cerr << "Spacial smearing is not possible in two dimensions!" << std::endl;
     return;
   }
@@ -30,7 +30,7 @@ template<class Group> void smearlatticeape(gaugeconfig<Group> &U, double alpha, 
   typedef typename accum_type<Group>::type accum;
   size_t startmu = 0;
   size_t norm = 2.0*(U.getndims()-1);
-  if(spacial){
+  if(spatial_only){
       startmu = 1;
       norm = 2.0*(U.getndims()-2);
   }
@@ -45,7 +45,7 @@ template<class Group> void smearlatticeape(gaugeconfig<Group> &U, double alpha, 
           for(size_t mu = startmu; mu < U.getndims(); mu++) {
             // K is intialized to (0,0) even if not explicitly specified
             accum K(0.0, 0.0);
-            get_staples(K, Uold, x, mu, 1.0, false, spacial);
+            get_staples(K, Uold, x, mu, 1.0, false, spatial_only);
             Group Uprime(Uold(x, mu) * alpha + K * (1-alpha) / double(norm));
             U(x, mu) = Uprime;
             U(x, mu).restoreSU();

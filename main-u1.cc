@@ -108,7 +108,7 @@ int main(int ac, char* av[]) {
   /**
    * do measurements:
    * sweep: do N_hit Metropolis-Updates of every link in the lattice
-   * calculate plaquette, spacial plaquette, energy density and write to stdout and output-file
+   * calculate plaquette, spacial plaquette, energy density with and without cloverdef and write to stdout and output-file
    * save every nave configuration
    * */
   for(size_t i = gparams.icounter; i < gparams.N_meas*threads + gparams.icounter; i+=threads) {

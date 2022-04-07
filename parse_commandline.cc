@@ -25,6 +25,8 @@ void add_general_options(po::options_description &desc, general_params &params) 
     ("heat", po::value<double>(&params.heat)->default_value(1.), "randomness of the initial config, 1: hot, 0: cold")
     ("restart", "restart from an existing configuration")
     ("configname", po::value< std::string >(&params.configfilename), "configuration filename used in case of restart")
+    ("xi", po::value<double>(&params.xi)->default_value(1.0), "xi, characteristic of anisotropy")
+    ("anisotropic", po::value<bool>(&params.anisotropic)->default_value(false), "set whether the configurations are anisotropic")
     ;
   return;
 }
@@ -96,6 +98,9 @@ int parse_commandline(int ac, char * av[], po::options_description &desc, genera
     }
     if (params.ndims == 3) {
       params.Lz = 1;
+    }
+    if (params.xi != 1.0 && params.anisotropic == false) {
+        std::cerr << "anisotropy parameter xi != 1, but flag anisotropic is set to false. Programm will continue without anisotropy." << std::endl;
     }
     PrintVariableMap(vm);
   }

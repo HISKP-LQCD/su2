@@ -140,14 +140,26 @@ namespace input_file_parsing {
           return gerr;
         }
         Yp::read_verb<double>(gparams.beta, nd["action"], "beta");
+        Yp::read_opt_verb<double>(gparams.xi, nd["action"], "xi");
+        Yp::read_opt_verb<bool>(gparams.anisotropic, nd["action"], "anisotropic");
 
         // measure-u1 parameters
+        Yp::read_opt_verb<size_t>(mparams.icounter, nd["measure"], "icounter");
         Yp::read_opt_verb<size_t>(mparams.nmeas, nd["measure"], "nmeas");
         Yp::read_opt_verb<size_t>(mparams.nstep, nd["measure"], "nstep");
         Yp::read_opt_verb<bool>(mparams.Wloop, nd["measure"], "Wloop");
         Yp::read_opt_verb<bool>(mparams.gradient, nd["measure"], "gradient");
+        Yp::read_opt_verb<bool>(mparams.potential, nd["measure"], "potential");
+        Yp::read_opt_verb<bool>(mparams.potentialsmall, nd["measure"], "potentialsmall");
         if (mparams.gradient) {
           Yp::read_opt_verb<double>(mparams.tmax, nd["measure"], "tmax");
+        }
+        if (mparams.potential || mparams.potentialsmall){
+          Yp::read_opt_verb<bool>(mparams.append, nd["measure"], "append");
+          Yp::read_opt_verb<bool>(mparams.smearspacial, nd["measure"], "smearspacial");
+          Yp::read_opt_verb<size_t>(mparams.n_apesmear, nd["measure"], "n_apesmear");
+          Yp::read_opt_verb<double>(mparams.alpha, nd["measure"], "alpha");
+          Yp::read_opt_verb<double>(mparams.sizeloops, nd["measure"], "sizeloops");
         }
         Yp::read_opt_verb<std::string>(mparams.confdir, nd["measure"], "confdir");
 

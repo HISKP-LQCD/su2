@@ -21,6 +21,8 @@ namespace global_parameters {
     size_t ndims = 4; // number of dimensions, 2 <= ndims <= 4
     double beta; // beta value
     double m0; // bare quark mass
+    double xi = 1.0; // anisotropy parameter
+    bool anisotropic = false; // use anisotropic lattice
   };
 
   /* optional parameters for the hmc the in U(1) theory */
@@ -59,6 +61,15 @@ namespace global_parameters {
     bool gradient = false; // wether to measure the gredient flow or not
     double tmax = 1.0; // tmax for gradient flow"
     std::string confdir = "./"; // directory where gauge configurations are stored
+    
+    bool potential = false; //measure potential: the loops W(x, t, y=z=0) and W(x, y, t=z=0) are measured with a maximum size of lattice extent * sizeloops, and written to separate files. Only available for ndims=3,4
+    bool potentialsmall = false; //The loops W(x, t, y) are measured up to x, y=min(4, lattice extent), t <= Lt * sizeloops and saved to one file. Only available for ndim=3
+    bool append = false; //are measurements for potential appended to an existing file, or should it be overwritten?
+    double sizeloops = 0.5; //Wilson-Loops are measured up to this fraction of the lattice extent
+    size_t n_apesmear = 0; //number of APE smearings done on the lattice before measurement. 
+    //APE-smearing is done before measuring the potential and small potential, it does not affect the gradient flow and Wilson-loops
+    double alpha = 1.0; //parameter alpha for APE smearings
+    bool smearspacial = false; //should smearing be done only for spacial links?
   };
 
 } // namespace global_parameters

@@ -10,6 +10,7 @@
 #include<list>
 #include<iostream>
 #include<cmath>
+#include<map>
 
 enum integrators { LEAPFROG = 0, LP_LEAPFROG = 1, OMF4 = 2, LP_OMF4 = 3, EULER = 4, RUTH = 5, OMF2 = 6};
 
@@ -274,5 +275,38 @@ template<typename Float, class Group> integrator<Float, Group>* set_integrator(c
     std::cout << "Integrator does not match, using default" << std::endl;
     integ = new leapfrog<Float, Group>();
   }
+  return integ;
+}
+
+
+/* setting the integrator from its name, not from a number */
+template<typename Float, class Group> integrator<Float, Group>* set_integrator(const std::string& name, const size_t exponent) {
+  integrator<Float, Group> * integ;
+  if(name == "leapfrog"){
+    integ = new leapfrog<Float, Group>();
+  }
+  else if(name == "lp_leapfrog") {
+    integ = new lp_leapfrog<Float, Group>(exponent);
+  }
+  else if(name == "omf4") {
+    integ = new omf4<Float, Group>();
+  }
+  else if(name == "lp_omf4") {
+    integ = new lp_omf4<Float, Group>(exponent);
+  }
+  else if(name == "euler") {
+    integ = new euler<Float, Group>();
+  }
+  else if(name == "ruth") {
+    integ = new ruth<Float, Group>();
+  }
+  else if(name == "omf2") {
+    integ = new omf2<Float, Group>();
+  }
+  else {
+    std::cout << "Integrator does not match, using default" << std::endl;
+    integ = new leapfrog<Float, Group>();
+  }
+  std::cout << "## MD integrator: "<< name << std::endl;
   return integ;
 }

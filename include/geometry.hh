@@ -1,6 +1,13 @@
+// geometry.hh
+
 #pragma once
 
 #include <cstddef>
+
+namespace spacetime_lattice{
+  const size_t nd_max = 4; // maximum number of spacetime dimensions supported
+}
+
 
 class geometry { 
 public:

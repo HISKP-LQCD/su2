@@ -1,23 +1,30 @@
-# Input file example for the measure-u1 program
-
-# general parameters
+# measure.input
 
 geometry:
-  X : 4
-  Y : 4
-  Z : 1
-  T : 4
-  ndims : 4
+  X: 4
+  Y: 4
+  Z: 1
+  T: 4
+  ndims: 3
 
-action:
-  beta :  1.9
+begin_monomials:
+  gauge:
+    beta: 1.9
+    xi : 1.0
+    anisotropic : false
 
-# measure parameters
-
-measure:
-  nmeas : 10
-  nstep : 1
-  Wloop : true
-  gradient :  true
-  #tmax : 1.0
-  confdir : "./"
+begin_measurements:
+  confdir: "./"
+  nmeas: 3
+  nstep: 1
+  gradient:
+    tmax : 1.0
+  Wloop: true
+  potential:
+    potential : true
+    potentialsmall : false
+    append : false
+    n_apesmears : 0
+    alpha : 1.0
+    smearspacial : true
+    sizeloops : 0.5

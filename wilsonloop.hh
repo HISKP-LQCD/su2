@@ -98,24 +98,16 @@ template<class Group=su2> double wilsonloop_non_planar(gaugeconfig<Group> &U, st
     //parallelized with code from gauge_energy
   double loop = 0.;
   typedef typename accum_type<Group>::type accum;
-  #ifdef _USE_OMP_
-  int threads = omp_get_max_threads();
-  double * omp_acc = new double[threads];
-  #pragma omp parallel
-  {
-    int thread_num = omp_get_thread_num();
-  #endif
-  double tmp = 0.;
-  //needed if vector with directions contains more than 4 entries/if another order than t-x-y-z is wanted
-  size_t directionloop;
   
-  #pragma omp for
+  #pragma omp parallel for reduction (+:loop)
   for (size_t x0 = 0; x0 < U.getLt(); x0++) {
     for (size_t x1 = 0; x1 < U.getLx(); x1++) {
       for (size_t x2 = 0; x2 < U.getLy(); x2++) {
         for (size_t x3 = 0; x3 < U.getLz(); x3++) {
           std::vector<size_t> xrun = {x0, x1, x2, x3};
           accum L(1., 0.);
+          //needed if vector with directions contains more than 4 entries/if another order than t-x-y-z is wanted
+          size_t directionloop;
           for(size_t direction = 0; direction < r.size(); direction++){ 
             directionloop = (direction + U.getndims()) % U.getndims();
             for (size_t length = 0; length < r[direction]; length++){
@@ -130,22 +122,11 @@ template<class Group=su2> double wilsonloop_non_planar(gaugeconfig<Group> &U, st
               L *= U(xrun, directionloop).dagger();
             } 
           }
-          tmp += retrace(L);
+          loop += retrace(L);
         }
       }
     }
   }
-  #ifdef _USE_OMP_
-    omp_acc[thread_num] = tmp;
-    loop = 0.;
-  }
-  for(size_t i = 0; i < threads; i++) {
-    loop += omp_acc[i];
-  }
-  delete[] omp_acc;
-  #else
-  loop = tmp;
-  #endif
   return loop;
 }
 

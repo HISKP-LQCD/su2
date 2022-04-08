@@ -216,7 +216,7 @@ namespace input_file_parsing {
 
         // measure-u1 parameters
         const YAML::Node &nMS = nd["begin_metropolis"];
-        Yp::read_opt_verb<size_t>(mcparams.N_meas, nMS, "N_mmeas");
+        Yp::read_opt_verb<size_t>(mcparams.N_meas, nMS, "N_meas");
         Yp::read_opt_verb<size_t>(mcparams.N_save, nMS, "N_save");
         Yp::read_opt_verb<size_t>(mcparams.icounter, nMS, "icounter");
         Yp::read_opt_verb<size_t>(mcparams.seed, nMS, "seed");

@@ -122,10 +122,10 @@ template<class Group> void compute_all_loops(const gaugeconfig<Group> &U, std::s
 
   // printing the data in the format t L(r=1) L(r=2) ... L(r=Lx-1)
   for(size_t t = 1; t < Lt; t++) {
-    os << t << " ";
+    os << t;
     for(size_t r = 1; r < Lx; r++) {
       double loop = wilsonloop(U, r, t);
-      os << std::scientific << std::setw(15) << loop << " ";
+      os << " " << std::scientific << std::setw(15) << loop;
     }
     os << std::endl;
   }
@@ -136,10 +136,10 @@ template<class Group> void compute_spacial_loops(gaugeconfig<Group> &U, std::str
   std::ofstream os(path, std::ios::out);
   size_t r[2] = {2, 8};
   for(size_t t = 1; t < U.getLt(); t++) {
-    os << t << " ";
+    os << t;
     for(size_t i = 0; i < 2; i++) {
       double loop = wilsonloop(U, r[i], t);
-      os << std::scientific << std::setw(15) << loop << " ";
+      os << " " << std::scientific << std::setw(15) << loop << " ";
     }
     os << std::endl;
   }

@@ -196,5 +196,55 @@ namespace input_file_parsing {
 
     } // namespace measure
 
+    namespace metropolis {
+
+      int parse_input_file(const std::string &file,
+                           gp::physics &pparams,
+                           gp::metropolis_u1 &mcparams) {
+        std::cout << "## Parsing input file: " << file << "\n";
+        const YAML::Node nd = YAML::LoadFile(file);
+
+        parse_geometry(nd, pparams);
+
+
+        // beta, xi value from the gauge action
+        Yp::read_verb<double>(pparams.beta, nd["begin_monomials"]["gauge"], "beta");
+        Yp::read_opt_verb<bool>(pparams.anisotropic, nd["begin_monomials"]["gauge"], "anisotropic");
+        if(pparams.anisotropic){
+          Yp::read_opt_verb<double>(pparams.xi, nd["begin_monomials"]["gauge"], "xi");
+        }
+
+        // measure-u1 parameters
+        const YAML::Node &nMS = nd["begin_metropolis"];
+        Yp::read_opt_verb<size_t>(mcparams.N_meas, nMS, "N_mmeas");
+        Yp::read_opt_verb<size_t>(mcparams.N_save, nMS, "N_save");
+        Yp::read_opt_verb<size_t>(mcparams.icounter, nMS, "icounter");
+        Yp::read_opt_verb<size_t>(mcparams.seed, nMS, "seed");
+        
+        Yp::read_opt_verb<std::string>(mcparams.outdir, nMS, "outdir");
+        Yp::read_opt_verb<std::string>(mcparams.conf_basename, nMS, "conf_basename");
+        Yp::read_opt_verb<size_t>(mcparams.beta_str_width, nMS, "beta_str_width");
+        Yp::read_opt_verb<bool>(mcparams.restart, nMS, "restart");
+        if(mcparams.restart){
+          Yp::read_opt_verb<std::string>(mcparams.configfilename, nMS, "configfilename");
+        }
+        
+
+        Yp::read_verb<double>(mcparams.heat, nMS, "heat");
+        Yp::read_verb<double>(mcparams.delta, nMS, "delta");
+        Yp::read_opt_verb<size_t>(mcparams.N_hit, nMS, "N_hit");
+        return 0;
+
+    
+    //~ bool restart = false; // restart from an existing configuration
+    //~ std::string configfilename = ""; // configuration filename used in case of restart
+    
+    //~ size_t N_hit = 10; //N_hit updates are performed on each link during one sweep
+    //~ double delta = 1.0; //determines if thermalization starts from a hot (=1) or cold(=0) config
+     
+      }
+
+    } // namespace metropolis
+
   } // namespace u1
 } // namespace input_file_parsing

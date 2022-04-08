@@ -76,11 +76,11 @@ namespace input_file_parsing {
 
   /**
    * @brief parsing geometrical parameters
-   * Parsing the spacetime lattice extensions and number of dimensions from theinput file
+   * Parsing the spacetime lattice extensions and number of dimensions from the input file.
+   * If invalid, the program aborts
    * @param pparams physics parameter structure
-   * @return int error value
    */
-    int parse_geometry(const YAML::Node &nd, gp::physics &pparams);
+    void parse_geometry(const YAML::Node &nd, gp::physics &pparams);
 
     namespace hmc {
       int parse_input_file(const std::string &file,

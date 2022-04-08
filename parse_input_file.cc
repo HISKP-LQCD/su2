@@ -35,7 +35,7 @@ namespace YAML_parsing {
   template <class T>
   void read_opt_verb(T &x, const YAML::Node &nd, const std::string &name) {
     if (nd[name]) {
-      read<T>(x, nd, name);
+      read_verb<T>(x, nd, name);
     } else {
       std::cout << "## " << name << "=" << x << " (default)\n";
     }
@@ -69,7 +69,7 @@ namespace input_file_parsing {
   namespace u1 {
     namespace Yp = YAML_parsing;
 
-    int parse_geometry(const YAML::Node &nd, gp::physics &pparams){
+    void parse_geometry(const YAML::Node &nd, gp::physics &pparams){
 
         // physics parameters
         Yp::read_verb<size_t>(pparams.Lx, nd["geometry"], "X");
@@ -80,10 +80,12 @@ namespace input_file_parsing {
 
         int gerr = validate_geometry(pparams);
         if (gerr > 0) {
-          return gerr;
+          std::cerr
+            << "Error: invalid geometry parameters. Check X,Y,Z,ndims in your input file."
+            << std::endl;
         }
 
-        return gerr;
+        return;
     }
 
     namespace hmc {

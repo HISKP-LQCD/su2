@@ -60,7 +60,7 @@ namespace global_parameters {
     size_t beta_str_width = 4; // length of the beta value config filename  
   };
 
-  /* optional parameters for the hmc the in U(1) theory */
+  /* optional parameters for the measure program the in U(1) theory */
   struct measure_u1 {
     size_t nmeas = 10; // total number of sweeps
     size_t icounter = 0; // initial counter for updates
@@ -83,6 +83,25 @@ namespace global_parameters {
 
     std::string conf_basename = "config_u1"; // root of the output files names
     size_t beta_str_width = 6; // length of the beta value config filename  
+  };
+  
+  /* optional parameters for the MCMC the in U(1) theory */
+  struct metropolis_u1 {
+    size_t N_meas = 10; // total number of sweeps
+    size_t icounter = 0; // initial counter for updates
+    size_t seed = 13526463; // PRNG seed
+
+    size_t N_save = 100; // save each N_save config
+    
+    bool restart = false; // restart from an existing configuration
+    std::string configfilename = ""; // configuration filename used in case of restart
+    std::string outdir = "./"; // directory where gauge configurations are stored
+    std::string conf_basename = "config_u1"; // root of the output files names
+    size_t beta_str_width = 6; // length of the beta value config filename 
+    
+    size_t N_hit = 10; //N_hit updates are performed on each link during one sweep
+    double heat = 1.0; //determines if thermalization starts from a hot (=1) or cold(=0) config
+    double delta = 1.0; // quantifies how much the prooposed new link can differ from the current link
   };
 
 } // namespace global_parameters

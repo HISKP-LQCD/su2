@@ -132,7 +132,7 @@ int main(int ac, char *av[]) {
   ss_basename << ".b" << std::fixed << std::setprecision(hparams.beta_str_width)
               << pparams.beta;
 
-  for (size_t i = hparams.icounter; i < hparams.N_meas + hparams.icounter; i++) {
+  for (size_t i = hparams.icounter; i < hparams.n_meas + hparams.icounter; i++) {
     mdparams.disablerevtest();
     if (i > 0 && hparams.N_rev != 0 && (i) % hparams.N_rev == 0) {
       mdparams.enablerevtest();
@@ -173,7 +173,7 @@ int main(int ac, char *av[]) {
       U.save(hparams.outdir + "/" + oss_i.str());
     }
   }
-  std::cout << "## Acceptance rate: " << rate / static_cast<double>(hparams.N_meas)
+  std::cout << "## Acceptance rate: " << rate / static_cast<double>(hparams.n_meas)
             << std::endl;
 
   std::ostringstream oss;

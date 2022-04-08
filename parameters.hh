@@ -29,7 +29,7 @@ namespace global_parameters {
   /* Optional parameters for the hmc the in U(1) theory */
   struct hmc_u1 {
     size_t N_save = 1000; // N_save
-    size_t N_meas = 10; // total number of sweeps
+    size_t n_meas = 10; // total number of sweeps
     size_t icounter = 0; // initial counter for updates
     size_t seed = 13526463; // PRNG seed
     double heat = 1.0; // randomness of the initial config, 1: hot, 0: cold
@@ -60,7 +60,7 @@ namespace global_parameters {
 
   /* optional parameters for the hmc the in U(1) theory */
   struct measure_u1 {
-    size_t nmeas = 10; // total number of sweeps
+    size_t n_meas = 10; // total number of sweeps
     size_t icounter = 0; // initial counter for updates
     size_t seed = 13526463; // PRNG seed
 

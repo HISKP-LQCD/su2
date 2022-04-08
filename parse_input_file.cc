@@ -124,7 +124,7 @@ namespace input_file_parsing {
 
         // hmc-u1 parameters
         Yp::read_verb<size_t>(hparams.N_save, nd["hmc"], "n_save");
-        Yp::read_verb<size_t>(hparams.N_meas, nd["hmc"], "n_meas");
+        Yp::read_verb<size_t>(hparams.n_meas, nd["hmc"], "n_meas");
         Yp::read_verb<size_t>(hparams.icounter, nd["hmc"], "counter");
         Yp::read_verb<double>(hparams.heat, nd["hmc"], "heat");
         Yp::read_opt_verb<size_t>(hparams.seed, nd["hmc"], "seed");
@@ -162,7 +162,7 @@ namespace input_file_parsing {
 
         // measure-u1 parameters
         const YAML::Node &nMS = nd["begin_measurements"];
-        Yp::read_opt_verb<size_t>(mparams.nmeas, nMS, "nmeas");
+        Yp::read_opt_verb<size_t>(mparams.n_meas, nMS, "n_meas");
         Yp::read_opt_verb<size_t>(mparams.nstep, nMS, "nstep");
         Yp::read_opt_verb<bool>(mparams.Wloop, nMS, "Wloop");
         if (nMS["gradient"]) {

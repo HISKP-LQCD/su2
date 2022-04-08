@@ -13,7 +13,7 @@ begin_monomials:
 
 begin_measurements:
   confdir: "./"
-  nmeas: 3
+  n_meas: 3
   nstep: 1
   gradient:
     tmax : 1.0

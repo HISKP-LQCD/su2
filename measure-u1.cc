@@ -63,7 +63,7 @@ int main(int ac, char* av[]) {
                 << pparams.Lt;
     ss_basename << ".b" << std::fixed << std::setprecision(mparams.beta_str_width)
                 << pparams.beta;
-  for(size_t i = mparams.icounter; i < mparams.nmeas*mparams.nstep+mparams.icounter; i+=mparams.nstep) {
+  for(size_t i = mparams.icounter; i < mparams.n_meas*mparams.nstep+mparams.icounter; i+=mparams.nstep) {
     std::ostringstream os;
     os << mparams.confdir << ss_basename.str() << "." << i << std::ends;
     int ierrU =  U.load(os.str());

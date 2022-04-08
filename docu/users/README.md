@@ -9,7 +9,7 @@ This directory contains the users guide to this project.
 
 ## Library usage
 
-The library contains code for both $SU(2)$ and $U(1)$ in $d=1,2,3,4$ dimensions.
+The library contains code for both $SU(2)$ and $U(1)$ in $d=2,3,4$ dimensions.
 
 ### $U(1)$ theory
 

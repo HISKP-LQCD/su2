@@ -72,7 +72,7 @@ int main(int ac, char* av[]) {
   else
     os.open("output.u1-metropolis.data", std::ios::app);
   double rate = 0.;
-  for(size_t i = gparams.icounter; i < gparams.N_meas + gparams.icounter; i++) {
+  for(size_t i = gparams.icounter; i < gparams.n_meas + gparams.icounter; i++) {
     std::mt19937 engine(gparams.seed+i);
     rate += sweep(U, engine, delta, N_hit, gparams.beta);
     double energy = gauge_energy(U);
@@ -89,7 +89,7 @@ int main(int ac, char* av[]) {
       U.save(oss.str());
     }
   }
-  cout << "## Acceptance rate " << rate/static_cast<double>(gparams.N_meas) << endl;
+  cout << "## Acceptance rate " << rate/static_cast<double>(gparams.n_meas) << endl;
 
   std::ostringstream oss;
   oss << "config_u1." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz<< "." << gparams.Lt << ".b" << U.getBeta() << ".final" << std::ends;

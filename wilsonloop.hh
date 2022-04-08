@@ -139,7 +139,7 @@ template<class Group> void compute_spacial_loops(gaugeconfig<Group> &U, std::str
     os << t;
     for(size_t i = 0; i < 2; i++) {
       double loop = wilsonloop(U, r[i], t);
-      os << " " << std::scientific << std::setw(15) << loop << " ";
+      os << " " << std::scientific << std::setw(15) << loop;
     }
     os << std::endl;
   }

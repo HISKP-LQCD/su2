@@ -126,7 +126,7 @@ namespace input_file_parsing {
         Yp::read_verb<size_t>(hparams.N_save, nd["hmc"], "n_save");
         Yp::read_verb<size_t>(hparams.n_meas, nd["hmc"], "n_meas");
         Yp::read_verb<size_t>(hparams.icounter, nd["hmc"], "counter");
-        Yp::read_verb<double>(hparams.heat, nd["hmc"], "heat");
+        Yp::read_verb<bool>(hparams.heat, nd["hmc"], "heat");
         Yp::read_opt_verb<size_t>(hparams.seed, nd["hmc"], "seed");
         Yp::read_opt_verb<std::string>(hparams.configfilename, nd["hmc"], "configname");
         Yp::read_opt_verb<std::string>(hparams.outdir, nd["hmc"], "outdir");

@@ -66,7 +66,7 @@ int main(int ac, char *av[]) {
   } else {
     std::cout << "hotstart "<<hparams.seed<<" "<< hparams.heat<<"\n";
     const double heat_val = (hparams.heat==false)? 1.0: 0.0;
-    hotstart(U, hparams.seed, hparams.heat);
+    hotstart(U, hparams.seed, heat_val);
   }
 
   double plaquette = gauge_energy(U);

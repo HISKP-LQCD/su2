@@ -71,6 +71,7 @@ namespace global_parameters {
     bool gradient = false; // wether to measure the gredient flow or not
     double tmax = 1.0; // tmax for gradient flow"
     std::string confdir = "./"; // directory where gauge configurations are stored
+    std::string resdir = "./"; // directory where results from measurements for potential, potentialsmall are stored
     
     bool potential = false; //measure potential: the loops W(x, t, y=z=0) and W(x, y, t=z=0) are measured with a maximum size of lattice extent * sizeloops, and written to separate files. Only available for ndims=3,4
     bool potentialsmall = false; //The loops W(x, t, y) are measured up to x, y=min(4, lattice extent), t <= Lt * sizeloops and saved to one file. Only available for ndim=3

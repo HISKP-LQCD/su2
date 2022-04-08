@@ -168,6 +168,7 @@ namespace input_file_parsing {
         Yp::read_opt_verb<size_t>(mparams.nmeas, nMS, "nmeas");
         Yp::read_opt_verb<size_t>(mparams.nstep, nMS, "nstep");
         Yp::read_opt_verb<size_t>(mparams.icounter, nMS, "icounter");
+        Yp::read_opt_verb<size_t>(mparams.seed, nMS, "seed");
         Yp::read_opt_verb<bool>(mparams.Wloop, nMS, "Wloop");
         //optional parameters for gradient
         if (nMS["gradient"]) {
@@ -185,6 +186,7 @@ namespace input_file_parsing {
         }
         
         Yp::read_opt_verb<std::string>(mparams.confdir, nMS, "confdir");
+        Yp::read_opt_verb<std::string>(mparams.resdir, nMS, "resdir");
 
         Yp::read_opt_verb<std::string>(mparams.conf_basename, nMS, "conf_basename");
         Yp::read_opt_verb<size_t>(mparams.beta_str_width, nMS, "beta_str_width");

@@ -55,6 +55,7 @@ int main(int ac, char* av[]) {
   }
   
   boost::filesystem::create_directories(boost::filesystem::absolute(mparams.confdir));
+  boost::filesystem::create_directories(boost::filesystem::absolute(mparams.resdir));
 
 
   gaugeconfig<_u1> U(pparams.Lx, pparams.Ly, pparams.Lz, pparams.Lt, pparams.ndims, pparams.beta);
@@ -62,7 +63,7 @@ int main(int ac, char* av[]) {
   // set basename for configs for easier reading in, anisotropy is only added to filename if needed
   const std::string conf_basename = mparams.conf_basename;
   std::stringstream ss_basename;
-  ss_basename << mparams.conf_basename << ".";
+  ss_basename << mparams.confdir << "/" << mparams.conf_basename << ".";
   ss_basename << pparams.Lx << "." << pparams.Ly << "." << pparams.Lz << "."
               << pparams.Lt;
   ss_basename << ".b" << std::fixed << std::setprecision(mparams.beta_str_width)
@@ -72,30 +73,46 @@ int main(int ac, char* av[]) {
                 << pparams.xi;
   }
   
+  //filename needed for saving results from potential and potentialsmall
+  std::ostringstream filename_fine;
+  std::ostringstream filename_coarse;
+  std::ostringstream filename_nonplanar;
+  
+  filename_fine << mparams.resdir << "/" << "result" << pparams.ndims-1 << "p1d.u1potential.rotated.Nt" << pparams.Lt 
+    << ".Ns" << pparams.Lx << ".b" << std::fixed << std::setprecision(mparams.beta_str_width) << pparams.beta
+    << ".xi" << std::fixed << std::setprecision(mparams.beta_str_width) << pparams.xi
+    << ".nape" << mparams.n_apesmear << ".alpha" << std::fixed << mparams.alpha << "finedistance" << std::ends
+    ;  
+  
+  filename_coarse << mparams.resdir << "/" << "result" << pparams.ndims-1 << "p1d.u1potential.rotated.Nt" << pparams.Lt 
+    << ".Ns" << pparams.Lx << ".b" << std::fixed << std::setprecision(mparams.beta_str_width) << pparams.beta
+    << ".xi" << std::fixed << std::setprecision(mparams.beta_str_width) << pparams.xi
+    << ".nape" << mparams.n_apesmear << ".alpha" << std::fixed << mparams.alpha << "coarsedistance" << std::ends
+    ;  
+  
+  filename_nonplanar << mparams.resdir << "/" << "result" << pparams.ndims-1 << "p1d.u1potential.Nt" << pparams.Lt 
+    << ".Ns" << pparams.Lx << ".b" << std::fixed << std::setprecision(mparams.beta_str_width) << pparams.beta
+    << ".xi" << std::fixed << std::setprecision(mparams.beta_str_width) << pparams.xi
+    << ".nape" << mparams.n_apesmear << ".alpha" << std::fixed << mparams.alpha << "nonplanar" << std::ends
+    ; 
+  
+  
+  
   //needed for measuring potential
   std::ofstream resultfile;
-  char filename[200];
-  double loop;
   size_t maxsizenonplanar = (pparams.Lx < 4) ? pparams.Lx : 4;
   
   // write explanatory headers into result-files
   if(mparams.potential) {
       //~ open file for saving results
-    
     if(pparams.ndims == 2){
-      std::cout << "Currently not working for dim = 2, aborting" << std::endl;
-      return 0;
+      std::cout << "Currently not working for dim = 2, no measurements for the potential will be made" << std::endl;
+      mparams.potential = false;
     }
     
     //~ print heads of columns: W(r, t), W(x, y)
     if(!mparams.append && (pparams.ndims == 3 || pparams.ndims == 4)){
-      if(pparams.ndims == 3){
-        sprintf(filename, "result2p1d.u1potential.rotated.Nt%lu.Ns%lu.b%f.xi%f.nape%lu.alpha%ffinedistance",pparams.Lt, pparams.Lx,U.getBeta(), pparams.xi, mparams.n_apesmear, mparams.alpha);
-      }
-      if(pparams.ndims == 4){
-        sprintf(filename, "result3p1d.u1potential.rotated.Nt%lu.Ns%lu.b%f.xi%f.nape%lu.alpha%ffinedistance",pparams.Lt, pparams.Lx,U.getBeta(), pparams.xi, mparams.n_apesmear, mparams.alpha);
-      }
-      resultfile.open(filename, std::ios::out);
+      resultfile.open(filename_fine.str(), std::ios::out);
       resultfile << "##";
       for (size_t t = 1 ; t <= pparams.Lt*mparams.sizeWloops ; t++){
           for (size_t x = 1 ; x <= pparams.Lx*mparams.sizeWloops ; x++){
@@ -105,13 +122,8 @@ int main(int ac, char* av[]) {
       resultfile << "counter";
       resultfile << std::endl; 
       resultfile.close();
-      if(pparams.ndims == 3){
-        sprintf(filename, "result2p1d.u1potential.rotated.Nt%lu.Ns%lu.b%f.xi%f.nape%lu.alpha%fcoarsedistance",pparams.Lt, pparams.Lx,U.getBeta(), pparams.xi, mparams.n_apesmear, mparams.alpha);
-      }
-      if(pparams.ndims == 4){
-        sprintf(filename, "result3p1d.u1potential.rotated.Nt%lu.Ns%lu.b%f.xi%f.nape%lu.alpha%fcoarsedistance",pparams.Lt, pparams.Lx,U.getBeta(), pparams.xi, mparams.n_apesmear, mparams.alpha);
-      }
-      resultfile.open(filename, std::ios::out);
+      
+      resultfile.open(filename_coarse.str(), std::ios::out);
       resultfile << "##";
       for (size_t y = 1 ; y <= pparams.Ly*mparams.sizeWloops ; y++){
           for (size_t x = 1 ; x <= pparams.Lx*mparams.sizeWloops ; x++){
@@ -130,16 +142,13 @@ int main(int ac, char* av[]) {
       //~ open file for saving results
     
     if(pparams.ndims == 2 || pparams.ndims == 4){
-      std::cout << "Currently not working for dim = 2 and dim = 4, aborting" << std::endl;
-      return 0;
+      std::cout << "Currently not working for dim = 2 and dim = 4, no nonplanar measurements will be made" << std::endl;
+      mparams.potentialsmall = false;
     }
     
     //~ print heads of columns
     if(!mparams.append && (pparams.ndims == 3)){
-      if(pparams.ndims == 3){
-        sprintf(filename, "result2p1d.u1potential.Nt%lu.Ns%lu.b%f.xi%f.nape%lu.alpha%fnonplanar",pparams.Lt, pparams.Lx,U.getBeta(), pparams.xi, mparams.n_apesmear, mparams.alpha);
-      }
-      resultfile.open(filename, std::ios::out);
+      resultfile.open(filename_nonplanar.str(), std::ios::out);
       resultfile << "##";
       for (size_t t = 0 ; t <= pparams.Lt*mparams.sizeWloops ; t++){
         for (size_t x = 0 ; x <= maxsizenonplanar ; x++){
@@ -210,11 +219,11 @@ int main(int ac, char* av[]) {
       for (size_t smears = 0 ; smears < mparams.n_apesmear ; smears +=1){
         smearlatticeape(U, mparams.alpha, mparams.smear_spatial_only);
       }
+      double loop;
     if(mparams.potential) {
       //~ //calculate wilsonloops for potential
       if(pparams.ndims == 4){
-        sprintf(filename, "result3p1d.u1potential.rotated.Nt%lu.Ns%lu.b%f.xi%f.nape%lu.alpha%ffinedistance",pparams.Lt, pparams.Lx,U.getBeta(), pparams.xi, mparams.n_apesmear, mparams.alpha);
-        resultfile.open(filename, std::ios::app);
+        resultfile.open(filename_fine.str(), std::ios::app);
         for (size_t t = 1 ; t <= pparams.Lt*mparams.sizeWloops ; t++){
           for (size_t x = 1 ; x <= pparams.Lx*mparams.sizeWloops ; x++){
             loop  = wilsonloop_non_planar(U, {t, x, 0, 0});
@@ -225,8 +234,7 @@ int main(int ac, char* av[]) {
         resultfile << std::endl; 
         resultfile.close();
         
-        sprintf(filename, "result3p1d.u1potential.rotated.Nt%lu.Ns%lu.b%f.xi%f.nape%lu.alpha%fcoarsedistance",pparams.Lt, pparams.Lx,U.getBeta(), pparams.xi, mparams.n_apesmear, mparams.alpha);
-        resultfile.open(filename, std::ios::app);
+        resultfile.open(filename_coarse.str(), std::ios::app);
         for (size_t y = 1 ; y <= pparams.Ly*mparams.sizeWloops ; y++){
           for (size_t x = 1 ; x <= pparams.Lx*mparams.sizeWloops ; x++){
             loop  = wilsonloop_non_planar(U, {0, x, y, 0});
@@ -239,8 +247,7 @@ int main(int ac, char* av[]) {
         resultfile.close();
       }
       if(pparams.ndims == 3){
-        sprintf(filename, "result2p1d.u1potential.rotated.Nt%lu.Ns%lu.b%f.xi%f.nape%lu.alpha%ffinedistance",pparams.Lt, pparams.Lx,U.getBeta(), pparams.xi, mparams.n_apesmear, mparams.alpha);
-        resultfile.open(filename, std::ios::app);
+        resultfile.open(filename_fine.str(), std::ios::app);
         for (size_t t = 1 ; t <= pparams.Lt*mparams.sizeWloops ; t++){
           for (size_t x = 1 ; x <= pparams.Lx*mparams.sizeWloops ; x++){
             loop  = wilsonloop_non_planar(U, {t, x, 0});
@@ -252,8 +259,7 @@ int main(int ac, char* av[]) {
         resultfile << std::endl; 
         resultfile.close();
         
-        sprintf(filename, "result2p1d.u1potential.rotated.Nt%lu.Ns%lu.b%f.xi%f.nape%lu.alpha%fcoarsedistance",pparams.Lt, pparams.Lx,U.getBeta(), pparams.xi, mparams.n_apesmear, mparams.alpha);
-        resultfile.open(filename, std::ios::app);
+        resultfile.open(filename_coarse.str(), std::ios::app);
         for (size_t y = 1 ; y <= pparams.Ly*mparams.sizeWloops ; y++){
           for (size_t x = 1 ; x <= pparams.Lx*mparams.sizeWloops ; x++){
             loop  = wilsonloop_non_planar(U, {0, x, y});
@@ -268,10 +274,7 @@ int main(int ac, char* av[]) {
     }
     
     if(mparams.potentialsmall) {
-      if(pparams.ndims == 3){
-        sprintf(filename, "result2p1d.u1potential.Nt%lu.Ns%lu.b%f.xi%f.nape%lu.alpha%fnonplanar",pparams.Lt, pparams.Lx,U.getBeta(), pparams.xi, mparams.n_apesmear, mparams.alpha);
-      }
-      resultfile.open(filename, std::ios::app);
+      resultfile.open(filename_nonplanar.str(), std::ios::app);
       for (size_t t = 0 ; t <= pparams.Lt*mparams.sizeWloops ; t++){
         for (size_t x = 0 ; x <= maxsizenonplanar ; x++){
           for (size_t y = 0 ; y <= maxsizenonplanar ; y++){

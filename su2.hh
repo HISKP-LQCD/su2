@@ -18,6 +18,8 @@ public:
   friend inline _su2 operator+(const _su2 &U1, const _su2 &U2);
   friend inline _su2 operator-(const _su2 &U1, const _su2 &U2);
   friend inline _su2 operator*(const _su2 &U1, const _su2 &U2);
+  friend inline _su2 operator*(const Complex &U1, const _su2 &U2);
+  friend inline _su2 operator*(const _su2 &U1, const Complex &U2);
   _su2& operator*=(const _su2 &U1) {
     Complex a = this->a;
     this->a = a*U1.a - this->b*std::conj(U1.b);
@@ -101,6 +103,20 @@ inline _su2 operator-(const _su2 &U1, const _su2 &U2) {
   res.a = U1.a - U2.a;
   res.b = U1.b - U2.b;
   return(res);
+}
+
+inline _su2 operator*(const Complex &U1, const _su2 &U2) {
+    _su2 res;
+    res.a = U2.a * U1;
+    res.b = U2.b * U1;
+    return(res);
+}
+
+inline _su2 operator*(const _su2 &U1, const Complex &U2) {
+    _su2 res;
+    res.a = U1.a * U2;
+    res.b = U1.b * U2;
+    return(res);
 }
 
 

@@ -28,5 +28,13 @@ The library contains code for both $SU(2)$ and $U(1)$ in $d=2,3,4$ dimensions.
 - Measurable observables: 
   * Planar Wilson Loop
   * Gradient Flow 
+  * Planar Wilson Loops seperated by temporal and spatial direction
+  * Nonplanar Wilson Loops up to an extent of 4
+  
+#### Metropolis-Hastings MCMC
+
+- Program: ```main-u1.cc```
+- Parameters parsing: ```.yaml``` input file
+- Input file example: see [./metropolis-u1.input.example](metropolis-u1.input.example) 
  
 ---

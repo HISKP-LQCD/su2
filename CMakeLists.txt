@@ -88,6 +88,8 @@ add_executable(su2-kramers kramers.cc)
 add_executable(su2-measure measure.cc)
 add_executable(u1-measure measure-u1.cc)
 add_executable(test-groups test.cc)
+add_executable(scaling scaling.cc)
+add_executable(try tryreduce.cc)
 
 set(
     link_dir  
@@ -97,7 +99,7 @@ set(
 
 target_link_directories(su2 PUBLIC ${link_dir})
 
-foreach(target su2-hmc u1-hmc su2-metropolis u1-metropolis su2-kramers su2-measure u1-measure test-groups)
+foreach(target su2-hmc u1-hmc su2-metropolis u1-metropolis su2-kramers su2-measure u1-measure test-groups scaling try)
   target_link_libraries(${target} su2 libyaml-cpp.a)
   target_link_directories(${target} PUBLIC ${link_dir})
 

@@ -94,6 +94,14 @@ namespace input_file_parsing {
                            gp::measure_u1 &mparams);
 
     } // namespace measure
+    
+
+    namespace metropolis {
+      int parse_input_file(const std::string &file,
+                           gp::physics &pparams,
+                           gp::metropolis_u1 &mcparams);
+
+    } // namespace metropolis
 
   } // namespace u1
 

@@ -24,6 +24,8 @@ namespace global_parameters {
 
     bool include_staggered_fermions = false; // truen when the action contains staggered fermions.
     double m0; // bare quark mass
+    double xi = 1.0; // anisotropy parameter
+    bool anisotropic = false; // use anisotropic lattice
   };
 
   /* Optional parameters for the hmc the in U(1) theory */
@@ -58,7 +60,7 @@ namespace global_parameters {
     size_t beta_str_width = 4; // length of the beta value config filename  
   };
 
-  /* optional parameters for the hmc the in U(1) theory */
+  /* optional parameters for the measure program the in U(1) theory */
   struct measure_u1 {
     size_t n_meas = 10; // total number of sweeps
     size_t icounter = 0; // initial counter for updates
@@ -69,9 +71,38 @@ namespace global_parameters {
     bool gradient = false; // wether to measure the gredient flow or not
     double tmax = 1.0; // tmax for gradient flow"
     std::string confdir = "./"; // directory where gauge configurations are stored
+    std::string resdir = "./"; // directory where results from measurements for potential, potentialsmall are stored
+    
+    bool potential = false; //measure potential: the loops W(x, t, y=z=0) and W(x, y, t=z=0) are measured with a maximum size of lattice extent * sizeloops, and written to separate files. Only available for ndims=3,4
+    bool potentialsmall = false; //The loops W(x, t, y) are measured up to x, y=min(4, lattice extent), t <= Lt * sizeloops and saved to one file. Only available for ndim=3
+    bool append = false; //are measurements for potential appended to an existing file, or should it be overwritten?
+    double sizeWloops = 0.5; //Wilson-Loops are measured up to this fraction of the lattice extent
+    size_t n_apesmear = 0; //number of APE smearings done on the lattice before measurement. 
+    //APE-smearing is done before measuring the potential and small potential, it does not affect the gradient flow and Wilson-loops
+    double alpha = 1.0; //parameter alpha for APE smearings
+    bool smear_spatial_only = false; //should smearing be done only for spacial links?
 
     std::string conf_basename = "config_u1"; // root of the output files names
-    size_t beta_str_width = 4; // length of the beta value config filename  
+    size_t beta_str_width = 6; // length of the beta value config filename  
+  };
+  
+  /* optional parameters for the MCMC the in U(1) theory */
+  struct metropolis_u1 {
+    size_t n_meas = 10; // total number of sweeps
+    size_t icounter = 0; // initial counter for updates
+    size_t seed = 13526463; // PRNG seed
+
+    size_t N_save = 100; // save each N_save config
+    
+    bool restart = false; // restart from an existing configuration
+    std::string configfilename = ""; // configuration filename used in case of restart
+    std::string outdir = "./"; // directory where gauge configurations are stored
+    std::string conf_basename = "config_u1"; // root of the output files names
+    size_t beta_str_width = 6; // length of the beta value config filename 
+    
+    size_t N_hit = 10; //N_hit updates are performed on each link during one sweep
+    double heat = 1.0; //determines if thermalization starts from a hot (=1) or cold(=0) config
+    double delta = 1.0; // quantifies how much the prooposed new link can differ from the current link
   };
 
 } // namespace global_parameters

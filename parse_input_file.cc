@@ -157,18 +157,38 @@ namespace input_file_parsing {
 
         parse_geometry(nd, pparams);
 
-        // beta value from the gauge action
+
+        // beta, xi value from the gauge action
         Yp::read_verb<double>(pparams.beta, nd["begin_monomials"]["gauge"], "beta");
+        Yp::read_opt_verb<bool>(pparams.anisotropic, nd["begin_monomials"]["gauge"], "anisotropic");
+        if(pparams.anisotropic){
+          Yp::read_opt_verb<double>(pparams.xi, nd["begin_monomials"]["gauge"], "xi");
+        }
 
         // measure-u1 parameters
         const YAML::Node &nMS = nd["begin_measurements"];
         Yp::read_opt_verb<size_t>(mparams.n_meas, nMS, "n_meas");
         Yp::read_opt_verb<size_t>(mparams.nstep, nMS, "nstep");
+        Yp::read_opt_verb<size_t>(mparams.icounter, nMS, "icounter");
+        Yp::read_opt_verb<size_t>(mparams.seed, nMS, "seed");
         Yp::read_opt_verb<bool>(mparams.Wloop, nMS, "Wloop");
+        //optional parameters for gradient
         if (nMS["gradient"]) {
           Yp::read_opt_verb<double>(mparams.tmax, nMS["gradient"], "tmax");
         }
+        //optional parameters for potentials
+        if (nMS["potential"]){
+          Yp::read_opt_verb<bool>(mparams.potential, nMS["potential"], "potential");
+          Yp::read_opt_verb<bool>(mparams.potentialsmall, nMS["potential"], "potentialsmall");
+          Yp::read_opt_verb<bool>(mparams.append, nMS["potential"], "append");
+          Yp::read_opt_verb<bool>(mparams.smear_spatial_only, nMS["potential"], "smear_spatial_only");
+          Yp::read_opt_verb<size_t>(mparams.n_apesmear, nMS["potential"], "n_apesmear");
+          Yp::read_opt_verb<double>(mparams.alpha, nMS["potential"], "alpha");
+          Yp::read_opt_verb<double>(mparams.sizeWloops, nMS["potential"], "sizeWloops");
+        }
+        
         Yp::read_opt_verb<std::string>(mparams.confdir, nMS, "confdir");
+        Yp::read_opt_verb<std::string>(mparams.resdir, nMS, "resdir");
 
         Yp::read_opt_verb<std::string>(mparams.conf_basename, nMS, "conf_basename");
         Yp::read_opt_verb<size_t>(mparams.beta_str_width, nMS, "beta_str_width");
@@ -177,6 +197,48 @@ namespace input_file_parsing {
       }
 
     } // namespace measure
+
+    namespace metropolis {
+
+      int parse_input_file(const std::string &file,
+                           gp::physics &pparams,
+                           gp::metropolis_u1 &mcparams) {
+        std::cout << "## Parsing input file: " << file << "\n";
+        const YAML::Node nd = YAML::LoadFile(file);
+
+        parse_geometry(nd, pparams);
+
+
+        // beta, xi value from the gauge action
+        Yp::read_verb<double>(pparams.beta, nd["begin_monomials"]["gauge"], "beta");
+        Yp::read_opt_verb<bool>(pparams.anisotropic, nd["begin_monomials"]["gauge"], "anisotropic");
+        if(pparams.anisotropic){
+          Yp::read_opt_verb<double>(pparams.xi, nd["begin_monomials"]["gauge"], "xi");
+        }
+
+        // measure-u1 parameters
+        const YAML::Node &nMS = nd["begin_metropolis"];
+        Yp::read_opt_verb<size_t>(mcparams.n_meas, nMS, "n_meas");
+        Yp::read_opt_verb<size_t>(mcparams.N_save, nMS, "N_save");
+        Yp::read_opt_verb<size_t>(mcparams.icounter, nMS, "icounter");
+        Yp::read_opt_verb<size_t>(mcparams.seed, nMS, "seed");
+        
+        Yp::read_opt_verb<std::string>(mcparams.outdir, nMS, "outdir");
+        Yp::read_opt_verb<std::string>(mcparams.conf_basename, nMS, "conf_basename");
+        Yp::read_opt_verb<size_t>(mcparams.beta_str_width, nMS, "beta_str_width");
+        Yp::read_opt_verb<bool>(mcparams.restart, nMS, "restart");
+        if(mcparams.restart){
+          Yp::read_opt_verb<std::string>(mcparams.configfilename, nMS, "configfilename");
+        }
+        
+
+        Yp::read_verb<double>(mcparams.heat, nMS, "heat");
+        Yp::read_verb<double>(mcparams.delta, nMS, "delta");
+        Yp::read_opt_verb<size_t>(mcparams.N_hit, nMS, "N_hit");
+        return 0;     
+      }
+
+    } // namespace metropolis
 
   } // namespace u1
 } // namespace input_file_parsing

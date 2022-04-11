@@ -10,6 +10,8 @@ geometry:
 begin_monomials:
   gauge:
     beta: 1.9
+    xi : 1.0
+    anisotropic : false
 
 begin_measurements:
   confdir: "./"
@@ -18,3 +20,11 @@ begin_measurements:
   gradient:
     tmax : 1.0
   Wloop: true
+  potential:
+    potential : true
+    potentialsmall : false
+    append : false
+    n_apesmears : 0
+    alpha : 1.0
+    smear_spatial_only : true
+    sizeWloops : 0.5

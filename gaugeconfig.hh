@@ -138,6 +138,7 @@ private:
 template <class T> void gaugeconfig<T>::save(std::string const &path) const {
   std::ofstream ofs(path, std::ios::out | std::ios::binary);
   ofs.write(reinterpret_cast<char const *>(data.data()), storage_size());
+  ofs.close();
   return;
 }
 
@@ -146,6 +147,7 @@ template <class T> int gaugeconfig<T>::load(std::string const &path) {
   std::ifstream ifs(path, std::ios::in | std::ios::binary);
   if (ifs) {
     ifs.read(reinterpret_cast<char *>(data.data()), storage_size());
+    ifs.close();
     return 0;
   } else
     std::cerr << "Error: could not read file from " << path << std::endl;

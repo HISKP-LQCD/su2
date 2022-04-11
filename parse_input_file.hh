@@ -21,14 +21,6 @@
  */
 namespace YAML_parsing {
 
-  inline void print_all_nodes(const YAML::Node& node){
-    for (YAML::const_iterator it = node.begin(); it != node.end(); ++it) {
-      std::string k = it->first.as<std::string>(); // key
-      std::cout << "check " << k << " " << node[k] << "\n";
-    }
-  }
-
-
   /**
    * @brief inspect the input file
    * Reading and initializing input parameters from the YAML file,
@@ -81,15 +73,15 @@ namespace YAML_parsing {
 
     inspect_node(const YAML::Node& n)
     {
-      N = n;
+      N = YAML::Clone(n);
       this->find_all((*this).N, "");
     }
 
     YAML::Node get_outer_node(const std::vector<std::string> &tree) const {
-      YAML::Node node_i = (*this).N;      
+      YAML::Node node_i = YAML::Clone((*this).N);      
       const size_t nt = tree.size();
       for (int i = 0; i < nt; ++i) {
-        node_i = node_i[tree[i]];
+        node_i = YAML::Clone(node_i[tree[i]]);
       }
       return node_i;
     }
@@ -106,17 +98,28 @@ namespace YAML_parsing {
      * @param name string name of the parameter
      */
     template <class T> void read(T &x, const std::vector<std::string> &tree) {
-      const YAML::Node node_i = this->get_outer_node(tree);
+
+      const YAML::Node node_i = YAML::Clone(this->get_outer_node(tree));
       const std::string g_str = this->get_node_str(tree);
+      
 
       try {
         x = node_i.as<T>();
-        G.insert(g_str);
       } catch (...) {
         std::cerr << "Error: check \"" << g_str << "\" in your YAML input file. ";
         std::cerr << boost::typeindex::type_id<T>() << " type was expected. \n";
         abort();
       }
+
+      // adding the node string identifiers to the std::set (*this).U
+      std::vector<std::string> t1 = {};
+      const size_t n = tree.size();
+      for (size_t i = 0; i < n; ++i)
+      {
+        t1.push_back(tree[i]);
+        U.insert(this->get_node_str(t1));
+      }
+
       return;
     }
 
@@ -140,13 +143,44 @@ namespace YAML_parsing {
 
     // read_optional() and output on std::cout
     template <class T> void read_opt_verb(T &x, const std::vector<std::string> &tree) {
-      if (this->get_outer_node(tree)) {
+      std::vector<std::string> tree2 = tree; // 1 level more inside
+      tree2.pop_back();
+      const size_t n = tree2.size();
+      const YAML::Node n2 = YAML::Clone(this->get_outer_node(tree2));
+      if (n2[tree[n]]) {
         this->read_verb<T>(x, tree);
       } else {
         std::cout << "## " << this->get_node_str(tree) << "=" << x << " (default)\n";
       }
       return;
     }
+
+    /**
+     * @brief finalize the parsing
+     * Check if after all the read functions calls the std::set G and U are the same
+     */
+    void finalize()
+    {
+      if (G==U)
+      {
+        std::cout << "Sono uguali\n";
+      }
+      else{
+        std::cout << "Non sono uguali!\n";
+
+        std::cout << "G:\n";
+
+        for (auto it = G.begin(); it !=G.end(); ++it)
+        {std::cout << ' ' << *it;}
+
+        std::cout << "\nU:\n";
+
+        for (auto it = U.begin(); it !=U.end(); ++it)
+        {std::cout << ' ' << *it;}
+
+      }      
+    }
+
   };
 
 } // namespace YAML_parsing

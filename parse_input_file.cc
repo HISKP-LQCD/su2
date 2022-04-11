@@ -13,7 +13,7 @@ namespace input_file_parsing {
       return 1;
     }
     if (pparams.Lx < 1 || pparams.Ly < 1 || pparams.Lz < 1 || pparams.Lt < 1) {
-      std::cerr << "All box extends must be > 1!" << std::endl;
+      std::cerr << "All box extents must be > 1!" << std::endl;
       return 1;
     }
     if (pparams.ndims == 2) { // flattening 'y' and 'z' directions
@@ -44,35 +44,10 @@ namespace input_file_parsing {
   namespace u1 {
     namespace Yp = YAML_parsing;
 
-    void parse_geometry(const YAML::Node &nd, gp::physics &pparams) {
-
-      Yp::inspect_node in(nd);
-
-      // physics parameters
-
-      Yp::print_all_nodes(in.get_root());
-
-      if(in.get_root()["geometry"]){
-        std::cout << "geometry c'è 1\n";
-      }
-
+    void parse_geometry(Yp::inspect_node& in, gp::physics &pparams) {
 
       in.read_verb<size_t>(pparams.Lx, {"geometry", "X"});
-
-      Yp::print_all_nodes(in.get_root());
-
-
-      if(in.get_root()["geometry"]){
-        std::cout << "geometry c'è 2\n";
-      }
-
       in.read_verb<size_t>(pparams.Ly, {"geometry", "Y"});
-
-      if(in.get_root()["geometry"]){
-        std::cout << "geometry c'è 3\n";
-      }
-
-
       in.read_verb<size_t>(pparams.Lz, {"geometry", "Z"});
       in.read_verb<size_t>(pparams.Lt, {"geometry", "T"});
       in.read_verb<size_t>(pparams.ndims, {"geometry", "ndims"});
@@ -96,7 +71,7 @@ namespace input_file_parsing {
         const YAML::Node nd = YAML::LoadFile(file);
         Yp::inspect_node in(nd);
 
-        parse_geometry(nd, pparams);
+        parse_geometry(in, pparams);
 
         if (nd["begin_monomials"]) {
           if (nd["begin_monomials"]["gauge"]) {
@@ -142,6 +117,7 @@ namespace input_file_parsing {
         in.read_opt_verb<std::string>(hparams.integrator, {"begin_integrator",
                                        "name"});
 
+        in.finalize();
         return 0;
       }
 
@@ -156,7 +132,7 @@ namespace input_file_parsing {
         const YAML::Node nd = YAML::LoadFile(file);
         Yp::inspect_node in(nd);
 
-        parse_geometry(nd, pparams);
+        parse_geometry(in, pparams);
 
         // beta, xi value from the gauge action
         in.read_verb<double>(pparams.beta, {"begin_monomials", "gauge", "beta"});
@@ -210,7 +186,7 @@ namespace input_file_parsing {
         const YAML::Node nd = YAML::LoadFile(file);
         Yp::inspect_node in(nd);
 
-        parse_geometry(nd, pparams);
+        parse_geometry(in, pparams);
 
         // beta, xi value from the gauge action
         in.read_verb<double>(pparams.beta, {"begin_monomials", "gauge", "beta"});

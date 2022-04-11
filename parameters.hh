@@ -9,6 +9,9 @@
 #include <string>
 
 namespace global_parameters {
+  
+  // default string width for the beta name in output file
+  const size_t g_beta_str_width = 6; 
 
   /* struct for parameters concerning the physics of the system */
   struct physics {
@@ -57,7 +60,7 @@ namespace global_parameters {
     std::string outdir = "."; // Output directory
 
     std::string conf_basename = "config_u1"; // root of the output files names
-    size_t beta_str_width = 4; // length of the beta value config filename  
+    size_t beta_str_width = g_beta_str_width; // length of the beta value config filename  
   };
 
   /* optional parameters for the measure program the in U(1) theory */
@@ -83,7 +86,7 @@ namespace global_parameters {
     bool smear_spatial_only = false; //should smearing be done only for spacial links?
 
     std::string conf_basename = "config_u1"; // root of the output files names
-    size_t beta_str_width = 6; // length of the beta value config filename  
+    size_t beta_str_width = g_beta_str_width; // length of the beta value config filename  
   };
   
   /* optional parameters for the MCMC the in U(1) theory */

@@ -16,7 +16,7 @@ hmc:
   n_rev: 1
   counter: 0
   configname: ""
-  outdir: "./"
+  outdir: "./c1/"
 
 begin_integrator:
   name: leapfrog

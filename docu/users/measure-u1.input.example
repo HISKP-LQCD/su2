@@ -14,8 +14,9 @@ begin_monomials:
     anisotropic : false
 
 begin_measurements:
-  confdir: "./"
-  n_meas: 3
+  confdir: "./c1/"
+  icounter: 3
+  n_meas: 6
   nstep: 1
   gradient:
     tmax : 1.0

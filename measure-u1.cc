@@ -171,9 +171,10 @@ int main(int ac, char* av[]) {
  * the "small potential" are the nonplanar loops, but only with small extent in x, y
  * */
 
-  for(size_t i = mparams.icounter; i < mparams.n_meas*mparams.nstep+mparams.icounter; i+=mparams.nstep) {
+  const size_t istart = mparams.icounter==0? mparams.icounter + mparams.nstep : mparams.icounter; 
+  for(size_t i = istart; i < mparams.n_meas*mparams.nstep+mparams.icounter; i+=mparams.nstep) {
     std::ostringstream os;
-    os << mparams.confdir << ss_basename.str() << "." << i << std::ends;
+    os << ss_basename.str() << "." << i << std::ends;
     int ierrU =  U.load(os.str());
     if(ierrU == 1){ // cannot load gauge config
       continue;

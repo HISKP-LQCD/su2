@@ -15,9 +15,9 @@
 
 /**
  * go through the entire lattice
- * do N_hit Metropolis-Updates of every link (accept proposed change with probabilty min(1, exp(-deltaS)))
+ * do N_hit Metropolis-Updates of every link (accept proposed change with probability min(1, exp(-deltaS)))
  * update only changes one link, not the surrounding links, but for the action, every plaquette including this link is needed
- * -> sum up the unchanged part in staples, ony have to be calculated once for every link
+ * -> sum up the unchanged part in staples, only has to be calculated once for every link
  * If the lattice is anisotropic with anisotropy xi, the action weights the temporal (including links in direction 0) 
  * and spatial links differently, this is implemented in get_staples.hh.
  * For the update, the nearest neighbour links have to be constant, so parallelization is not trivial.
@@ -25,7 +25,13 @@
  * The overall acceptance rate, as well as the acceptance rate of the temporal links, are measured and returned.
  * An update means replacing one link U -> R*U, where R is a random element. 
  * The acceptance rate can be tuned with delta, which determines the possible regions from which R is drawn.
- * Is it more efficient to use two of eevery variable fro measuring the rates, or would it be better to use vectors for everything?
+ * Is it more efficient to use two of every variable for measuring the rates, or would it be better to use vectors for everything?
+ * When using vectors, a new reduction directive would have to be declared for the vectors
+ * omp_priv has to be initialized with the = operator, and I could not find a way to initialize it to zero this way
+ * pragma omp declare reduction (+ : std::vector<double> : omp_out += omp_in) initializer (omp_priv = ?)
+ * So for the moment I would stick with the two separate variables
+ * For the normalization of the temporal rate: There is only one temporal link for each lattice point, so the normalization is done with U.getVolume()
+ * With this definition, for xi=1 the acceptance rates only differ in the third significant digit, so this is correct
  * */
 
 template<class URNG, class Group> std::vector<double> sweep(gaugeconfig<Group> &U, vector<URNG> engine,
@@ -35,28 +41,22 @@ template<class URNG, class Group> std::vector<double> sweep(gaugeconfig<Group> &
 
   std::uniform_real_distribution<double> uniform(0., 1.);
   typedef typename accum_type<Group>::type accum;
-  size_t rate = 0;
-  size_t rate_time = 0;
+  size_t rate = 0, rate_time = 0;
   #ifdef _USE_OMP_
-  int threads = omp_get_max_threads();
-  double * omp_acc = new double[threads];
-  double * omp_acc_time = new double[threads];
   #pragma omp parallel
   {
-    int thread_num = omp_get_thread_num();
+    size_t thread_num = omp_get_thread_num();
   #else
-  int thread_num=0;  
+  size_t thread_num=0;  
   #endif  
-  size_t temp=0;
-  size_t temp_time=0;
-  #pragma omp for
+  #pragma omp for reduction (+: rate, rate_time)
   for(size_t x0 = 0; x0 < U.getLt(); x0+=2) {
 //Cannot use elements of a vector as iteration variables in for-loop with OpenMP, so use dummy variables
     Group R;
     for(size_t x1 = 0; x1 < U.getLx(); x1++) {
       for(size_t x2 = 0; x2 < U.getLy(); x2++) {
         for(size_t x3 = 0; x3 < U.getLz(); x3++) {
-            std::vector<size_t> x = {x0, x1, x2, x3};
+          std::vector<size_t> x = {x0, x1, x2, x3};
           for(size_t mu = 0; mu < U.getndims(); mu++) {
             accum K;
             get_staples(K, U, x, mu, xi, anisotropic);
@@ -69,9 +69,9 @@ template<class URNG, class Group> std::vector<double> sweep(gaugeconfig<Group> &
               if(accept) {
                 U(x, mu) = U(x, mu) * R;
                 U(x, mu).restoreSU();
-                temp += 1;
+                rate += 1;
                 if(mu == 0){
-                  temp_time += 1;
+                  rate_time += 1;
                 }
               }
             }
@@ -80,14 +80,13 @@ template<class URNG, class Group> std::vector<double> sweep(gaugeconfig<Group> &
       }
     }
   }
-  #pragma omp for
+  #pragma omp for reduction (+: rate, rate_time)
   for(size_t x0 = 1; x0 < U.getLt(); x0+=2) {
-//OpenMP does not allow loop declaration as it was done for the other dimensions, still have to figure out why
     Group R;
     for(size_t x1 = 0; x1 < U.getLx(); x1++) {
       for(size_t x2 = 0; x2 < U.getLy(); x2++) {
         for(size_t x3 = 0; x3 < U.getLz(); x3++) {
-            std::vector<size_t> x = {x0, x1, x2, x3};
+          std::vector<size_t> x = {x0, x1, x2, x3};
           for(size_t mu = 0; mu < U.getndims(); mu++) {
             accum K;
             get_staples(K, U, x, mu, xi, anisotropic);
@@ -100,9 +99,9 @@ template<class URNG, class Group> std::vector<double> sweep(gaugeconfig<Group> &
               if(accept) {
                 U(x, mu) = U(x, mu) * R;
                 U(x, mu).restoreSU();
-                temp += 1;
+                rate += 1;
                 if(mu == 0){
-                  temp_time += 1;
+                  rate_time += 1;
                 }
               }
             }
@@ -111,22 +110,8 @@ template<class URNG, class Group> std::vector<double> sweep(gaugeconfig<Group> &
       }
     }
   }
-  //maybe try out reduction(+: temp) in pragma at some point? But still need if-construct to close bracket
   #ifdef _USE_OMP_
-    omp_acc[thread_num] = temp;
-    omp_acc_time[thread_num] = temp_time;
-    rate = 0.;
-    rate_time = 0.;
   }
-  for(size_t i = 0; i < threads; i++) {
-    rate += omp_acc[i];
-    rate_time += omp_acc_time[i];
-  }
-  delete[] omp_acc;
-  delete[] omp_acc_time;
-  #else
-  rate = temp;
-  rate_time = temp_time;
   #endif
   std::vector<double> res = { double(rate)/double(N_hit)/double(U.getSize()) , double(rate_time)/double(N_hit)/double(U.getVolume()) };
   return res;

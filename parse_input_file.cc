@@ -5,45 +5,6 @@
 
 #include "parse_input_file.hh"
 
-namespace YAML_parsing {
-
-  template <class T> void read(T &x, const YAML::Node &nd, const std::string &name) {
-    try {
-      x = nd[name].as<T>();
-    } catch (...) {
-      std::cerr << "Error: check \"" << name << "\" in your YAML input file. ";
-      std::cerr << boost::typeindex::type_id<T>() << " type was expected. \n";
-      abort();
-    }
-    return;
-  }
-
-  template <class T> void read_verb(T &x, const YAML::Node &nd, const std::string &name) {
-    read(x, nd, name);
-    std::cout << "## " << name << "=" << x << "\n";
-    return;
-  }
-
-  template <class T>
-  void read_optional(T &x, const YAML::Node &nd, const std::string &name) {
-    if (nd[name]) {
-      read<T>(x, nd, name);
-    }
-    return;
-  }
-
-  template <class T>
-  void read_opt_verb(T &x, const YAML::Node &nd, const std::string &name) {
-    if (nd[name]) {
-      read_verb<T>(x, nd, name);
-    } else {
-      std::cout << "## " << name << "=" << x << " (default)\n";
-    }
-    return;
-  }
-
-} // namespace YAML_parsing
-
 namespace input_file_parsing {
 
   int validate_geometry(gp::physics &pparams) {
@@ -66,26 +27,65 @@ namespace input_file_parsing {
     return 0;
   }
 
+  /**
+   * @brief check if beta_str_width >= 1, otherwise it aborts
+   * @param n width (number of digits after the dot)
+   */
+  void validate_beta_str_width(const size_t &n) {
+    if (n < 1) {
+      std::cerr << "Error: beta string width in the output file should have at least "
+                   "decimal 1 digit.";
+      std::cerr << "Aborting.\n";
+      abort();
+    }
+    return;
+  }
+
   namespace u1 {
     namespace Yp = YAML_parsing;
 
-    void parse_geometry(const YAML::Node &nd, gp::physics &pparams){
+    void parse_geometry(const YAML::Node &nd, gp::physics &pparams) {
 
-        // physics parameters
-        Yp::read_verb<size_t>(pparams.Lx, nd["geometry"], "X");
-        Yp::read_verb<size_t>(pparams.Ly, nd["geometry"], "Y");
-        Yp::read_verb<size_t>(pparams.Lz, nd["geometry"], "Z");
-        Yp::read_verb<size_t>(pparams.Lt, nd["geometry"], "T");
-        Yp::read_verb<size_t>(pparams.ndims, nd["geometry"], "ndims");
+      Yp::inspect_node in(nd);
 
-        int gerr = validate_geometry(pparams);
-        if (gerr > 0) {
-          std::cerr
-            << "Error: invalid geometry parameters. Check X,Y,Z,ndims in your input file."
-            << std::endl;
-        }
+      // physics parameters
 
-        return;
+      Yp::print_all_nodes(in.get_root());
+
+      if(in.get_root()["geometry"]){
+        std::cout << "geometry c'è 1\n";
+      }
+
+
+      in.read_verb<size_t>(pparams.Lx, {"geometry", "X"});
+
+      Yp::print_all_nodes(in.get_root());
+
+
+      if(in.get_root()["geometry"]){
+        std::cout << "geometry c'è 2\n";
+      }
+
+      in.read_verb<size_t>(pparams.Ly, {"geometry", "Y"});
+
+      if(in.get_root()["geometry"]){
+        std::cout << "geometry c'è 3\n";
+      }
+
+
+      in.read_verb<size_t>(pparams.Lz, {"geometry", "Z"});
+      in.read_verb<size_t>(pparams.Lt, {"geometry", "T"});
+      in.read_verb<size_t>(pparams.ndims, {"geometry", "ndims"});
+
+      int gerr = validate_geometry(pparams);
+      if (gerr > 0) {
+        std::cerr
+          << "Error: invalid geometry parameters. Check X,Y,Z,ndims in your input file.";
+        std::cerr << "Aborting.\n";
+        abort();
+      }
+
+      return;
     }
 
     namespace hmc {
@@ -94,53 +94,53 @@ namespace input_file_parsing {
                            gp::hmc_u1 &hparams) {
         std::cout << "## Parsing input file: " << file << "\n";
         const YAML::Node nd = YAML::LoadFile(file);
+        Yp::inspect_node in(nd);
 
         parse_geometry(nd, pparams);
 
         if (nd["begin_monomials"]) {
-          const YAML::Node &nBM = nd["begin_monomials"];
-          if (nBM["gauge"]) {
+          if (nd["begin_monomials"]["gauge"]) {
             pparams.include_gauge = true;
-            Yp::read_verb<double>(pparams.beta, nBM["gauge"], "beta");
+            in.read_verb<double>(pparams.beta, {"begin_monomials", "gauge", "beta"});
           }
           // note: initializing the D*Ddag monomial makes sense only with a valid Dirac
           // operator
-          if (nd["begin_operators"]["staggered"] && nBM["staggered_det_DDdag"]) {
+          if (nd["begin_operators"]["staggered"] && nd["begin_monomials"]["staggered_det_DDdag"]) {
             pparams.include_staggered_fermions = true;
-            const YAML::Node &nBO = nd["begin_operators"];
 
-            Yp::read_verb<double>(pparams.m0, nBO["staggered"], "mass");
+            in.read_verb<double>(pparams.m0, {"begin_operators", "staggered", "mass"});
 
-            Yp::read_opt_verb<std::string>(hparams.solver, nBM["staggered_det_DDdag"],
-                                           "solver");
-            Yp::read_opt_verb<double>(hparams.tolerance_cg, nBM["staggered_det_DDdag"],
-                                      "tolerance_cg");
-            Yp::read_opt_verb<size_t>(hparams.solver_verbosity,
-                                      nBM["staggered_det_DDdag"], "solver_verbosity");
-            Yp::read_opt_verb<size_t>(hparams.seed_pf, nBM["staggered_det_DDdag"],
-                                      "seed_pf");
+            in.read_opt_verb<std::string>(hparams.solver, {"begin_monomials", "staggered_det_DDdag",
+                                           "solver"});
+            in.read_opt_verb<double>(hparams.tolerance_cg, {"begin_monomials", "staggered_det_DDdag",
+                                      "tolerance_cg"});
+            in.read_opt_verb<size_t>(hparams.solver_verbosity,
+                                      {"begin_monomials", "staggered_det_DDdag", "solver_verbosity"});
+            in.read_opt_verb<size_t>(hparams.seed_pf, {"begin_monomials", "staggered_det_DDdag",
+                                      "seed_pf"});
           }
         }
 
         // hmc-u1 parameters
-        Yp::read_verb<size_t>(hparams.N_save, nd["hmc"], "n_save");
-        Yp::read_verb<size_t>(hparams.n_meas, nd["hmc"], "n_meas");
-        Yp::read_verb<size_t>(hparams.icounter, nd["hmc"], "counter");
-        Yp::read_verb<bool>(hparams.heat, nd["hmc"], "heat");
-        Yp::read_opt_verb<size_t>(hparams.seed, nd["hmc"], "seed");
-        Yp::read_opt_verb<std::string>(hparams.configfilename, nd["hmc"], "configname");
-        Yp::read_opt_verb<std::string>(hparams.outdir, nd["hmc"], "outdir");
-        Yp::read_opt_verb<std::string>(hparams.conf_basename, nd["hmc"], "conf_basename");
-        Yp::read_opt_verb<size_t>(hparams.beta_str_width, nd["hmc"], "beta_str_width");
+        in.read_verb<size_t>(hparams.N_save, {"hmc", "n_save"});
+        in.read_verb<size_t>(hparams.n_meas, {"hmc", "n_meas"});
+        in.read_verb<size_t>(hparams.icounter, {"hmc", "counter"});
+        in.read_verb<bool>(hparams.heat, {"hmc", "heat"});
+        in.read_opt_verb<size_t>(hparams.seed, {"hmc", "seed"});
+        in.read_opt_verb<std::string>(hparams.configfilename, {"hmc", "configname"});
+        in.read_opt_verb<std::string>(hparams.outdir, {"hmc", "outdir"});
+        in.read_opt_verb<std::string>(hparams.conf_basename, {"hmc", "conf_basename"});
+
+        in.read_opt_verb<size_t>(hparams.beta_str_width, {"hmc", "beta_str_width"});
+        validate_beta_str_width(hparams.beta_str_width);
 
         // integrator parameters
-        Yp::read_opt_verb<size_t>(hparams.N_rev, nd["begin_integrator"], "N_rev");
-        Yp::read_opt_verb<size_t>(hparams.n_steps, nd["begin_integrator"], "n_steps");
-        Yp::read_opt_verb<double>(hparams.tau, nd["begin_integrator"], "tau");
-        Yp::read_opt_verb<size_t>(hparams.exponent, nd["begin_integrator"], "exponent");
-        Yp::read_opt_verb<std::string>(hparams.integrator, nd["begin_integrator"],
-                                       "name");
-
+        in.read_opt_verb<size_t>(hparams.N_rev, {"begin_integrator", "N_rev"});
+        in.read_opt_verb<size_t>(hparams.n_steps, {"begin_integrator", "n_steps"});
+        in.read_opt_verb<double>(hparams.tau, {"begin_integrator", "tau"});
+        in.read_opt_verb<size_t>(hparams.exponent, {"begin_integrator", "exponent"});
+        in.read_opt_verb<std::string>(hparams.integrator, {"begin_integrator",
+                                       "name"});
 
         return 0;
       }
@@ -154,44 +154,47 @@ namespace input_file_parsing {
                            gp::measure_u1 &mparams) {
         std::cout << "## Parsing input file: " << file << "\n";
         const YAML::Node nd = YAML::LoadFile(file);
+        Yp::inspect_node in(nd);
 
         parse_geometry(nd, pparams);
 
-
         // beta, xi value from the gauge action
-        Yp::read_verb<double>(pparams.beta, nd["begin_monomials"]["gauge"], "beta");
-        Yp::read_opt_verb<bool>(pparams.anisotropic, nd["begin_monomials"]["gauge"], "anisotropic");
-        if(pparams.anisotropic){
-          Yp::read_opt_verb<double>(pparams.xi, nd["begin_monomials"]["gauge"], "xi");
+        in.read_verb<double>(pparams.beta, {"begin_monomials", "gauge", "beta"});
+        in.read_opt_verb<bool>(pparams.anisotropic, {"begin_monomials", "gauge",
+                                "anisotropic"});
+        if (pparams.anisotropic) {
+          in.read_opt_verb<double>(pparams.xi, {"begin_monomials", "gauge", "xi"});
         }
 
         // measure-u1 parameters
-        const YAML::Node &nMS = nd["begin_measurements"];
-        Yp::read_opt_verb<size_t>(mparams.n_meas, nMS, "n_meas");
-        Yp::read_opt_verb<size_t>(mparams.nstep, nMS, "nstep");
-        Yp::read_opt_verb<size_t>(mparams.icounter, nMS, "icounter");
-        Yp::read_opt_verb<size_t>(mparams.seed, nMS, "seed");
-        Yp::read_opt_verb<bool>(mparams.Wloop, nMS, "Wloop");
-        //optional parameters for gradient
-        if (nMS["gradient"]) {
-          Yp::read_opt_verb<double>(mparams.tmax, nMS["gradient"], "tmax");
+        in.read_opt_verb<size_t>(mparams.n_meas, {"begin_measurements", "n_meas"});
+        in.read_opt_verb<size_t>(mparams.nstep, {"begin_measurements", "nstep"});
+        in.read_opt_verb<size_t>(mparams.icounter, {"begin_measurements", "icounter"});
+        in.read_opt_verb<size_t>(mparams.seed, {"begin_measurements", "seed"});
+        in.read_opt_verb<bool>(mparams.Wloop, {"begin_measurements", "Wloop"});
+        // optional parameters for gradient
+        if (nd["begin_measurements"]["gradient"]) {
+          in.read_opt_verb<double>(mparams.tmax, {"begin_measurements", "gradient", "tmax"});
         }
-        //optional parameters for potentials
-        if (nMS["potential"]){
-          Yp::read_opt_verb<bool>(mparams.potential, nMS["potential"], "potential");
-          Yp::read_opt_verb<bool>(mparams.potentialsmall, nMS["potential"], "potentialsmall");
-          Yp::read_opt_verb<bool>(mparams.append, nMS["potential"], "append");
-          Yp::read_opt_verb<bool>(mparams.smear_spatial_only, nMS["potential"], "smear_spatial_only");
-          Yp::read_opt_verb<size_t>(mparams.n_apesmear, nMS["potential"], "n_apesmear");
-          Yp::read_opt_verb<double>(mparams.alpha, nMS["potential"], "alpha");
-          Yp::read_opt_verb<double>(mparams.sizeWloops, nMS["potential"], "sizeWloops");
+        // optional parameters for potentials
+        if (nd["begin_measurements"]["potential"]) {
+          in.read_opt_verb<bool>(mparams.potential, {"begin_measurements", "potential", "potential"});
+          in.read_opt_verb<bool>(mparams.potentialsmall, {"begin_measurements", "potential", "potentialsmall"});
+          in.read_opt_verb<bool>(mparams.append, {"begin_measurements", "potential", "append"});
+          in.read_opt_verb<bool>(mparams.smear_spatial_only, {"begin_measurements", "potential",
+                                  "smear_spatial_only"});
+          in.read_opt_verb<size_t>(mparams.n_apesmear, {"begin_measurements", "potential", "n_apesmear"});
+          in.read_opt_verb<double>(mparams.alpha, {"begin_measurements", "potential", "alpha"});
+          in.read_opt_verb<double>(mparams.sizeWloops, {"begin_measurements", "potential", "sizeWloops"});
         }
-        
-        Yp::read_opt_verb<std::string>(mparams.confdir, nMS, "confdir");
-        Yp::read_opt_verb<std::string>(mparams.resdir, nMS, "resdir");
 
-        Yp::read_opt_verb<std::string>(mparams.conf_basename, nMS, "conf_basename");
-        Yp::read_opt_verb<size_t>(mparams.beta_str_width, nMS, "beta_str_width");
+        in.read_opt_verb<std::string>(mparams.confdir, {"begin_measurements", "confdir"});
+        in.read_opt_verb<std::string>(mparams.resdir, {"begin_measurements", "resdir"});
+
+        in.read_opt_verb<std::string>(mparams.conf_basename, {"begin_measurements", "conf_basename"});
+
+        in.read_opt_verb<size_t>(mparams.beta_str_width, {"begin_measurements", "beta_str_width"});
+        validate_beta_str_width(mparams.beta_str_width);
 
         return 0;
       }
@@ -205,37 +208,35 @@ namespace input_file_parsing {
                            gp::metropolis_u1 &mcparams) {
         std::cout << "## Parsing input file: " << file << "\n";
         const YAML::Node nd = YAML::LoadFile(file);
+        Yp::inspect_node in(nd);
 
         parse_geometry(nd, pparams);
 
-
         // beta, xi value from the gauge action
-        Yp::read_verb<double>(pparams.beta, nd["begin_monomials"]["gauge"], "beta");
-        Yp::read_opt_verb<bool>(pparams.anisotropic, nd["begin_monomials"]["gauge"], "anisotropic");
-        if(pparams.anisotropic){
-          Yp::read_opt_verb<double>(pparams.xi, nd["begin_monomials"]["gauge"], "xi");
+        in.read_verb<double>(pparams.beta, {"begin_monomials", "gauge", "beta"});
+        in.read_opt_verb<bool>(pparams.anisotropic, {"begin_monomials", "gauge","anisotropic"});
+        if (pparams.anisotropic) {
+          in.read_opt_verb<double>(pparams.xi, {"begin_monomials", "gauge", "xi"});
         }
 
         // measure-u1 parameters
-        const YAML::Node &nMS = nd["begin_metropolis"];
-        Yp::read_opt_verb<size_t>(mcparams.n_meas, nMS, "n_meas");
-        Yp::read_opt_verb<size_t>(mcparams.N_save, nMS, "N_save");
-        Yp::read_opt_verb<size_t>(mcparams.icounter, nMS, "icounter");
-        Yp::read_opt_verb<size_t>(mcparams.seed, nMS, "seed");
-        
-        Yp::read_opt_verb<std::string>(mcparams.outdir, nMS, "outdir");
-        Yp::read_opt_verb<std::string>(mcparams.conf_basename, nMS, "conf_basename");
-        Yp::read_opt_verb<size_t>(mcparams.beta_str_width, nMS, "beta_str_width");
-        Yp::read_opt_verb<bool>(mcparams.restart, nMS, "restart");
-        if(mcparams.restart){
-          Yp::read_opt_verb<std::string>(mcparams.configfilename, nMS, "configfilename");
-        }
-        
+        in.read_opt_verb<size_t>(mcparams.n_meas, {"begin_metropolis", "n_meas"});
+        in.read_opt_verb<size_t>(mcparams.N_save, {"begin_metropolis", "N_save"});
+        in.read_opt_verb<size_t>(mcparams.icounter, {"begin_metropolis", "icounter"});
+        in.read_opt_verb<size_t>(mcparams.seed, {"begin_metropolis", "seed"});
 
-        Yp::read_verb<double>(mcparams.heat, nMS, "heat");
-        Yp::read_verb<double>(mcparams.delta, nMS, "delta");
-        Yp::read_opt_verb<size_t>(mcparams.N_hit, nMS, "N_hit");
-        return 0;     
+        in.read_opt_verb<std::string>(mcparams.outdir, {"begin_metropolis", "outdir"});
+        in.read_opt_verb<std::string>(mcparams.conf_basename, {"begin_metropolis", "conf_basename"});
+        in.read_opt_verb<size_t>(mcparams.beta_str_width, {"begin_metropolis", "beta_str_width"});
+        in.read_opt_verb<bool>(mcparams.restart, {"begin_metropolis", "restart"});
+        if (mcparams.restart) {
+          in.read_opt_verb<std::string>(mcparams.configfilename, {"begin_metropolis", "configfilename"});
+        }
+
+        in.read_verb<double>(mcparams.heat, {"begin_metropolis", "heat"});
+        in.read_verb<double>(mcparams.delta, {"begin_metropolis", "delta"});
+        in.read_opt_verb<size_t>(mcparams.N_hit, {"begin_metropolis", "N_hit"});
+        return 0;
       }
 
     } // namespace metropolis

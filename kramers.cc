@@ -92,7 +92,7 @@ int main(int ac, char* av[]) {
     os.open("output.kramers.data", std::ios::app);
 
   double rate = 0.;
-  for(size_t i = gparams.icounter; i < gparams.N_meas + gparams.icounter; i++) {
+  for(size_t i = gparams.icounter; i < gparams.n_meas + gparams.icounter; i++) {
     mdparams.disablerevtest();
 
     // PRNG engine  
@@ -114,7 +114,7 @@ int main(int ac, char* av[]) {
       U.save(oss.str());
     }
   }
-  cout << "## Acceptance rate: " << rate/static_cast<double>(gparams.N_meas) << endl;
+  cout << "## Acceptance rate: " << rate/static_cast<double>(gparams.n_meas) << endl;
 
   std::ostringstream oss;
   oss << "config." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz << "." << gparams.Lt << ".b" << U.getBeta() << ".final" << std::ends;

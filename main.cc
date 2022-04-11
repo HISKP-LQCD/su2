@@ -107,13 +107,13 @@ int main(int ac, char* av[]) {
    * calculate plaquette, spacial plaquette, energy density and write to stdout and output-file
    * save every nave configuration
    * */  
-  for(size_t i = gparams.icounter; i < gparams.N_meas*threads + gparams.icounter; i+=threads) {
+  for(size_t i = gparams.icounter; i < gparams.n_meas*threads + gparams.icounter; i+=threads) {
     std::vector<std::mt19937> engines(threads);
-    for(size_t engine=0;engine<threads;engine+=1){
-      engines[engine].seed(gparams.seed+i+engine);
+    for(size_t engine = 0 ; engine < threads ; engine += 1){
+      engines[engine].seed(gparams.seed + i + engine);
     }
     //inew counts loops, loop-variable needed to have one RNG per thread with different seeds for every measurement
-    size_t inew = (i-gparams.icounter)/threads+gparams.icounter;
+    size_t inew = (i-gparams.icounter) / threads + gparams.icounter;
     rate += sweep(U, engines, delta, N_hit, gparams.beta);
     double energy = gauge_energy(U);
     double E = 0., Q = 0.;
@@ -127,11 +127,11 @@ int main(int ac, char* av[]) {
     }
   }
   // save acceptance rates to additional file to keep track of measurements
-  cout << "## Acceptance rate " << rate[0]/static_cast<double>(gparams.N_meas) << " temporal acceptance rate " << rate[1]/static_cast<double>(gparams.N_meas) << endl;
+  cout << "## Acceptance rate " << rate[0]/static_cast<double>(gparams.n_meas) << " temporal acceptance rate " << rate[1]/static_cast<double>(gparams.n_meas) << endl;
   acceptancerates.open("acceptancerates.data", std::ios::app);
-  acceptancerates << rate[0]/static_cast<double>(gparams.N_meas) << " " << rate[1]/static_cast<double>(gparams.N_meas) << " "
+  acceptancerates << rate[0]/static_cast<double>(gparams.n_meas) << " " << rate[1]/static_cast<double>(gparams.n_meas) << " "
    << gparams.beta << " " << gparams.Lx << " " << gparams.Lt << " " << gparams.xi << " " 
-   << delta << " " << gparams.heat << " " << threads << " " << N_hit << " " << gparams.N_meas << " " << gparams.seed << " " << endl;
+   << delta << " " << gparams.heat << " " << threads << " " << N_hit << " " << gparams.n_meas << " " << gparams.seed << " " << endl;
   acceptancerates.close();
 
   std::ostringstream oss;

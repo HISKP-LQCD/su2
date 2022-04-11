@@ -61,7 +61,6 @@ int main(int ac, char* av[]) {
   gaugeconfig<_u1> U(pparams.Lx, pparams.Ly, pparams.Lz, pparams.Lt, pparams.ndims, pparams.beta);
 
   // set basename for configs for easier reading in, anisotropy is only added to filename if needed
-  const std::string conf_basename = mparams.conf_basename;
   std::stringstream ss_basename;
   ss_basename << mparams.confdir << "/" << mparams.conf_basename << ".";
   ss_basename << pparams.Lx << "." << pparams.Ly << "." << pparams.Lz << "."
@@ -172,9 +171,9 @@ int main(int ac, char* av[]) {
  * the "small potential" are the nonplanar loops, but only with small extent in x, y
  * */
 
-  for(size_t i = mparams.icounter; i < mparams.nmeas*mparams.nstep+mparams.icounter; i+=mparams.nstep) {
+  for(size_t i = mparams.icounter; i < mparams.n_meas*mparams.nstep+mparams.icounter; i+=mparams.nstep) {
     std::ostringstream os;
-    os << ss_basename.str() << "." << i << std::ends;
+    os << mparams.confdir << ss_basename.str() << "." << i << std::ends;
     int ierrU =  U.load(os.str());
     if(ierrU == 1){ // cannot load gauge config
       continue;
@@ -191,7 +190,7 @@ int main(int ac, char* av[]) {
     energy_density(U, density, Q);
     std::cout << "## Plaquette after rnd trafo: " << std::scientific << std::setw(15) << plaquette/U.getVolume()/double(U.getNc())/6. << std::endl; 
     std::cout << "## Energy density: " << density << std::endl;
-    
+        
     if(mparams.Wloop) {
       std::ostringstream os;
       os << mparams.confdir + "/wilsonloop.";

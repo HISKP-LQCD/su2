@@ -136,7 +136,7 @@ int main(int ac, char* av[]) {
    * calculate plaquette, spacial plaquette, energy density with and without cloverdef and write to stdout and output-file
    * save every nave configuration
    * */
-  for(size_t i = mcparams.icounter; i < mcparams.N_meas*threads + mcparams.icounter; i+=threads) {
+  for(size_t i = mcparams.icounter; i < mcparams.n_meas*threads + mcparams.icounter; i+=threads) {
     std::vector<std::mt19937> engines(threads);
     for(size_t engine = 0 ; engine < threads ; engine += 1){
       engines[engine].seed(mcparams.seed + i + engine);
@@ -166,19 +166,18 @@ int main(int ac, char* av[]) {
     }
   }
   // save acceptance rates to additional file to keep track of measurements
-  cout << "## Acceptance rate " << rate[0]/static_cast<double>(mcparams.N_meas) 
-    << " temporal acceptance rate " << rate[1]/static_cast<double>(mcparams.N_meas) << endl;
+  cout << "## Acceptance rate " << rate[0]/static_cast<double>(mcparams.n_meas) 
+    << " temporal acceptance rate " << rate[1]/static_cast<double>(mcparams.n_meas) << endl;
   acceptancerates.open(mcparams.outdir+"/acceptancerates.data", std::ios::app);
-  acceptancerates << rate[0]/static_cast<double>(mcparams.N_meas) << " " << rate[1]/static_cast<double>(mcparams.N_meas) << " "
+  acceptancerates << rate[0]/static_cast<double>(mcparams.n_meas) << " " << rate[1]/static_cast<double>(mcparams.n_meas) << " "
    << pparams.beta << " " << pparams.Lx << " " << pparams.Lt << " " << pparams.xi << " " 
    << mcparams.delta << " " << mcparams.heat << " " << threads << " "
-     << mcparams.N_hit << " " << mcparams.N_meas << " " << mcparams.seed << " " << endl;
+     << mcparams.N_hit << " " << mcparams.n_meas << " " << mcparams.seed << " " << endl;
   acceptancerates.close();
 
 std::ostringstream oss;
   oss << ss_basename.str() << ".final" << std::ends;
   U.save(mcparams.outdir + "/" + oss.str());
-
   return(0);
 }
 

@@ -31,10 +31,10 @@ namespace global_parameters {
   /* Optional parameters for the hmc the in U(1) theory */
   struct hmc_u1 {
     size_t N_save = 1000; // N_save
-    size_t N_meas = 10; // total number of sweeps
+    size_t n_meas = 10; // total number of sweeps
     size_t icounter = 0; // initial counter for updates
     size_t seed = 13526463; // PRNG seed
-    double heat = 1.0; // randomness of the initial config, 1: hot, 0: cold
+    bool heat = true; // randomness of the initial config, true: hot, false: cold
     bool restart = false; // restart from an existing configuration
     bool acceptreject = true; // use accept-reject
     std::string configfilename = ""; // configuration filename used in case of restart
@@ -62,7 +62,7 @@ namespace global_parameters {
 
   /* optional parameters for the measure program the in U(1) theory */
   struct measure_u1 {
-    size_t nmeas = 10; // total number of sweeps
+    size_t n_meas = 10; // total number of sweeps
     size_t icounter = 0; // initial counter for updates
     size_t seed = 13526463; // PRNG seed
 
@@ -88,7 +88,7 @@ namespace global_parameters {
   
   /* optional parameters for the MCMC the in U(1) theory */
   struct metropolis_u1 {
-    size_t N_meas = 10; // total number of sweeps
+    size_t n_meas = 10; // total number of sweeps
     size_t icounter = 0; // initial counter for updates
     size_t seed = 13526463; // PRNG seed
 

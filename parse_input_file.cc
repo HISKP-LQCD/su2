@@ -35,7 +35,7 @@ namespace YAML_parsing {
   template <class T>
   void read_opt_verb(T &x, const YAML::Node &nd, const std::string &name) {
     if (nd[name]) {
-      read<T>(x, nd, name);
+      read_verb<T>(x, nd, name);
     } else {
       std::cout << "## " << name << "=" << x << " (default)\n";
     }
@@ -69,7 +69,7 @@ namespace input_file_parsing {
   namespace u1 {
     namespace Yp = YAML_parsing;
 
-    int parse_geometry(const YAML::Node &nd, gp::physics &pparams){
+    void parse_geometry(const YAML::Node &nd, gp::physics &pparams){
 
         // physics parameters
         Yp::read_verb<size_t>(pparams.Lx, nd["geometry"], "X");
@@ -80,10 +80,12 @@ namespace input_file_parsing {
 
         int gerr = validate_geometry(pparams);
         if (gerr > 0) {
-          return gerr;
+          std::cerr
+            << "Error: invalid geometry parameters. Check X,Y,Z,ndims in your input file."
+            << std::endl;
         }
 
-        return gerr;
+        return;
     }
 
     namespace hmc {
@@ -122,9 +124,9 @@ namespace input_file_parsing {
 
         // hmc-u1 parameters
         Yp::read_verb<size_t>(hparams.N_save, nd["hmc"], "n_save");
-        Yp::read_verb<size_t>(hparams.N_meas, nd["hmc"], "n_meas");
+        Yp::read_verb<size_t>(hparams.n_meas, nd["hmc"], "n_meas");
         Yp::read_verb<size_t>(hparams.icounter, nd["hmc"], "counter");
-        Yp::read_verb<double>(hparams.heat, nd["hmc"], "heat");
+        Yp::read_verb<bool>(hparams.heat, nd["hmc"], "heat");
         Yp::read_opt_verb<size_t>(hparams.seed, nd["hmc"], "seed");
         Yp::read_opt_verb<std::string>(hparams.configfilename, nd["hmc"], "configname");
         Yp::read_opt_verb<std::string>(hparams.outdir, nd["hmc"], "outdir");
@@ -165,7 +167,7 @@ namespace input_file_parsing {
 
         // measure-u1 parameters
         const YAML::Node &nMS = nd["begin_measurements"];
-        Yp::read_opt_verb<size_t>(mparams.nmeas, nMS, "nmeas");
+        Yp::read_opt_verb<size_t>(mparams.n_meas, nMS, "n_meas");
         Yp::read_opt_verb<size_t>(mparams.nstep, nMS, "nstep");
         Yp::read_opt_verb<size_t>(mparams.icounter, nMS, "icounter");
         Yp::read_opt_verb<size_t>(mparams.seed, nMS, "seed");
@@ -216,7 +218,7 @@ namespace input_file_parsing {
 
         // measure-u1 parameters
         const YAML::Node &nMS = nd["begin_metropolis"];
-        Yp::read_opt_verb<size_t>(mcparams.N_meas, nMS, "N_meas");
+        Yp::read_opt_verb<size_t>(mcparams.n_meas, nMS, "n_meas");
         Yp::read_opt_verb<size_t>(mcparams.N_save, nMS, "N_save");
         Yp::read_opt_verb<size_t>(mcparams.icounter, nMS, "icounter");
         Yp::read_opt_verb<size_t>(mcparams.seed, nMS, "seed");
@@ -233,15 +235,7 @@ namespace input_file_parsing {
         Yp::read_verb<double>(mcparams.heat, nMS, "heat");
         Yp::read_verb<double>(mcparams.delta, nMS, "delta");
         Yp::read_opt_verb<size_t>(mcparams.N_hit, nMS, "N_hit");
-        return 0;
-
-    
-    //~ bool restart = false; // restart from an existing configuration
-    //~ std::string configfilename = ""; // configuration filename used in case of restart
-    
-    //~ size_t N_hit = 10; //N_hit updates are performed on each link during one sweep
-    //~ double delta = 1.0; //determines if thermalization starts from a hot (=1) or cold(=0) config
-     
+        return 0;     
       }
 
     } // namespace metropolis

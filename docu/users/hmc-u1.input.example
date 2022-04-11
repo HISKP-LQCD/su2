@@ -12,7 +12,7 @@ hmc:
   seed: 93746
   n_save: 1
   n_meas: 10
-  heat: 1
+  heat: true
   n_rev: 1
   counter: 0
   configname: ""

@@ -89,7 +89,7 @@ int main(int ac, char* av[]) {
   char filenamepot[200];
   
   char filename[100];
-  sprintf(filename, "resultscalingNt%luNs%lubeta%fxi%fmaxthreads%dnmeas%lunsave%lu", gparams.Lt, gparams.Lx, gparams.beta, gparams.xi, threads, gparams.N_meas, gparams.N_save);
+  sprintf(filename, "resultscalingNt%luNs%lubeta%fxi%fmaxthreads%dnmeas%lunsave%lu", gparams.Lt, gparams.Lx, gparams.beta, gparams.xi, threads, gparams.n_meas, gparams.N_save);
   std::ofstream os;
   std::ofstream acceptancerates;
   os.open(filename, std::ios::out);
@@ -122,7 +122,7 @@ int main(int ac, char* av[]) {
     omp_set_num_threads(thread);
     auto start = std::chrono::high_resolution_clock::now();
     
-    for(size_t i = gparams.icounter; i < gparams.N_meas*thread + gparams.icounter; i+=thread) {
+    for(size_t i = gparams.icounter; i < gparams.n_meas*thread + gparams.icounter; i+=thread) {
         
       for(size_t engine=0;engine<thread;engine+=1){
         engines[engine].seed(gparams.seed+i+engine);
@@ -153,7 +153,7 @@ int main(int ac, char* av[]) {
   double loop;
   
   start = std::chrono::high_resolution_clock::now();
-  for(size_t i = gparams.icounter+gparams.N_save; i < gparams.N_meas+gparams.icounter; i+=gparams.N_save) {
+  for(size_t i = gparams.icounter+gparams.N_save; i < gparams.n_meas+gparams.icounter; i+=gparams.N_save) {
     std::ostringstream oss; 
     oss << "configu1." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz << "." << gparams.Lt << ".b" << std::fixed << U.getBeta() << ".x" << gparams.xi << "." << i << std::ends;
     U.load(oss.str());
@@ -238,11 +238,11 @@ int main(int ac, char* av[]) {
 }
  
   os.close();
-  cout << "## Acceptance rate " << rate[0]/static_cast<double>(gparams.N_meas) << " temporal acceptance rate " << rate[1]/static_cast<double>(gparams.N_meas) << endl;
+  cout << "## Acceptance rate " << rate[0]/static_cast<double>(gparams.n_meas) << " temporal acceptance rate " << rate[1]/static_cast<double>(gparams.n_meas) << endl;
   acceptancerates.open("acceptancerates.data", std::ios::app);
-  acceptancerates << rate[0]/static_cast<double>(gparams.N_meas) << " " << rate[1]/static_cast<double>(gparams.N_meas) << " "
+  acceptancerates << rate[0]/static_cast<double>(gparams.n_meas) << " " << rate[1]/static_cast<double>(gparams.n_meas) << " "
    << gparams.beta << " " << gparams.Lx << " " << gparams.Lt << " " << gparams.xi << " " 
-   << delta << " " << gparams.heat << " " << threads << " " << N_hit << " " << gparams.N_meas << " " << gparams.seed << " " << endl;
+   << delta << " " << gparams.heat << " " << threads << " " << N_hit << " " << gparams.n_meas << " " << gparams.seed << " " << endl;
   acceptancerates.close();
   
 return(0);

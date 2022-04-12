@@ -42,5 +42,5 @@ docu/fermions/*.dvi
 
 # external libraries directory
 external/
-external/yaml-cpp
+#external/yaml-cpp
 

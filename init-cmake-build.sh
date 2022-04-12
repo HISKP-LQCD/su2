@@ -16,7 +16,7 @@ mkdir -p build/debug
 mkdir -p build/release
 
 # installing yaml-cpp
-git submodule add https://github.com/jbeder/yaml-cpp external/yaml-cpp
+git clone https://github.com/jbeder/yaml-cpp external/yaml-cpp
 rm -rf external/yaml-cpp/build/
 d1=$(pwd -P)
 cd external/yaml-cpp

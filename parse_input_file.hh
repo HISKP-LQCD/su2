@@ -47,6 +47,12 @@ namespace YAML_parsing {
     void find_all(const YAML::Node &node, const std::string &beg) {
       for (YAML::const_iterator it = node.begin(); it != node.end(); ++it) {
         std::string k = it->first.as<std::string>(); // key
+        
+        if(G.count(beg + k)==1){
+          std::cerr<<"Error: The input file contains 2 or more identical nodes with name "<< beg+k <<"\n";
+          abort();
+        }
+
         G.insert(beg + k);
         this->find_all(node[k], beg + k + ":");
       }
@@ -70,15 +76,13 @@ namespace YAML_parsing {
     }
 
   public:
-
-    inspect_node(const YAML::Node& n)
-    {
+    inspect_node(const YAML::Node &n) {
       N = YAML::Clone(n);
       this->find_all((*this).N, "");
     }
 
     YAML::Node get_outer_node(const std::vector<std::string> &tree) const {
-      YAML::Node node_i = YAML::Clone((*this).N);      
+      YAML::Node node_i = YAML::Clone((*this).N);
       const size_t nt = tree.size();
       for (int i = 0; i < nt; ++i) {
         node_i = YAML::Clone(node_i[tree[i]]);
@@ -86,7 +90,7 @@ namespace YAML_parsing {
       return node_i;
     }
 
-    YAML::Node get_root(){ return (*this).N; }
+    YAML::Node get_root() { return (*this).N; }
 
     /**
      * @brief saving value from YAML node
@@ -98,10 +102,8 @@ namespace YAML_parsing {
      * @param name string name of the parameter
      */
     template <class T> void read(T &x, const std::vector<std::string> &tree) {
-
       const YAML::Node node_i = YAML::Clone(this->get_outer_node(tree));
       const std::string g_str = this->get_node_str(tree);
-      
 
       try {
         x = node_i.as<T>();
@@ -114,8 +116,7 @@ namespace YAML_parsing {
       // adding the node string identifiers to the std::set (*this).U
       std::vector<std::string> t1 = {};
       const size_t n = tree.size();
-      for (size_t i = 0; i < n; ++i)
-      {
+      for (size_t i = 0; i < n; ++i) {
         t1.push_back(tree[i]);
         U.insert(this->get_node_str(t1));
       }
@@ -159,28 +160,23 @@ namespace YAML_parsing {
      * @brief finalize the parsing
      * Check if after all the read functions calls the std::set G and U are the same
      */
-    void finalize()
-    {
-      if (G==U)
-      {
-        std::cout << "Sono uguali\n";
+    void finalize() {
+      if (G != U) {
+        size_t ierr = 0;
+        for (auto it = G.begin(); it != G.end(); ++it) {
+          const size_t c = U.count(*it);
+          if (c == 0) {
+            std::cerr << "Error: You gave " << *it
+                      << " in the input file, but is never used.\n";
+            ierr = 1;
+          }
+        }
+
+        if (ierr == 1) {
+          abort();
+        }
       }
-      else{
-        std::cout << "Non sono uguali!\n";
-
-        std::cout << "G:\n";
-
-        for (auto it = G.begin(); it !=G.end(); ++it)
-        {std::cout << ' ' << *it;}
-
-        std::cout << "\nU:\n";
-
-        for (auto it = U.begin(); it !=U.end(); ++it)
-        {std::cout << ' ' << *it;}
-
-      }      
     }
-
   };
 
 } // namespace YAML_parsing

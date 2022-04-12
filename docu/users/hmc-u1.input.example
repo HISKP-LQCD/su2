@@ -13,13 +13,13 @@ hmc:
   n_save: 1
   n_meas: 10
   heat: true
-  n_rev: 1
   counter: 0
   configname: ""
   outdir: "./c1/"
 
 begin_integrator:
   name: leapfrog
+  N_rev: 1
   n_steps: 3
   tau: 1.0
   exponent: 0

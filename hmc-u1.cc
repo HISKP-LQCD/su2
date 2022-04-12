@@ -49,8 +49,6 @@ int main(int ac, char *av[]) {
 
   namespace in_hmc = input_file_parsing::u1::hmc;
 
-std::cout << "filename : " << input_file << "\n";
-
   int err = in_hmc::parse_input_file(input_file, pparams, hparams);
   if (err > 0) {
     return 1;

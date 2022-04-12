@@ -34,13 +34,11 @@ core
 su2
 su2hmc
 build/
+external/
 
 # non-text files from the documentation
 docu/*.pdf
 docu/fermions/*.pdf
 docu/fermions/*.dvi
 
-# external libraries directory
-external/
-#external/yaml-cpp
 

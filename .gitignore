@@ -35,6 +35,11 @@ su2
 su2hmc
 build/
 
+# non-text files from the documentation
 docu/*.pdf
 docu/fermions/*.pdf
 docu/fermions/*.dvi
+
+# external libraries directory
+./external*
+

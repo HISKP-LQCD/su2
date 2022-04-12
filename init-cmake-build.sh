@@ -2,8 +2,10 @@
 # Copyright © 2017 Martin Ueding <dev@martin-ueding.de>
 # Licensed under the GNU Public License version 3
 
+
 set -e
 set -u
+
 
 if [[ -d build ]]; then
     echo "Directory build exists, this script will do nothing."
@@ -13,7 +15,17 @@ fi
 mkdir -p build/debug
 mkdir -p build/release
 
-YAML_SRC_PATH=/opt/yaml-cpp/ # change it with your path
+# installing yaml-cpp
+rm -rf external/yaml-cpp/build/
+d1=$(pwd -P)
+cd external/yaml-cpp
+mkdir build 
+cd build
+cmake ..
+make -j8
+cd $d1
+
+YAML_SRC_PATH=$d1/external/yaml-cpp/
 
 pushd build/debug
 cmake \

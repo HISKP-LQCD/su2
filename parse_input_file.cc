@@ -172,6 +172,7 @@ namespace input_file_parsing {
         in.read_opt_verb<size_t>(mparams.beta_str_width, {"begin_measurements", "beta_str_width"});
         validate_beta_str_width(mparams.beta_str_width);
 
+        in.finalize();
         return 0;
       }
 
@@ -212,6 +213,9 @@ namespace input_file_parsing {
         in.read_verb<double>(mcparams.heat, {"begin_metropolis", "heat"});
         in.read_verb<double>(mcparams.delta, {"begin_metropolis", "delta"});
         in.read_opt_verb<size_t>(mcparams.N_hit, {"begin_metropolis", "N_hit"});
+        
+        in.finalize();
+
         return 0;
       }
 

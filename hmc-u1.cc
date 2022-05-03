@@ -42,7 +42,11 @@ int main(int ac, char *av[]) {
   po::store(po::parse_command_line(ac, av, desc), vm);
   po::notify(vm);
 
-  if (vm.count("help")) {
+  /** output help message if either:
+  * - "help" is invoked 
+  * - no input "file" was provided
+  */
+  if (vm.count("help") || !vm.count("file")) {
     std::cout << desc << "\n";
     return 0;
   }
@@ -153,6 +157,7 @@ int main(int ac, char *av[]) {
          << std::setprecision(15) << energy * normalisation << " " << std::setw(15)
          << mdparams.getdeltaH() << " " << std::setw(15)
          << rate / static_cast<double>(i + 1) << " ";
+        
     if (mdparams.getrevtest()) {
       std::cout << mdparams.getdeltadeltaH();
     } else

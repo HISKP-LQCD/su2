@@ -19,7 +19,7 @@ hmc:
 
 integrator:
   name: leapfrog
-  N_rev: 1
+  N_rev: 3
   n_steps: 50
   tau: 1.0
   exponent: 0

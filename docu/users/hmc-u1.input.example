@@ -17,18 +17,18 @@ hmc:
   configname: ""
   outdir: "./c1/"
 
-begin_integrator:
+integrator:
   name: leapfrog
   N_rev: 1
   n_steps: 3
   tau: 1.0
   exponent: 0
 
-begin_operators: 
+operators: 
   staggered:
     mass: 0.1
 
-begin_monomials:
+monomials:
   gauge:
     beta: 1.9
   staggered_det_DDdag:

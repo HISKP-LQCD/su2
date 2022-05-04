@@ -1,4 +1,14 @@
 // parse_input_file.cc
+/**
+ * @file parse_input_file.cc
+ * @author Simone Romiti (simone.romiti@uni-bonn.de)
+ * @brief definitions of parse_input_file.hh 
+ * @version 0.1
+ * @date 2022-05-04
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
 
 #include <iostream>
 #include <string>

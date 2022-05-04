@@ -3,11 +3,10 @@
 #include"gaugeconfig.hh"
 #include"gauge_energy.hh"
 #include"random_gauge_trafo.hh"
-#include"wilsonloop.hh"
+#include"omeasurements.hpp"
 #include"polyakov_loop.hh"
 #include"md_update.hh"
 #include"monomial.hh"
-#include"gradient_flow.hh"
 #include"energy_density.hh"
 #include"parse_input_file.hh"
 #include"version.hh"
@@ -181,25 +180,11 @@ int main(int ac, char* av[]) {
     std::cout << "## Energy density: " << density << std::endl;
         
     if(mparams.Wloop) {
-      std::ostringstream os;
-      os << mparams.confdir + "/wilsonloop.";
-      auto prevw = os.width(6);
-      auto prevf = os.fill('0');
-      os << i;
-      os.width(prevw);
-      os.fill(prevf);
-      os << ".dat" << std::ends;
-      compute_all_loops(U, os.str());
+      omeasurements::meas_wilson_loop<_u1>(U, i, mparams.confdir);
     }
+
     if(mparams.gradient) {
-      std::ostringstream os;
-      os << mparams.confdir + "/gradient_flow.";
-      auto prevw = os.width(6);
-      auto prevf = os.fill('0');
-      os << i;
-      os.width(prevw);
-      os.fill(prevf);
-      gradient_flow(U, os.str(), mparams.tmax);
+      omeasurements::meas_gradient_flow<_u1>(U, i, mparams.confdir, mparams.tmax);
     }
     
     if(mparams.potential || mparams.potentialsmall){

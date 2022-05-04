@@ -149,8 +149,9 @@ template <class T> int gaugeconfig<T>::load(std::string const &path) {
     ifs.read(reinterpret_cast<char *>(data.data()), storage_size());
     ifs.close();
     return 0;
-  } else
+  } else {
     std::cerr << "Error: could not read file from " << path << std::endl;
+  }
   return 1;
 }
 

@@ -4,6 +4,7 @@
 #include"gauge_energy.hh"
 #include"random_gauge_trafo.hh"
 #include"wilsonloop.hh"
+#include"polyakov_loop.hh"
 #include"md_update.hh"
 #include"monomial.hh"
 #include"gradient_flow.hh"

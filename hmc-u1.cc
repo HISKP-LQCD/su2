@@ -33,6 +33,8 @@ int main(int ac, char *av[]) {
   gp::physics pparams; // physics parameters
   gp::hmc_u1 hparams; // hmc parameters
 
+
+//  int err = parse_command_line_input_file<gp::hmc_u1>(pparams, hparams)
   std::string input_file; // yaml input file path
   po::options_description desc("Allowed options");
   desc.add_options()("help,h", "produce this help message")(

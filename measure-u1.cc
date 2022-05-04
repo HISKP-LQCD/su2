@@ -35,25 +35,28 @@ int main(int ac, char* av[]) {
   gp::measure_u1 mparams; // measure parameters
 
   std::string input_file; // yaml input file path
-  po::options_description desc("Allowed options");
-  desc.add_options()
-  ("help,h", "produce this help message")
-  ("file,f", po::value<std::string>(&input_file)->default_value("NONE"), "yaml input file");
+  int err = input_file_parsing::parse_command_line(ac, av, input_file);
+  if (err > 0) { return err; }
 
-  po::variables_map vm;
-  po::store(po::parse_command_line(ac, av, desc), vm);
-  po::notify(vm);
+  // po::options_description desc("Allowed options");
+  // desc.add_options()
+  // ("help,h", "produce this help message")
+  // ("file,f", po::value<std::string>(&input_file)->default_value("NONE"), "yaml input file");
 
-  if (vm.count("help")) {
-    std::cout << desc << "\n";
-    return 0;
-  }
+  // po::variables_map vm;
+  // po::store(po::parse_command_line(ac, av, desc), vm);
+  // po::notify(vm);
+
+  // std::cout << "check " << vm.count("help") << "\n";
+
+  // if (vm.count("help") || input_file=="NONE") {
+  //   std::cout << desc << "\n";
+  //   return 0;
+  // }
 
   namespace in_meas = input_file_parsing::u1::measure;
-  int err = in_meas::parse_input_file(input_file, pparams, mparams);
-  if (err > 0) {
-    return err;
-  }
+  err = in_meas::parse_input_file(input_file, pparams, mparams);
+  if (err > 0) {  return err; }
   
   boost::filesystem::create_directories(boost::filesystem::absolute(mparams.confdir));
   boost::filesystem::create_directories(boost::filesystem::absolute(mparams.resdir));

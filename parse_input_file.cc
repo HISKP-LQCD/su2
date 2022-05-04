@@ -7,6 +7,31 @@
 
 namespace input_file_parsing {
 
+  int parse_command_line(int ac, char *av[], std::string &input_file) {
+    namespace po = boost::program_options;
+
+    po::options_description desc("Allowed options");
+    desc.add_options()("help,h", "produce this help message")(
+      "file,f", po::value<std::string>(&input_file)->default_value("NONE"),
+      "yaml input file");
+
+    po::variables_map vm;
+    po::store(po::parse_command_line(ac, av, desc), vm);
+    po::notify(vm);
+
+    if (vm.count("help")) {
+      std::cout << desc << "\n";
+      return 1;
+    }
+
+    if(input_file == "NONE"){
+      std::cout << "Error: invalid command line parameters.\nCheck using the \"-h/--help\" option." << "\n";
+      return 1;
+    }
+
+    return 0;
+  }
+
   int validate_geometry(gp::physics &pparams) {
     if (pparams.ndims > 4 || pparams.ndims < 2) {
       std::cerr << "2 <= ndims <= 4!" << std::endl;
@@ -136,10 +161,9 @@ namespace input_file_parsing {
 
         // beta, xi value from the gauge action
         in.read_verb<double>(pparams.beta, {"monomials", "gauge", "beta"});
-        in.read_opt_verb<bool>(pparams.anisotropic, {"monomials", "gauge",
-                                "anisotropic"});
-        if (pparams.anisotropic) {
-          in.read_opt_verb<double>(pparams.xi, {"monomials", "gauge", "xi"});
+        if (nd["monomials"]["gauge"]["anisotropic"]) {
+          pparams.anisotropic = true;
+          in.read_opt_verb<double>(pparams.xi, {"monomials", "gauge", "anisotropic", "xi"});
         }
 
         // measure-u1 parameters
@@ -154,7 +178,7 @@ namespace input_file_parsing {
         }
         // optional parameters for potentials
         if (nd["measurements"]["potential"]) {
-          in.read_opt_verb<bool>(mparams.potential, {"measurements", "potential", "potential"});
+          mparams.potential=true;
           in.read_opt_verb<bool>(mparams.potentialsmall, {"measurements", "potential", "potentialsmall"});
           in.read_opt_verb<bool>(mparams.append, {"measurements", "potential", "append"});
           in.read_opt_verb<bool>(mparams.smear_spatial_only, {"measurements", "potential",

@@ -1,3 +1,15 @@
+// gaugemonomial_rotating.hh
+/**
+ * @file gaugemonomial_rotating.hh
+ * @author Simone Romiti (simone.romiti@uni-bonn.de)
+ * @brief
+ * @version 0.1
+ * @date 2022-05-05
+ *
+ * @copyright Copyright (c) 2022
+ *
+ */
+
 #pragma once
 #include "adjointfield.hh"
 #include "gauge_energy.hh"
@@ -54,7 +66,8 @@ namespace rotating_frame {
                   const nd_max_arr_size_t &x,
                   const size_t &mu,
                   const size_t &nu) {
-    const Group res =  (*U)(x, mu) * (*U)(xp(x, mu), nu) * (*U)(xp(x, nu), mu).dagger() * (*U)(x, nu).dagger();
+    const Group res = (*U)(x, mu) * (*U)(xp(x, mu), nu) * (*U)(xp(x, nu), mu).dagger() *
+                      (*U)(x, nu).dagger();
     return res;
   }
 
@@ -198,11 +211,12 @@ namespace rotating_frame {
           for (size_t x3 = 0; x3 < U->getLz(); x3++) {
             const nd_max_arr_size_t x = {x0, x1, x2, x3};
             const double r2 = x1 * x1 + x2 * x2;
-            S += (1 + r2 * Omega2) * (1 - Nc_inv * clover_leaf_plaquette<Group>(U, x, 1, 2));
             S +=
-              (1 + x2 * x2 * Omega2) * (1 - Nc_inv * clover_leaf_plaquette<Group>(U, x, 1, 3));
-            S +=
-              (1 + x1 * x1 * Omega2) * (1 - Nc_inv * clover_leaf_plaquette<Group>(U, x, 2, 3));
+              (1 + r2 * Omega2) * (1 - Nc_inv * clover_leaf_plaquette<Group>(U, x, 1, 2));
+            S += (1 + x2 * x2 * Omega2) *
+                 (1 - Nc_inv * clover_leaf_plaquette<Group>(U, x, 1, 3));
+            S += (1 + x1 * x1 * Omega2) *
+                 (1 - Nc_inv * clover_leaf_plaquette<Group>(U, x, 2, 3));
             S += 3 - Nc_inv * (clover_leaf_plaquette<Group>(U, x, 1, 0) +
                                clover_leaf_plaquette<Group>(U, x, 2, 0) +
                                clover_leaf_plaquette<Group>(U, x, 3, 0));
@@ -249,7 +263,7 @@ namespace rotating_frame {
     void derivative(adjointfield<Float, Group> &deriv,
                     hamiltonian_field<Float, Group> const &h,
                     const Float fac = 1.) const override {
-      //std::vector<size_t> x = {0, 0, 0, 0};
+      // std::vector<size_t> x = {0, 0, 0, 0};
       typedef typename accum_type<Group>::type accum;
 #pragma omp parallel for
       for (size_t x0 = 0; x0 < h.U->getLt(); x0++) {

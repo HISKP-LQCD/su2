@@ -11,9 +11,8 @@
 #include <vector>
 
 namespace rotating_frame {
-  using nd_max_arr = typename std::array<int, spacetime_lattice::nd_max>;
-
-  int sign(int i) { return (i > 0) - (i < 0); }
+  using nd_max_arr_int = typename std::array<int, spacetime_lattice::nd_max>;
+  using nd_max_arr_size_t = typename std::array<size_t, spacetime_lattice::nd_max>;
 
   /**
    * @brief return x+\hat{\mu}
@@ -22,9 +21,9 @@ namespace rotating_frame {
    * @param mu
    * @return nd_max_arr
    */
-  nd_max_arr xp(const nd_max_arr &x, const size_t &mu) {
-    nd_max_arr y = x;
-    y[abs(mu)] -= mu;
+  nd_max_arr_size_t xp(const nd_max_arr_size_t &x, const size_t &mu) {
+    nd_max_arr_size_t y = x;
+    y[mu] += mu;
     return y;
   }
 
@@ -34,10 +33,29 @@ namespace rotating_frame {
    * @param mu
    * @return nd_max_arr
    */
-  nd_max_arr xm(const nd_max_arr &x, const size_t &mu) {
-    nd_max_arr y = x;
+  nd_max_arr_size_t xm(const nd_max_arr_size_t &x, const size_t &mu) {
+    nd_max_arr_size_t y = x;
     y[mu] -= mu;
     return y;
+  }
+
+  /**
+   * @brief Get the plaquette U_{\mu\nu} as in eq. (2.48) of
+   * https://link.springer.com/book/10.1007/978-3-642-01850-3
+   * @tparam Group
+   * @param U gauge links
+   * @param x
+   * @param mu
+   * @param nu
+   * @return double
+   */
+  template <class Group>
+  Group plaquette(gaugeconfig<Group> *U,
+                  const nd_max_arr_size_t &x,
+                  const size_t &mu,
+                  const size_t &nu) {
+    const Group res =  (*U)(x, mu) * (*U)(xp(x, mu), nu) * (*U)(xp(x, nu), mu).dagger() * (*U)(x, nu).dagger();
+    return res;
   }
 
   /**
@@ -45,7 +63,7 @@ namespace rotating_frame {
    * https://arxiv.org/pdf/1303.6292.pdf See also eq. (9.12) of
    * https://link.springer.com/book/10.1007/978-3-642-01850-3
    * @tparam Group
-   * @param U
+   * @param U gauge links
    * @param x
    * @param mu
    * @param nu
@@ -53,21 +71,40 @@ namespace rotating_frame {
    */
   template <class Group>
   double clover_leaf_plaquette(gaugeconfig<Group> *U,
-                               const nd_max_arr &x,
+                               const nd_max_arr_size_t &x,
                                const size_t &mu,
                                const size_t &nu) {
     double res = 0.0;
 
-    res += retrace(U(x, mu) * U(xp(x, mu), nu) * U(xp(x, nu), mu).dagger() *
-                   U(x, nu).dagger());
-    res += retrace(U(x, nu) * U(xm(xp(x, nu), mu), mu).dagger() *
-                   U(xm(xp(x, mu), nu), nu) * U(xm(x, mu), mu));
-    res += retrace(U(xm(x, mu), mu).dagger() * U(xm(xp(x, mu), nu), nu).dagger() *
-                   U(xm(xp(x, nu), mu), mu) * U(xm(x, nu), nu));
-    res += retrace(U(x, mu) * U(xm(xp(x, mu), nu), nu).dagger() *
-                   U(xm(xp(x, nu), mu), mu) * U(xm(x, nu), mu));
+    res += retrace(plaquette(U, x, mu, nu));
+    res += retrace(plaquette(U, xm(x, mu), mu, nu));
+    res += retrace(plaquette(U, xm(xm(x, mu), nu), mu, nu));
+    res += retrace(plaquette(U, xm(x, nu), mu, nu));
 
     return res / 4.0;
+  }
+
+  /**
+   * @brief chair loop
+   * chair loop built as the product of 2 orthogonal plaquettes: see eq. 17 of
+   * https://arxiv.org/pdf/1303.6292.pdf
+   * @tparam Group
+   * @param U
+   * @param x_munu origin of the 1st plaquette (plane mu, nu)
+   * @param x_nurho origin of the 2nd plaquette (plane nu, rho)
+   * @param mu
+   * @param nu
+   * @param rho
+   * @return double
+   */
+  template <class Group>
+  double chair_loop(gaugeconfig<Group> *U,
+                    const nd_max_arr_size_t &x_munu,
+                    const nd_max_arr_size_t &x_nurho,
+                    const size_t &mu,
+                    const size_t &nu,
+                    const size_t &rho) {
+    return retrace(plaquette(U, x_munu, mu, nu) * plaquette(U, x_nurho, nu, rho));
   }
 
   /**
@@ -83,15 +120,19 @@ namespace rotating_frame {
    */
   template <class Group>
   double asymm_chair_loop_1(gaugeconfig<Group> *U,
-                            const nd_max_arr &x,
+                            const nd_max_arr_size_t &x,
                             const size_t &mu,
                             const size_t &nu,
                             const size_t &rho) {
     double res = 0.0;
 
-    res +=
+    res += chair_loop(U, x, x, mu, nu, rho);
+    res += chair_loop(U, xm(x, nu), xm(x, nu), mu, nu, rho);
 
-      return res;
+    res += chair_loop(U, xm(x, mu), xm(x, rho), mu, nu, rho);
+    res += chair_loop(U, xm(xm(x, mu), nu), xm(xm(x, rho), nu), mu, nu, rho);
+
+    return res;
   }
 
   /**
@@ -107,15 +148,19 @@ namespace rotating_frame {
    */
   template <class Group>
   double asymm_chair_loop_2(gaugeconfig<Group> *U,
-                            const nd_max_arr &x,
+                            const nd_max_arr_size_t &x,
                             const size_t &mu,
                             const size_t &nu,
                             const size_t &rho) {
     double res = 0.0;
 
-    res +=
+    res += chair_loop(U, x, xm(x, rho), mu, nu, rho);
+    res += chair_loop(U, xm(x, nu), xm(xm(x, rho), nu), mu, nu, rho);
 
-      return res;
+    res += chair_loop(U, xm(x, mu), x, mu, nu, rho);
+    res += chair_loop(U, xm(xm(x, mu), nu), xm(x, nu), mu, nu, rho);
+
+    return res;
   }
 
   /**
@@ -132,7 +177,7 @@ namespace rotating_frame {
    */
   template <class Group>
   double asymm_chair_loop(gaugeconfig<Group> *U,
-                          const nd_max_arr &x,
+                          const nd_max_arr_size_t &x,
                           const size_t &mu,
                           const size_t &nu,
                           const size_t &rho) {
@@ -151,22 +196,22 @@ namespace rotating_frame {
       for (size_t x1 = 0; x1 < U->getLx(); x1++) {
         for (size_t x2 = 0; x2 < U->getLy(); x2++) {
           for (size_t x3 = 0; x3 < U->getLz(); x3++) {
-            std::vector<size_t> x = {x0, x1, x2, x3};
+            const nd_max_arr_size_t x = {x0, x1, x2, x3};
             const double r2 = x1 * x1 + x2 * x2;
-            S += (1 + r2 * Omega2) * (1 - Nc_inv * clover_leaf_plaquette(U, x, 1, 2));
+            S += (1 + r2 * Omega2) * (1 - Nc_inv * clover_leaf_plaquette<Group>(U, x, 1, 2));
             S +=
-              (1 + x2 * x2 * Omega2) * (1 - Nc_inv * clover_leaf_plaquette(U, x, 1, 3));
+              (1 + x2 * x2 * Omega2) * (1 - Nc_inv * clover_leaf_plaquette<Group>(U, x, 1, 3));
             S +=
-              (1 + x1 * x1 * Omega2) * (1 - Nc_inv * clover_leaf_plaquette(U, x, 2, 3));
-            S += 3 - Nc_inv * (clover_leaf_plaquette(U, x, 1, 0) +
-                               clover_leaf_plaquette(U, x, 2, 0) +
-                               clover_leaf_plaquette(U, x, 3, 0));
+              (1 + x1 * x1 * Omega2) * (1 - Nc_inv * clover_leaf_plaquette<Group>(U, x, 2, 3));
+            S += 3 - Nc_inv * (clover_leaf_plaquette<Group>(U, x, 1, 0) +
+                               clover_leaf_plaquette<Group>(U, x, 2, 0) +
+                               clover_leaf_plaquette<Group>(U, x, 3, 0));
 
             S += -Nc_inv * (x2 * Omega * asymm_chair_loop(U, x, 1, 2, 0) -
-                              x1 * Omega * asymm_chair_loop(U, x, 2, 1, 0) +
-                              x2 * Omega * asymm_chair_loop(U, x, 1, 3, 0) -
-                              x1 * Omega * asymm_chair_loop(U, x, 2, 3, 0) +
-                              x1 * x2 * Omega2 * asymm_chair_loop(U, x, 1, 3, 2););
+                            x1 * Omega * asymm_chair_loop(U, x, 2, 1, 0) +
+                            x2 * Omega * asymm_chair_loop(U, x, 1, 3, 0) -
+                            x1 * Omega * asymm_chair_loop(U, x, 2, 3, 0) +
+                            x1 * x2 * Omega2 * asymm_chair_loop(U, x, 1, 3, 2));
           }
         }
       }
@@ -185,11 +230,11 @@ namespace rotating_frame {
    * @tparam Group
    */
   template <typename Float, class Group>
-  class gaugemonomial_rotating : public monomial<Float, Group> {
+  class gauge_monomial : public monomial<Float, Group> {
   private:
     const double Omega; // imaginary angular velocity
   public:
-    gaugemonomial_rotating<Float, Group>(unsigned int _timescale, const double &_Omega)
+    gauge_monomial<Float, Group>(unsigned int _timescale, const double &_Omega)
       : monomial<Float, Group>::monomial(_timescale), Omega(_Omega) {}
     // S_g = sum_x sum_{mu<nu} beta*(1- 1/Nc*Re[Tr[U_{mu nu}]])
     // beta = 2*N_c/g_0^2
@@ -204,7 +249,7 @@ namespace rotating_frame {
     void derivative(adjointfield<Float, Group> &deriv,
                     hamiltonian_field<Float, Group> const &h,
                     const Float fac = 1.) const override {
-      std::vector<size_t> x = {0, 0, 0, 0};
+      //std::vector<size_t> x = {0, 0, 0, 0};
       typedef typename accum_type<Group>::type accum;
 #pragma omp parallel for
       for (size_t x0 = 0; x0 < h.U->getLt(); x0++) {

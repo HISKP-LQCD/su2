@@ -108,10 +108,11 @@ public:
    * access elements according to the convention of
    * https://link.springer.com/book/10.1007/978-3-642-01850-3, eq. (2.34)
    */
-  value_type operator()(const std::array<int, spacetime_lattice::nd_max> &x,
+  template<class iT=int>
+  value_type operator()(const std::array<iT, spacetime_lattice::nd_max> &x,
                         const size_t &mu,
                         const bool &bs = true) const {
-    std::array<int, spacetime_lattice::nd_max> xm = x;
+    std::array<iT, spacetime_lattice::nd_max> xm = x;
     xm[mu]--;
     return bs * (*this)(x, mu) + (1 - bs) * (*this)(xm, mu).dagger();
   }

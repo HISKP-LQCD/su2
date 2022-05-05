@@ -5,6 +5,7 @@
 #include "su2.hh"
 #include "u1.hh"
 
+#include <array>
 #include <cassert>
 #include <cmath>
 #include <complex>
@@ -12,7 +13,6 @@
 #include <iostream>
 #include <random>
 #include <vector>
-#include <array>
 
 using std::vector;
 
@@ -60,7 +60,7 @@ public:
   size_t getSize() const { return (volume * ndims); }
   double getBeta() const { return beta; }
   void setBeta(const double _beta) { beta = _beta; }
-  int getNc() const  { return (data[0].N_c); }
+  int getNc() const { return (data[0].N_c); }
   void restoreSU() {
 #pragma omp parallel for
     for (size_t i = 0; i < getSize(); i++) {
@@ -82,11 +82,11 @@ public:
     return data[getIndex(t, x, y, z, mu)];
   }
 
-  const value_type &operator()(size_t const t,
-                               size_t const x,
-                               size_t const y,
-                               size_t const z,
-                               size_t const mu) const {
+  value_type operator()(size_t const t,
+                        size_t const x,
+                        size_t const y,
+                        size_t const z,
+                        size_t const mu) const {
     return data[getIndex(t, x, y, z, mu)];
   }
 
@@ -94,23 +94,31 @@ public:
     return data[getIndex(coords[0], coords[1], coords[2], coords[3], mu)];
   }
 
-  const value_type &operator()(std::vector<size_t> const &coords, size_t const mu) const {
+  value_type operator()(std::vector<size_t> const &coords, size_t const mu) const {
     return data[getIndex(coords[0], coords[1], coords[2], coords[3], mu)];
   }
 
-  value_type &operator()(const std::array<int, spacetime_lattice::nd_max> &x, const size_t &mu) {
+  value_type &operator()(const std::array<int, spacetime_lattice::nd_max> &x,
+                         const size_t &mu) {
     const geometry g(Lx, Ly, Lz, Lt); // note the order
     return data[g.getIndex(x[0], x[1], x[2], x[3])];
   }
 
-  const value_type &operator()(const std::array<int, spacetime_lattice::nd_max> &x, const size_t &mu) const {
-    const geometry g(Lx, Ly, Lz, Lt); // note the order
-    return data[g.getIndex(x[0], x[1], x[2], x[3])];
+  /**
+   * access elements according to the convention of
+   * https://link.springer.com/book/10.1007/978-3-642-01850-3, eq. (2.34)
+   */
+  value_type operator()(const std::array<int, spacetime_lattice::nd_max> &x,
+                        const size_t &mu,
+                        const bool &bs = true) const {
+    std::array<int, spacetime_lattice::nd_max> xm = x;
+    xm[mu]--;
+    return bs * (*this)(x, mu) + (1 - bs) * (*this)(xm, mu).dagger();
   }
 
   value_type &operator[](size_t const index) { return data[index]; }
 
-  const value_type &operator[](size_t const index) const { return data[index]; }
+  value_type operator[](size_t const index) const { return data[index]; }
 
   void save(std::string const &path) const;
   int load(std::string const &path);

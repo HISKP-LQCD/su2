@@ -12,7 +12,7 @@
 template<class T> double gauge_energy(const gaugeconfig<T> &U, bool spatial_only=false) {
 
   double res = 0.;
-size_t startmu=0;
+size_t startmu=0; // CHANGE to (size_t) spatial_only
 if(spatial_only){startmu=1;};
  
 #pragma omp parallel for reduction (+: res)

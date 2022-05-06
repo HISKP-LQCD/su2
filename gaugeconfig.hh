@@ -100,21 +100,26 @@ public:
 
   value_type &operator()(const std::array<int, spacetime_lattice::nd_max> &x,
                          const size_t &mu) {
-    const geometry g(Lx, Ly, Lz, Lt); // note the order
-    return data[g.getIndex(x[0], x[1], x[2], x[3])];
+    return data[getIndex(x[0], x[1], x[2], x[3], mu)];
   }
 
   /**
    * access elements according to the convention of
    * https://link.springer.com/book/10.1007/978-3-642-01850-3, eq. (2.34)
    */
-  template<class iT=int>
+  template <class iT = int>
   value_type operator()(const std::array<iT, spacetime_lattice::nd_max> &x,
                         const size_t &mu,
                         const bool &bs = true) const {
+    const value_type Ux_mu = data[getIndex(x[0], x[1], x[2], x[3], mu)];
     std::array<iT, spacetime_lattice::nd_max> xm = x;
+
     xm[mu]--;
-    return bs * (*this)(x, mu) + (1 - bs) * (*this)(xm, mu).dagger();
+    const value_type Udagx_mu = data[getIndex(xm[0], xm[1], xm[2], xm[3], mu)].dagger();
+
+    if(bs){ return Ux_mu;}
+    else{ return Udagx_mu; }
+//    return ((double) bs) * Ux_mu + (1 - ((double)bs)) * Udagx_mu;
   }
 
   value_type &operator[](size_t const index) { return data[index]; }

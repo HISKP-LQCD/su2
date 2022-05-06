@@ -12,7 +12,6 @@
 
 #pragma once
 #include "adjointfield.hh"
-#include "gauge_energy.hh"
 #include "gaugeconfig.hh"
 #include "get_staples.hh"
 #include "hamiltonian_field.hh"
@@ -28,15 +27,13 @@ namespace rotating_frame {
 
   /**
    * @brief return x+\hat{\mu}
-   * if mu<0 returns x-\hat{mu}
    * @param x
    * @param mu
    * @return nd_max_arr
    */
-  nd_max_arr_size_t xp(const nd_max_arr_size_t &x, const size_t &mu) {
-    nd_max_arr_size_t y = x;
-    y[mu] += mu;
-    return y;
+  nd_max_arr_size_t xp(nd_max_arr_size_t x, const size_t &mu) {
+    x[mu]++; // note: 'x' is passed value (this is a copy)
+    return x;
   }
 
   /**
@@ -45,10 +42,9 @@ namespace rotating_frame {
    * @param mu
    * @return nd_max_arr
    */
-  nd_max_arr_size_t xm(const nd_max_arr_size_t &x, const size_t &mu) {
-    nd_max_arr_size_t y = x;
-    y[mu] -= mu;
-    return y;
+  nd_max_arr_size_t xm(nd_max_arr_size_t x, const size_t &mu) {
+    x[mu]--; // note: 'x' passed by value (this is a copy)
+    return x;
   }
 
   /**
@@ -62,12 +58,12 @@ namespace rotating_frame {
    * @return double
    */
   template <class Group>
-  Group plaquette(gaugeconfig<Group> *U,
+  Group plaquette(const gaugeconfig<Group>& U,
                   const nd_max_arr_size_t &x,
                   const size_t &mu,
                   const size_t &nu) {
-    const Group res = (*U)(x, mu) * (*U)(xp(x, mu), nu) * (*U)(xp(x, nu), mu).dagger() *
-                      (*U)(x, nu).dagger();
+    const Group res = U(x, mu) * U(xp(x, mu), nu) * U(xp(x, nu), mu).dagger() *
+                      U(x, nu).dagger();
     return res;
   }
 
@@ -83,7 +79,7 @@ namespace rotating_frame {
    * @return double
    */
   template <class Group>
-  double clover_leaf_plaquette(gaugeconfig<Group> *U,
+  double clover_leaf_plaquette(const gaugeconfig<Group>& U,
                                const nd_max_arr_size_t &x,
                                const size_t &mu,
                                const size_t &nu) {
@@ -111,7 +107,7 @@ namespace rotating_frame {
    * @return double
    */
   template <class Group>
-  double chair_loop(gaugeconfig<Group> *U,
+  double chair_loop(const gaugeconfig<Group> &U,
                     const nd_max_arr_size_t &x_munu,
                     const nd_max_arr_size_t &x_nurho,
                     const size_t &mu,
@@ -132,7 +128,7 @@ namespace rotating_frame {
    * @return double
    */
   template <class Group>
-  double asymm_chair_loop_1(gaugeconfig<Group> *U,
+  double asymm_chair_loop_1(const gaugeconfig<Group> &U,
                             const nd_max_arr_size_t &x,
                             const size_t &mu,
                             const size_t &nu,
@@ -160,7 +156,7 @@ namespace rotating_frame {
    * @return double
    */
   template <class Group>
-  double asymm_chair_loop_2(gaugeconfig<Group> *U,
+  double asymm_chair_loop_2(const gaugeconfig<Group> &U,
                             const nd_max_arr_size_t &x,
                             const size_t &mu,
                             const size_t &nu,
@@ -189,7 +185,7 @@ namespace rotating_frame {
    * @return double
    */
   template <class Group>
-  double asymm_chair_loop(gaugeconfig<Group> *U,
+  double asymm_chair_loop(const gaugeconfig<Group> &U,
                           const nd_max_arr_size_t &x,
                           const size_t &mu,
                           const size_t &nu,
@@ -199,40 +195,54 @@ namespace rotating_frame {
            8.0;
   }
 
-  template <class Group> double get_S_G(gaugeconfig<Group> *U, const double &Omega) {
-    double S = 0.0;
-
+  /**
+   * @brief analogous of gauge energy in flat spacetime (Minkowsky metric)
+   * sum of plaquettes such that in the limit Omega=0.0 one obtains the usual gauge energy
+   * (see `su2/gauge_energy.hh`)
+   * @tparam Group
+   * @param U
+   * @param Omega
+   * @return double
+   */
+  template <class Group>
+  double gauge_energy(const gaugeconfig<Group>& U,
+                      const double &Omega,
+                      const bool &spatial_only = false) {
     const double Omega2 = std::pow(Omega, 2);
-    const double Nc_inv = std::pow(U->getNc(), -1);
-#pragma omp parallel for
-    for (size_t x0 = 0; x0 < U->getLt(); x0++) {
-      for (size_t x1 = 0; x1 < U->getLx(); x1++) {
-        for (size_t x2 = 0; x2 < U->getLy(); x2++) {
-          for (size_t x3 = 0; x3 < U->getLz(); x3++) {
+
+    // 0 if spatial_only==false, 1 if spatial_only==true
+    size_t startmu = (size_t)spatial_only;
+    double res = 0.0;
+#pragma omp parallel for reduction(+ : res)
+    for (size_t x0 = 0; x0 < U.getLt(); x0++) {
+      for (size_t x1 = 0; x1 < U.getLx(); x1++) {
+        for (size_t x2 = 0; x2 < U.getLy(); x2++) {
+          for (size_t x3 = 0; x3 < U.getLz(); x3++) {
             const nd_max_arr_size_t x = {x0, x1, x2, x3};
             const double r2 = x1 * x1 + x2 * x2;
-            S +=
-              (1 + r2 * Omega2) * (1 - Nc_inv * clover_leaf_plaquette<Group>(U, x, 1, 2));
-            S += (1 + x2 * x2 * Omega2) *
-                 (1 - Nc_inv * clover_leaf_plaquette<Group>(U, x, 1, 3));
-            S += (1 + x1 * x1 * Omega2) *
-                 (1 - Nc_inv * clover_leaf_plaquette<Group>(U, x, 2, 3));
-            S += 3 - Nc_inv * (clover_leaf_plaquette<Group>(U, x, 1, 0) +
-                               clover_leaf_plaquette<Group>(U, x, 2, 0) +
-                               clover_leaf_plaquette<Group>(U, x, 3, 0));
 
-            S += -Nc_inv * (x2 * Omega * asymm_chair_loop(U, x, 1, 2, 0) -
-                            x1 * Omega * asymm_chair_loop(U, x, 2, 1, 0) +
-                            x2 * Omega * asymm_chair_loop(U, x, 1, 3, 0) -
-                            x1 * Omega * asymm_chair_loop(U, x, 2, 3, 0) +
-                            x1 * x2 * Omega2 * asymm_chair_loop(U, x, 1, 3, 2));
+            res += clover_leaf_plaquette(U, x, 0, 1);
+            res += clover_leaf_plaquette(U, x, 0, 2);
+            res += clover_leaf_plaquette(U, x, 0, 3);
+            res += (1 + r2 * Omega2) * clover_leaf_plaquette(U, x, 1, 2);
+            res += (1 + x2 * x2 * Omega2) * clover_leaf_plaquette(U, x, 1, 3);
+            res += (1 + x1 * x1 * Omega2) * clover_leaf_plaquette(U, x, 2, 3);
+
+            res += x2 * Omega * asymm_chair_loop(U, x, 0, 1, 2);
+            res -= x1 * Omega * asymm_chair_loop(U, x, 0, 2, 1);
+            res += x2 * Omega * asymm_chair_loop(U, x, 0, 1, 3);
+            res -= x1 * Omega * asymm_chair_loop(U, x, 0, 2, 3);
+            res += x1 * x2 * Omega2 * asymm_chair_loop(U, x, 1, 3, 2);
+
           }
         }
       }
     }
+    return res;
+  }
 
-    S *= U->getBeta();
-    return S;
+  template <class Group> double get_S_G(const gaugeconfig<Group> &U, const double &Omega) {
+    return U.getBeta()*(U.getVolume()*6 - gauge_energy<Group>(U, Omega)/double(U.getNc()));
   }
 
   /**
@@ -250,14 +260,12 @@ namespace rotating_frame {
   public:
     gauge_monomial<Float, Group>(unsigned int _timescale, const double &_Omega)
       : monomial<Float, Group>::monomial(_timescale), Omega(_Omega) {}
-    // S_g = sum_x sum_{mu<nu} beta*(1- 1/Nc*Re[Tr[U_{mu nu}]])
-    // beta = 2*N_c/g_0^2
     void heatbath(hamiltonian_field<Float, Group> const &h) override {
-      monomial<Float, Group>::Hold = get_S_G(h.U, (*this).Omega);
+      monomial<Float, Group>::Hold = get_S_G(*h.U, (*this).Omega);
       return;
     }
     void accept(hamiltonian_field<Float, Group> const &h) override {
-      monomial<Float, Group>::Hnew = get_S_G(h.U, (*this).Omega);
+      monomial<Float, Group>::Hnew = get_S_G(*h.U, (*this).Omega);
       return;
     }
     void derivative(adjointfield<Float, Group> &deriv,

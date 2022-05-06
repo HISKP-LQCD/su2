@@ -93,7 +93,7 @@ int main(int ac, char *av[]) {
   // generate list of monomials
   std::list<monomial<double, _u1> *> monomial_list;
   gaugemonomial<double, _u1> gm(0);
-  rotating_frame::gauge_monomial<double, _u1> gm_rot(0, 0.0);
+  rotating_frame::gauge_monomial<double, _u1> gm_rot(0, pparams.Omega);
 
   kineticmonomial<double, _u1> km(0);
   km.setmdpassive();
@@ -103,35 +103,17 @@ int main(int ac, char *av[]) {
                                             hparams.tolerance_cg, hparams.seed_pf,
                                             hparams.solver_verbosity);
 
-
-
-  std::cout << " check \n";
-  std::array<size_t, 4> x = {2, 0, 1, 1};
-  std::array<size_t, 4> xplusmu = x;
-  std::array<size_t, 4> xplusnu = x;
-  size_t mu = 2, nu=0;
-  xplusmu[mu] += 1;
-  xplusnu[nu] += 1;
-  std::cout.precision(16);
-  std::cout << retrace(U(x, mu) * U(xplusmu, nu) * U(xplusnu, mu).dagger() *
-                       U(x, nu).dagger())
-            << " VS " << rotating_frame::clover_leaf_plaquette<_u1>(U, x, mu, nu) << "\n";
-  std::cout << gauge_energy(U) << " VS " << rotating_frame::gauge_energy<_u1>(U, 0.0) << "\n";
-
-std::cout << U.getBeta()*(U.getVolume()*6 - gauge_energy<_u1>(U)/double(U.getNc())) <<
-" VS " << rotating_frame::get_S_G(U, 0.1)<<"\n";
-
-  abort();
-
   if (pparams.include_gauge) {
-   // monomial_list.push_back(&gm);
-   monomial_list.push_back(&gm_rot);
+    if (pparams.rotating_frame) {
+      monomial_list.push_back(&gm_rot);
+    } else {
+      monomial_list.push_back(&gm);
+    }
   }
 
   if (pparams.include_staggered_fermions) { // including S_F (fermionic) in the action
     monomial_list.push_back(&detDDdag);
   }
-
 
   // setting up the integrator
   integrator<double, _u1> *md_integ = set_integrator<double, _u1>(hparams.integrator, hparams.exponent);

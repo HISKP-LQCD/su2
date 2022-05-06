@@ -22,6 +22,9 @@ namespace global_parameters {
     size_t Lt; // temporal lattice size > 0
     size_t ndims = 4; // number of dimensions, 2 <= ndims <= 4
 
+    bool rotating_frame = false; // true when we consider a rotating lattice
+    double Omega = 0.0; // imaginary angular frequency (rotating lattice)
+
     bool include_gauge = false; // true when the action contains the gauge part
     double beta; // beta value
 
@@ -29,6 +32,7 @@ namespace global_parameters {
     double m0; // bare quark mass
     double xi = 1.0; // anisotropy parameter
     bool anisotropic = false; // use anisotropic lattice
+
   };
 
   /* Optional parameters for the hmc the in U(1) theory */

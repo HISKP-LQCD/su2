@@ -96,6 +96,12 @@ namespace input_file_parsing {
         abort();
       }
 
+      YAML::Node R = in.get_root();
+      if (R["geometry"]["rotating_frame"]) {
+        pparams.rotating_frame = true;
+        in.read_verb<double>(pparams.Omega, {"geometry", "rotating_frame", "Omega"});
+      }
+
       return;
     }
 

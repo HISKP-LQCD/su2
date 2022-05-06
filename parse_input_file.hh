@@ -92,7 +92,7 @@ namespace YAML_parsing {
       return node_i;
     }
 
-    YAML::Node get_root() { return (*this).N; }
+    YAML::Node get_root() { return YAML::Clone((*this).N); }
 
     /**
      * @brief saving value from YAML node

@@ -142,6 +142,9 @@ int main(int ac, char *av[]) {
   ss_basename << hparams.conf_basename << ".";
   ss_basename << pparams.Lx << "." << pparams.Ly << "." << pparams.Lz << "."
               << pparams.Lt;
+  if (pparams.rotating_frame) {
+    ss_basename << ".Omega_" << pparams.Omega;
+  }
   ss_basename << ".b" << std::fixed << std::setprecision(hparams.beta_str_width)
               << pparams.beta;
 

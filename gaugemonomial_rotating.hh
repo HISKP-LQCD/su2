@@ -58,12 +58,12 @@ namespace rotating_frame {
    * @return double
    */
   template <class Group>
-  Group plaquette(const gaugeconfig<Group>& U,
+  Group plaquette(const gaugeconfig<Group> &U,
                   const nd_max_arr_size_t &x,
                   const size_t &mu,
                   const size_t &nu) {
-    const Group res = U(x, mu) * U(xp(x, mu), nu) * U(xp(x, nu), mu).dagger() *
-                      U(x, nu).dagger();
+    const Group res =
+      U(x, mu) * U(xp(x, mu), nu) * U(xp(x, nu), mu).dagger() * U(x, nu).dagger();
     return res;
   }
 
@@ -71,6 +71,12 @@ namespace rotating_frame {
    * @brief Get the clover leaf plaquette Ubar as in eq. 16 of
    * https://arxiv.org/pdf/1303.6292.pdf See also eq. (9.12) of
    * https://link.springer.com/book/10.1007/978-3-642-01850-3
+   *
+   * Note: In the end, we always sum over all points of the lattice.
+   * Hence, in flat spacetime we can replace this clover average at each point with the
+   * standard plaquette. Conversely, in curved space-time we can't because the
+   * coefficients depend on the spacetime coordinates.
+   * (cit. https://arxiv.org/pdf/1303.6292.pdf)
    * @tparam Group
    * @param U gauge links
    * @param x
@@ -79,10 +85,10 @@ namespace rotating_frame {
    * @return double
    */
   template <class Group>
-  double clover_leaf_plaquette(const gaugeconfig<Group>& U,
-                               const nd_max_arr_size_t &x,
-                               const size_t &mu,
-                               const size_t &nu) {
+  double retr_clover_leaf(const gaugeconfig<Group> &U,
+                          const nd_max_arr_size_t &x,
+                          const size_t &mu,
+                          const size_t &nu) {
     double res = 0.0;
 
     res += retrace(plaquette(U, x, mu, nu));
@@ -107,7 +113,7 @@ namespace rotating_frame {
    * @return double
    */
   template <class Group>
-  double chair_loop(const gaugeconfig<Group> &U,
+  double retr_chair(const gaugeconfig<Group> &U,
                     const nd_max_arr_size_t &x_munu,
                     const nd_max_arr_size_t &x_nurho,
                     const size_t &mu,
@@ -128,18 +134,18 @@ namespace rotating_frame {
    * @return double
    */
   template <class Group>
-  double asymm_chair_loop_1(const gaugeconfig<Group> &U,
-                            const nd_max_arr_size_t &x,
-                            const size_t &mu,
-                            const size_t &nu,
-                            const size_t &rho) {
+  double retr_chair_1(const gaugeconfig<Group> &U,
+                      const nd_max_arr_size_t &x,
+                      const size_t &mu,
+                      const size_t &nu,
+                      const size_t &rho) {
     double res = 0.0;
 
-    res += chair_loop(U, x, x, mu, nu, rho);
-    res += chair_loop(U, xm(x, nu), xm(x, nu), mu, nu, rho);
+    res += retr_chair(U, x, x, mu, nu, rho);
+    res += retr_chair(U, xm(x, nu), xm(x, nu), mu, nu, rho);
 
-    res += chair_loop(U, xm(x, mu), xm(x, rho), mu, nu, rho);
-    res += chair_loop(U, xm(xm(x, mu), nu), xm(xm(x, rho), nu), mu, nu, rho);
+    res += retr_chair(U, xm(x, mu), xm(x, rho), mu, nu, rho);
+    res += retr_chair(U, xm(xm(x, mu), nu), xm(xm(x, rho), nu), mu, nu, rho);
 
     return res;
   }
@@ -156,18 +162,18 @@ namespace rotating_frame {
    * @return double
    */
   template <class Group>
-  double asymm_chair_loop_2(const gaugeconfig<Group> &U,
-                            const nd_max_arr_size_t &x,
-                            const size_t &mu,
-                            const size_t &nu,
-                            const size_t &rho) {
+  double retr_chair_2(const gaugeconfig<Group> &U,
+                      const nd_max_arr_size_t &x,
+                      const size_t &mu,
+                      const size_t &nu,
+                      const size_t &rho) {
     double res = 0.0;
 
-    res += chair_loop(U, x, xm(x, rho), mu, nu, rho);
-    res += chair_loop(U, xm(x, nu), xm(xm(x, rho), nu), mu, nu, rho);
+    res += retr_chair(U, x, xm(x, rho), mu, nu, rho);
+    res += retr_chair(U, xm(x, nu), xm(xm(x, rho), nu), mu, nu, rho);
 
-    res += chair_loop(U, xm(x, mu), x, mu, nu, rho);
-    res += chair_loop(U, xm(xm(x, mu), nu), xm(x, nu), mu, nu, rho);
+    res += retr_chair(U, xm(x, mu), x, mu, nu, rho);
+    res += retr_chair(U, xm(xm(x, mu), nu), xm(x, nu), mu, nu, rho);
 
     return res;
   }
@@ -185,14 +191,12 @@ namespace rotating_frame {
    * @return double
    */
   template <class Group>
-  double asymm_chair_loop(const gaugeconfig<Group> &U,
+  double retr_asymm_chair(const gaugeconfig<Group> &U,
                           const nd_max_arr_size_t &x,
                           const size_t &mu,
                           const size_t &nu,
                           const size_t &rho) {
-    return (asymm_chair_loop_1(U, x, mu, nu, rho) -
-            asymm_chair_loop_2(U, x, mu, nu, rho)) /
-           8.0;
+    return (retr_chair_1(U, x, mu, nu, rho) - retr_chair_2(U, x, mu, nu, rho)) / 8.0;
   }
 
   /**
@@ -205,7 +209,7 @@ namespace rotating_frame {
    * @return double
    */
   template <class Group>
-  double gauge_energy(const gaugeconfig<Group>& U,
+  double gauge_energy(const gaugeconfig<Group> &U,
                       const double &Omega,
                       const bool &spatial_only = false) {
     const double Omega2 = std::pow(Omega, 2);
@@ -221,19 +225,18 @@ namespace rotating_frame {
             const nd_max_arr_size_t x = {x0, x1, x2, x3};
             const double r2 = x1 * x1 + x2 * x2;
 
-            res += clover_leaf_plaquette(U, x, 0, 1);
-            res += clover_leaf_plaquette(U, x, 0, 2);
-            res += clover_leaf_plaquette(U, x, 0, 3);
-            res += (1 + r2 * Omega2) * clover_leaf_plaquette(U, x, 1, 2);
-            res += (1 + x2 * x2 * Omega2) * clover_leaf_plaquette(U, x, 1, 3);
-            res += (1 + x1 * x1 * Omega2) * clover_leaf_plaquette(U, x, 2, 3);
+            res += retr_clover_leaf(U, x, 0, 1);
+            res += retr_clover_leaf(U, x, 0, 2);
+            res += retr_clover_leaf(U, x, 0, 3);
+            res += (1 + r2 * Omega2) * retr_clover_leaf(U, x, 1, 2);
+            res += (1 + x2 * x2 * Omega2) * retr_clover_leaf(U, x, 1, 3);
+            res += (1 + x1 * x1 * Omega2) * retr_clover_leaf(U, x, 2, 3);
 
-            res += x2 * Omega * asymm_chair_loop(U, x, 0, 1, 2);
-            res -= x1 * Omega * asymm_chair_loop(U, x, 0, 2, 1);
-            res += x2 * Omega * asymm_chair_loop(U, x, 0, 1, 3);
-            res -= x1 * Omega * asymm_chair_loop(U, x, 0, 2, 3);
-            res += x1 * x2 * Omega2 * asymm_chair_loop(U, x, 1, 3, 2);
-
+            res += x2 * Omega * retr_asymm_chair(U, x, 0, 1, 2);
+            res -= x1 * Omega * retr_asymm_chair(U, x, 0, 2, 1);
+            res += x2 * Omega * retr_asymm_chair(U, x, 0, 1, 3);
+            res -= x1 * Omega * retr_asymm_chair(U, x, 0, 2, 3);
+            res += x1 * x2 * Omega2 * retr_asymm_chair(U, x, 1, 3, 2);
           }
         }
       }
@@ -241,8 +244,92 @@ namespace rotating_frame {
     return res;
   }
 
-  template <class Group> double get_S_G(const gaugeconfig<Group> &U, const double &Omega) {
-    return U.getBeta()*(U.getVolume()*6 - gauge_energy<Group>(U, Omega)/double(U.getNc()));
+  template <class Group>
+  double get_S_G(const gaugeconfig<Group> &U, const double &Omega) {
+    return U.getBeta() *
+           (U.getVolume() * 6 - gauge_energy<Group>(U, Omega) / double(U.getNc()));
+  }
+
+  /**
+   * @brief Get the staples object
+   * Returns the sum of staples attached to the link U_{\mu}(x) in the gauge action S_G.
+   * Notes:
+   *   1. In the action S_G, for each point 'x' the staples come from the plaquette at the point itself, 
+   *      plus the contribution from nearest neighbors. All of them loop "clock-wise". 
+   *      However, since in the end we take the Real part of the Trace, 
+   *      we can replace the latter loops by their hermitian conjugate --> counterclockwise,
+   *      and also put U_{\mu}(x) in front. Therefore, in flat spacetime:
+   *      S_G = (\beta)* \sum_{x} [1 - (1/N_c)*Re[ Tr[ U_\mu{x}*S_{\mu}(x) ] ] , where S_{\mu}(x) is the staple implemented here.  
+   *      clockwise or counter-clockwise have the same effect, so it's like if  
+   *   2. In flat spacetime the action contains the sum of all plaquettes, 
+   *      so the staple contains 1 contribution from the plaquette at 'x', 
+   *      and (nd-1) from the others. All of them have the same "spacetime" weight (flat metric)
+   *   3. In curved spacetime we consider the clover leaf plaquette, 
+   *      hence there are 2*(nd-1) contributions with the "spacetime" weight at 'x' 
+   *      and other (nd-1) weighted with the metric at the nearest neighbors points.
+   * @tparam T element of the adjoint representation of the symmetry group
+   * @tparam S symmetry group
+   * @param U gauge configuration
+   * @param x link to which staples are attached
+   * @param mu link direction
+   */
+  template <class T, class S>
+  void get_staples(gaugeconfig<S> &U,
+                   vector<size_t> const x,
+                   const size_t mu, const double& Omega) {
+    T K; 
+    vector<size_t> x1 = x, x2 = x;
+    x1[mu] += 1;
+      for (size_t nu = 0; nu < U.getndims(); nu++) {
+        if (nu != mu) {
+          x2[nu]++;
+          K += U(x1, nu) * U(x2, mu).dagger() * U(x, nu).dagger();
+          x2[nu]--;
+        }
+      }
+      for (size_t nu = 0; nu < U.getndims(); nu++) {
+        if (nu != mu) {
+          x1[nu]--;
+          x2[nu]--;
+          K += U(x1, nu).dagger() * U(x2, mu).dagger() * U(x2, nu);
+          x2[nu]++;
+          x1[nu]++;
+        }
+      }
+    return K;
+  }
+
+  /**
+   * @brief gauge force in the HMC
+   *
+   * @tparam Group
+   * @param U
+   * @param Omega
+   * @return Group
+   */
+  template <class Group>
+  Group
+  get_F_G(const gaugeconfig<Group> &U, const nd_max_arr_size_t &x, const double &Omega) {
+    typedef typename accum_type<Group>::type accum;
+
+    const double Omega2 = std::pow(Omega, 2);
+    const double r2 = x[1] * x[1] + x[2] * x[2];
+
+    res += retr_clover_leaf(U, x, 0, 1);
+    res += retr_clover_leaf(U, x, 0, 2);
+    res += retr_clover_leaf(U, x, 0, 3);
+    res += (1 + r2 * Omega2) * retr_clover_leaf(U, x, 1, 2);
+    res += (1 + x2 * x2 * Omega2) * retr_clover_leaf(U, x, 1, 3);
+    res += (1 + x1 * x1 * Omega2) * retr_clover_leaf(U, x, 2, 3);
+
+    res += x2 * Omega * retr_asymm_chair(U, x, 0, 1, 2);
+    res -= x1 * Omega * retr_asymm_chair(U, x, 0, 2, 1);
+    res += x2 * Omega * retr_asymm_chair(U, x, 0, 1, 3);
+    res -= x1 * Omega * retr_asymm_chair(U, x, 0, 2, 3);
+    res += x1 * x2 * Omega2 * retr_asymm_chair(U, x, 1, 3, 2);
+
+    accum S = -gauge_energy<Group>(U, Omega);
+    return U.getBeta() * S / double(U.getNc()));
   }
 
   /**
@@ -280,15 +367,9 @@ namespace rotating_frame {
             for (size_t x3 = 0; x3 < h.U->getLz(); x3++) {
               std::vector<size_t> x = {x0, x1, x2, x3};
               for (size_t mu = 0; mu < h.U->getndims(); mu++) {
-                accum S;
-                get_staples(S, *h.U, x, mu);
-                S = (*h.U)(x, mu) * S;
-                // the antihermitian traceless part
-                // beta/N_c *(U*U^stap - (U*U^stap)^dagger)
-                // in get_deriv
-
-                deriv(x, mu) +=
-                  fac * h.U->getBeta() / double(h.U->getNc()) * get_deriv<double>(S);
+                // accum S = get_F_G(U, x, (*this).Omega);
+                // deriv(x, mu) +=
+                //   fac * h.U->getBeta() / double(h.U->getNc()) * get_deriv<double>(S);
               }
             }
           }

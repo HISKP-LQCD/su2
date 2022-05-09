@@ -7,13 +7,13 @@ geometry:
   T: 4
   ndims: 3
 
-begin_monomials:
+monomials:
   gauge:
     beta: 1.9
-    xi : 1.0
-    anisotropic : false
+#    anisotropic:
+#      xi : 1.0
 
-begin_measurements:
+measurements:
   confdir: "./c1/"
   icounter: 3
   n_meas: 6
@@ -22,7 +22,6 @@ begin_measurements:
     tmax : 1.0
   Wloop: true
   potential:
-    potential : true
     potentialsmall : false
     append : false
     n_apesmear : 0

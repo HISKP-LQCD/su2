@@ -10,6 +10,8 @@
 #include"parse_input_file.hh"
 #include"version.hh"
 
+#include "gaugemonomial_rotating.hh"
+
 #include<iostream>
 #include<fstream>
 #include<iomanip>
@@ -33,6 +35,8 @@ int main(int ac, char *av[]) {
   gp::physics pparams; // physics parameters
   gp::hmc_u1 hparams; // hmc parameters
 
+
+//  int err = parse_command_line_input_file<gp::hmc_u1>(pparams, hparams)
   std::string input_file; // yaml input file path
   po::options_description desc("Allowed options");
   desc.add_options()("help,h", "produce this help message")(
@@ -42,7 +46,11 @@ int main(int ac, char *av[]) {
   po::store(po::parse_command_line(ac, av, desc), vm);
   po::notify(vm);
 
-  if (vm.count("help")) {
+  /** output help message if either:
+  * - "help" is invoked 
+  * - no input "file" was provided
+  */
+  if (vm.count("help") || !vm.count("file")) {
     std::cout << desc << "\n";
     return 0;
   }
@@ -85,6 +93,7 @@ int main(int ac, char *av[]) {
   // generate list of monomials
   std::list<monomial<double, _u1> *> monomial_list;
   gaugemonomial<double, _u1> gm(0);
+  rotating_frame::gauge_monomial<double, _u1> gm_rot(0, pparams.Omega);
 
   kineticmonomial<double, _u1> km(0);
   km.setmdpassive();
@@ -94,15 +103,17 @@ int main(int ac, char *av[]) {
                                             hparams.tolerance_cg, hparams.seed_pf,
                                             hparams.solver_verbosity);
 
-
   if (pparams.include_gauge) {
-    monomial_list.push_back(&gm);
+    if (pparams.rotating_frame) {
+      monomial_list.push_back(&gm_rot);
+    } else {
+      monomial_list.push_back(&gm);
+    }
   }
 
   if (pparams.include_staggered_fermions) { // including S_F (fermionic) in the action
     monomial_list.push_back(&detDDdag);
   }
-
 
   // setting up the integrator
   integrator<double, _u1> *md_integ = set_integrator<double, _u1>(hparams.integrator, hparams.exponent);
@@ -131,6 +142,9 @@ int main(int ac, char *av[]) {
   ss_basename << hparams.conf_basename << ".";
   ss_basename << pparams.Lx << "." << pparams.Ly << "." << pparams.Lz << "."
               << pparams.Lt;
+  if (pparams.rotating_frame) {
+    ss_basename << ".Omega_" << pparams.Omega;
+  }
   ss_basename << ".b" << std::fixed << std::setprecision(hparams.beta_str_width)
               << pparams.beta;
 
@@ -153,6 +167,7 @@ int main(int ac, char *av[]) {
          << std::setprecision(15) << energy * normalisation << " " << std::setw(15)
          << mdparams.getdeltaH() << " " << std::setw(15)
          << rate / static_cast<double>(i + 1) << " ";
+        
     if (mdparams.getrevtest()) {
       std::cout << mdparams.getdeltadeltaH();
     } else

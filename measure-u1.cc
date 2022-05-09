@@ -3,10 +3,10 @@
 #include"gaugeconfig.hh"
 #include"gauge_energy.hh"
 #include"random_gauge_trafo.hh"
-#include"wilsonloop.hh"
+#include"omeasurements.hpp"
+#include"polyakov_loop.hh"
 #include"md_update.hh"
 #include"monomial.hh"
-#include"gradient_flow.hh"
 #include"energy_density.hh"
 #include"parse_input_file.hh"
 #include"version.hh"
@@ -34,25 +34,12 @@ int main(int ac, char* av[]) {
   gp::measure_u1 mparams; // measure parameters
 
   std::string input_file; // yaml input file path
-  po::options_description desc("Allowed options");
-  desc.add_options()
-  ("help,h", "produce this help message")
-  ("file,f", po::value<std::string>(&input_file)->default_value("NONE"), "yaml input file");
-
-  po::variables_map vm;
-  po::store(po::parse_command_line(ac, av, desc), vm);
-  po::notify(vm);
-
-  if (vm.count("help")) {
-    std::cout << desc << "\n";
-    return 0;
-  }
+  int err = input_file_parsing::parse_command_line(ac, av, input_file);
+  if (err > 0) { return err; }
 
   namespace in_meas = input_file_parsing::u1::measure;
-  int err = in_meas::parse_input_file(input_file, pparams, mparams);
-  if (err > 0) {
-    return err;
-  }
+  err = in_meas::parse_input_file(input_file, pparams, mparams);
+  if (err > 0) { return err; }
   
   boost::filesystem::create_directories(boost::filesystem::absolute(mparams.confdir));
   boost::filesystem::create_directories(boost::filesystem::absolute(mparams.resdir));
@@ -193,25 +180,11 @@ int main(int ac, char* av[]) {
     std::cout << "## Energy density: " << density << std::endl;
         
     if(mparams.Wloop) {
-      std::ostringstream os;
-      os << mparams.confdir + "/wilsonloop.";
-      auto prevw = os.width(6);
-      auto prevf = os.fill('0');
-      os << i;
-      os.width(prevw);
-      os.fill(prevf);
-      os << ".dat" << std::ends;
-      compute_all_loops(U, os.str());
+      omeasurements::meas_wilson_loop<_u1>(U, i, mparams.confdir);
     }
+
     if(mparams.gradient) {
-      std::ostringstream os;
-      os << mparams.confdir + "/gradient_flow.";
-      auto prevw = os.width(6);
-      auto prevf = os.fill('0');
-      os << i;
-      os.width(prevw);
-      os.fill(prevf);
-      gradient_flow(U, os.str(), mparams.tmax);
+      omeasurements::meas_gradient_flow<_u1>(U, i, mparams.confdir, mparams.tmax);
     }
     
     if(mparams.potential || mparams.potentialsmall){

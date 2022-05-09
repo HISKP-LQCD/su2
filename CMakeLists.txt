@@ -42,11 +42,16 @@ include_directories(${CMAKE_SOURCE_DIR}/)
 include_directories(${CMAKE_BINARY_DIR}/generated/)
 
 find_package(OpenMP)
+
+# setting C and CXX compilation flags
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS} -D_USE_OMP_")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS} -D_USE_OMP_")
 
+# adding support for math operations when using GPU offloading
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -foffload=-lm -fcf-protection=none -fstack-protector")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -foffload=-lm -fcf-protection=none -fstack-protector")
+
 # Input files are parsed using the yaml-cpp library
-# The user must provid the path to the yaml-cpp directory as ```cmake -D YAML_SRC=...```
 set(yaml_src_dir ${YAML_SRC})
 set(
     inc_dir  

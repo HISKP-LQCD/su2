@@ -9,13 +9,10 @@
 //
 // checked for gauge invariance
 //if spatial_only, only the plaquettes with mu, nu > 0 are calculated
-
-
-template<class T> double gauge_energy(gaugeconfig<T> &U, bool spatial_only=false) {
+template<class T> double gauge_energy(const gaugeconfig<T> &U, bool spatial_only=false) {
 
   double res = 0.;
-size_t startmu=0;
-if(spatial_only){startmu=1;};
+  size_t startmu= spatial_only; // 0 if spatial_only==false, 1 if spatial_only==true
  
 #pragma omp parallel for reduction (+: res)
     for(size_t x0 = 0; x0 < U.getLt(); x0++) {

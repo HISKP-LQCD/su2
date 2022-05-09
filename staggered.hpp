@@ -47,6 +47,7 @@ namespace staggered {
   }
 
   // index of the lattice point given the dimensions
+#pragma omp declare target
   size_t txyz_to_index(const size_t &t,
                        const size_t &x,
                        const size_t &y,
@@ -58,12 +59,15 @@ namespace staggered {
     const geometry g(Lx, Ly, Lz, Lt); // note the order
     return g.getIndex(t, x, y, z);
   }
+#pragma omp end declare target
 
   // overload : x={x0,x1,x2,x3}, dims={Lt,Lx,Ly,Lz}
+#pragma omp declare target
   size_t txyz_to_index(const std::array<int, nd_max> &x,
                        const std::vector<size_t> &dims) {
     return txyz_to_index(x[0], x[1], x[2], x[3], dims[0], dims[1], dims[2], dims[3]);
   }
+#pragma omp end declare target
 
   // vector of staggered "spinors" (no Dirac structure) for all the points of the lattice
   template <class Float, class Type> class spinor_lat {
@@ -385,6 +389,8 @@ namespace staggered {
 
     const int N = psi.size();
     spinor_lat<Float, Type> phi(dims, N);
+
+//#pragma omp target teams distribute parallel for //collapse(4)
 #pragma omp parallel for
     for (int x0 = 0; x0 < Lt; x0++) {
       for (int x1 = 0; x1 < Lx; x1++) {

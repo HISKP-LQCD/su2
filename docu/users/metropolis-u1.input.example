@@ -7,13 +7,13 @@ geometry:
   T: 4
   ndims: 3
 
-begin_monomials:
+monomials:
   gauge:
     beta: 1.9
     xi : 1.0
     anisotropic : false
 
-begin_metropolis:
+metropolis:
   confdir: "./c1/"
   n_meas: 10
   N_save: 2

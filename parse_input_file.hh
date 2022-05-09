@@ -8,8 +8,10 @@
 
 #pragma once
 
+#include<boost/program_options.hpp>
 #include <boost/type_index.hpp>
 #include <set>
+#include <string>
 
 #include "parameters.hh"
 #include "yaml.h"
@@ -91,7 +93,7 @@ namespace YAML_parsing {
       return node_i;
     }
 
-    YAML::Node get_root() { return (*this).N; }
+    YAML::Node get_root() { return YAML::Clone((*this).N); }
 
     /**
      * @brief saving value from YAML node
@@ -195,6 +197,17 @@ namespace YAML_parsing {
 namespace input_file_parsing {
 
   namespace gp = global_parameters;
+
+  /**
+   * @brief command line parsing
+   * check if "help" has been called or if input file hasn't been specified correctly
+   * @param ac argc from main() 
+   * @param av argv from main()
+   * @param input_file input file reference
+   * @return int exit statu
+   */
+  int parse_command_line(int ac, char *av[], std::string &input_file);
+
 
   /**
    * @brief check geometry parameters

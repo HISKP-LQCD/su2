@@ -47,7 +47,7 @@ template<typename Float, class Group> void runge_kutta(hamiltonian_field<Float, 
   return;
 }
 
-template<class Group> void gradient_flow(gaugeconfig<Group> &U, std::string const &path, const double tmax) {
+template<class Group> void gradient_flow(const gaugeconfig<Group> &U, std::string const &path, const double tmax) {
   double t[3], P[3], E[3], Q[3];
   double eps = 0.01;
   std::ofstream os(path, std::ios::out);

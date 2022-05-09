@@ -124,7 +124,9 @@ public:
 
     const Complex i(0.0, 1.0);
 
-#pragma omp parallel for
+//#pragma omp target teams distribute parallel for //collapse(4)
+// #pragma omp target teams distribute parallel for collapse(4)
+#pragma omp parallel for //collapse(4)
     for (int x0 = 0; x0 < Lt; x0++) {
       for (int x1 = 0; x1 < Lx; x1++) {
         for (int x2 = 0; x2 < Ly; x2++) {

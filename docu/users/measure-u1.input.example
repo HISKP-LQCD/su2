@@ -10,8 +10,8 @@ geometry:
 monomials:
   gauge:
     beta: 1.9
-#    anisotropic:
-#      xi : 1.0
+# anisotropic:
+#   xi : 1.0
 
 measurements:
   confdir: "./c1/"

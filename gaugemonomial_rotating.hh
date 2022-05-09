@@ -11,6 +11,7 @@
  */
 
 #pragma once
+#include "accum_type.hh"
 #include "adjointfield.hh"
 #include "gaugeconfig.hh"
 #include "get_staples.hh"
@@ -251,55 +252,6 @@ namespace rotating_frame {
   }
 
   /**
-   * @brief Get the staples object
-   * Returns the sum of staples attached to the link U_{\mu}(x) in the gauge action S_G.
-   * Notes:
-   *   1. In the action S_G, for each point 'x' the staples come from the plaquette at the point itself, 
-   *      plus the contribution from nearest neighbors. All of them loop "clock-wise". 
-   *      However, since in the end we take the Real part of the Trace, 
-   *      we can replace the latter loops by their hermitian conjugate --> counterclockwise,
-   *      and also put U_{\mu}(x) in front. Therefore, in flat spacetime:
-   *      S_G = (\beta)* \sum_{x} [1 - (1/N_c)*Re[ Tr[ U_\mu{x}*S_{\mu}(x) ] ] , where S_{\mu}(x) is the staple implemented here.  
-   *      clockwise or counter-clockwise have the same effect, so it's like if  
-   *   2. In flat spacetime the action contains the sum of all plaquettes, 
-   *      so the staple contains 1 contribution from the plaquette at 'x', 
-   *      and (nd-1) from the others. All of them have the same "spacetime" weight (flat metric)
-   *   3. In curved spacetime we consider the clover leaf plaquette, 
-   *      hence there are 2*(nd-1) contributions with the "spacetime" weight at 'x' 
-   *      and other (nd-1) weighted with the metric at the nearest neighbors points.
-   * @tparam T element of the adjoint representation of the symmetry group
-   * @tparam S symmetry group
-   * @param U gauge configuration
-   * @param x link to which staples are attached
-   * @param mu link direction
-   */
-  template <class T, class S>
-  void get_staples(gaugeconfig<S> &U,
-                   vector<size_t> const x,
-                   const size_t mu, const double& Omega) {
-    T K; 
-    vector<size_t> x1 = x, x2 = x;
-    x1[mu] += 1;
-      for (size_t nu = 0; nu < U.getndims(); nu++) {
-        if (nu != mu) {
-          x2[nu]++;
-          K += U(x1, nu) * U(x2, mu).dagger() * U(x, nu).dagger();
-          x2[nu]--;
-        }
-      }
-      for (size_t nu = 0; nu < U.getndims(); nu++) {
-        if (nu != mu) {
-          x1[nu]--;
-          x2[nu]--;
-          K += U(x1, nu).dagger() * U(x2, mu).dagger() * U(x2, nu);
-          x2[nu]++;
-          x1[nu]++;
-        }
-      }
-    return K;
-  }
-
-  /**
    * @brief gauge force in the HMC
    *
    * @tparam Group
@@ -308,28 +260,9 @@ namespace rotating_frame {
    * @return Group
    */
   template <class Group>
-  Group
-  get_F_G(const gaugeconfig<Group> &U, const nd_max_arr_size_t &x, const double &Omega) {
-    typedef typename accum_type<Group>::type accum;
-
-    const double Omega2 = std::pow(Omega, 2);
-    const double r2 = x[1] * x[1] + x[2] * x[2];
-
-    res += retr_clover_leaf(U, x, 0, 1);
-    res += retr_clover_leaf(U, x, 0, 2);
-    res += retr_clover_leaf(U, x, 0, 3);
-    res += (1 + r2 * Omega2) * retr_clover_leaf(U, x, 1, 2);
-    res += (1 + x2 * x2 * Omega2) * retr_clover_leaf(U, x, 1, 3);
-    res += (1 + x1 * x1 * Omega2) * retr_clover_leaf(U, x, 2, 3);
-
-    res += x2 * Omega * retr_asymm_chair(U, x, 0, 1, 2);
-    res -= x1 * Omega * retr_asymm_chair(U, x, 0, 2, 1);
-    res += x2 * Omega * retr_asymm_chair(U, x, 0, 1, 3);
-    res -= x1 * Omega * retr_asymm_chair(U, x, 0, 2, 3);
-    res += x1 * x2 * Omega2 * retr_asymm_chair(U, x, 1, 3, 2);
-
-    accum S = -gauge_energy<Group>(U, Omega);
-    return U.getBeta() * S / double(U.getNc()));
+  Group get_F_G(const gaugeconfig<Group> &U, const nd_max_arr_size_t &x, const size_t& mu, const double &Omega) {
+    const Group accum S = (*U)(x, mu) * get_staples(U, x, mu);
+    return U->getBeta()/double(U.getNc()) * get_deriv<double>(S);
   }
 
   /**
@@ -355,10 +288,29 @@ namespace rotating_frame {
       monomial<Float, Group>::Hnew = get_S_G(*h.U, (*this).Omega);
       return;
     }
+
+   /**
+    * @brief derivative with thespect to the gauge field
+   * Notes:
+   *   1. In the action S_G, for each point 'x' the staples come from the plaquette at the point itself, 
+   *      plus the contribution from nearest neighbors. All of them loop "clock-wise". 
+   *      However, since in the end we take the Real part of the Trace, 
+   *      we can replace the latter loops by their hermitian conjugate --> counterclockwise,
+   *      and also put U_{\mu}(x) in front. Therefore, in flat spacetime:
+   *      S_G = (\beta)* \sum_{x} [1 - (1/N_c)*Re[ w(x) Tr[ U_\mu{x}*S_{\mu}(x) ] ], 
+   *   2. In flat spacetime the action contains the sum of all plaquettes, 
+   *      so the staple contains 1 contribution from the plaquette at 'x', 
+   *      and (nd-1) from the others. All of them have the same "spacetime" weight (flat metric)
+   *   3. In curved spacetime we consider the clover leaf plaquette, 
+   *      hence there are 2*(nd-1) contributions with the "spacetime" weight at 'x' 
+   *      and other 2*(nd-1) weighted with the metric at the nearest neighbors points.
+    * @param deriv reference to the derivative object
+    * @param h hamiltonian field
+    * @param fac 
+    */
     void derivative(adjointfield<Float, Group> &deriv,
                     hamiltonian_field<Float, Group> const &h,
                     const Float fac = 1.) const override {
-      // std::vector<size_t> x = {0, 0, 0, 0};
       typedef typename accum_type<Group>::type accum;
 #pragma omp parallel for
       for (size_t x0 = 0; x0 < h.U->getLt(); x0++) {
@@ -367,9 +319,7 @@ namespace rotating_frame {
             for (size_t x3 = 0; x3 < h.U->getLz(); x3++) {
               std::vector<size_t> x = {x0, x1, x2, x3};
               for (size_t mu = 0; mu < h.U->getndims(); mu++) {
-                // accum S = get_F_G(U, x, (*this).Omega);
-                // deriv(x, mu) +=
-                //   fac * h.U->getBeta() / double(h.U->getNc()) * get_deriv<double>(S);
+                deriv(x, mu) += fac * get_F_G(*h.U, x, mu);
               }
             }
           }

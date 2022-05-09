@@ -1,3 +1,16 @@
+// main-u1.cc
+/**
+ * @file main-u1.cc
+ * @author Carsten Urbach (urbach@hiskp.uni-bonn.de)
+ * @author Simone Romiti (simone.romiti@uni-bonn.de)
+ * @brief Metropolis Algorithm for U(1) gauge theory
+ * @version 0.1
+ * @date 2022-05-09
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
+
 #include"su2.hh"
 #include"u1.hh"
 #include"gaugeconfig.hh"
@@ -22,16 +35,13 @@
 #include<boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 
-using std::vector;
-using std::cout;
-using std::endl;
 namespace po = boost::program_options;
 
 int main(int ac, char* av[]) {
     
-  cout << "## Metropolis Algorithm for U(1) gauge theory" << endl;
-  cout << "## (C) Carsten Urbach <urbach@hiskp.uni-bonn.de> (2017, 2021)" << endl;
-  cout << "## GIT branch " << GIT_BRANCH << " on commit " << GIT_COMMIT_HASH << endl << endl;  
+  std::cout << "## Metropolis Algorithm for U(1) gauge theory" << std::endl;
+//  std::cout << "## (C) Carsten Urbach <urbach@hiskp.uni-bonn.de> (2017, 2022)" << std::endl;
+  std::cout << "## GIT branch " << GIT_BRANCH << " on commit " << GIT_COMMIT_HASH << std::endl << std::endl;  
   
   namespace gp = global_parameters;
   gp::physics pparams; // physics parameters
@@ -59,22 +69,25 @@ int main(int ac, char* av[]) {
   }
 
   boost::filesystem::create_directories(boost::filesystem::absolute(mcparams.outdir));
-  
-  
-  #ifdef _USE_OMP_
-  bool parallel = true;
-  #else
-  bool parallel = false;
-  #endif
+
+#ifdef _USE_OMP_
   /**
-   * the parallelisation of the sweep-function first iterates over all odd points in t and then over all even points
-   * because the nearest neighbours must not change during the updates, this is not possible for an uneven number of points in T
+   * the parallelisation of the sweep-function first iterates over all odd points in t and
+   * then over all even points because the nearest neighbours must not change during the
+   * updates, this is not possible for an uneven number of points in T
    * */
-  if (pparams.Lt%2 != 0 && parallel){
-    std::cerr << "For parallel computing an even number of points in T is needed!" << std::endl;
+  if (pparams.Lt % 2 != 0) {
+    std::cerr << "For parallel computing an even number of points in T is needed!"
+              << std::endl;
     omp_set_num_threads(1);
     std::cerr << "Continuing with one thread." << std::endl;
-  } 
+  }
+  // set things up for parallel computing in sweep
+  int threads = omp_get_max_threads();
+#else
+  int threads = 1;
+#endif
+  // std::cout << "threads " << threads << std::endl;
 
   // load/set initial configuration
   gaugeconfig<_u1> U(pparams.Lx, pparams.Ly, pparams.Lz, pparams.Lt, pparams.ndims, pparams.beta);
@@ -95,19 +108,12 @@ int main(int ac, char* av[]) {
   const double normalisation = fac/U.getVolume();
   size_t facnorm = (pparams.ndims > 2) ? pparams.ndims/(pparams.ndims-2) : 0;
   
-  cout << "## Initital Plaquette: " << plaquette*normalisation << endl; 
+  std::cout << "## Initital Plaquette: " << plaquette*normalisation << std::endl; 
 
   random_gauge_trafo(U, 654321);
   plaquette = gauge_energy(U);
-  cout << "## Plaquette after rnd trafo: " << plaquette*normalisation << endl; 
+  std::cout << "## Plaquette after rnd trafo: " << plaquette*normalisation << std::endl; 
 
-  //set things up for parallel computing in sweep
-  #ifdef _USE_OMP_
-  int threads=omp_get_max_threads();
-  #else
-  int threads=1;
-  #endif   
-  //cout << "threads " << threads << endl; 
   
   std::ofstream os;
   std::ofstream acceptancerates;
@@ -149,15 +155,15 @@ int main(int ac, char* av[]) {
     double E = 0., Q = 0.;
     energy_density(U, E, Q);
     //measuring spatial plaquettes only means only (ndims-1)/ndims of all plaquettes are measured, so need facnorm for normalization to 1
-    cout << inew << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy*normalisation*facnorm << " " ;
+    std::cout << inew << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy*normalisation*facnorm << " " ;
     os << inew << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy*normalisation*facnorm << " " ;
     
     energy=gauge_energy(U, false);
-    cout << energy*normalisation << " " << Q << " ";
+    std::cout << energy*normalisation << " " << Q << " ";
     os << energy*normalisation << " " << Q << " ";
     energy_density(U, E, Q, false);
-    cout << Q << endl;
-    os << Q << endl;
+    std::cout << Q << std::endl;
+    os << Q << std::endl;
     
     if(inew > 0 && (inew % mcparams.N_save) == 0) {
       std::ostringstream oss_i;
@@ -166,13 +172,13 @@ int main(int ac, char* av[]) {
     }
   }
   // save acceptance rates to additional file to keep track of measurements
-  cout << "## Acceptance rate " << rate[0]/static_cast<double>(mcparams.n_meas) 
-    << " temporal acceptance rate " << rate[1]/static_cast<double>(mcparams.n_meas) << endl;
+  std::cout << "## Acceptance rate " << rate[0]/static_cast<double>(mcparams.n_meas) 
+    << " temporal acceptance rate " << rate[1]/static_cast<double>(mcparams.n_meas) << std::endl;
   acceptancerates.open(mcparams.outdir+"/acceptancerates.data", std::ios::app);
   acceptancerates << rate[0]/static_cast<double>(mcparams.n_meas) << " " << rate[1]/static_cast<double>(mcparams.n_meas) << " "
    << pparams.beta << " " << pparams.Lx << " " << pparams.Lt << " " << pparams.xi << " " 
    << mcparams.delta << " " << mcparams.heat << " " << threads << " "
-     << mcparams.N_hit << " " << mcparams.n_meas << " " << mcparams.seed << " " << endl;
+     << mcparams.N_hit << " " << mcparams.n_meas << " " << mcparams.seed << " " << std::endl;
   acceptancerates.close();
 
 std::ostringstream oss;

@@ -159,6 +159,8 @@ namespace input_file_parsing {
           in.read_opt_verb<bool>(mparams.append, {"begin_measurements", "potential", "append"});
           in.read_opt_verb<bool>(mparams.smear_spatial_only, {"begin_measurements", "potential",
                                   "smear_spatial_only"});
+          in.read_opt_verb<bool>(mparams.smear_temporal_only, {"begin_measurements", "potential",
+                                  "smear_temporal_only"});
           in.read_opt_verb<size_t>(mparams.n_apesmear, {"begin_measurements", "potential", "n_apesmear"});
           in.read_opt_verb<double>(mparams.alpha, {"begin_measurements", "potential", "alpha"});
           in.read_opt_verb<double>(mparams.sizeWloops, {"begin_measurements", "potential", "sizeWloops"});
@@ -171,13 +173,27 @@ namespace input_file_parsing {
 
         in.read_opt_verb<size_t>(mparams.beta_str_width, {"begin_measurements", "beta_str_width"});
         validate_beta_str_width(mparams.beta_str_width);
+        
+        in.finalize();
 
         return 0;
       }
 
     } // namespace measure
 
-    namespace metropolis {
+    namespace metropolis {  
+      /**
+      * @brief check if N_hit >= 1, otherwise it aborts
+      * @param n N_hit (number of times an update per link is attempted)
+      */
+      void validate_N_hit(const size_t &n) {
+        if (n < 1) {
+        std::cerr << "Error: N_hit should be at least 1, otherwise nothing will happen";
+        std::cerr << "Aborting.\n";
+        abort();
+        }
+        return;
+      }
 
       int parse_input_file(const std::string &file,
                            gp::physics &pparams,
@@ -204,6 +220,7 @@ namespace input_file_parsing {
         in.read_opt_verb<std::string>(mcparams.outdir, {"begin_metropolis", "outdir"});
         in.read_opt_verb<std::string>(mcparams.conf_basename, {"begin_metropolis", "conf_basename"});
         in.read_opt_verb<size_t>(mcparams.beta_str_width, {"begin_metropolis", "beta_str_width"});
+        validate_beta_str_width(mcparams.beta_str_width);
         in.read_opt_verb<bool>(mcparams.restart, {"begin_metropolis", "restart"});
         if (mcparams.restart) {
           in.read_opt_verb<std::string>(mcparams.configfilename, {"begin_metropolis", "configfilename"});
@@ -212,6 +229,8 @@ namespace input_file_parsing {
         in.read_verb<double>(mcparams.heat, {"begin_metropolis", "heat"});
         in.read_verb<double>(mcparams.delta, {"begin_metropolis", "delta"});
         in.read_opt_verb<size_t>(mcparams.N_hit, {"begin_metropolis", "N_hit"});
+        validate_N_hit(mcparams.N_hit);
+        in.finalize();
         return 0;
       }
 

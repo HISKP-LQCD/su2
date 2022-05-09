@@ -27,9 +27,11 @@
  * The acceptance rate can be tuned with delta, which determines the possible regions from which R is drawn.
  * Is it more efficient to use two of every variable for measuring the rates, or would it be better to use vectors for everything?
  * When using vectors, a new reduction directive would have to be declared for the vectors
- * omp_priv has to be initialized with the = operator, and I could not find a way to initialize it to zero this way
- * pragma omp declare reduction (+ : std::vector<double> : omp_out += omp_in) initializer (omp_priv = ?)
- * So for the moment I would stick with the two separate variables
+ * omp_priv has to be initialized with the = operator, initialization to zero happens with zerovector-function
+ * #pragma omp declare reduction (+ : std::vector<double> : omp_out += omp_in) initializer (omp_priv = zerovector(omp_orig.size()))
+ * OpenMP specifications say:
+ * If the initializer-expr is a function name with an argument list, then one of the arguments must be omp_priv or the address of omp_priv
+ * This is not the case here, but in an example the code compiled anyway.
  * For the normalization of the temporal rate: There is only one temporal link for each lattice point, so the normalization is done with U.getVolume()
  * With this definition, for xi=1 the acceptance rates only differ in the third significant digit, so this is correct
  * */

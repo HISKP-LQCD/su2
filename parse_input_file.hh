@@ -54,6 +54,7 @@ namespace YAML_parsing {
         }
 
         G.insert(beg + k);
+        //This does the recursion: if there is no further subnode to beg+k, the function does nothing
         this->find_all(node[k], beg + k + ":");
       }
     }
@@ -205,6 +206,7 @@ namespace input_file_parsing {
    * @return int
    */
   int validate_geometry(gp::physics &pparams);
+  void validate_beta_str_width(const size_t &n);
 
   namespace u1 {
 
@@ -232,6 +234,7 @@ namespace input_file_parsing {
     } // namespace measure
 
     namespace metropolis {
+      void validate_N_hit(const size_t &n);
       int parse_input_file(const std::string &file,
                            gp::physics &pparams,
                            gp::metropolis_u1 &mcparams);

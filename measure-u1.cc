@@ -105,7 +105,7 @@ int main(int ac, char* av[]) {
   if(mparams.potential) {
       //~ open file for saving results
     if(pparams.ndims == 2){
-      std::cout << "Currently not working for dim = 2, no measurements for the potential will be made" << std::endl;
+      std::cerr << "Currently not working for dim = 2, no measurements for the potential will be made" << std::endl;
       mparams.potential = false;
     }
     
@@ -141,7 +141,7 @@ int main(int ac, char* av[]) {
       //~ open file for saving results
     
     if(pparams.ndims == 2 || pparams.ndims == 4){
-      std::cout << "Currently not working for dim = 2 and dim = 4, no nonplanar measurements will be made" << std::endl;
+      std::cerr << "Currently not working for dim = 2 and dim = 4, no nonplanar measurements will be made" << std::endl;
       mparams.potentialsmall = false;
     }
     
@@ -217,7 +217,7 @@ int main(int ac, char* av[]) {
     if(mparams.potential || mparams.potentialsmall){
         //smear lattice
       for (size_t smears = 0 ; smears < mparams.n_apesmear ; smears +=1){
-        smearlatticeape(U, mparams.alpha, mparams.smear_spatial_only);
+        smearlatticeape(U, mparams.alpha, mparams.smear_spatial_only, mparams.smear_temporal_only);
       }
       double loop;
     if(mparams.potential) {

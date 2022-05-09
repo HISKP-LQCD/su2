@@ -14,8 +14,8 @@ begin_monomials:
     anisotropic : false
 
 begin_metropolis:
-  confdir: "./"
-  N_meas: 10
+  confdir: "./c1/"
+  n_meas: 10
   N_save: 2
   N_hit: 10
   delta: 0.5

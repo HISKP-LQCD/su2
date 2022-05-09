@@ -25,7 +25,7 @@ begin_measurements:
     potential : true
     potentialsmall : false
     append : false
-    n_apesmears : 0
+    n_apesmear : 0
     alpha : 1.0
     smear_spatial_only : true
     sizeWloops : 0.5

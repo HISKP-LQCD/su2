@@ -1,80 +1,67 @@
-#include"su2.hh"
-#include"u1.hh"
-#include"gaugeconfig.hh"
-#include"gauge_energy.hh"
-#include"energy_density.hh"
-#include"random_gauge_trafo.hh"
-#include"md_update.hh"
-#include"monomial.hh"
-#include"integrator.hh"
-#include"parse_input_file.hh"
-#include"version.hh"
+#include "energy_density.hh"
+#include "gauge_energy.hh"
+#include "gaugeconfig.hh"
+#include "integrator.hh"
+#include "md_update.hh"
+#include "monomial.hh"
+#include "output.hh"
+#include "parse_input_file.hh"
+#include "random_gauge_trafo.hh"
+#include "su2.hh"
+#include "u1.hh"
+#include "version.hh"
 
 #include "gaugemonomial_rotating.hh"
 
-#include<iostream>
-#include<fstream>
-#include<iomanip>
-#include<sstream>
-#include<random>
-#include<boost/program_options.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/program_options.hpp>
+#include <fstream>
+#include <iomanip>
+#include <iostream>
+#include <random>
+#include <sstream>
 
 #include "detDDdag_monomial.hh"
 
 namespace po = boost::program_options;
-using std::endl;
 
 int main(int ac, char *av[]) {
-
   std::cout << "## HMC Algorithm for U(1) gauge theory" << std::endl;
-  std::cout << "## (C) Carsten Urbach <urbach@hiskp.uni-bonn.de> (2017, 2021)" << std::endl;
-  std::cout << "## GIT branch " << GIT_BRANCH << " on commit " << GIT_COMMIT_HASH << std::endl;
+  std::cout << "## (C) Carsten Urbach <urbach@hiskp.uni-bonn.de> (2017, 2021)"
+            << std::endl;
+  std::cout << "## GIT branch " << GIT_BRANCH << " on commit " << GIT_COMMIT_HASH
+            << std::endl;
 
   namespace gp = global_parameters;
   gp::physics pparams; // physics parameters
   gp::hmc_u1 hparams; // hmc parameters
 
-
-//  int err = parse_command_line_input_file<gp::hmc_u1>(pparams, hparams)
   std::string input_file; // yaml input file path
-  po::options_description desc("Allowed options");
-  desc.add_options()("help,h", "produce this help message")(
-    "file,f", po::value<std::string>(&input_file)->default_value("NONE"),
-    "yaml input file");
-  po::variables_map vm;
-  po::store(po::parse_command_line(ac, av, desc), vm);
-  po::notify(vm);
-
-  /** output help message if either:
-  * - "help" is invoked 
-  * - no input "file" was provided
-  */
-  if (vm.count("help") || !vm.count("file")) {
-    std::cout << desc << "\n";
-    return 0;
+  int err = input_file_parsing::parse_command_line(ac, av, input_file);
+  if (err > 0) {
+    return err;
   }
 
   namespace in_hmc = input_file_parsing::u1::hmc;
 
-  int err = in_hmc::parse_input_file(input_file, pparams, hparams);
+  err = in_hmc::parse_input_file(input_file, pparams, hparams);
   if (err > 0) {
     return 1;
   }
 
   boost::filesystem::create_directories(boost::filesystem::absolute(hparams.outdir));
-  
+
   gaugeconfig<_u1> U(pparams.Lx, pparams.Ly, pparams.Lz, pparams.Lt, pparams.ndims,
                      pparams.beta);
   if (hparams.restart) {
-    std::cout << "restart " <<hparams.restart << "\n";
+    std::cout << "restart " << hparams.restart << "\n";
     err = U.load(hparams.configfilename);
     if (err != 0) {
       return err;
     }
   } else {
-    std::cout << "hotstart "<<hparams.seed<<" "<< hparams.heat<<"\n";
-    const double heat_val = (hparams.heat==true)? 1.0: 0.0;
+    std::cout << "hotstart " << hparams.seed << " " << hparams.heat << "\n";
+    const double heat_val = (hparams.heat == true) ? 1.0 : 0.0;
     hotstart(U, hparams.seed, heat_val);
   }
 
@@ -100,8 +87,8 @@ int main(int ac, char *av[]) {
   monomial_list.push_back(&km);
 
   detDDdag_monomial<double, _u1> detDDdag(0, pparams.m0, hparams.solver,
-                                            hparams.tolerance_cg, hparams.seed_pf,
-                                            hparams.solver_verbosity);
+                                          hparams.tolerance_cg, hparams.seed_pf,
+                                          hparams.solver_verbosity);
 
   if (pparams.include_gauge) {
     if (pparams.rotating_frame) {
@@ -116,20 +103,34 @@ int main(int ac, char *av[]) {
   }
 
   // setting up the integrator
-  integrator<double, _u1> *md_integ = set_integrator<double, _u1>(hparams.integrator, hparams.exponent);
+  integrator<double, _u1> *md_integ =
+    set_integrator<double, _u1>(hparams.integrator, hparams.exponent);
 
   std::ofstream os;
   if (hparams.icounter == 0)
-    os.open(hparams.outdir+"/output.hmc.data", std::ios::out);
+    os.open(hparams.outdir + "/output.hmc.data", std::ios::out);
   else
-    os.open(hparams.outdir+"/output.hmc.data", std::ios::app);
+    os.open(hparams.outdir + "/output.hmc.data", std::ios::app);
 
   std::cout << "## Normalization factor: A = 2/(d*(d-1)*N_lat*N_c) = " << std::scientific
             << std::setw(18) << std::setprecision(15) << normalisation << "\n";
   std::cout << "## Acceptance rate parcentage: rho = rate/(i+1)\n";
 
   std::stringstream ss_head; // header: column names in the output
-  ss_head<<"i"<<" "<<"getaccept"<<" "<< "E*A"<<" "<<"dH"<<" "<<"rho"<<" "<<"ddH"<<" "<<"Q"<<"\n";
+  ss_head << "i"
+          << " "
+          << "getaccept"
+          << " "
+          << "E*A"
+          << " "
+          << "dH"
+          << " "
+          << "rho"
+          << " "
+          << "ddH"
+          << " "
+          << "Q"
+          << "\n";
 
   std::string ss_head_str = ss_head.str();
   std::cout << ss_head_str;
@@ -137,16 +138,7 @@ int main(int ac, char *av[]) {
 
   double rate = 0.;
 
-  const std::string conf_basename = hparams.conf_basename;
-  std::stringstream ss_basename;
-  ss_basename << hparams.conf_basename << ".";
-  ss_basename << pparams.Lx << "." << pparams.Ly << "." << pparams.Lz << "."
-              << pparams.Lt;
-  if (pparams.rotating_frame) {
-    ss_basename << ".Omega_" << pparams.Omega;
-  }
-  ss_basename << ".b" << std::fixed << std::setprecision(hparams.beta_str_width)
-              << pparams.beta;
+  std::string conf_path_basename = output::get_conf_path_basename(pparams, hparams);
 
   for (size_t i = hparams.icounter; i < hparams.n_meas + hparams.icounter; i++) {
     mdparams.disablerevtest();
@@ -163,11 +155,11 @@ int main(int ac, char *av[]) {
     energy_density(U, E, Q);
     rate += mdparams.getaccept();
 
-    std::cout << i << " " << mdparams.getaccept() << " " << std::scientific << std::setw(18)
-         << std::setprecision(15) << energy * normalisation << " " << std::setw(15)
-         << mdparams.getdeltaH() << " " << std::setw(15)
-         << rate / static_cast<double>(i + 1) << " ";
-        
+    std::cout << i << " " << mdparams.getaccept() << " " << std::scientific
+              << std::setw(18) << std::setprecision(15) << energy * normalisation << " "
+              << std::setw(15) << mdparams.getdeltaH() << " " << std::setw(15)
+              << rate / static_cast<double>(i + 1) << " ";
+
     if (mdparams.getrevtest()) {
       std::cout << mdparams.getdeltadeltaH();
     } else
@@ -180,13 +172,14 @@ int main(int ac, char *av[]) {
        << rate / static_cast<double>(i + 1) << " ";
     if (mdparams.getrevtest()) {
       os << mdparams.getdeltadeltaH();
-    } else
+    } else {
       os << "NA";
+    }
     os << " " << Q << std::endl;
 
     if (i > 0 && (i % hparams.N_save) == 0) { // saving U after each N_save trajectories
       std::ostringstream oss_i;
-      oss_i << ss_basename.str() << "." << i << std::ends;
+      oss_i << conf_path_basename << "." << i << std::ends;
       U.save(hparams.outdir + "/" + oss_i.str());
     }
   }
@@ -194,7 +187,7 @@ int main(int ac, char *av[]) {
             << std::endl;
 
   std::ostringstream oss;
-  oss << ss_basename.str() << ".final" << std::ends;
+  oss << conf_path_basename << ".final" << std::ends;
   U.save(hparams.outdir + "/" + oss.str());
 
   return (0);

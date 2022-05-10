@@ -18,8 +18,39 @@
 #include "parameters.hh"
 
 namespace output {
-
   namespace gp = global_parameters;
+
+  /**
+   * @brief Get the beginning of the configuration path's string
+   * This function returns the sub-string containing the path to the configuration,
+   * without the information about the index of the sweep(Metropolis)/trajectory(HMC),etc.
+   * It is assumed that 'sparams' has the attributes: 
+   * - conf_basename
+   * - beta_str_width
+   * @tparam S type of structure containing the conf_basename attribute
+   * @param pparams physical parameters
+   * @param sparams parameters specific to the given
+   * @return std::string
+   */
+  template <class S>
+  std::string get_conf_path_basename(const gp::physics &pparams, const S &sparams) {
+    // set up name for configs
+    const std::string conf_basename = sparams.conf_basename;
+    std::stringstream ss;
+    ss << sparams.conf_basename << ".";
+    ss << pparams.Lx << "." << pparams.Ly << "." << pparams.Lz << "." << pparams.Lt;
+    if (pparams.rotating_frame) {
+      ss << ".Omega_" << pparams.Omega;
+    }
+    ss << ".b" << std::fixed << std::setprecision(sparams.beta_str_width)
+       << pparams.beta;
+    if (pparams.anisotropic) {
+      ss << ".x" << std::fixed << std::setprecision(sparams.beta_str_width)
+         << pparams.xi;
+    }
+
+    return ss.str();
+  }
 
   std::string get_filename_fine(const gp::physics &pparams,
                                 const gp::measure_u1 &mparams) {

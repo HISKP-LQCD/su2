@@ -34,10 +34,10 @@
  * With this definition, for xi=1 the acceptance rates only differ in the third significant digit, so this is correct
  * */
 
-template<class URNG, class Group> std::vector<double> sweep(gaugeconfig<Group> &U, vector<URNG> engine,
-                                               const double delta, 
-                                               const size_t N_hit, const double beta,
-                                               const double xi=1.0, bool anisotropic=false) {
+template<class URNG, class Group> std::vector<double> sweep(gaugeconfig<Group> &U, std::vector<URNG> engine,
+                                               const double &delta, 
+                                               const size_t &N_hit, const double &beta,
+                                               const double &xi=1.0, const bool& anisotropic=false) {
 
   std::uniform_real_distribution<double> uniform(0., 1.);
   typedef typename accum_type<Group>::type accum;

@@ -10,12 +10,12 @@ geometry:
 monomials:
   gauge:
     beta: 1.9
-    xi : 1.0
-    anisotropic : false
+    #xi : 1.0
+    #anisotropic : false
 
 metropolis:
-  confdir: "./"
-  N_meas: 10
+  outdir: "./c1/"
+  n_meas: 10
   N_save: 2
   N_hit: 10
   delta: 0.5

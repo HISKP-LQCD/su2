@@ -108,7 +108,7 @@ int main(int ac, char* av[]) {
   const double normalisation = fac/U.getVolume();
   size_t facnorm = (pparams.ndims > 2) ? pparams.ndims/(pparams.ndims-2) : 0;
   
-  std::cout << "## Initital Plaquette: " << plaquette*normalisation << std::endl; 
+  std::cout << "## Initial Plaquette: " << plaquette*normalisation << std::endl; 
 
   random_gauge_trafo(U, 654321);
   plaquette = gauge_energy(U);

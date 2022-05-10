@@ -1,10 +1,10 @@
 # Makefile
-# Implementation of the conjugate gradient
 
-all: cg BiCGStab
+all: CG_programs yaml
 
+CG_programs: CG BiCGStab
 
-cg:
+CG:
 	g++ CG.cpp -o CG.exe
 
 

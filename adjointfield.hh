@@ -95,7 +95,8 @@ template <typename Float> struct adjoint_type<Float, _u1> {
 template <typename Float, class Group> class adjointfield {
 public:
   using value_type = typename adjoint_type<Float, Group>::type;
-  using nd_max_arr = typename std::array<int, spacetime_lattice::nd_max>;
+  template<class T>
+  using nd_max_arr = typename spacetime_lattice::nd_max_arr<T>;
 
   adjointfield(const size_t Lx,
                const size_t Ly,
@@ -163,12 +164,14 @@ public:
     return data[getIndex(coords[0], coords[1], coords[2], coords[3], mu)];
   }
 
-  value_type &operator()(const nd_max_arr &x, const size_t& mu) {
+  template<class Type>
+  value_type &operator()(const nd_max_arr<Type> &x, const size_t& mu) {
     const geometry g(Lx, Ly, Lz, Lt); // note the order
     return data[g.getIndex(x[0], x[1], x[2], x[3])];
   }
 
-  const value_type &operator()(const nd_max_arr &x, const size_t& mu) const {
+  template<class Type>
+  const value_type &operator()(const nd_max_arr<Type> &x, const size_t& mu) const {
     const geometry g(Lx, Ly, Lz, Lt); // note the order
     return data[g.getIndex(x[0], x[1], x[2], x[3])];
   }

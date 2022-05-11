@@ -44,7 +44,7 @@
 // if we take only the terms with \mu < \nu and \rho < \sigma, we need
 // to multiply by a factor of 4. All 4 terms come with the same sign.
 
-template<class T> void energy_density(gaugeconfig<T> &U, double &res, double &Q, bool cloverdef=true) {
+template<class T> void energy_density(const gaugeconfig<T> &U, double &res, double &Q, bool cloverdef=true) {
   res = 0.;
   Q = 0.;
 

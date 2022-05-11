@@ -1,3 +1,15 @@
+// parse_commandline.cc
+/**
+ * @file parse_commandline.cc
+ * @author Simone Romiti (simone.romiti@uni-bonn.de)
+ * @brief definitions of parse_commandline.hh 
+ * @version 0.1
+ * @date 2022-05-04
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
+
 #include<iostream>
 #include<string>
 #include<boost/program_options.hpp>
@@ -8,7 +20,7 @@
 namespace po = boost::program_options;
 
 
-void add_general_options(po::options_description &desc, gp::general &params) {
+void add_general_options(po::options_description &desc, general_params &params) {
   desc.add_options()
     ("help,h", "produce this help message")
     ("spatialsizex,X", po::value<size_t>(&params.Lx), "spatial lattice size x > 0")
@@ -17,7 +29,7 @@ void add_general_options(po::options_description &desc, gp::general &params) {
     ("temporalsize,T", po::value<size_t>(&params.Lt), "temporal lattice size > 0")
     ("ndims", po::value<size_t>(&params.ndims), "number of dimensions, 2 <= ndims <= 4")
     ("nsave", po::value<size_t>(&params.N_save)->default_value(1000), "N_save")
-    ("nmeas,n", po::value<size_t>(&params.N_meas)->default_value(10), "total number of sweeps")
+    ("n_meas,n", po::value<size_t>(&params.n_meas)->default_value(10), "total number of sweeps")
     ("counter", po::value<size_t>(&params.icounter)->default_value(0), "initial counter for updates")
     ("beta,b", po::value<double>(&params.beta), "beta value")
     ("mass,m", po::value<double>(&params.m0), "bare quark mass")
@@ -25,11 +37,13 @@ void add_general_options(po::options_description &desc, gp::general &params) {
     ("heat", po::value<double>(&params.heat)->default_value(1.), "randomness of the initial config, 1: hot, 0: cold")
     ("restart", "restart from an existing configuration")
     ("configname", po::value< std::string >(&params.configfilename), "configuration filename used in case of restart")
+    ("xi", po::value<double>(&params.xi)->default_value(1.0), "xi, characteristic of anisotropy")
+    ("anisotropic", po::value<bool>(&params.anisotropic)->default_value(false), "set whether the configurations are anisotropic")
     ;
   return;
 }
 
-int parse_commandline(int ac, char * av[], po::options_description &desc, gp::general &params) {
+int parse_commandline(int ac, char * av[], po::options_description &desc, general_params &params) {
   try {
     po::variables_map vm;
     po::store(po::parse_command_line(ac, av, desc), vm);
@@ -97,6 +111,9 @@ int parse_commandline(int ac, char * av[], po::options_description &desc, gp::ge
     if (params.ndims == 3) {
       params.Lz = 1;
     }
+    if (params.xi != 1.0 && params.anisotropic == false) {
+        std::cerr << "anisotropy parameter xi != 1, but flag anisotropic is set to false. Programm will continue without anisotropy." << std::endl;
+    }
     PrintVariableMap(vm);
   }
   catch(std::exception& e) {
@@ -109,29 +126,29 @@ int parse_commandline(int ac, char * av[], po::options_description &desc, gp::ge
   return(0);
 }
 
-int parse_command_line_and_init(int ac, char *av[], gp::general& gparams, gp::hmc_u1& hmc_params) {
+int parse_command_line_and_init(int ac, char *av[], general_params& gparams, hmc_u1_params& hparams) {
   po::options_description desc("Allowed options");
   add_general_options(desc, gparams);
   // add HMC specific options
-  desc.add_options()("nrev", po::value<size_t>(&hmc_params.N_rev)->default_value(0),
+  desc.add_options()("nrev", po::value<size_t>(&hparams.N_rev)->default_value(0),
                      "frequenz of reversibility tests N_rev, 0: not reversibility test")(
-    "nsteps", po::value<size_t>(&hmc_params.n_steps)->default_value(1000), "n_steps")(
-    "tau", po::value<double>(&hmc_params.tau)->default_value(1.), "trajectory length tau")(
-    "exponent", po::value<size_t>(&hmc_params.exponent)->default_value(0),
-    "exponent for rounding")("integrator", po::value<size_t>(&hmc_params.integs)->default_value(0),
+    "nsteps", po::value<size_t>(&hparams.n_steps)->default_value(1000), "n_steps")(
+    "tau", po::value<double>(&hparams.tau)->default_value(1.), "trajectory length tau")(
+    "exponent", po::value<size_t>(&hparams.exponent)->default_value(0),
+    "exponent for rounding")("integrator", po::value<size_t>(&hparams.integs)->default_value(0),
                              "itegration scheme to be used: 0=leapfrog, 1=lp_leapfrog, "
                              "2=omf4, 3=lp_omf4, 4=Euler, 5=RUTH, 6=omf2")(
-    "no_fermions", po::value<bool>(&hmc_params.no_fermions)->default_value(0),
+    "no_fermions", po::value<bool>(&hparams.no_fermions)->default_value(0),
     "Bool flag indicating if we're ignoring the fermionic action.")(
-    "solver", po::value<std::string>(&hmc_params.solver)->default_value("CG"),
+    "solver", po::value<std::string>(&hparams.solver)->default_value("CG"),
     "Type of solver: CG, BiCGStab")(
-    "tolerace_cg", po::value<double>(&hmc_params.tolerance_cg)->default_value(1e-10),
+    "tolerace_cg", po::value<double>(&hparams.tolerance_cg)->default_value(1e-10),
     "Tolerance for the solver for the dirac operator")(
-    "solver_verbosity", po::value<size_t>(&hmc_params.solver_verbosity)->default_value(0),
+    "solver_verbosity", po::value<size_t>(&hparams.solver_verbosity)->default_value(0),
     "Verbosity for the solver for the dirac operator")(
-    "seed_pf", po::value<size_t>(&hmc_params.seed_pf)->default_value(97234719),
+    "seed_pf", po::value<size_t>(&hparams.seed_pf)->default_value(97234719),
     "Seed for the evaluation of the fermion determinant")(
-    "outdir", po::value<std::string>(&hmc_params.outdir)->default_value("."), "Output directory");
+    "outdir", po::value<std::string>(&hparams.outdir)->default_value("."), "Output directory");
 
   return parse_commandline(ac, av, desc, gparams);
 }

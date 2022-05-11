@@ -42,8 +42,25 @@ include_directories(${CMAKE_SOURCE_DIR}/)
 include_directories(${CMAKE_BINARY_DIR}/generated/)
 
 find_package(OpenMP)
+
+# setting C and CXX compilation flags
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS} -D_USE_OMP_")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS} -D_USE_OMP_")
+
+# adding support for math operations when using GPU offloading
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -foffload=-lm -fcf-protection=none -fstack-protector")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -foffload=-lm -fcf-protection=none -fstack-protector")
+
+# Input files are parsed using the yaml-cpp library
+set(yaml_src_dir ${YAML_SRC})
+set(
+    inc_dir  
+    ${yaml_src_dir}/include/
+    ${yaml_src_dir}/include/yaml-cpp/
+    )
+include_directories(${inc_dir})
+
+
 
 # There is one header file which is in a subdirectory. This add the `-i` to the
 # compiler.
@@ -59,6 +76,7 @@ add_library(su2
     exp_gauge.cc
     print_program_options.cc
     parse_commandline.cc
+    parse_input_file.cc
 )
 
 # Create the main program.
@@ -75,8 +93,21 @@ add_executable(su2-kramers kramers.cc)
 add_executable(su2-measure measure.cc)
 add_executable(u1-measure measure-u1.cc)
 add_executable(test-groups test.cc)
+add_executable(scaling scaling.cc)
+add_executable(try tryreduce.cc)
 
-foreach(target su2-hmc u1-hmc su2-metropolis u1-metropolis su2-kramers su2-measure u1-measure test-groups)
+set(
+    link_dir  
+    ${yaml_src_dir}/build/
+    ${yaml_src_dir}/build/lib/
+)
+
+target_link_directories(su2 PUBLIC ${link_dir})
+
+foreach(target su2-hmc u1-hmc su2-metropolis u1-metropolis su2-kramers su2-measure u1-measure test-groups scaling try)
+  target_link_libraries(${target} su2 libyaml-cpp.a)
+  target_link_directories(${target} PUBLIC ${link_dir})
+
   if(Boost_FOUND)
     target_link_libraries(${target} su2 ${Boost_LIBRARIES})
   else()

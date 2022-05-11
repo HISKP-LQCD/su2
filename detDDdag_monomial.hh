@@ -20,6 +20,7 @@
 #include <complex>
 #include <random>
 #include <vector>
+#include <array>
 
 #include "staggered.hpp" // spinor object
 
@@ -123,13 +124,15 @@ public:
 
     const Complex i(0.0, 1.0);
 
-#pragma omp parallel for
+//#pragma omp target teams distribute parallel for //collapse(4)
+// #pragma omp target teams distribute parallel for collapse(4)
+#pragma omp parallel for //collapse(4)
     for (int x0 = 0; x0 < Lt; x0++) {
       for (int x1 = 0; x1 < Lx; x1++) {
         for (int x2 = 0; x2 < Ly; x2++) {
           for (int x3 = 0; x3 < Lz; x3++) {
-            const std::vector<int> x = {x0, x1, x2, x3};
-            std::vector<int> xm = x, xp = x;
+            const std::array<int, staggered::nd_max> x = {x0, x1, x2, x3};
+            std::array<int, staggered::nd_max> xm = x, xp = x;
             for (size_t mu = 0; mu < nd; mu++) {
               xm[mu]--; // x - mu
               xp[mu]++; // x + mu

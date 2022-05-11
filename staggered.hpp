@@ -3,6 +3,9 @@
  Simone Romiti - simone.romiti@uni-bonn.de
 
  Staggered fermions routines
+
+ Note: Instead of std::vector it is used std::array<int, nd_max>, because we always deal
+ with 4-dimensional containes for coordinates and dimensions
 */
 
 #pragma once
@@ -25,48 +28,26 @@
 #include "solver_type.hh" // generic type of solver
 
 // given A(matrix) and b(vector), find x = A^{-1}*b
-#include "CG.hpp" // standard conjugate gradient 
 #include "BiCGStab.hpp" // Bi Conjugate Gradient
-
-// std::vector<double> g_vec_eta_x_mu; // values of \eta_{\mu}(x)
+#include "CG.hpp" // standard conjugate gradient
 
 namespace staggered {
 
+  const size_t nd_max = spacetime_lattice::nd_max;
+
   // eta_{\mu}(x) as in eq. (16) of https://arxiv.org/pdf/2112.14640.pdf
   // or eq. (8) of https://www.sciencedirect.com/science/article/pii/0550321389903246
-  double eta(const std::vector<int> &x, const size_t &mu) {
+  double eta(const std::array<int, nd_max> &x, const size_t &mu) {
     double s = 0;
-// TO BE TESTED #pragma omp parallel for reduction(+: s)
+    // TO BE TESTED #pragma omp parallel for reduction(+: s)
     for (int nu = 0; nu < mu; nu++) {
       s += x[nu];
     }
     return std::pow(-1.0, s);
   }
 
-//   /* fills the array arr_eta */
-//   void generate_eta_x_mu(const std::vector<size_t>& dims, const size_t &ndims) {
-//     const size_t Lt = dims[0], Lx = dims[1], Ly = dims[2], Lz = dims[3];
-//     size_t N = Lt*Lx*Ly*Lz*ndims;
-//     g_vec_eta_x_mu.resize(N);
-//     const geometry_d g(Lx, Ly, Lz, Lt, ndims); // note the order
-// #pragma omp parallel for
-//     for (int x0 = 0; x0 < Lt; x0++) {
-//       for (int x1 = 0; x1 < Lx; x1++) {
-//         for (int x2 = 0; x2 < Ly; x2++) {
-//           for (int x3 = 0; x3 < Lz; x3++) {
-//             const std::vector<int> x = {x0, x1, x2, x3};
-//             for (size_t mu = 0; mu < ndims; mu++) {
-//               const size_t i = g.getIndex(x0, x1, x2, x3);
-//               g_vec_eta_x_mu[i] = eta(x, mu);
-//             }
-//           }
-//         }
-//       }
-//     }
-//     return;
-//   }
-
   // index of the lattice point given the dimensions
+#pragma omp declare target
   size_t txyz_to_index(const size_t &t,
                        const size_t &x,
                        const size_t &y,
@@ -78,11 +59,15 @@ namespace staggered {
     const geometry g(Lx, Ly, Lz, Lt); // note the order
     return g.getIndex(t, x, y, z);
   }
+#pragma omp end declare target
 
   // overload : x={x0,x1,x2,x3}, dims={Lt,Lx,Ly,Lz}
-  size_t txyz_to_index(const std::vector<int> &x, const std::vector<size_t> &dims) {
+#pragma omp declare target
+  size_t txyz_to_index(const std::array<int, nd_max> &x,
+                       const std::vector<size_t> &dims) {
     return txyz_to_index(x[0], x[1], x[2], x[3], dims[0], dims[1], dims[2], dims[3]);
   }
+#pragma omp end declare target
 
   // vector of staggered "spinors" (no Dirac structure) for all the points of the lattice
   template <class Float, class Type> class spinor_lat {
@@ -97,12 +82,12 @@ namespace staggered {
     Type &operator()(const size_t &i) { return Psi[i]; }
     Type operator()(const size_t &i) const { return Psi[i]; }
 
-    Type &operator()(const std::vector<int> &x) {
+    Type &operator()(const std::array<int, nd_max> &x) {
       const size_t i = txyz_to_index(x, dims);
       return (*this)[i];
     }
 
-    Type operator()(const std::vector<int> &x) const {
+    Type operator()(const std::array<int, nd_max> &x) const {
       const size_t i = txyz_to_index(x, dims);
       return (*this)[i];
     }
@@ -137,7 +122,7 @@ namespace staggered {
 
     void operator+=(const spinor_lat<Float, Type> &psi) { (*this) = (*this) + psi; }
 
-    Type dot(const spinor_lat& b) const{
+    Type dot(const spinor_lat &b) const {
       return complex_dot_product((*this), b); // (*this)^{\dagger} * b
     }
 
@@ -250,7 +235,7 @@ namespace staggered {
     size_t cols() const { return this->rows(); }
 
     spinor_lat<Float, Type> inv(const spinor_lat<Float, Type> &psi,
-                                const std::string& solver,
+                                const std::string &solver,
                                 const Float &tol,
                                 const size_t &verb,
                                 const size_t &seed) const {
@@ -258,9 +243,9 @@ namespace staggered {
 
       typedef DDdag_matrix_lat<Float, Type, Group> LAmatrix;
 
-      typedef CG::LinearCG<Float, Type, LAmatrix, LAvector> cg;        
+      typedef CG::LinearCG<Float, Type, LAmatrix, LAvector> cg;
       typedef typename solver_type<cg>::type svr_type;
-      if (solver=="BiCGStab"){
+      if (solver == "BiCGStab") {
         typedef BiCGStab::LinearBiCGStab<Float, Type, LAmatrix, LAvector> bcgstab;
         typedef typename solver_type<bcgstab>::type svr_type;
       }
@@ -303,91 +288,7 @@ namespace staggered {
     const std::vector<size_t> dims = psi.get_dims(); // vector of dimensions
 
     const int N = psi.size();
-    spinor_lat<Float, Type> phi = apply_D(U, m, apply_Ddag(U, m, psi));
-//  spinor_lat<Float, Type> phi(dims, N);
-// #pragma omp parallel for
-//     for (int x0 = 0; x0 < Lt; x0++) {
-//       for (int x1 = 0; x1 < Lx; x1++) {
-//         for (int x2 = 0; x2 < Ly; x2++) {
-//           for (int x3 = 0; x3 < Lz; x3++) {
-//             const std::vector<int> x = {x0, x1, x2, x3};
-//             std::vector<int> xm = x; // will be x-mu
-//             std::vector<int> xp = x; // will be x+mu
-//             std::vector<int> xpp = x; // will be  x + mu + nu
-//             std::vector<int> xpm = x; // will be x + mu - nu
-//             std::vector<int> xmp = x; // will be  x - mu + nu
-//             std::vector<int> xmm = x; // will be x - mu - nu
-//             for (size_t mu = 0; mu < nd; mu++) {
-//               xp[mu]++; // x + mu
-//               xm[mu]--; // x - mu
-
-//               xpp[mu]++; // see later in the loop
-//               xpm[mu]++; // see later in the loop
-//               xmp[mu]--; // see later in the loop
-//               xmm[mu]--; // see later in the loop
-
-//               const Float fact_eta_x_mu = (1.0 / 2.0) * eta(x, mu);
-//               const Float fact_eta_xp_mu = (1.0 / 2.0) * eta(xp, mu);
-//               const Float fact_eta_xm_mu = (1.0 / 2.0) * eta(xm, mu);
-
-//               for (size_t nu = 0; nu < nd; nu++) {
-//                 xpp[nu]++; // x+mu+nu
-//                 xpm[nu]--; // x+mu-nu
-//                 xmp[nu]++; // x-mu+nu
-//                 xmm[nu]--; // x-mu-nu
-
-//                 // std::cout << "mu " << mu << " nu " << nu << "\n";
-//                 // std::cout << "x: " << x[0] << "," << x[1] << "," << x[2] << "," << x[3]
-//                 //           << "\n";
-//                 // std::cout << "xpp: " << xpp[0] << "," << xpp[1] << "," << xpp[2] << ","
-//                 //           << xpp[3] << "\n";
-//                 // std::cout << "xmm: " << xmm[0] << "," << xmm[1] << "," << xmm[2] << ","
-//                 //           << xmm[3] << "\n";
-
-//                 const Float fact_nu_pp = (1.0 / 2.0) * eta(xpp, nu);
-//                 const Float fact_nu_pm = (1.0 / 2.0) * eta(xpm, nu);
-//                 const Float fact_nu_mp = (1.0 / 2.0) * eta(xmp, nu);
-//                 const Float fact_nu_mm = (1.0 / 2.0) * eta(xmm, nu);
-
-//                 // std::cout << "factors " << fact_nu_pp - fact_nu_mm << "\n";
-
-//                 phi(x) += +fact_eta_x_mu * fact_nu_pm * (*U)(x, mu) *
-//                           (*U)(xpm, nu).dagger() * psi(xpm);
-//                 phi(x) +=
-//                   -fact_eta_x_mu * fact_nu_pp * (*U)(x, mu) * (*U)(xp, nu) * psi(xpp);
-//                 phi(x) += -fact_eta_x_mu * fact_nu_mm * (*U)(xm, mu).dagger() *
-//                           (*U)(xmm, nu).dagger() * psi(xmm);
-//                 phi(x) += +fact_eta_x_mu * fact_nu_mp * (*U)(xm, mu).dagger() *
-//                           (*U)(xm, nu) * psi(xmp);
-
-//                 xpp[nu]--; // x+mu again
-//                 xpm[nu]++; // x+mu again
-//                 xmp[nu]--; // x-mu again
-//                 xmm[nu]++; // x-mu again
-//               }
-//               // adding the contributions from m*(G(x,y) + G^{\dagger}(x,y))
-//               phi(x) += +m * fact_eta_x_mu * (*U)(x, mu) * psi(xp);
-//               phi(x) += -m * fact_eta_x_mu * (*U)(xm, mu).dagger() * psi(xm);
-
-//               phi(x) += +m * fact_eta_xm_mu * (*U)(xm, mu).dagger() * psi(xm);
-//               phi(x) += -m * fact_eta_xp_mu * (*U)(x, mu) * psi(xp);
-
-//               xm[mu]++; // =x again
-//               xp[mu]--; // =x again
-
-//               xpp[mu]--; // =x again
-//               xpm[mu]--; // =x again
-//               xmp[mu]++; // =x again
-//               xmm[mu]++; // =x again
-//             }
-//             // adding the contribution from m^2*delta_{x,y}
-//             phi(x) += std::pow(m, 2.0) * psi(x);
-//           }
-//         }
-//       }
-//     }
-
-    return phi;
+    return apply_D(U, m, apply_Ddag(U, m, psi));
   }
 
   // returns the reslut of D*psi, where D is the Dirac operator
@@ -400,13 +301,15 @@ namespace staggered {
 
     const int N = psi.size();
     spinor_lat<Float, Type> phi(dims, N);
+
+//#pragma omp target teams distribute parallel for //collapse(4)
 #pragma omp parallel for
     for (int x0 = 0; x0 < Lt; x0++) {
       for (int x1 = 0; x1 < Lx; x1++) {
         for (int x2 = 0; x2 < Ly; x2++) {
           for (int x3 = 0; x3 < Lz; x3++) {
-            const std::vector<int> x = {x0, x1, x2, x3};
-            std::vector<int> xm = x, xp = x;
+            const std::array<int, nd_max> x = {x0, x1, x2, x3};
+            std::array<int, nd_max> xm = x, xp = x;
             for (size_t mu = 0; mu < nd; mu++) {
               const Float eta_x_mu = eta(x, mu);
               xm[mu]--; // x - mu
@@ -441,8 +344,8 @@ namespace staggered {
       for (int x1 = 0; x1 < Lx; x1++) {
         for (int x2 = 0; x2 < Ly; x2++) {
           for (int x3 = 0; x3 < Lz; x3++) {
-            const std::vector<int> x = {x0, x1, x2, x3};
-            std::vector<int> xm = x, xp = x;
+            const std::array<int, nd_max> x = {x0, x1, x2, x3};
+            std::array<int, nd_max> xm = x, xp = x;
             for (size_t mu = 0; mu < nd; mu++) {
               xm[mu]--; // x - mu
               xp[mu]++; // x + mu

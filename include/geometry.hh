@@ -4,10 +4,21 @@
 
 #include <array>
 #include <cstddef>
+#include <iostream>
+#include <numeric>
 
 namespace spacetime_lattice {
   const size_t nd_max = 4; // maximum number of spacetime dimensions supported
-  template <class T> using nd_max_arr = std::array<T, spacetime_lattice::nd_max>;
+  template <class T> using nd_max_arr = std::array<T, nd_max>;
+
+  template <class T> size_t Npts_from_dims(const nd_max_arr<T> &dims) {
+    size_t N = 1;
+    for (size_t i = 0; i < nd_max; i++) {
+      N *= dims[i];
+    }
+    return N;
+  }
+
 } // namespace spacetime_lattice
 
 class geometry {

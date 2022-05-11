@@ -17,150 +17,166 @@
 #include "monomial.hh"
 #include "su2.hh"
 #include "u1.hh"
+#include <array>
 #include <complex>
 #include <random>
 #include <vector>
-#include <array>
 
 #include "staggered.hpp" // spinor object
 
-// detDDdag monomial : evaluation of det(D*D^{\dagger}) through pseudo-fermions
-template <typename Float, class Group>
-class detDDdag_monomial : public monomial<Float, Group> {
-  typedef std::complex<Float> Complex;
+namespace staggered {
+  template <class iT> using nd_max_arr = spacetime_lattice::nd_max_arr<iT>;
 
-public:
-  Float m0; // bare mass (in lattice units)
+  // detDDdag monomial : evaluation of det(D*D^{\dagger}) through pseudo-fermions
+  template <typename Float, class Group>
+  class detDDdag_monomial : public monomial<Float, Group> {
+    typedef std::complex<Float> Complex;
 
-  std::string SOLVER; // type of the SOLVER
-  Float TOLERANCE; // tolerance of the CG solver
-  size_t VERBOSITY; // verbosity of the CG solver
-  size_t SEED; // seed of the random number generator
+    size_t n_traj = 0;
 
-  // pseudo-fermion field phi, kept constant along the MD trajectory
-  staggered::spinor_lat<Float, Complex> phi;
+  public:
+    Float m0; // bare mass (in lattice units)
 
-  detDDdag_monomial<Float, Group>(unsigned int _timescale,
-                                     const Float &m0_val,
-                                     const std::string& solver,
-                                     const Float &tolerance,
-                                     const size_t &seed,
-                                     const size_t &verb)
-    : monomial<Float, Group>::monomial(_timescale) {
-    m0 = m0_val;
+    std::string SOLVER; // type of the SOLVER
+    Float TOLERANCE; // tolerance of the CG solver
+    size_t VERBOSITY; // verbosity of the CG solver
+    size_t SEED; // seed of the random number generator
 
-    SOLVER = solver;
-    TOLERANCE = tolerance;
-    SEED = seed;
-    VERBOSITY = verb;
-  }
+    // pseudo-fermion field phi, kept constant along the MD trajectory
+    staggered::spinor_lat<Float, Complex> phi;
 
-  // during the heatbath we generate R and store phi
-  void heatbath(hamiltonian_field<Float, Group> const &h) override {
-    const int N = h.U->getVolume(); // total number of lattice points
+    detDDdag_monomial<Float, Group>(unsigned int _timescale,
+                                    const Float &m0_val,
+                                    const std::string &solver,
+                                    const Float &tolerance,
+                                    const size_t &seed,
+                                    const size_t &verb)
+      : monomial<Float, Group>::monomial(_timescale) {
+      m0 = m0_val;
 
-    const size_t Lt = h.U->getLt(), Lx = h.U->getLx(), Ly = h.U->getLy(),
-                 Lz = h.U->getLz();
-    const std::vector<size_t> dims = {Lt, Lx, Ly, Lz}; // vactor of spacetime dimensions
+      SOLVER = solver;
+      TOLERANCE = tolerance;
+      SEED = seed;
+      VERBOSITY = verb;
+    }
 
-    // generating the gaussian R
-    const staggered::spinor_lat<Float, Complex> R =
-      staggered::gaussian_spinor_normalized<Float, Complex>(
-        dims, N, 0.0, 1.0 / sqrt(2), SEED); // e^{-x^2} has sigma=1/sqrt(2)
-    // applying the operator D^{\dagger} to R
-    (*this).phi = staggered::apply_D<Float, Complex, Group>(h.U, (*this).m0, R);
+    // during the heatbath we generate R and store phi
+    void heatbath(hamiltonian_field<Float, Group> const &h) override {
+      const int N = h.U->getVolume(); // total number of lattice points
 
-    monomial<Float, Group>::Hold = R.norm_squared(); // R^{\dagger}*R is real
-    return;
-  }
+      const size_t Lt = h.U->getLt(), Lx = h.U->getLx(), Ly = h.U->getLy(),
+                   Lz = h.U->getLz();
+      const nd_max_arr<size_t> dims = {Lt, Lx, Ly, Lz}; // vactor of spacetime dimensions
 
-  /**
-   * After the MD trajectory we compute the new R^{\dagger}*R :
-   * R = D*chi = D * ( (D*D^{\dagger})^{-1} * phi ),
-   * where phi is the one computed at the beginning of the trajectory
-   * and D, D^{\dagger} are evaluated from the new gauge config
-   */
-  void accept(hamiltonian_field<Float, Group> const &h) override {
-    // Operator D*D^{\dagger} . Hermitian and invertible -> can apply the CG inversion
+      // generating the gaussian R
+      
+      const staggered::spinor_lat<Float, Complex> R =
+        staggered::gaussian_spinor<Float, Complex>(
+          dims, 0.0, 1.0 / sqrt(2), SEED + n_traj); // e^{-x^2} has sigma=1/sqrt(2)
 
-    const staggered::DDdag_matrix_lat<Float, Complex, Group> DDdag(h.U, (*this).m0);
+      n_traj += 1;
 
-    // applying D*Ddag to \phi
-    const staggered::spinor_lat<Float, Complex> chi =
-      DDdag.inv((*this).phi, SOLVER, TOLERANCE, VERBOSITY, SEED);
+      (*this).phi = staggered::apply_D<Float, Complex, Group>(h.U, (*this).m0, R);
 
-    const staggered::spinor_lat<Float, Complex> R =
-      staggered::apply_Ddag(h.U, (*this).m0, chi);
+      std::cout << "check 1 " << R.norm_squared() << "\n";
+      monomial<Float, Group>::Hold = R.norm_squared(); // R^{\dagger}*R is real
+      return;
+    }
 
-    monomial<Float, Group>::Hnew = R.norm_squared(); // R^{\dagger}*R is real
-    return;
-  }
+    /**
+     * @brief accept the new configuration and update the hamiltonian
+     * After the MD trajectory we compute the new
+     * R^{\dagger}*R = \phi[U_0]^{\dagger} * (D*D^{\dagger})[U_1]^{-1} * \phi[U_0]
+     * where phi is the one computed at the beginning of the trajectory (configuration
+     * U_0) and D, D^{\dagger} are evaluated from the new gauge config U_1
+     * @param h hamiltonian field
+     */
+    void accept(hamiltonian_field<Float, Group> const &h) override {
+      // Operator D*D^{\dagger} . Hermitian and invertible -> can apply the CG inversion
+      const staggered::DDdag_matrix_lat<Float, Complex, Group> DDdag(h.U, (*this).m0);
 
-  /**
-   * S_F  = \phi^{\dagger} * M^{-1} * \phi
-   * dS_F = \phi^{\dagger} * M^{-1} * dM * M^{-1} * \phi = \chi^{\dagger} * dM * \chi
-   * where \chi = M^{-1} * \phi
-   * and M = D*D^{\dagger}
-   * see eq. (8.44) of Gattringer&Lang
-   */
-  void derivative(adjointfield<Float, Group> &deriv,
-                  hamiltonian_field<Float, Group> const &h,
-                  const Float fac = 1.) const override {
-    typedef typename accum_type<Group>::type accum;
+      // applying (D*Ddag)^{-1} to \phi
+      const staggered::spinor_lat<Float, Complex> chi =
+        DDdag.inv((*this).phi, SOLVER, TOLERANCE, VERBOSITY, SEED);
 
-    const staggered::DDdag_matrix_lat<Float, Complex, Group> DDdag(h.U, (*this).m0);
+      std::cout << "check 2 " << complex_dot_product(phi, chi).real() << "\n";
 
-    const staggered::spinor_lat<Float, Complex> chi =
-      DDdag.inv((*this).phi, SOLVER, TOLERANCE, VERBOSITY, SEED);
+      monomial<Float, Group>::Hnew = complex_dot_product(phi, chi).real();
 
+      // const staggered::spinor_lat<Float, Complex> R =
+      //   staggered::apply_Ddag(h.U, (*this).m0, chi);
+      // std::cout << "check 2 " << complex_dot_product(phi, chi).real() -
+      // R.norm_squared()
+      //           << "\n";
 
-    const size_t Lt = h.U->getLt(), Lx = h.U->getLx(), Ly = h.U->getLy(),
-                 Lz = h.U->getLz();
-    const std::vector<size_t> dims = {Lt, Lx, Ly, Lz}; // vector of dimensions
-    const size_t nd = h.U->getndims();
+      // monomial<Float, Group>::Hnew = R.norm_squared(); // R^{\dagger}*R is real
+      return;
+    }
 
-    const staggered::spinor_lat<Float, Complex> chi1 =
-      staggered::apply_Ddag(h.U, (*this).m0, chi);
+    /**
+     * S_F  = \phi^{\dagger} * M^{-1} * \phi
+     * dS_F = \phi^{\dagger} * M^{-1} * dM * M^{-1} * \phi = \chi^{\dagger} * dM * \chi
+     * where \chi = M^{-1} * \phi
+     * and M = D*D^{\dagger}
+     * see eq. (8.44) of Gattringer&Lang
+     */
+    void derivative(adjointfield<Float, Group> &deriv,
+                    hamiltonian_field<Float, Group> const &h,
+                    const Float fac = 1.) const override {
+      typedef typename accum_type<Group>::type accum;
 
-    const Complex i(0.0, 1.0);
+      const staggered::DDdag_matrix_lat<Float, Complex, Group> DDdag(h.U, (*this).m0);
+
+      const staggered::spinor_lat<Float, Complex> chi =
+        DDdag.inv((*this).phi, SOLVER, TOLERANCE, VERBOSITY, SEED);
+
+      const size_t Lt = h.U->getLt(), Lx = h.U->getLx(), Ly = h.U->getLy(),
+                   Lz = h.U->getLz();
+      const size_t nd = h.U->getndims();
+
+      const staggered::spinor_lat<Float, Complex> chi1 =
+        staggered::apply_Ddag(h.U, (*this).m0, chi);
+
+      const Complex i(0.0, 1.0);
 
 //#pragma omp target teams distribute parallel for //collapse(4)
 // #pragma omp target teams distribute parallel for collapse(4)
-#pragma omp parallel for //collapse(4)
-    for (int x0 = 0; x0 < Lt; x0++) {
-      for (int x1 = 0; x1 < Lx; x1++) {
-        for (int x2 = 0; x2 < Ly; x2++) {
-          for (int x3 = 0; x3 < Lz; x3++) {
-            const std::array<int, staggered::nd_max> x = {x0, x1, x2, x3};
-            std::array<int, staggered::nd_max> xm = x, xp = x;
-            for (size_t mu = 0; mu < nd; mu++) {
-              xm[mu]--; // x - mu
-              xp[mu]++; // x + mu
+#pragma omp parallel for // collapse(4)
+      for (int x0 = 0; x0 < Lt; x0++) {
+        for (int x1 = 0; x1 < Lx; x1++) {
+          for (int x2 = 0; x2 < Ly; x2++) {
+            for (int x3 = 0; x3 < Lz; x3++) {
+              const nd_max_arr<int> x = {x0, x1, x2, x3};
+              nd_max_arr<int> xm = x, xp = x;
+              for (size_t mu = 0; mu < nd; mu++) {
+                xm[mu]--; // x - mu
+                xp[mu]++; // x + mu
 
-              const Float eta_x_mu = staggered::eta(x, mu);
-              const Float eta_xp_mu = staggered::eta(xp, mu);
+                const Float eta_x_mu = staggered::eta(x, mu);
+                const Float eta_xp_mu = staggered::eta(xp, mu);
 
-              const Complex v_xp =
-                (1.0 / 2.0) * eta_x_mu * (+i) * (*h.U)(x, mu) * chi1(xp);
-              const Complex v_x =
-                -(1.0 / 2.0) * eta_xp_mu * (-i) * (*h.U)(x, mu).dagger() * chi1(x);
+                const Complex v_xp =
+                  (1.0 / 2.0) * eta_x_mu * (+i) * (*h.U)(x, mu) * chi1(xp);
+                const Complex v_x =
+                  -(1.0 / 2.0) * eta_xp_mu * (-i) * (*h.U)(x, mu).dagger() * chi1(x);
 
-              // derivative of S_F with respect to U_{\mu}(x)
-              accum derSF = conj(chi(x)) * v_xp + conj(chi(xp)) * v_x;
-              derSF *= -1.0;
-              derSF *= 2.0;
+                // derivative of S_F with respect to U_{\mu}(x)
+                accum derSF = conj(chi(x)) * v_xp + conj(chi(xp)) * v_x;
+                derSF *= -2.0;
 
-              derSF *= i; // get_deriv gives the imaginary part: Re(z) = Im(i*z)
-              // std::cout << "derSF : " << derSF << "\n";
-              deriv(x, mu) += get_deriv<Float>(derSF);
+                derSF *= i; // get_deriv gives the imaginary part: Re(z) = Im(i*z)
+                // std::cout << "derSF : " << derSF << "\n";
+                deriv(x, mu) += get_deriv<Float>(derSF);
 
-              xm[mu]++; // =x again
-              xp[mu]--; // =x again
+                xm[mu]++; // =x again
+                xp[mu]--; // =x again
+              }
             }
           }
         }
       }
+      return;
     }
-    return;
-  }
-};
+  };
+
+} // namespace staggered

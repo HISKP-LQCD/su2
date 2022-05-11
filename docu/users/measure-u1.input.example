@@ -14,7 +14,7 @@ monomials:
 #   xi : 1.0
 
 measurements:
-  confdir: "./c1/"
+  conf_dir: "./c1/"
   icounter: 3
   n_meas: 6
   nstep: 1

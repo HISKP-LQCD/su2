@@ -14,7 +14,7 @@ monomials:
     #anisotropic : false
 
 metropolis:
-  outdir: "./c1/"
+  conf_dir: "./c1/"
   n_meas: 10
   N_save: 2
   N_hit: 10

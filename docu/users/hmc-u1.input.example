@@ -18,7 +18,7 @@ hmc:
   heat: true
   counter: 0
   configname: ""
-  outdir: "./c1/"
+  conf_dir: "./c1/"
 
 integrator:
   name: leapfrog

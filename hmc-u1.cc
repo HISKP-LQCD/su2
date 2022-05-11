@@ -1,3 +1,16 @@
+// hmc-u1.cc
+/**
+ * @file hmc-u1.cc
+ * @author Carsten Urbach (urbach@hiskp.uni-bonn.de)
+ * @author Simone Romiti (simone.romiti@uni-bonn.de)
+ * @brief Hybrid Monte Carlo for a U(1) theory
+ * @version 0.1
+ * @date 2022-05-11
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
+
 #include "energy_density.hh"
 #include "gauge_energy.hh"
 #include "gaugeconfig.hh"
@@ -49,7 +62,7 @@ int main(int ac, char *av[]) {
     return 1;
   }
 
-  boost::filesystem::create_directories(boost::filesystem::absolute(hparams.outdir));
+  boost::filesystem::create_directories(boost::filesystem::absolute(hparams.conf_dir));
 
   gaugeconfig<_u1> U(pparams.Lx, pparams.Ly, pparams.Lz, pparams.Lt, pparams.ndims,
                      pparams.beta);
@@ -108,37 +121,22 @@ int main(int ac, char *av[]) {
 
   std::ofstream os;
   if (hparams.icounter == 0)
-    os.open(hparams.outdir + "/output.hmc.data", std::ios::out);
+    os.open(hparams.conf_dir + "/output.hmc.data", std::ios::out);
   else
-    os.open(hparams.outdir + "/output.hmc.data", std::ios::app);
+    os.open(hparams.conf_dir + "/output.hmc.data", std::ios::app);
 
   std::cout << "## Normalization factor: A = 2/(d*(d-1)*N_lat*N_c) = " << std::scientific
             << std::setw(18) << std::setprecision(15) << normalisation << "\n";
   std::cout << "## Acceptance rate parcentage: rho = rate/(i+1)\n";
 
-  std::stringstream ss_head; // header: column names in the output
-  ss_head << "i"
-          << " "
-          << "getaccept"
-          << " "
-          << "E*A"
-          << " "
-          << "dH"
-          << " "
-          << "rho"
-          << " "
-          << "ddH"
-          << " "
-          << "Q"
-          << "\n";
-
-  std::string ss_head_str = ss_head.str();
-  std::cout << ss_head_str;
-  os << ss_head_str;
+  // header: column names in the output
+  std::string head_str = output::hmc::get_header(" ");
+  std::cout << head_str;
+  os << head_str;
 
   double rate = 0.;
 
-  std::string conf_path_basename = output::get_conf_path_basename(pparams, hparams);
+  const std::string conf_path_basename = output::get_conf_path_basename(pparams, hparams);
 
   for (size_t i = hparams.icounter; i < hparams.n_meas + hparams.icounter; i++) {
     mdparams.disablerevtest();
@@ -178,17 +176,15 @@ int main(int ac, char *av[]) {
     os << " " << Q << std::endl;
 
     if (i > 0 && (i % hparams.N_save) == 0) { // saving U after each N_save trajectories
-      std::ostringstream oss_i;
-      oss_i << conf_path_basename << "." << i << std::ends;
-      U.save(hparams.outdir + "/" + oss_i.str());
+      std::string path_i = conf_path_basename + "." + std::to_string(i);
+      U.save(path_i);
     }
   }
   std::cout << "## Acceptance rate: " << rate / static_cast<double>(hparams.n_meas)
             << std::endl;
 
-  std::ostringstream oss;
-  oss << conf_path_basename << ".final" << std::ends;
-  U.save(hparams.outdir + "/" + oss.str());
+  std::string path_final = conf_path_basename + ".final";
+  U.save(path_final);
 
   return (0);
 }

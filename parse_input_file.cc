@@ -149,7 +149,7 @@ namespace input_file_parsing {
         in.read_verb<bool>(hparams.heat, {"hmc", "heat"});
         in.read_opt_verb<size_t>(hparams.seed, {"hmc", "seed"});
         in.read_opt_verb<std::string>(hparams.configfilename, {"hmc", "configname"});
-        in.read_opt_verb<std::string>(hparams.outdir, {"hmc", "outdir"});
+        in.read_opt_verb<std::string>(hparams.conf_dir, {"hmc", "conf_dir"});
         in.read_opt_verb<std::string>(hparams.conf_basename, {"hmc", "conf_basename"});
 
         in.read_opt_verb<size_t>(hparams.beta_str_width, {"hmc", "beta_str_width"});
@@ -212,7 +212,7 @@ namespace input_file_parsing {
                                    {"measurements", "potential", "sizeWloops"});
         }
 
-        in.read_opt_verb<std::string>(mparams.confdir, {"measurements", "confdir"});
+        in.read_opt_verb<std::string>(mparams.conf_dir, {"measurements", "conf_dir"});
         in.read_opt_verb<std::string>(mparams.resdir, {"measurements", "resdir"});
 
         in.read_opt_verb<std::string>(mparams.conf_basename,
@@ -253,7 +253,7 @@ namespace input_file_parsing {
         in.read_opt_verb<size_t>(mcparams.icounter, {"metropolis", "icounter"});
         in.read_opt_verb<size_t>(mcparams.seed, {"metropolis", "seed"});
 
-        in.read_opt_verb<std::string>(mcparams.outdir, {"metropolis", "outdir"});
+        in.read_opt_verb<std::string>(mcparams.conf_dir, {"metropolis", "conf_dir"});
         in.read_opt_verb<std::string>(mcparams.conf_basename,
                                       {"metropolis", "conf_basename"});
         in.read_opt_verb<size_t>(mcparams.beta_str_width,

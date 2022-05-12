@@ -119,3 +119,90 @@ template<class URNG, class Group> std::vector<double> sweep(gaugeconfig<Group> &
   return res;
 }
 
+
+/**
+ * same as sweep, but only one single rng is passed to the function
+ * hypothesis: drawing a pseudorandom number is a bottleneck in parallelization if only one rng-engine supplies numbers to all threads
+ * solve this bottleneck by introducing a vector of rng-engines, so there is one engine for each thread
+ * this was done in the standard sweep function, this function is only for testing purposes and should be deleted when the testing is concluded
+ * */
+template<class URNG, class Group> std::vector<double> sweepone(gaugeconfig<Group> &U, URNG &engine,
+                                               const double delta,
+                                               const size_t N_hit, const double beta,
+                                               const double xi=1.0, bool anisotropic=false) {
+
+  std::uniform_real_distribution<double> uniform(0., 1.);
+  typedef typename accum_type<Group>::type accum;
+  size_t rate = 0, rate_time = 0;
+  #ifdef _USE_OMP_
+  #pragma omp parallel
+  {
+  #endif
+  #pragma omp for reduction (+: rate, rate_time)
+  for(size_t x0 = 0; x0 < U.getLt(); x0+=2) {
+//Cannot use elements of a vector as iteration variables in for-loop with OpenMP, so use dummy variables
+    Group R;
+    for(size_t x1 = 0; x1 < U.getLx(); x1++) {
+      for(size_t x2 = 0; x2 < U.getLy(); x2++) {
+        for(size_t x3 = 0; x3 < U.getLz(); x3++) {
+          std::vector<size_t> x = {x0, x1, x2, x3};
+          for(size_t mu = 0; mu < U.getndims(); mu++) {
+            accum K;
+            get_staples(K, U, x, mu, xi, anisotropic);
+            for(size_t n = 0; n < N_hit; n++) {
+              random_element(R, engine, delta);
+              double deltaS = beta/static_cast<double>(U.getNc())*
+                (retrace(U(x, mu) * K) - retrace(U(x, mu) * R * K));
+              bool accept = (deltaS < 0);
+              if(!accept) accept = (uniform(engine) < exp(-deltaS));
+              if(accept) {
+                U(x, mu) = U(x, mu) * R;
+                U(x, mu).restoreSU();
+                rate += 1;
+                if(mu == 0){
+                  rate_time += 1;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  #pragma omp for reduction (+: rate, rate_time)
+  for(size_t x0 = 1; x0 < U.getLt(); x0+=2) {
+    Group R;
+    for(size_t x1 = 0; x1 < U.getLx(); x1++) {
+      for(size_t x2 = 0; x2 < U.getLy(); x2++) {
+        for(size_t x3 = 0; x3 < U.getLz(); x3++) {
+          std::vector<size_t> x = {x0, x1, x2, x3};
+          for(size_t mu = 0; mu < U.getndims(); mu++) {
+            accum K;
+            get_staples(K, U, x, mu, xi, anisotropic);
+            for(size_t n = 0; n < N_hit; n++) {
+              random_element(R, engine, delta);
+              double deltaS = beta/static_cast<double>(U.getNc())*
+                (retrace(U(x, mu) * K) - retrace(U(x, mu) * R * K));
+              bool accept = (deltaS < 0);
+              if(!accept) accept = (uniform(engine) < exp(-deltaS));
+              if(accept) {
+                U(x, mu) = U(x, mu) * R;
+                U(x, mu).restoreSU();
+                rate += 1;
+                if(mu == 0){
+                  rate_time += 1;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  #ifdef _USE_OMP_
+  }
+  #endif
+  std::vector<double> res = { double(rate)/double(N_hit)/double(U.getSize()) , double(rate_time)/double(N_hit)/double(U.getVolume()) };
+  return res;
+}
+

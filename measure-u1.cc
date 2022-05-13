@@ -170,6 +170,10 @@ int main(int ac, char* av[]) {
     if(mparams.gradient) {
       omeasurements::meas_gradient_flow<_u1>(U, i, mparams.conf_dir, mparams.tmax);
     }
+
+    if(mparams.pion_staggered) {
+      omeasurements::meas_pion_correlator<_u1>(U, i, pparams.m0,  mparams);
+    }
     
     if(mparams.potential || mparams.potentialsmall){
         //smear lattice

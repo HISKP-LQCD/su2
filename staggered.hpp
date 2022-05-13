@@ -4,7 +4,7 @@
 
  Staggered fermions routines
 
- Note: Instead of std::vector it is used std::array<int, nd_max>, because we always deal
+ Note: Instead of std::vector it is used nd_max_arr<int>, because we always deal
  with 4-dimensional containes for coordinates and dimensions
 */
 
@@ -38,7 +38,7 @@ namespace staggered {
 
   // eta_{\mu}(x) as in eq. (16) of https://arxiv.org/pdf/2112.14640.pdf
   // or eq. (8) of https://www.sciencedirect.com/science/article/pii/0550321389903246
-  double eta(const std::array<int, nd_max> &x, const size_t &mu) {
+  double eta(const nd_max_arr<int> &x, const size_t &mu) {
     double s = 0;
     // TO BE TESTED #pragma omp parallel for reduction(+: s)
     for (int nu = 0; nu < mu; nu++) {
@@ -64,12 +64,17 @@ namespace staggered {
 
   // overload : x={x0,x1,x2,x3}, dims={Lt,Lx,Ly,Lz}
 #pragma omp declare target
-  size_t txyz_to_index(const std::array<int, nd_max> &x, const nd_max_arr<size_t> &dims) {
+  size_t txyz_to_index(const nd_max_arr<int> &x, const nd_max_arr<size_t> &dims) {
     return txyz_to_index(x[0], x[1], x[2], x[3], dims[0], dims[1], dims[2], dims[3]);
   }
 #pragma omp end declare target
 
-  // vector of staggered "spinors" (no Dirac structure) for all the points of the lattice
+  /**
+   * @brief vector of staggered "spinors" (no Dirac structure) for all the points of the
+   * lattice Example: spinor_lat<double, std::complex<double> psi;
+   * @tparam Float
+   * @tparam Type
+   */
   template <class Float, class Type> class spinor_lat {
   private:
     std::vector<Type> Psi;
@@ -82,14 +87,14 @@ namespace staggered {
     Type &operator()(const size_t &i) { return Psi[i]; }
     Type operator()(const size_t &i) const { return Psi[i]; }
 
-    Type &operator()(const std::array<int, nd_max> &x) {
+    Type &operator()(const nd_max_arr<int> &x) {
       const size_t i = txyz_to_index(x, dims);
-      return (*this)[i];
+      return Psi[i];
     }
 
-    Type operator()(const std::array<int, nd_max> &x) const {
+    Type operator()(const nd_max_arr<int> &x) const {
       const size_t i = txyz_to_index(x, dims);
-      return (*this)[i];
+      return Psi[i];
     }
 
     Type &operator[](const size_t &i) { return Psi[i]; }
@@ -222,19 +227,24 @@ namespace staggered {
   // class for D^{\dagger}*D
   template <class Float, class Type, class Group> class DDdag_matrix_lat {
   public:
-    gaugeconfig<Group> *U;
+    gaugeconfig<Group> U;
     Float m;
 
     DDdag_matrix_lat() {}
     ~DDdag_matrix_lat() {}
 
-    DDdag_matrix_lat(gaugeconfig<Group> *_U, const Float &_m) {
+    DDdag_matrix_lat(const gaugeconfig<Group> _U, const Float &_m) {
       U = _U;
       m = _m;
     }
 
+    void operator=(const DDdag_matrix_lat &dd) {
+      U = dd.U;
+      m = dd.m;
+    }
+
     // rows = cols = N = number of lattice points
-    size_t rows() const { return U->getVolume(); }
+    size_t rows() const { return U.getVolume(); }
     size_t cols() const { return this->rows(); }
 
     spinor_lat<Float, Type> inv(const spinor_lat<Float, Type> &psi,
@@ -259,7 +269,7 @@ namespace staggered {
         staggered::gaussian_spinor<Float, Complex>(psi.get_dims(), 0.0, 10.0, seed);
 
       if (verb > 1) {
-        std::cout << "Calling the CG solver.\n";
+        std::cout << "Calling the "<< solver << " solver.\n";
       }
 
       SVR.solve(phi0, tol, verb);
@@ -281,23 +291,24 @@ namespace staggered {
   template <class Float, class Type, class Group>
   spinor_lat<Float, Type> operator*(const DDdag_matrix_lat<Float, Type, Group> &M,
                                     const spinor_lat<Float, Type> &psi) {
-    gaugeconfig<Group> *U = M.U;
+    gaugeconfig<Group> U = M.U;
     const Float m = M.m;
 
-    const size_t Lt = U->getLt(), Lx = U->getLx(), Ly = U->getLy(), Lz = U->getLz();
-    const size_t nd = U->getndims();
+    const size_t Lt = U.getLt(), Lx = U.getLx(), Ly = U.getLy(), Lz = U.getLz();
+    const size_t nd = U.getndims();
     const nd_max_arr<size_t> dims = psi.get_dims(); // vector of dimensions
 
     const int N = psi.size();
     return apply_D(U, m, apply_Ddag(U, m, psi));
   }
 
-  // returns the reslut of D*psi, where D is the Dirac operator
+  // returns the result of D*psi, where D is the Dirac operator
   template <class Float, class Type, class Group>
-  spinor_lat<Float, Type>
-  apply_D(gaugeconfig<Group> *U, const Float &m, const spinor_lat<Float, Type> &psi) {
-    const size_t Lt = U->getLt(), Lx = U->getLx(), Ly = U->getLy(), Lz = U->getLz();
-    const size_t nd = U->getndims();
+  spinor_lat<Float, Type> apply_D(const gaugeconfig<Group> &U,
+                                  const Float &m,
+                                  const spinor_lat<Float, Type> &psi) {
+    const size_t Lt = U.getLt(), Lx = U.getLx(), Ly = U.getLy(), Lz = U.getLz();
+    const size_t nd = U.getndims();
     const nd_max_arr<size_t> dims = psi.get_dims(); // vector of dimensions
 
     const int N = psi.size();
@@ -309,15 +320,15 @@ namespace staggered {
       for (int x1 = 0; x1 < Lx; x1++) {
         for (int x2 = 0; x2 < Ly; x2++) {
           for (int x3 = 0; x3 < Lz; x3++) {
-            const std::array<int, nd_max> x = {x0, x1, x2, x3};
-            std::array<int, nd_max> xm = x, xp = x;
+            const nd_max_arr<int> x = {x0, x1, x2, x3};
+            nd_max_arr<int> xm = x, xp = x;
             for (size_t mu = 0; mu < nd; mu++) {
               const Float eta_x_mu = eta(x, mu);
               xm[mu]--; // x - mu
               xp[mu]++; // x + mu
 
-              phi(x) += +(1.0 / 2.0) * eta_x_mu * (*U)(x, mu) * psi(xp);
-              phi(x) += -(1.0 / 2.0) * eta_x_mu * (*U)(xm, mu).dagger() * psi(xm);
+              phi(x) += +(1.0 / 2.0) * eta_x_mu * U(x, mu) * psi(xp);
+              phi(x) += -(1.0 / 2.0) * eta_x_mu * U(xm, mu).dagger() * psi(xm);
 
               xm[mu]++; // =x again
               xp[mu]--; // =x again
@@ -332,10 +343,11 @@ namespace staggered {
 
   // returns the reslut of D^{\dagger}*psi, where D is the Dirac operator
   template <class Float, class Type, class Group>
-  spinor_lat<Float, Type>
-  apply_Ddag(gaugeconfig<Group> *U, const Float &m, const spinor_lat<Float, Type> &psi) {
-    const size_t Lt = U->getLt(), Lx = U->getLx(), Ly = U->getLy(), Lz = U->getLz();
-    const size_t nd = U->getndims();
+  spinor_lat<Float, Type> apply_Ddag(const gaugeconfig<Group> &U,
+                                     const Float &m,
+                                     const spinor_lat<Float, Type> &psi) {
+    const size_t Lt = U.getLt(), Lx = U.getLx(), Ly = U.getLy(), Lz = U.getLz();
+    const size_t nd = U.getndims();
     const nd_max_arr<size_t> dims = psi.get_dims(); // vector of dimensions
 
     const int N = psi.size();
@@ -345,8 +357,8 @@ namespace staggered {
       for (int x1 = 0; x1 < Lx; x1++) {
         for (int x2 = 0; x2 < Ly; x2++) {
           for (int x3 = 0; x3 < Lz; x3++) {
-            const std::array<int, nd_max> x = {x0, x1, x2, x3};
-            std::array<int, nd_max> xm = x, xp = x;
+            const nd_max_arr<int> x = {x0, x1, x2, x3};
+            nd_max_arr<int> xm = x, xp = x;
             for (size_t mu = 0; mu < nd; mu++) {
               xm[mu]--; // x - mu
               xp[mu]++; // x + mu
@@ -354,8 +366,8 @@ namespace staggered {
               const Float eta_xm_mu = eta(xm, mu);
               const Float eta_xp_mu = eta(xp, mu);
 
-              phi(x) += +(1.0 / 2.0) * eta_xm_mu * (*U)(xm, mu).dagger() * psi(xm);
-              phi(x) += -(1.0 / 2.0) * eta_xp_mu * (*U)(x, mu) * psi(xp);
+              phi(x) += +(1.0 / 2.0) * eta_xm_mu * U(xm, mu).dagger() * psi(xm);
+              phi(x) += -(1.0 / 2.0) * eta_xp_mu * U(x, mu) * psi(xp);
 
               xm[mu]++; // =x again
               xp[mu]--; // =x again
@@ -368,56 +380,5 @@ namespace staggered {
     return phi;
   }
 
-  /**
-   * @brief pion correlator at time t and at rest (\vec{p}=\vec{0})
-   * returns:
-   * \sum_{\vec{x}} (D*D^{\dagger})^{-1}(t, \vec{x}) =
-   * (see eq. 6.32 of https://link.springer.com/book/10.1007/978-3-642-01850-3)
-   * @param U gauge configuration
-   * @param m mass
-   * @return std::vector vector of values for each t
-   */
-  template <class Float, class Type, class Group>
-  std::vector<Float> C_pion(const gaugeconfig<Group>& U,
-                            const Float &m,
-                            const std::string &solver,
-                            const Float &tol,
-                            const size_t &verb,
-                            const size_t &seed) {
-    const size_t Lt = U->getLt(), Lx = U->getLx(), Ly = U->getLy(), Lz = U->getLz();
-    const size_t nd = U->getndims();
-    const nd_max_arr<size_t> dims = {Lt, Lx, Ly, Lz};
-
-    std::vector<Float> C(Lt, 0.0); // correlator
-
-    const spinor_lat<Float, Type> source(dims, 0.0);
-
-#pragma omp parallel for
-    for (int x0 = 0; x0 < Lt; x0++) {
-    spinor_lat<Float, Type> sink(dims, 0.0);
-      for (int x1 = 0; x1 < Lx; x1++) {
-        for (int x2 = 0; x2 < Ly; x2++) {
-          for (int x3 = 0; x3 < Lz; x3++) {
-            const std::array<int, nd_max> x = {x0, x1, x2, x3};
-            if (x0 == 0) {
-              source(x) = 1.0;
-            }
-            sink(x) = 1.0;
-          }
-        }
-      }
-
-      if (x0 == 0) {
-        continue; // contact divergence at x0==0 --> no need to compute it
-      }
-
-      const staggered::DDdag_matrix_lat<Float, Complex, Group> DDdag(*U, m);
-
-      // applying (D*Ddag)^{-1} to the source
-      const spinor_lat<Float, Type> R = DDdag.inv(source, solver, tol, verb, seed);
-      C[x0] = retrace(sink * R);
-    }
-    return C;
-  }
 
 } // namespace staggered

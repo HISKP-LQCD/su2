@@ -61,7 +61,7 @@ namespace staggered {
     }
 
     // during the heatbath we generate R and store phi
-    void heatbath(hamiltonian_field<Float, Group> const &h) override {
+    void heatbath(const hamiltonian_field<Float, Group> &h) override {
       const int N = h.U->getVolume(); // total number of lattice points
 
       const size_t Lt = h.U->getLt(), Lx = h.U->getLx(), Ly = h.U->getLy(),
@@ -76,9 +76,8 @@ namespace staggered {
 
       n_traj += 1;
 
-      (*this).phi = staggered::apply_D<Float, Complex, Group>(h.U, (*this).m0, R);
+      (*this).phi = staggered::apply_D<Float, Complex, Group>(*h.U, (*this).m0, R);
 
-      std::cout << "check 1 " << R.norm_squared() << "\n";
       monomial<Float, Group>::Hold = R.norm_squared(); // R^{\dagger}*R is real
       return;
     }
@@ -91,15 +90,14 @@ namespace staggered {
      * U_0) and D, D^{\dagger} are evaluated from the new gauge config U_1
      * @param h hamiltonian field
      */
-    void accept(hamiltonian_field<Float, Group> const &h) override {
+    void accept(const hamiltonian_field<Float, Group> &h) override {
       // Operator D*D^{\dagger} . Hermitian and invertible -> can apply the CG inversion
-      const staggered::DDdag_matrix_lat<Float, Complex, Group> DDdag(h.U, (*this).m0);
+      const staggered::DDdag_matrix_lat<Float, Complex, Group> DDdag(*h.U, (*this).m0);
 
       // applying (D*Ddag)^{-1} to \phi
       const staggered::spinor_lat<Float, Complex> chi =
         DDdag.inv((*this).phi, SOLVER, TOLERANCE, VERBOSITY, SEED);
 
-      std::cout << "check 2 " << complex_dot_product(phi, chi).real() << "\n";
 
       monomial<Float, Group>::Hnew = complex_dot_product(phi, chi).real();
 
@@ -121,11 +119,11 @@ namespace staggered {
      * see eq. (8.44) of Gattringer&Lang
      */
     void derivative(adjointfield<Float, Group> &deriv,
-                    hamiltonian_field<Float, Group> const &h,
+                    const hamiltonian_field<Float, Group> &h,
                     const Float fac = 1.) const override {
       typedef typename accum_type<Group>::type accum;
 
-      const staggered::DDdag_matrix_lat<Float, Complex, Group> DDdag(h.U, (*this).m0);
+      const staggered::DDdag_matrix_lat<Float, Complex, Group> DDdag(*h.U, (*this).m0);
 
       const staggered::spinor_lat<Float, Complex> chi =
         DDdag.inv((*this).phi, SOLVER, TOLERANCE, VERBOSITY, SEED);
@@ -135,7 +133,7 @@ namespace staggered {
       const size_t nd = h.U->getndims();
 
       const staggered::spinor_lat<Float, Complex> chi1 =
-        staggered::apply_Ddag(h.U, (*this).m0, chi);
+        staggered::apply_Ddag(*h.U, (*this).m0, chi);
 
       const Complex i(0.0, 1.0);
 

@@ -91,6 +91,14 @@ namespace global_parameters {
 
     std::string conf_basename = "config_u1"; // root of the output files names
     size_t beta_str_width = g_beta_str_width; // length of the beta value config filename  
+
+    bool pion_staggered = false; // wether to measure the staggered pion correlator or not
+    double m0; // bare quark mass
+    std::string solver = "CG"; // Type of solver: CG, BiCGStab
+    double tolerance_cg = 1e-10; // Tolerance for the solver for the dirac operator
+    size_t solver_verbosity = 0; // Verbosity for the solver for the dirac operator
+    size_t seed_pf = 97234719; // Seed for the evaluation of the fermion determinant
+
   };
   
   /* optional parameters for the MCMC the in U(1) theory */

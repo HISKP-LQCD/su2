@@ -4,7 +4,7 @@ geometry:
   X: 4
   Y: 4
   Z: 1
-  T: 4
+  T: 16
   ndims: 3
 
 monomials:
@@ -15,12 +15,19 @@ monomials:
 
 measurements:
   conf_dir: "./c1/"
-  icounter: 3
-  n_meas: 6
+  icounter: 900
+  n_meas: 100
   nstep: 1
   gradient:
     tmax : 1.0
   Wloop: true
+  pion_staggered:
+    mass: 0.01
+    tolerance_cg: 1e-8
+    solver_verbosity : 0
+    seed_pf: 22346363
+    solver: BiCGStab
+
   potential:
     potentialsmall : false
     append : false

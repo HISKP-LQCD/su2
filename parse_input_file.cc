@@ -197,6 +197,23 @@ namespace input_file_parsing {
         if (nd["measurements"]["gradient"]) {
           in.read_opt_verb<double>(mparams.tmax, {"measurements", "gradient", "tmax"});
         }
+        // optional parameters for pion
+        if (nd["measurements"]["pion_staggered"]) {
+          pparams.include_staggered_fermions = true;
+
+          mparams.pion_staggered = true;
+          in.read_verb<double>(pparams.m0, {"measurements", "pion_staggered", "mass"});
+
+          in.read_opt_verb<std::string>(mparams.solver,
+                                        {"measurements", "pion_staggered", "solver"});
+          in.read_opt_verb<double>(mparams.tolerance_cg,
+                                   {"measurements", "pion_staggered", "tolerance_cg"});
+          in.read_opt_verb<size_t>(
+            mparams.solver_verbosity,
+            {"measurements", "pion_staggered", "solver_verbosity"});
+          in.read_opt_verb<size_t>(mparams.seed_pf,
+                                   {"measurements", "pion_staggered", "seed_pf"});
+        }
         // optional parameters for potentials
         if (nd["measurements"]["potential"]) {
           mparams.potential = true;

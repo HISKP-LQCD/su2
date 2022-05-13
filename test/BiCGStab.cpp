@@ -14,14 +14,13 @@ typedef LA::LAmatrix<Type> LAmatrix;
 typedef LA::LAvector<double, Type> LAvector;
 
 int main(int argc, char const *argv[]) {
+
+  std::cout << "running BiCGStab.cpp\n"; 
+
   LAmatrix A(0, 0);
   A.add_row((std::vector<Type>){1.0, 2.0+i, 1.0});
-  A.add_row((std::vector<Type>){2.0-i, 5.0, -6.0 + 6.0*i});
+  A.add_row((std::vector<Type>){200.0, 5.0, -6.0 + 6.0*i});
   A.add_row((std::vector<Type>){1.0, -6.0 - 6.0*i, -6.0});
-
-//   A.add_row((std::vector<Type>){1.0, 2.0, 1.0});
-//   A.add_row((std::vector<Type>){2.0, 5.0, -6.0});
-//   A.add_row((std::vector<Type>){1.0, -6.0, -6.0});
 
   std::cout << "A=" << '\n';
   BiCGStab::print_LAmatrix<Type, LAmatrix, LAvector>(A, ",");
@@ -33,7 +32,7 @@ int main(int argc, char const *argv[]) {
   std::cout << "The solution found by the BiCGStab is:" << '\n';
 
   BiCGStab::LinearBiCGStab<double, Type, LAmatrix, LAvector> LBiCGStab(A, b);
-  LBiCGStab.solve(x0, 1e-25, 2);
+  LBiCGStab.solve(x0, 1e-12, 2);
 
   std::cout << "Exact solution: x = ";
   BiCGStab::print_LAvector<Type, LAvector>(x_star, ",");

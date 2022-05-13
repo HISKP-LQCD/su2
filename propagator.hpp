@@ -39,7 +39,7 @@ namespace staggered {
     source({0, 0, 0, 0}) = 1.0;
     const staggered::DDdag_matrix_lat<Float, Complex, Group> DDdag(U, m);
 
-    //#pragma omp parallel for
+#pragma omp parallel for
     for (int x0 = 0; x0 < Lt; x0++) {
       if (x0 == 0) {
         continue; // contact divergence at x0==0 --> no need to compute it
@@ -48,15 +48,11 @@ namespace staggered {
         for (int x2 = 0; x2 < Ly; x2++) {
           for (int x3 = 0; x3 < Lz; x3++) {
             const nd_max_arr<int> x = {x0, x1, x2, x3};
-          
-            spinor_lat<Float, Type> sink(dims, 0.0);
-            sink(x) = 1.0;
 
-            const spinor_lat<Float, Type> L = apply_Ddag(U, m, sink);
             const spinor_lat<Float, Type> R = DDdag.inv(source, solver, tol, verb, seed);
-          
-            const Type res = sink*apply_Ddag(U, m, R);//L*R; 
-            C[x0] += retrace(conj(res)*res);
+
+            const Type res = apply_Ddag(U, m, R)(x);
+            C[x0] += retrace(conj(res) * res);
           }
         }
       }

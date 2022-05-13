@@ -22,7 +22,7 @@ measurements:
     tmax : 1.0
   Wloop: true
   pion_staggered:
-    mass: 0.01
+    mass: 0.0
     tolerance_cg: 1e-8
     solver_verbosity : 0
     seed_pf: 22346363

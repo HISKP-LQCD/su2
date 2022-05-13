@@ -93,7 +93,6 @@ namespace omeasurements {
     std::ofstream ofs(path, std::ios::out);
 
     ofs << "t  C(t)\n";
-
     const std::vector<double> Cpi = staggered::C_pion<Group>(U, m, S.solver, S.tolerance_cg, S.solver_verbosity, S.seed_pf);
     for (size_t i = 0; i < U.getLt(); i++) {
       ofs << std::scientific << std::setprecision(16) << i << " " << Cpi[i] << "\n";

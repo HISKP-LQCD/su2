@@ -21,6 +21,7 @@
 #include"energy_density.hh"
 #include"version.hh"
 #include"vectorfunctions.hh"
+#include "output.hh"
 
 #ifdef _USE_OMP_
 #  include<omp.h>
@@ -40,7 +41,6 @@ namespace po = boost::program_options;
 int main(int ac, char* av[]) {
     
   std::cout << "## Metropolis Algorithm for U(1) gauge theory" << std::endl;
-//  std::cout << "## (C) Carsten Urbach <urbach@hiskp.uni-bonn.de> (2017, 2022)" << std::endl;
   std::cout << "## GIT branch " << GIT_BRANCH << " on commit " << GIT_COMMIT_HASH << std::endl << std::endl;  
   
   namespace gp = global_parameters;
@@ -68,7 +68,7 @@ int main(int ac, char* av[]) {
     return 1;
   }
 
-  boost::filesystem::create_directories(boost::filesystem::absolute(mcparams.outdir));
+  boost::filesystem::create_directories(boost::filesystem::absolute(mcparams.conf_dir));
 
 #ifdef _USE_OMP_
   /**
@@ -108,7 +108,7 @@ int main(int ac, char* av[]) {
   const double normalisation = fac/U.getVolume();
   size_t facnorm = (pparams.ndims > 2) ? pparams.ndims/(pparams.ndims-2) : 0;
   
-  std::cout << "## Initital Plaquette: " << plaquette*normalisation << std::endl; 
+  std::cout << "## Initial Plaquette: " << plaquette*normalisation << std::endl; 
 
   random_gauge_trafo(U, 654321);
   plaquette = gauge_energy(U);
@@ -118,23 +118,13 @@ int main(int ac, char* av[]) {
   std::ofstream os;
   std::ofstream acceptancerates;
   if(mcparams.icounter == 0) 
-    os.open(mcparams.outdir+"/output.u1-metropolis.data", std::ios::out);
+    os.open(mcparams.conf_dir+"/output.u1-metropolis.data", std::ios::out);
   else
-    os.open(mcparams.outdir+"/output.u1-metropolis.data", std::ios::app);
+    os.open(mcparams.conf_dir+"/output.u1-metropolis.data", std::ios::app);
   std::vector<double> rate = {0., 0.};
   
-  //set up name for configs
-  const std::string conf_basename = mcparams.conf_basename;
-  std::stringstream ss_basename;
-  ss_basename << mcparams.conf_basename << ".";
-  ss_basename << pparams.Lx << "." << pparams.Ly << "." << pparams.Lz << "."
-              << pparams.Lt;
-  ss_basename << ".b" << std::fixed << std::setprecision(mcparams.beta_str_width)
-              << pparams.beta;
-  if(pparams.anisotropic){
-    ss_basename << ".x" << std::fixed << std::setprecision(mcparams.beta_str_width)
-                << pparams.xi;
-  }
+  // get basename for configs
+  std::string conf_path_basename = output::get_conf_path_basename(pparams, mcparams);
 
   /**
    * do measurements:
@@ -167,14 +157,14 @@ int main(int ac, char* av[]) {
     
     if(inew > 0 && (inew % mcparams.N_save) == 0) {
       std::ostringstream oss_i;
-      oss_i << ss_basename.str() << "." << inew << std::ends;
-      U.save(mcparams.outdir + "/" + oss_i.str());
+      oss_i << conf_path_basename << "." << inew << std::ends;
+      U.save(mcparams.conf_dir + "/" + oss_i.str());
     }
   }
   // save acceptance rates to additional file to keep track of measurements
   std::cout << "## Acceptance rate " << rate[0]/static_cast<double>(mcparams.n_meas) 
     << " temporal acceptance rate " << rate[1]/static_cast<double>(mcparams.n_meas) << std::endl;
-  acceptancerates.open(mcparams.outdir+"/acceptancerates.data", std::ios::app);
+  acceptancerates.open(mcparams.conf_dir+"/acceptancerates.data", std::ios::app);
   acceptancerates << rate[0]/static_cast<double>(mcparams.n_meas) << " " << rate[1]/static_cast<double>(mcparams.n_meas) << " "
    << pparams.beta << " " << pparams.Lx << " " << pparams.Lt << " " << pparams.xi << " " 
    << mcparams.delta << " " << mcparams.heat << " " << threads << " "
@@ -182,8 +172,8 @@ int main(int ac, char* av[]) {
   acceptancerates.close();
 
 std::ostringstream oss;
-  oss << ss_basename.str() << ".final" << std::ends;
-  U.save(mcparams.outdir + "/" + oss.str());
+  oss << conf_path_basename << ".final" << std::ends;
+  U.save(mcparams.conf_dir + "/" + oss.str());
   return(0);
 }
 

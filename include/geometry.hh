@@ -2,36 +2,42 @@
 
 #pragma once
 
+#include <array>
 #include <cstddef>
+#include <iostream>
+#include <numeric>
 
-namespace spacetime_lattice{
+namespace spacetime_lattice {
   const size_t nd_max = 4; // maximum number of spacetime dimensions supported
-}
+  template <class T> using nd_max_arr = std::array<T, nd_max>;
 
+  template <class T> size_t Npts_from_dims(const nd_max_arr<T> &dims) {
+    size_t N = 1;
+    for (size_t i = 0; i < nd_max; i++) {
+      N *= dims[i];
+    }
+    return N;
+  }
 
-class geometry { 
+} // namespace spacetime_lattice
+
+class geometry {
 public:
-  explicit geometry(const size_t _Lx, const size_t _Ly,
-                    const size_t _Lz, const size_t _Lt) :
-    Lx(_Lx), Ly(_Ly), Lz(_Lz), Lt(_Lt) {}
-  size_t getLx() const {
-    return(Lx);
-  }
-  size_t getLy() const {
-    return(Ly);
-  }
-  size_t getLz() const {
-    return(Lz);
-  }
-  size_t getLt() const {
-    return(Lt);
-  }
+  explicit geometry(const size_t _Lx,
+                    const size_t _Ly,
+                    const size_t _Lz,
+                    const size_t _Lt)
+    : Lx(_Lx), Ly(_Ly), Lz(_Lz), Lt(_Lt) {}
+  size_t getLx() const { return (Lx); }
+  size_t getLy() const { return (Ly); }
+  size_t getLz() const { return (Lz); }
+  size_t getLt() const { return (Lt); }
   size_t getIndex(const int t, const int x, const int y, const int z) const {
     size_t y0 = (t + Lt) % Lt;
     size_t y1 = (x + Lx) % Lx;
     size_t y2 = (y + Ly) % Ly;
     size_t y3 = (z + Lz) % Lz;
-    return( ((y0*Lx + y1)*Ly + y2)*Lz + y3 );
+    return (((y0 * Lx + y1) * Ly + y2) * Lz + y3);
   }
 
   // *** Ls variable is not defined ***
@@ -46,7 +52,6 @@ public:
 
 private:
   size_t Lx, Ly, Lz, Lt;
-
 };
 
 // // similar to the 'geometry' class, but with arbitrary number of dimensions
@@ -66,7 +71,8 @@ private:
 //   size_t getndims() const { return (ndims); }
 
 //   size_t
-//   getIndex(const int &t, const int &x, const int &y, const int &z, const int &mu) const {
+//   getIndex(const int &t, const int &x, const int &y, const int &z, const int &mu) const
+//   {
 //     size_t y0 = (t + Lt) % Lt;
 //     size_t y1 = (x + Lx) % Lx;
 //     size_t y2 = (y + Ly) % Ly;

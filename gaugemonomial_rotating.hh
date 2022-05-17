@@ -23,8 +23,7 @@
 #include <vector>
 
 namespace rotating_frame {
-  using nd_max_arr_int = typename std::array<int, spacetime_lattice::nd_max>;
-  using nd_max_arr_size_t = typename std::array<size_t, spacetime_lattice::nd_max>;
+  template <class T> using nd_max_arr = spacetime_lattice::nd_max_arr<T>;
 
   /**
    * @brief return x+\hat{\mu}
@@ -32,7 +31,7 @@ namespace rotating_frame {
    * @param mu
    * @return nd_max_arr
    */
-  nd_max_arr_size_t xp(nd_max_arr_size_t x, const size_t &mu) {
+  nd_max_arr<size_t> xp(nd_max_arr<size_t> x, const size_t &mu) {
     x[mu]++; // note: 'x' is passed value (this is a copy)
     return x;
   }
@@ -43,7 +42,7 @@ namespace rotating_frame {
    * @param mu
    * @return nd_max_arr
    */
-  nd_max_arr_size_t xm(nd_max_arr_size_t x, const size_t &mu) {
+  nd_max_arr<size_t> xm(nd_max_arr<size_t> x, const size_t &mu) {
     x[mu]--; // note: 'x' passed by value (this is a copy)
     return x;
   }
@@ -60,7 +59,7 @@ namespace rotating_frame {
    */
   template <class Group>
   Group plaquette(const gaugeconfig<Group> &U,
-                  const nd_max_arr_size_t &x,
+                  const nd_max_arr<size_t> &x,
                   const size_t &mu,
                   const size_t &nu) {
     const Group res =
@@ -87,7 +86,7 @@ namespace rotating_frame {
    */
   template <class Group>
   double retr_clover_leaf(const gaugeconfig<Group> &U,
-                          const nd_max_arr_size_t &x,
+                          const nd_max_arr<size_t> &x,
                           const size_t &mu,
                           const size_t &nu) {
     double res = 0.0;
@@ -115,8 +114,8 @@ namespace rotating_frame {
    */
   template <class Group>
   double retr_chair(const gaugeconfig<Group> &U,
-                    const nd_max_arr_size_t &x_munu,
-                    const nd_max_arr_size_t &x_nurho,
+                    const nd_max_arr<size_t> &x_munu,
+                    const nd_max_arr<size_t> &x_nurho,
                     const size_t &mu,
                     const size_t &nu,
                     const size_t &rho) {
@@ -136,7 +135,7 @@ namespace rotating_frame {
    */
   template <class Group>
   double retr_chair_1(const gaugeconfig<Group> &U,
-                      const nd_max_arr_size_t &x,
+                      const nd_max_arr<size_t> &x,
                       const size_t &mu,
                       const size_t &nu,
                       const size_t &rho) {
@@ -164,7 +163,7 @@ namespace rotating_frame {
    */
   template <class Group>
   double retr_chair_2(const gaugeconfig<Group> &U,
-                      const nd_max_arr_size_t &x,
+                      const nd_max_arr<size_t> &x,
                       const size_t &mu,
                       const size_t &nu,
                       const size_t &rho) {
@@ -193,7 +192,7 @@ namespace rotating_frame {
    */
   template <class Group>
   double retr_asymm_chair(const gaugeconfig<Group> &U,
-                          const nd_max_arr_size_t &x,
+                          const nd_max_arr<size_t> &x,
                           const size_t &mu,
                           const size_t &nu,
                           const size_t &rho) {
@@ -223,7 +222,7 @@ namespace rotating_frame {
       for (size_t x1 = 0; x1 < U.getLx(); x1++) {
         for (size_t x2 = 0; x2 < U.getLy(); x2++) {
           for (size_t x3 = 0; x3 < U.getLz(); x3++) {
-            const nd_max_arr_size_t x = {x0, x1, x2, x3};
+            const nd_max_arr<size_t> x = {x0, x1, x2, x3};
             const double r2 = x1 * x1 + x2 * x2;
 
             res += retr_clover_leaf(U, x, 0, 1);
@@ -259,10 +258,14 @@ namespace rotating_frame {
    * @param Omega
    * @return Group
    */
-  template <class Group>
-  Group get_F_G(const gaugeconfig<Group> &U, const nd_max_arr_size_t &x, const size_t& mu, const double &Omega) {
-    const Group accum S = (*U)(x, mu) * get_staples(U, x, mu);
-    return U->getBeta()/double(U.getNc()) * get_deriv<double>(S);
+
+
+template<class T, class G> T get_F_G(const gaugeconfig<G> &U,
+                const nd_max_arr<size_t> &x,
+                const size_t &mu,
+                const double &Omega) {
+    const T Stap = (*U)(x, mu) * get_staples(U, x, mu);
+    return U.getBeta() / double(U.getNc()) * get_deriv<double>(Stap);
   }
 
   /**
@@ -289,25 +292,26 @@ namespace rotating_frame {
       return;
     }
 
-   /**
-    * @brief derivative with thespect to the gauge field
-   * Notes:
-   *   1. In the action S_G, for each point 'x' the staples come from the plaquette at the point itself, 
-   *      plus the contribution from nearest neighbors. All of them loop "clock-wise". 
-   *      However, since in the end we take the Real part of the Trace, 
-   *      we can replace the latter loops by their hermitian conjugate --> counterclockwise,
-   *      and also put U_{\mu}(x) in front. Therefore, in flat spacetime:
-   *      S_G = (\beta)* \sum_{x} [1 - (1/N_c)*Re[ w(x) Tr[ U_\mu{x}*S_{\mu}(x) ] ], 
-   *   2. In flat spacetime the action contains the sum of all plaquettes, 
-   *      so the staple contains 1 contribution from the plaquette at 'x', 
-   *      and (nd-1) from the others. All of them have the same "spacetime" weight (flat metric)
-   *   3. In curved spacetime we consider the clover leaf plaquette, 
-   *      hence there are 2*(nd-1) contributions with the "spacetime" weight at 'x' 
-   *      and other 2*(nd-1) weighted with the metric at the nearest neighbors points.
-    * @param deriv reference to the derivative object
-    * @param h hamiltonian field
-    * @param fac 
-    */
+    /**
+     * @brief derivative with thespect to the gauge field
+     * Notes:
+     *   1. In the action S_G, for each point 'x' the staples come from the plaquette at
+     * the point itself, plus the contribution from nearest neighbors. All of them loop
+     * "clock-wise". However, since in the end we take the Real part of the Trace, we can
+     * replace the latter loops by their hermitian conjugate --> counterclockwise, and
+     * also put U_{\mu}(x) in front. Therefore, in flat spacetime: S_G = (\beta)* \sum_{x}
+     * [1 - (1/N_c)*Re[ w(x) Tr[ U_\mu{x}*S_{\mu}(x) ] ],
+     *   2. In flat spacetime the action contains the sum of all plaquettes,
+     *      so the staple contains 1 contribution from the plaquette at 'x',
+     *      and (nd-1) from the others. All of them have the same "spacetime" weight (flat
+     * metric)
+     *   3. In curved spacetime we consider the clover leaf plaquette,
+     *      hence there are 2*(nd-1) contributions with the "spacetime" weight at 'x'
+     *      and other 2*(nd-1) weighted with the metric at the nearest neighbors points.
+     * @param deriv reference to the derivative object
+     * @param h hamiltonian field
+     * @param fac
+     */
     void derivative(adjointfield<Float, Group> &deriv,
                     hamiltonian_field<Float, Group> const &h,
                     const Float fac = 1.) const override {
@@ -317,9 +321,16 @@ namespace rotating_frame {
         for (size_t x1 = 0; x1 < h.U->getLx(); x1++) {
           for (size_t x2 = 0; x2 < h.U->getLy(); x2++) {
             for (size_t x3 = 0; x3 < h.U->getLz(); x3++) {
-              std::vector<size_t> x = {x0, x1, x2, x3};
+              const nd_max_arr<size_t> x = {x0, x1, x2, x3};
               for (size_t mu = 0; mu < h.U->getndims(); mu++) {
-                deriv(x, mu) += fac * get_F_G(*h.U, x, mu);
+
+              // deriv(x, mu) += fac * get_F_G<accum>(*h.U, x, mu, Omega);
+
+              accum S;
+              get_staples(S, *h.U, x, mu);
+              S = (*h.U)(x, mu) * S;              
+              deriv(x, mu) += fac*h.U->getBeta()/double(h.U->getNc()) * get_deriv<double>(S);
+              
               }
             }
           }

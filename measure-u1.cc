@@ -1,3 +1,16 @@
+// measure-u1.cc
+/**
+ * @file measure-u1.cc
+ * @author Carsten Urbach (urbach@hiskp.uni-bonn.de)
+ * @author Simone Romiti (simone.romiti@uni-bonn.de)
+ * @brief offline measurements of observables over previously generate gauge configurations
+ * @version 0.1
+ * @date 2022-05-11
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
+
 #include"su2.hh"
 #include"u1.hh"
 #include"gaugeconfig.hh"
@@ -42,23 +55,14 @@ int main(int ac, char* av[]) {
   err = in_meas::parse_input_file(input_file, pparams, mparams);
   if (err > 0) { return err; }
   
-  boost::filesystem::create_directories(boost::filesystem::absolute(mparams.confdir));
+  boost::filesystem::create_directories(boost::filesystem::absolute(mparams.conf_dir));
   boost::filesystem::create_directories(boost::filesystem::absolute(mparams.resdir));
 
 
   gaugeconfig<_u1> U(pparams.Lx, pparams.Ly, pparams.Lz, pparams.Lt, pparams.ndims, pparams.beta);
 
-  // set basename for configs for easier reading in, anisotropy is only added to filename if needed
-  std::stringstream ss_basename;
-  ss_basename << mparams.confdir << "/" << mparams.conf_basename << ".";
-  ss_basename << pparams.Lx << "." << pparams.Ly << "." << pparams.Lz << "."
-              << pparams.Lt;
-  ss_basename << ".b" << std::fixed << std::setprecision(mparams.beta_str_width)
-              << pparams.beta;
-  if(pparams.anisotropic){
-    ss_basename << ".x" << std::fixed << std::setprecision(mparams.beta_str_width)
-                << pparams.xi;
-  }
+  // get basename for configs
+  std::string conf_path_basename = output::get_conf_path_basename(pparams, mparams);
   
   //filename needed for saving results from potential and potentialsmall
   const std::string filename_fine = output::get_filename_fine(pparams, mparams);
@@ -141,9 +145,8 @@ int main(int ac, char* av[]) {
 
   const size_t istart = mparams.icounter==0? mparams.icounter + mparams.nstep : mparams.icounter; 
   for(size_t i = istart; i < mparams.n_meas*mparams.nstep+mparams.icounter; i+=mparams.nstep) {
-    std::ostringstream os;
-    os << ss_basename.str() << "." << i << std::ends;
-    int ierrU =  U.load(os.str());
+    std::string path_i = conf_path_basename + "." + std::to_string(i);
+    int ierrU =  U.load(path_i);
     if(ierrU == 1){ // cannot load gauge config
       continue;
     }
@@ -161,11 +164,15 @@ int main(int ac, char* av[]) {
     std::cout << "## Energy density: " << density << std::endl;
         
     if(mparams.Wloop) {
-      omeasurements::meas_wilson_loop<_u1>(U, i, mparams.confdir);
+      omeasurements::meas_wilson_loop<_u1>(U, i, mparams.conf_dir);
     }
 
     if(mparams.gradient) {
-      omeasurements::meas_gradient_flow<_u1>(U, i, mparams.confdir, mparams.tmax);
+      omeasurements::meas_gradient_flow<_u1>(U, i, mparams.conf_dir, mparams.tmax);
+    }
+
+    if(mparams.pion_staggered) {
+      omeasurements::meas_pion_correlator<_u1>(U, i, pparams.m0,  mparams);
     }
     
     if(mparams.potential || mparams.potentialsmall){

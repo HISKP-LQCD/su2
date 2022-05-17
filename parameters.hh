@@ -61,7 +61,7 @@ namespace global_parameters {
     double tolerance_cg = 1e-10; // Tolerance for the solver for the dirac operator
     size_t solver_verbosity = 0; // Verbosity for the solver for the dirac operator
     size_t seed_pf = 97234719; // Seed for the evaluation of the fermion determinant
-    std::string outdir = "."; // Output directory
+    std::string conf_dir = "."; // Output directory
 
     std::string conf_basename = "config_u1"; // root of the output files names
     size_t beta_str_width = g_beta_str_width; // length of the beta value config filename  
@@ -77,7 +77,7 @@ namespace global_parameters {
     bool Wloop = false; // wether to measure the Wilson loops or not
     bool gradient = false; // wether to measure the gredient flow or not
     double tmax = 1.0; // tmax for gradient flow"
-    std::string confdir = "./"; // directory where gauge configurations are stored
+    std::string conf_dir = "./"; // directory where gauge configurations are stored
     std::string resdir = "./"; // directory where results from measurements for potential, potentialsmall are stored
     
     bool potential = false; //measure potential: the loops W(x, t, y=z=0) and W(x, y, t=z=0) are measured with a maximum size of lattice extent * sizeloops, and written to separate files. Only available for ndims=3,4
@@ -92,6 +92,14 @@ namespace global_parameters {
 
     std::string conf_basename = "config_u1"; // root of the output files names
     size_t beta_str_width = g_beta_str_width; // length of the beta value config filename  
+
+    bool pion_staggered = false; // wether to measure the staggered pion correlator or not
+    double m0; // bare quark mass
+    std::string solver = "CG"; // Type of solver: CG, BiCGStab
+    double tolerance_cg = 1e-10; // Tolerance for the solver for the dirac operator
+    size_t solver_verbosity = 0; // Verbosity for the solver for the dirac operator
+    size_t seed_pf = 97234719; // Seed for the evaluation of the fermion determinant
+
   };
   
   /* optional parameters for the MCMC the in U(1) theory */
@@ -104,7 +112,7 @@ namespace global_parameters {
     
     bool restart = false; // restart from an existing configuration
     std::string configfilename = ""; // configuration filename used in case of restart
-    std::string outdir = "./"; // directory where gauge configurations are stored
+    std::string conf_dir = "./"; // directory where gauge configurations are stored
     std::string conf_basename = "config_u1"; // root of the output files names
     size_t beta_str_width = g_beta_str_width; // length of the beta value config filename 
     

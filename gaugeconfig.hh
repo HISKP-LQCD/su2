@@ -17,8 +17,13 @@
 using std::vector;
 
 template <class T> class gaugeconfig {
+  template <class iT> using nd_max_arr = spacetime_lattice::nd_max_arr<iT>;
+
 public:
   using value_type = T;
+
+  gaugeconfig(){};
+  ~gaugeconfig(){};
 
   gaugeconfig(const size_t Lx,
               const size_t Ly,
@@ -70,6 +75,12 @@ public:
 
   void operator=(const gaugeconfig &U) {
     volume = U.getVolume();
+    Lx = U.getLx();
+    Ly = U.getLy();
+    Lz = U.getLz();
+    Lt = U.getLt();
+    ndims = U.getndims();
+    beta = U.getBeta();
     data.resize(U.getSize());
 #pragma omp parallel for
     for (size_t i = 0; i < U.getSize(); i++) {
@@ -98,28 +109,25 @@ public:
     return data[getIndex(coords[0], coords[1], coords[2], coords[3], mu)];
   }
 
-  value_type &operator()(const std::array<int, spacetime_lattice::nd_max> &x,
-                         const size_t &mu) {
-    return data[getIndex(x[0], x[1], x[2], x[3], mu)];
-  }
-
   /**
    * access elements according to the convention of
    * https://link.springer.com/book/10.1007/978-3-642-01850-3, eq. (2.34)
    */
   template <class iT = int>
-  value_type operator()(const std::array<iT, spacetime_lattice::nd_max> &x,
-                        const size_t &mu,
-                        const bool &bs = true) const {
+  value_type
+  operator()(const nd_max_arr<iT> &x, const size_t &mu, const bool &bs = true) const {
     const value_type Ux_mu = data[getIndex(x[0], x[1], x[2], x[3], mu)];
     std::array<iT, spacetime_lattice::nd_max> xm = x;
 
     xm[mu]--;
     const value_type Udagx_mu = data[getIndex(xm[0], xm[1], xm[2], xm[3], mu)].dagger();
 
-    if(bs){ return Ux_mu;}
-    else{ return Udagx_mu; }
-//    return ((double) bs) * Ux_mu + (1 - ((double)bs)) * Udagx_mu;
+    if (bs) {
+      return Ux_mu;
+    } else {
+      return Udagx_mu;
+    }
+    //    return ((double) bs) * Ux_mu + (1 - ((double)bs)) * Udagx_mu;
   }
 
   value_type &operator[](size_t const index) { return data[index]; }
@@ -133,7 +141,7 @@ private:
   size_t Lx, Ly, Lz, Lt, volume, ndims;
   double beta;
 
-  vector<value_type> data;
+  std::vector<value_type> data;
 
   size_t getIndex(const size_t t,
                   const size_t x,

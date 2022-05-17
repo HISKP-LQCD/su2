@@ -38,3 +38,7 @@ The library contains code for both $SU(2)$ and $U(1)$ in $d=2,3,4$ dimensions.
 - Input file example: see [./metropolis-u1.input.example](metropolis-u1.input.example) 
  
 ---
+
+## tests
+
+In the `test/` folder the user can find various simple programs implementing the routines of this repository. For further details please look at the `test/README.md` file.

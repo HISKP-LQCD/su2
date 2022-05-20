@@ -48,8 +48,8 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS} -D_USE_OMP_")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS} -D_USE_OMP_")
 
 # adding support for math operations when using GPU offloading
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -foffload=-lm -fcf-protection=none -fstack-protector")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -foffload=-lm -fcf-protection=none -fstack-protector")
+# set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -foffload=-lm -fcf-protection=none -fstack-protector")
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -foffload=-lm -fcf-protection=none -fstack-protector")
 
 # Input files are parsed using the yaml-cpp library
 set(yaml_src_dir ${YAML_SRC})

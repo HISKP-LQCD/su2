@@ -6,9 +6,9 @@
  * @brief Hybrid Monte Carlo for a U(1) theory
  * @version 0.1
  * @date 2022-05-11
- * 
+ *
  * @copyright Copyright (c) 2022
- * 
+ *
  */
 
 #include "energy_density.hh"
@@ -17,6 +17,7 @@
 #include "integrator.hh"
 #include "md_update.hh"
 #include "monomial.hh"
+#include "omeasurements.hpp"
 #include "output.hh"
 #include "parse_input_file.hh"
 #include "random_gauge_trafo.hh"
@@ -93,17 +94,17 @@ int main(int ac, char *av[]) {
   // generate list of monomials
   std::list<monomial<double, _u1> *> monomial_list;
   gaugemonomial<double, _u1> gm(0);
-//  rotating_frame::gauge_monomial<double, _u1> gm_rot(0, pparams.Omega);
+  //  rotating_frame::gauge_monomial<double, _u1> gm_rot(0, pparams.Omega);
 
   kineticmonomial<double, _u1> km(0);
   km.setmdpassive();
   monomial_list.push_back(&km);
 
-  staggered::detDDdag_monomial<double, _u1> detDDdag(0, pparams.m0, hparams.solver,
-                                          hparams.tolerance_cg, hparams.seed_pf,
-                                          hparams.solver_verbosity);
+  staggered::detDDdag_monomial<double, _u1> detDDdag(
+    0, pparams.m0, hparams.solver, hparams.tolerance_cg, hparams.seed_pf,
+    hparams.solver_verbosity);
 
-      monomial_list.push_back(&gm);
+  monomial_list.push_back(&gm);
 
   // if (pparams.include_gauge) {
   //   if (pparams.rotating_frame) {
@@ -180,6 +181,29 @@ int main(int ac, char *av[]) {
     if (i > 0 && (i % hparams.N_save) == 0) { // saving U after each N_save trajectories
       std::string path_i = conf_path_basename + "." + std::to_string(i);
       U.save(path_i);
+      if (hparams.make_omeas && mdparams.getaccept() && i > hparams.omeas.icounter &&
+          i % hparams.omeas.nstep == 0) {
+        if (hparams.omeas.Wloop) {
+          if (hparams.omeas.verbosity > 0) {
+            std::cout << "online measuring Wilson loop\n";
+          }
+          omeasurements::meas_wilson_loop<_u1>(U, i, hparams.conf_dir);
+        }
+        if (hparams.omeas.gradient) {
+          if (hparams.omeas.verbosity > 0) {
+            std::cout << "online measuring: Gradient flow";
+          }
+          omeasurements::meas_gradient_flow<_u1>(U, i, hparams.conf_dir,
+                                                 hparams.omeas.tmax);
+        }
+
+        if (hparams.omeas.pion_staggered) {
+          if (hparams.omeas.verbosity > 0) {
+            std::cout << "online measuring Pion correlator\n";
+          }
+          omeasurements::meas_pion_correlator<_u1>(U, i, pparams.m0, hparams);
+        }
+      }
     }
   }
   std::cout << "## Acceptance rate: " << rate / static_cast<double>(hparams.n_meas)

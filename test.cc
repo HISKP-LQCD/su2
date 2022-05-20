@@ -2,7 +2,7 @@
 #include"u1.hh"
 #include"random_element.hh"
 #include"gaugeconfig.hh"
-#include"gauge_energy.hh"
+#include"flat-gauge_energy.hpp"
 #include"random_gauge_trafo.hh"
 #include"parse_commandline.hh"
 #include"energy_density.hh"
@@ -74,12 +74,12 @@ int main() {
 
   hotstart(cU, 124665, 0.);
 
-  double plaquette = gauge_energy(cU);
+  double plaquette = flat_spacetime::gauge_energy(cU);
   double res = 0., Q = 0.;
   cout << "Initital Plaquette: " << plaquette/cU.getVolume()/6. << endl; 
   
   random_gauge_trafo(cU, 654321);
-  plaquette = gauge_energy(cU);
+  plaquette = flat_spacetime::gauge_energy(cU);
   cout << "Plaquette after rnd trafo: " << plaquette/cU.getVolume()/6. << endl; 
 
   // set all links to 1

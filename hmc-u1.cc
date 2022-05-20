@@ -12,7 +12,7 @@
  */
 
 #include "energy_density.hh"
-#include "gauge_energy.hh"
+#include "flat-gauge_energy.hpp"
 #include "gaugeconfig.hh"
 #include "integrator.hh"
 #include "md_update.hh"
@@ -79,13 +79,13 @@ int main(int ac, char *av[]) {
     hotstart(U, hparams.seed, heat_val);
   }
 
-  double plaquette = gauge_energy(U);
+  double plaquette = flat_spacetime::gauge_energy(U);
   double fac = 2. / U.getndims() / (U.getndims() - 1);
   const double normalisation = fac / U.getVolume() / double(U.getNc());
   std::cout << "## Initital Plaquette: " << plaquette * normalisation << std::endl;
 
   random_gauge_trafo(U, 654321);
-  plaquette = gauge_energy(U);
+  plaquette = flat_spacetime::gauge_energy(U);
   std::cout << "## Plaquette after rnd trafo: " << plaquette * normalisation << std::endl;
 
   // Molecular Dynamics parameters
@@ -151,7 +151,7 @@ int main(int ac, char *av[]) {
     // perform the MD update
     md_update(U, engine, mdparams, monomial_list, *md_integ);
 
-    double energy = gauge_energy(U);
+    double energy = flat_spacetime::gauge_energy(U);
     double E = 0., Q = 0.;
     energy_density(U, E, Q);
     rate += mdparams.getaccept();

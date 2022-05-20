@@ -64,7 +64,7 @@ include_directories(${inc_dir})
 
 # There is one header file which is in a subdirectory. This add the `-i` to the
 # compiler.
-#include_directories("include")
+include_directories("include/")
 
 # We could just have two `add_executable` blocks listing almost all source
 # files. However, CMake would then compile the source files twice, once for
@@ -87,6 +87,7 @@ endif()
 
 add_executable(su2-metropolis main.cc)
 add_executable(u1-metropolis main-u1.cc)
+add_executable(rotating-metropolis-u1 rotating-metropolis-u1.cc)
 add_executable(su2-hmc hmc.cc)
 add_executable(u1-hmc hmc-u1.cc)
 add_executable(su2-kramers kramers.cc)
@@ -104,7 +105,7 @@ set(
 
 target_link_directories(su2 PUBLIC ${link_dir})
 
-foreach(target su2-hmc u1-hmc su2-metropolis u1-metropolis su2-kramers su2-measure u1-measure test-groups scaling try)
+foreach(target su2-hmc u1-hmc su2-metropolis u1-metropolis rotating-metropolis-u1 su2-kramers su2-measure u1-measure test-groups scaling try)
   target_link_libraries(${target} su2 libyaml-cpp.a)
   target_link_directories(${target} PUBLIC ${link_dir})
 

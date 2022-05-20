@@ -3,7 +3,7 @@
 #include"su2.hh"
 #include"gaugeconfig.hh"
 #include"adjointfield.hh"
-#include"gauge_energy.hh"
+#include"flat-gauge_energy.hpp"
 #include"energy_density.hh"
 #include"monomial.hh"
 #include"gaugemonomial.hh"
@@ -58,7 +58,7 @@ template<class Group> void gradient_flow(const gaugeconfig<Group> &U, std::strin
     E[i] = 0.;
     Q[i] = 0.;
   }
-  P[2] = gauge_energy(U)/U.getVolume()/double(U.getNc())/6.;
+  P[2] = flat_spacetime::gauge_energy(U)/U.getVolume()/double(U.getNc())/6.;
   energy_density(U, density, topQ);
   E[2] = density;
 
@@ -75,7 +75,7 @@ template<class Group> void gradient_flow(const gaugeconfig<Group> &U, std::strin
     for(unsigned int x0 = 1; x0 < 3; x0++) {
       t[x0] = t[x0-1] + eps;
       runge_kutta(h, SW, eps);
-      P[x0] = gauge_energy(Vt)/U.getVolume()/double(U.getNc())/6.;
+      P[x0] = flat_spacetime::gauge_energy(Vt)/U.getVolume()/double(U.getNc())/6.;
       energy_density(Vt, density, topQ);
       E[x0] = density;
       Q[x0] = topQ;

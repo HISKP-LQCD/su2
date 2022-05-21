@@ -107,22 +107,44 @@ namespace rotating_spacetime {
    * chair loop built as the product of 2 orthogonal plaquettes: see eq. 17 of
    * https://arxiv.org/pdf/1303.6292.pdf
    * @tparam Group
-   * @param U
+   * @param U gauge configuration
    * @param x_munu origin of the 1st plaquette (plane mu, nu)
    * @param x_nurho origin of the 2nd plaquette (plane nu, rho)
    * @param mu
    * @param nu
    * @param rho
+   * @param flip  true if orientation is flipped for the 2nd plaquette
    * @return double
    */
   template <class Group>
-  double retr_chair(const gaugeconfig<Group> &U,
-                    const nd_max_arr<size_t> &x_munu,
-                    const nd_max_arr<size_t> &x_nurho,
-                    const size_t &mu,
-                    const size_t &nu,
-                    const size_t &rho) {
-    return retrace(plaquette(U, x_munu, mu, nu) * plaquette(U, x_nurho, nu, rho));
+  Group chair_loop(const gaugeconfig<Group> &U,
+                   const nd_max_arr<size_t> &x_munu,
+                   const nd_max_arr<size_t> &x_nurho,
+                   const size_t &mu,
+                   const size_t &nu,
+                   const size_t &rho,
+                   const bool &flip = true) {
+    Group C = plaquette(U, x_munu, mu, nu);
+
+    if (flip) {
+      C *= plaquette(U, x_nurho, nu, rho).dagger();
+    } else {
+      C *= plaquette(U, x_nurho, nu, rho);
+    }
+
+    return C;
+  }
+
+  // Re(Tr(chair))
+  template <class Group>
+  double retr_chair_loop(const gaugeconfig<Group> &U,
+                         const nd_max_arr<size_t> &x_munu,
+                         const nd_max_arr<size_t> &x_nurho,
+                         const size_t &mu,
+                         const size_t &nu,
+                         const size_t &rho,
+                         const bool &flip = true) {
+    return retrace(chair_loop(U, x_munu, x_nurho, mu, nu, rho, flip));
   }
 
   /**
@@ -137,18 +159,18 @@ namespace rotating_spacetime {
    * @return double
    */
   template <class Group>
-  double retr_chair_1(const gaugeconfig<Group> &U,
-                      const nd_max_arr<size_t> &x,
-                      const size_t &mu,
-                      const size_t &nu,
-                      const size_t &rho) {
+  double retr_chair_loop_1(const gaugeconfig<Group> &U,
+                           const nd_max_arr<size_t> &x,
+                           const size_t &mu,
+                           const size_t &nu,
+                           const size_t &rho) {
     double res = 0.0;
 
-    res += retr_chair(U, x, x, mu, nu, rho);
-    res += retr_chair(U, xm(x, nu), xm(x, nu), mu, nu, rho);
+    res += retr_chair_loop(U, x, x, mu, nu, rho);
+    res += retr_chair_loop(U, xm(x, nu), xm(x, nu), mu, nu, rho);
 
-    res += retr_chair(U, xm(x, mu), xm(x, rho), mu, nu, rho);
-    res += retr_chair(U, xm(xm(x, mu), nu), xm(xm(x, rho), nu), mu, nu, rho);
+    res += retr_chair_loop(U, xm(x, mu), xm(x, rho), mu, nu, rho);
+    res += retr_chair_loop(U, xm(xm(x, mu), nu), xm(xm(x, rho), nu), mu, nu, rho);
 
     return res;
   }
@@ -165,18 +187,18 @@ namespace rotating_spacetime {
    * @return double
    */
   template <class Group>
-  double retr_chair_2(const gaugeconfig<Group> &U,
-                      const nd_max_arr<size_t> &x,
-                      const size_t &mu,
-                      const size_t &nu,
-                      const size_t &rho) {
+  double retr_chair_loop_2(const gaugeconfig<Group> &U,
+                           const nd_max_arr<size_t> &x,
+                           const size_t &mu,
+                           const size_t &nu,
+                           const size_t &rho) {
     double res = 0.0;
 
-    res += retr_chair(U, x, xm(x, rho), mu, nu, rho);
-    res += retr_chair(U, xm(x, nu), xm(xm(x, rho), nu), mu, nu, rho);
+    res += retr_chair_loop(U, x, xm(x, rho), mu, nu, rho, true);
+    res += retr_chair_loop(U, xm(x, nu), xm(xm(x, rho), nu), mu, nu, rho, true);
 
-    res += retr_chair(U, xm(x, mu), x, mu, nu, rho);
-    res += retr_chair(U, xm(xm(x, mu), nu), xm(x, nu), mu, nu, rho);
+    res += retr_chair_loop(U, xm(x, mu), x, mu, nu, rho, true);
+    res += retr_chair_loop(U, xm(xm(x, mu), nu), xm(x, nu), mu, nu, rho, true);
 
     return res;
   }
@@ -199,13 +221,14 @@ namespace rotating_spacetime {
                           const size_t &mu,
                           const size_t &nu,
                           const size_t &rho) {
-    return (retr_chair_1(U, x, mu, nu, rho) - retr_chair_2(U, x, mu, nu, rho)) / 8.0;
+    return (retr_chair_loop_1(U, x, mu, nu, rho) - retr_chair_loop_2(U, x, mu, nu, rho)) /
+           8.0;
   }
 
   /**
    * @brief analogous of gauge energy in flat spacetime (Minkowsky metric)
    * sum of plaquettes such that in the limit Omega=0.0 one obtains the usual gauge energy
-   * (see `su2/gauge_energy.hpp`)
+   * (see `gauge_energy.hpp`)
    * @tparam Group
    * @param U
    * @param Omega

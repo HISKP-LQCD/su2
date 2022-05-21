@@ -42,36 +42,23 @@ int main(int ac, char *av[]) {
             << std::endl
             << std::endl;
 
+
   namespace gp = global_parameters;
   gp::physics pparams; // physics parameters
   gp::metropolis_u1 mcparams; // mcmc parameters
 
   std::string input_file; // yaml input file path
-  po::options_description desc("Allowed options");
-  desc.add_options()("help,h", "produce this help message")(
-    "file,f", po::value<std::string>(&input_file)->default_value("NONE"),
-    "yaml input file");
-
-  po::variables_map vm;
-  po::store(po::parse_command_line(ac, av, desc), vm);
-  po::notify(vm);
-
-  if (vm.count("help")) {
-    std::cout << desc << "\n";
-    return 0;
-  }
-
-  namespace in_metropolis = input_file_parsing::u1::metropolis;
-  int err = in_metropolis::parse_input_file(input_file, pparams, mcparams);
+  int err = input_file_parsing::parse_command_line(ac, av, input_file);
   if (err > 0) {
-    return 1;
+    return err;
   }
 
-  if (!pparams.rotating_frame) {
-    std::cerr << "Error: you didn't specify the rotation of the frame.\n";
-    return 1;
-  }
+  namespace in_hmc = input_file_parsing::u1::hmc;
 
+  err = in_hmc::parse_input_file(input_file, pparams, mcparams);
+  if (err > 0) {
+    return err;
+  }
 
   boost::filesystem::create_directories(boost::filesystem::absolute(mcparams.conf_dir));
 
@@ -107,7 +94,7 @@ int main(int ac, char *av[]) {
     hotstart(U, mcparams.seed, mcparams.heat);
   }
 
-  // check gauge invariance, set up factors needed to normalise plaquette, spacial
+  // check gauge invariance, set up factors needed to normalise plaquette, spatial
   // plaquette
   double plaquette = rotating_spacetime::gauge_energy(U, pparams.Omega);
   double fac = 2. / U.getndims() / (U.getndims() - 1);

@@ -60,7 +60,7 @@ int main(int ac, char *av[]) {
 
   err = in_hmc::parse_input_file(input_file, pparams, hparams);
   if (err > 0) {
-    return 1;
+    return err;
   }
 
   boost::filesystem::create_directories(boost::filesystem::absolute(hparams.conf_dir));

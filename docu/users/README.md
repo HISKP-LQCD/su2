@@ -1,10 +1,12 @@
 # Users guide
 
 This directory contains the users guide to this project.
+The latter is written in `Rmd` format.
+In order to produce the `html` and `pdf` output run `make all` from the present directory.
 
 ## Theoretical background
 
-* At the moment fermions are included as a degenerate doublet using the staggered discretization: see [./fermions/main.pdf](./fermions/main.pdf)
+* At the moment fermions are included as a degenerate doublet using the staggered discretization: see [./staggered_fermions.Rmd](./staggered_fermions.Rmd)
 
 
 ## Library usage
@@ -15,16 +17,16 @@ The library contains code for both $SU(2)$ and $U(1)$ in $d=2,3,4$ dimensions.
 
 #### Hybrid Monte Carlo
 
-- Program: ```hmc-u1.cc```
-- Parameters parsing: ```.yaml``` input file
-- Input file example: see [./hmc-u1.input.example](hmc-u1.input.example)
+- Program: `hmc-u1.cc`
+- Parameters parsing: `yaml` input file
+- Input file example: see [./hmc-u1.input](hmc-u1.input)
 
 
 #### Offline measurements
 
-- Program: ```measure-u1.cc```
-- Parameters parsing: ```.yaml``` input file
-- Input file example: see [./measure-u1.input.example](measure-u1.input.example)
+- Program: `measure-u1.cc`
+- Parameters parsing: `yaml` input file
+- Input file example: see [./measure-u1.input](measure-u1.input)
 - Measurable observables: 
   * Planar Wilson Loop
   * Gradient Flow 
@@ -33,9 +35,9 @@ The library contains code for both $SU(2)$ and $U(1)$ in $d=2,3,4$ dimensions.
   
 #### Metropolis-Hastings MCMC
 
-- Program: ```main-u1.cc```
-- Parameters parsing: ```.yaml``` input file
-- Input file example: see [./metropolis-u1.input.example](metropolis-u1.input.example) 
+- Program: `main-u1.cc`
+- Parameters parsing: `yaml` input file
+- Input file example: see [./metropolis-u1.input](metropolis-u1.input) 
  
 ---
 

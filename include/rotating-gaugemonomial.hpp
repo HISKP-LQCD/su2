@@ -189,11 +189,11 @@ namespace rotating_spacetime {
 
     T St2;
 
-    Stap += x2 * Omega * retr_asymm_chair(U, x, 0, 1, 2);
-    Stap -= x1 * Omega * retr_asymm_chair(U, x, 0, 2, 1);
-    Stap += x2 * Omega * retr_asymm_chair(U, x, 0, 1, 3);
-    Stap -= x1 * Omega * retr_asymm_chair(U, x, 0, 2, 3);
-    Stap += x1 * x2 * Omega2 * retr_asymm_chair(U, x, 1, 3, 2);
+    // Stap += x2 * Omega * retr_asymm_chair(U, x, 0, 1, 2);
+    // Stap -= x1 * Omega * retr_asymm_chair(U, x, 0, 2, 1);
+    // Stap += x2 * Omega * retr_asymm_chair(U, x, 0, 1, 3);
+    // Stap -= x1 * Omega * retr_asymm_chair(U, x, 0, 2, 3);
+    // Stap += x1 * x2 * Omega2 * retr_asymm_chair(U, x, 1, 3, 2);
 
     Stap = (*U)(x, mu) * (St1 + St2);
     return U.getBeta() / double(U.getNc()) * get_deriv<double>(Stap);

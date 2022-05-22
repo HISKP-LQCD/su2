@@ -53,9 +53,9 @@ int main(int ac, char *av[]) {
     return err;
   }
 
-  namespace in_hmc = input_file_parsing::u1::hmc;
+  namespace in_metropolis = input_file_parsing::u1::metropolis;
 
-  err = in_hmc::parse_input_file(input_file, pparams, mcparams);
+  err = in_metropolis::parse_input_file(input_file, pparams, mcparams);
   if (err > 0) {
     return err;
   }

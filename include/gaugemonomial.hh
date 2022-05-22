@@ -25,7 +25,6 @@ public:
     return;
   }
   void derivative(adjointfield<Float, Group> &deriv, hamiltonian_field<Float, Group> const &h, const Float fac = 1.) const override {
-    std::vector<size_t> x = {0, 0, 0, 0};
     typedef typename accum_type<Group>::type accum;
 #pragma omp parallel for
     for(size_t x0 = 0; x0 < h.U->getLt(); x0++) {

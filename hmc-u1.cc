@@ -1,4 +1,3 @@
-// hmc-u1.cc
 /**
  * @file hmc-u1.cc
  * @author Carsten Urbach (urbach@hiskp.uni-bonn.de)
@@ -25,7 +24,7 @@
 #include "u1.hh"
 #include "version.hh"
 
-//#include "gaugemonomial_rotating.hh"
+#include "rotating-gaugemonomial.hpp"
 
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
@@ -94,7 +93,7 @@ int main(int ac, char *av[]) {
   // generate list of monomials
   std::list<monomial<double, _u1> *> monomial_list;
   gaugemonomial<double, _u1> gm(0);
-  //  rotating_frame::gauge_monomial<double, _u1> gm_rot(0, pparams.Omega);
+  rotating_spacetime::gauge_monomial<double, _u1> gm_rot(0, pparams.Omega);
 
   kineticmonomial<double, _u1> km(0);
   km.setmdpassive();
@@ -106,13 +105,13 @@ int main(int ac, char *av[]) {
 
   monomial_list.push_back(&gm);
 
-  // if (pparams.include_gauge) {
-  //   if (pparams.rotating_frame) {
-  //     monomial_list.push_back(&gm_rot);
-  //   } else {
-  //     monomial_list.push_back(&gm);
-  //   }
-  // }
+  if (pparams.include_gauge) {
+    if (pparams.rotating_frame) {
+      monomial_list.push_back(&gm_rot);
+    } else {
+      monomial_list.push_back(&gm);
+    }
+  }
 
   if (pparams.include_staggered_fermions) { // including S_F (fermionic) in the action
     monomial_list.push_back(&detDDdag);

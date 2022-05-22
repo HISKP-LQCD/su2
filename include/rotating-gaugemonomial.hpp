@@ -36,7 +36,7 @@ namespace rotating_spacetime {
    * @param clockwise  true when the staple orientation is clock-wise
    */
   template <class T, class S, class Arr>
-  T get_staple(gaugeconfig<S> &U,
+  T get_staple(const gaugeconfig<S> &U,
                const Arr &x,
                const size_t &mu,
                const size_t &nu,
@@ -72,8 +72,11 @@ namespace rotating_spacetime {
     if (mu == 2 && nu == 3) {
       return (1 + std::pow(x[1], 2) * std::pow(Omega, 2));
     } else {
-      std::cout << "Error: mu=" << mu << " and nu=" << nu << " not supported by "
-                << __func__ << "\n";
+#pragma omp single
+      {
+        std::cout << "Error: mu=" << mu << " and nu=" << nu << " not supported by "
+                  << __func__ << "\n";
+      }
       abort();
       return 0.0;
     }
@@ -105,7 +108,8 @@ namespace rotating_spacetime {
                      const bool &clockwise2) {
     T K;
     if (clockwise1 && clockwise2) {
-      K = get_staple(U, x, mu, nu, clockwise1) *rotating_spacetime::plaquette(U, x, nu, rho);
+      K = get_staple(U, x, mu, nu, clockwise1) *
+          rotating_spacetime::plaquette(U, x, nu, rho);
     }
     if (clockwise1 && !clockwise2) {
       K = rotating_spacetime::plaquette(U, xm(x, nu), nu, rho);
@@ -169,23 +173,28 @@ namespace rotating_spacetime {
             const double &Omega) {
     T St1;
 
-    // --> 2 of the 4 contributions to the clover plaquette at x
-    St1 += staple_factor(x, mu, nu, Omega) *
-           (get_staple(U, x, mu, nu, true) + get_staple(U, x, mu, nu, false));
+    for (size_t nu = mu + 1; nu < U.getndims(); nu++) {
+      // the 2 contributions from the clover plaquette at x
+      St1 += staple_factor(x, mu, nu, Omega) * (get_staple<T, G>(U, x, mu, nu, true) +
+                                                get_staple<T, G>(U, x, mu, nu, false));
 
-    /* contributions from nearest neighbors */
+      /* contributions from nearest neighbors */
 
-    // x+nu
-    St1 += staple_factor(xp(x, nu), mu, nu, Omega) * get_staple(U, x, mu, nu, true);
-    // at x-nu
-    St1 += staple_factor(xm(x, nu), mu, nu, Omega) * get_staple(U, x, 1, 2, false);
-    //  x+mu+nu
-    St1 +=
-      staple_factor(xp(xp(x, mu), nu), mu, nu, Omega) * get_staple(U, x, mu, nu, true);
-    //  x-nu
-    St1 +=
-      staple_factor(xp(xm(x, nu), mu), mu, nu, Omega) * get_staple(U, x, 1, 2, false);
-    St1 /= 4.0;
+      // x+nu
+      St1 +=
+        staple_factor(xp(x, nu), mu, nu, Omega) * get_staple<T, G>(U, x, mu, nu, true);
+      // at x-nu
+      St1 +=
+        staple_factor(xm(x, nu), mu, nu, Omega) * get_staple<T, G>(U, x, mu, nu, false);
+      //  x+mu+nu
+      St1 += staple_factor(xp(xp(x, mu), nu), mu, nu, Omega) *
+             get_staple<T, G>(U, x, mu, nu, true);
+      //  x-nu
+      St1 += staple_factor(xp(xm(x, nu), mu), mu, nu, Omega) *
+             get_staple<T, G>(U, x, mu, nu, false);
+    }
+
+    St1 /= 4.0; // each plaquette comes from an average over the clover
 
     T St2;
 
@@ -195,8 +204,8 @@ namespace rotating_spacetime {
     // Stap -= x1 * Omega * retr_asymm_chair(U, x, 0, 2, 3);
     // Stap += x1 * x2 * Omega2 * retr_asymm_chair(U, x, 1, 3, 2);
 
-    Stap = (*U)(x, mu) * (St1 + St2);
-    return U.getBeta() / double(U.getNc()) * get_deriv<double>(Stap);
+    T Stap = U(x, mu) * (St1 + St2);
+    return U.getBeta() / double(U.getNc()) * Stap;
   }
 
   /**
@@ -254,7 +263,9 @@ namespace rotating_spacetime {
             for (size_t x3 = 0; x3 < h.U->getLz(); x3++) {
               const nd_max_arr<size_t> x = {x0, x1, x2, x3};
               for (size_t mu = 0; mu < h.U->getndims(); mu++) {
-                deriv(x, mu) += fac * get_F_G<accum>(*h.U, x, mu, Omega);
+                accum F = get_F_G<accum>(*h.U, x, mu, Omega);
+                deriv(x, mu) +=
+                  fac * h.U->getBeta() / double(h.U->getNc()) * get_deriv<double>(F);
 
                 // accum S;
                 // get_staples(S, *h.U, x, mu);

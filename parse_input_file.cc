@@ -145,8 +145,12 @@ namespace input_file_parsing {
         // hmc-u1 parameters
         in.read_verb<size_t>(hparams.N_save, {"hmc", "n_save"});
         in.read_verb<size_t>(hparams.n_meas, {"hmc", "n_meas"});
-        in.read_opt_verb<size_t>(hparams.icounter, {"hmc", "icounter"});
-        in.read_verb<bool>(hparams.heat, {"hmc", "heat"});
+
+        in.read_opt_verb<bool>(hparams.restart, {"hmc", "restart"});
+        if (!hparams.restart) {
+          in.read_verb<bool>(hparams.heat, {"hmc", "heat"});
+        }
+
         in.read_opt_verb<size_t>(hparams.seed, {"hmc", "seed"});
         in.read_opt_verb<std::string>(hparams.configfilename, {"hmc", "configname"});
         in.read_opt_verb<std::string>(hparams.conf_dir, {"hmc", "conf_dir"});
@@ -242,7 +246,7 @@ namespace input_file_parsing {
           in.read_opt_verb<bool>(mparams.append, {"measurements", "potential", "append"});
           in.read_opt_verb<bool>(mparams.smear_spatial_only,
                                  {"measurements", "potential", "smear_spatial_only"});
-          in.read_opt_verb<bool>(mparams.smear_temporal_only, 
+          in.read_opt_verb<bool>(mparams.smear_temporal_only,
                                  {"measurements", "potential", "smear_temporal_only"});
           in.read_opt_verb<size_t>(mparams.n_apesmear,
                                    {"measurements", "potential", "n_apesmear"});
@@ -260,7 +264,7 @@ namespace input_file_parsing {
         in.read_opt_verb<size_t>(mparams.beta_str_width,
                                  {"measurements", "beta_str_width"});
         validate_beta_str_width(mparams.beta_str_width);
-        
+
         in.finalize();
 
         in.finalize();
@@ -269,16 +273,16 @@ namespace input_file_parsing {
 
     } // namespace measure
 
-    namespace metropolis {  
+    namespace metropolis {
       /**
-      * @brief check if N_hit >= 1, otherwise it aborts
-      * @param n N_hit (number of times an update per link is attempted)
-      */
+       * @brief check if N_hit >= 1, otherwise it aborts
+       * @param n N_hit (number of times an update per link is attempted)
+       */
       void validate_N_hit(const size_t &n) {
         if (n < 1) {
-        std::cerr << "Error: N_hit should be at least 1, otherwise nothing will happen";
-        std::cerr << "Aborting.\n";
-        abort();
+          std::cerr << "Error: N_hit should be at least 1, otherwise nothing will happen";
+          std::cerr << "Aborting.\n";
+          abort();
         }
         return;
       }
@@ -316,10 +320,10 @@ namespace input_file_parsing {
         if (mcparams.restart) {
           in.read_opt_verb<std::string>(mcparams.configfilename,
                                         {"metropolis", "configfilename"});
+        } else {
+          in.read_verb<double>(mcparams.heat, {"metropolis", "heat"});
         }
 
-
-        in.read_verb<double>(mcparams.heat, {"metropolis", "heat"});
         in.read_verb<double>(mcparams.delta, {"metropolis", "delta"});
         in.read_opt_verb<size_t>(mcparams.N_hit, {"metropolis", "N_hit"});
         validate_N_hit(mcparams.N_hit);

@@ -12,7 +12,7 @@
 #include "rotating-energy_density.hpp"
 #include "rotating-gauge_energy.hpp"
 #include "gaugeconfig.hh"
-#include "output.hh"
+#include "io.hh"
 #include "parse_input_file.hh"
 #include "random_gauge_trafo.hh"
 #include "su2.hh"
@@ -116,7 +116,7 @@ int main(int ac, char *av[]) {
   std::vector<double> rate = {0., 0.};
 
   // get basename for configs
-  std::string conf_path_basename = output::get_conf_path_basename(pparams, mcparams);
+  std::string conf_path_basename = io::get_conf_path_basename(pparams, mcparams);
 
   /**
    * do measurements:

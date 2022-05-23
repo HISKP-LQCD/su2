@@ -80,7 +80,7 @@ namespace global_parameters {
     size_t icounter = 0; // initial counter for updates
     size_t seed = 13526463; // PRNG seed
     bool heat = true; // randomness of the initial config, true: hot, false: cold
-    bool restart = false; // restart from an existing configuration
+    bool restart = false; // restart from the last configuration (reads from nconf_counter.txt)
     bool acceptreject = true; // use accept-reject
     std::string configfilename = ""; // configuration filename used in case of restart
 

@@ -14,10 +14,10 @@ hmc:
   seed: 93746
   n_save: 10
   n_meas: 1000
-  heat: true
-  icounter: 0
+  restart: true
+  #heat: true
   configname: ""
-  conf_dir: "./cnfs/"
+  conf_dir: "./confs/"
 
 integrator:
   name: leapfrog

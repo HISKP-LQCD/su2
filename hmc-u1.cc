@@ -14,10 +14,10 @@
 #include "flat-gauge_energy.hpp"
 #include "gaugeconfig.hh"
 #include "integrator.hh"
+#include "io.hh"
 #include "md_update.hh"
 #include "monomial.hh"
 #include "omeasurements.hpp"
-#include "output.hh"
 #include "parse_input_file.hh"
 #include "random_gauge_trafo.hh"
 #include "su2.hh"
@@ -62,18 +62,27 @@ int main(int ac, char *av[]) {
 
   boost::filesystem::create_directories(boost::filesystem::absolute(hparams.conf_dir));
 
+  double g_heat; // hot or cold starting configuration
+  size_t g_icounter; // 1st configuration(trajectory) to load from
+
   gaugeconfig<_u1> U(pparams.Lx, pparams.Ly, pparams.Lz, pparams.Lt, pparams.ndims,
                      pparams.beta);
   if (hparams.restart) {
-    std::cout << "restart " << hparams.restart << "\n";
-    err = U.load(hparams.configfilename);
+    std::cout << "## restart " << hparams.restart << "\n";
+    std::vector<std::string> v_ncc = io::hmc::read_nconf_counter(hparams.conf_dir);
+    g_heat = std::stod(v_ncc[0]);
+    g_icounter = std::stoi(v_ncc[1]);
+    std::string config_path = v_ncc[2];
+
+    err = U.load(config_path);
     if (err != 0) {
       return err;
     }
   } else {
     std::cout << "hotstart " << hparams.seed << " " << hparams.heat << "\n";
-    const double heat_val = (hparams.heat == true) ? 1.0 : 0.0;
-    hotstart(U, hparams.seed, heat_val);
+    g_heat = (hparams.heat == true) ? 1.0 : 0.0;
+    g_icounter = 0;
+    hotstart(U, hparams.seed, g_heat);
   }
 
   double plaquette = flat_spacetime::gauge_energy(U);
@@ -120,7 +129,7 @@ int main(int ac, char *av[]) {
     set_integrator<double, _u1>(hparams.integrator, hparams.exponent);
 
   std::ofstream os;
-  if (hparams.icounter == 0)
+  if (g_icounter == 0)
     os.open(hparams.conf_dir + "/output.hmc.data", std::ios::out);
   else
     os.open(hparams.conf_dir + "/output.hmc.data", std::ios::app);
@@ -130,15 +139,15 @@ int main(int ac, char *av[]) {
   std::cout << "## Acceptance rate parcentage: rho = rate/(i+1)\n";
 
   // header: column names in the output
-  std::string head_str = output::hmc::get_header(" ");
+  std::string head_str = io::hmc::get_header(" ");
   std::cout << head_str;
   os << head_str;
 
   double rate = 0.;
 
-  const std::string conf_path_basename = output::get_conf_path_basename(pparams, hparams);
+  const std::string conf_path_basename = io::get_conf_path_basename(pparams, hparams);
 
-  for (size_t i = hparams.icounter; i < hparams.n_meas + hparams.icounter; i++) {
+  for (size_t i = g_icounter; i < hparams.n_meas + g_icounter; i++) {
     mdparams.disablerevtest();
     if (i > 0 && hparams.N_rev != 0 && (i) % hparams.N_rev == 0) {
       mdparams.enablerevtest();
@@ -181,20 +190,21 @@ int main(int ac, char *av[]) {
 
       U.save(path_i);
 
-      output::hmc::update_nconf_counter(hparams.conf_dir, i); // storing last conf index
+      io::hmc::update_nconf_counter(hparams.conf_dir, g_heat,  i,
+                                    path_i); // storing last conf index
 
       // online measurements
       if (hparams.make_omeas && mdparams.getaccept() && i > hparams.omeas.icounter &&
           i % hparams.omeas.nstep == 0) {
         if (hparams.omeas.Wloop) {
           if (hparams.omeas.verbosity > 0) {
-            std::cout << "#online measuring Wilson loop\n";
+            std::cout << "## online measuring: Wilson loop\n";
           }
           omeasurements::meas_wilson_loop<_u1>(U, i, hparams.conf_dir);
         }
         if (hparams.omeas.gradient) {
           if (hparams.omeas.verbosity > 0) {
-            std::cout << "#online measuring: Gradient flow";
+            std::cout << "## online measuring: Gradient flow";
           }
           omeasurements::meas_gradient_flow<_u1>(U, i, hparams.conf_dir,
                                                  hparams.omeas.tmax);
@@ -202,7 +212,7 @@ int main(int ac, char *av[]) {
 
         if (hparams.omeas.pion_staggered) {
           if (hparams.omeas.verbosity > 0) {
-            std::cout << "#online measuring Pion correlator\n";
+            std::cout << "## online measuring: Pion correlator\n";
           }
           omeasurements::meas_pion_correlator<_u1>(U, i, pparams.m0, hparams);
         }

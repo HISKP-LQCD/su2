@@ -21,7 +21,7 @@
 #include"energy_density.hh"
 #include"version.hh"
 #include"vectorfunctions.hh"
-#include "output.hh"
+#include "io.hh"
 
 #ifdef _USE_OMP_
 #  include<omp.h>
@@ -124,7 +124,7 @@ int main(int ac, char* av[]) {
   std::vector<double> rate = {0., 0.};
   
   // get basename for configs
-  std::string conf_path_basename = output::get_conf_path_basename(pparams, mcparams);
+  std::string conf_path_basename = io::get_conf_path_basename(pparams, mcparams);
 
   /**
    * do measurements:

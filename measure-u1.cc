@@ -24,7 +24,7 @@
 #include"parse_input_file.hh"
 #include"version.hh"
 #include"smearape.hh"
-#include"output.hh"
+#include"io.hh"
 
 #include<iostream>
 #include<iomanip>
@@ -62,19 +62,19 @@ int main(int ac, char* av[]) {
   gaugeconfig<_u1> U(pparams.Lx, pparams.Ly, pparams.Lz, pparams.Lt, pparams.ndims, pparams.beta);
 
   // get basename for configs
-  std::string conf_path_basename = output::get_conf_path_basename(pparams, mparams);
+  std::string conf_path_basename = io::get_conf_path_basename(pparams, mparams);
   
   //filename needed for saving results from potential and potentialsmall
-  const std::string filename_fine = output::measure::get_filename_fine(pparams, mparams);
-  const std::string filename_coarse = output::measure::get_filename_coarse(pparams, mparams);
-  const std::string filename_nonplanar = output::measure::get_filename_nonplanar(pparams, mparams);  
+  const std::string filename_fine = io::measure::get_filename_fine(pparams, mparams);
+  const std::string filename_coarse = io::measure::get_filename_coarse(pparams, mparams);
+  const std::string filename_nonplanar = io::measure::get_filename_nonplanar(pparams, mparams);  
   
   // write explanatory headers into result-files, also check if measuring routine is implemented for given dimension
   if(mparams.potential) {
-    output::measure::set_header_planar(pparams, mparams, filename_coarse, filename_fine);
+    io::measure::set_header_planar(pparams, mparams, filename_coarse, filename_fine);
   }
   if(mparams.potentialsmall) {
-    output::measure::set_header_nonplanar(pparams, mparams, filename_nonplanar);
+    io::measure::set_header_nonplanar(pparams, mparams, filename_nonplanar);
   }
 
 /** 

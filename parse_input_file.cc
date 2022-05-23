@@ -146,15 +146,19 @@ namespace input_file_parsing {
         in.read_verb<size_t>(hparams.N_save, {"hmc", "n_save"});
         in.read_verb<size_t>(hparams.n_meas, {"hmc", "n_meas"});
 
+        std::cout << "check "<< hparams.restart<<"\n";
         in.read_opt_verb<bool>(hparams.restart, {"hmc", "restart"});
+        std::cout << "check "<< hparams.restart<<"\n";
         if (!hparams.restart) {
           in.read_verb<bool>(hparams.heat, {"hmc", "heat"});
         }
+        std::cout << "check "<< hparams.restart<<"\n";
 
         in.read_opt_verb<size_t>(hparams.seed, {"hmc", "seed"});
         in.read_opt_verb<std::string>(hparams.configfilename, {"hmc", "configname"});
         in.read_opt_verb<std::string>(hparams.conf_dir, {"hmc", "conf_dir"});
         in.read_opt_verb<std::string>(hparams.conf_basename, {"hmc", "conf_basename"});
+        in.read_opt_verb<bool>(hparams.lenghty_conf_name, {"hmc", "lenghty_conf_name"});
 
         in.read_opt_verb<size_t>(hparams.beta_str_width, {"hmc", "beta_str_width"});
         validate_beta_str_width(hparams.beta_str_width);

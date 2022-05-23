@@ -14,9 +14,10 @@ hmc:
   seed: 93746
   n_save: 10
   n_meas: 1000
-  restart: true
-  #heat: true
+  #restart: true
+  heat: true
   configname: ""
+  lenghty_conf_name: false
   conf_dir: "./confs/"
 
 integrator:

@@ -43,14 +43,19 @@ namespace io {
     // set up name for configs
     const std::string conf_basename = sparams.conf_basename;
     std::stringstream ss;
-    ss << sparams.conf_basename << ".";
-    ss << pparams.Lx << "." << pparams.Ly << "." << pparams.Lz << "." << pparams.Lt;
-    if (pparams.rotating_frame) {
-      ss << ".Omega_" << pparams.Omega;
-    }
-    ss << ".b" << std::fixed << std::setprecision(sparams.beta_str_width) << pparams.beta;
-    if (pparams.anisotropic) {
-      ss << ".x" << std::fixed << std::setprecision(sparams.beta_str_width) << pparams.xi;
+    ss << sparams.conf_basename;
+    if (sparams.lenghty_conf_name) {
+      ss << "." << pparams.Lx << "." << pparams.Ly << "." << pparams.Lz << "."
+         << pparams.Lt;
+      if (pparams.rotating_frame) {
+        ss << ".Omega_" << pparams.Omega;
+      }
+      ss << ".b" << std::fixed << std::setprecision(sparams.beta_str_width)
+         << pparams.beta;
+      if (pparams.anisotropic) {
+        ss << ".x" << std::fixed << std::setprecision(sparams.beta_str_width)
+           << pparams.xi;
+      }
     }
 
     return sparams.conf_dir + ss.str();

@@ -16,11 +16,11 @@
 #include <vector>
 
 #include "adjointfield.hh"
-#include "gauge_energy.hh"
+#include "flat-gauge_energy.hpp"
 #include "gaugeconfig.hh"
 #include "get_staples.hh"
 #include "hamiltonian_field.hh"
-#include "include/geometry.hh"
+#include "geometry.hh"
 #include "monomial.hh"
 #include "su2.hh"
 #include "u1.hh"
@@ -48,7 +48,7 @@ namespace staggered {
   }
 
   // index of the lattice point given the dimensions
-#pragma omp declare target
+// #pragma omp declare target
   size_t txyz_to_index(const size_t &t,
                        const size_t &x,
                        const size_t &y,
@@ -60,14 +60,14 @@ namespace staggered {
     const geometry g(Lx, Ly, Lz, Lt); // note the order
     return g.getIndex(t, x, y, z);
   }
-#pragma omp end declare target
+// #pragma omp end declare target
 
   // overload : x={x0,x1,x2,x3}, dims={Lt,Lx,Ly,Lz}
-#pragma omp declare target
+// #pragma omp declare target
   size_t txyz_to_index(const nd_max_arr<int> &x, const nd_max_arr<size_t> &dims) {
     return txyz_to_index(x[0], x[1], x[2], x[3], dims[0], dims[1], dims[2], dims[3]);
   }
-#pragma omp end declare target
+// #pragma omp end declare target
 
   /**
    * @brief vector of staggered "spinors" (no Dirac structure) for all the points of the

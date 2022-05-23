@@ -1,6 +1,6 @@
 #include"su2.hh"
 #include"gaugeconfig.hh"
-#include"gauge_energy.hh"
+#include"flat-gauge_energy.hpp"
 #include"random_gauge_trafo.hh"
 #include"kramers_md_update.hh"
 #include"monomial.hh"
@@ -64,11 +64,11 @@ int main(int ac, char* av[]) {
   mdparams.setkmax(k_max);
   mdparams.setgamma(gamma);
 
-  double plaquette = gauge_energy(U);
+  double plaquette = flat_spacetime::gauge_energy(U);
   cout << "## Initital Plaquette: " << plaquette/U.getVolume()/double(U.getNc())/6. << endl; 
 
   random_gauge_trafo(U, 654321);
-  plaquette = gauge_energy(U);
+  plaquette = flat_spacetime::gauge_energy(U);
   cout << "## Plaquette after rnd trafo: " << plaquette/U.getVolume()/double(U.getNc())/6. << endl; 
 
   // generate list of monomials
@@ -100,7 +100,7 @@ int main(int ac, char* av[]) {
     // perform the MD update
     kramers_md_update(U, engine, mdparams, monomial_list, *md_integ);
 
-    double energy = gauge_energy(U);
+    double energy = flat_spacetime::gauge_energy(U);
     rate += mdparams.getaccept();
     cout << i << " " << mdparams.getaccept() << " " << std::scientific << std::setw(18)  << std::setprecision(15) << energy/U.getVolume()/double(U.getNc())/6. << " " << std::setw(15) << mdparams.getdeltaH() << " " 
          << std::setw(15) << rate/static_cast<double>(i+1) << std::endl;

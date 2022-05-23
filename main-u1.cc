@@ -14,7 +14,7 @@
 #include"su2.hh"
 #include"u1.hh"
 #include"gaugeconfig.hh"
-#include"gauge_energy.hh"
+#include"flat-gauge_energy.hpp"
 #include"random_gauge_trafo.hh"
 #include"sweep.hh"
 #include"parse_input_file.hh"
@@ -103,7 +103,7 @@ int main(int ac, char* av[]) {
   }
   
   // check gauge invariance, set up factors needed to normalise plaquette, spacial plaquette
-  double plaquette = gauge_energy(U);
+  double plaquette = flat_spacetime::gauge_energy(U);
   double fac = 2./U.getndims()/(U.getndims()-1);
   const double normalisation = fac/U.getVolume();
   size_t facnorm = (pparams.ndims > 2) ? pparams.ndims/(pparams.ndims-2) : 0;
@@ -111,7 +111,7 @@ int main(int ac, char* av[]) {
   std::cout << "## Initial Plaquette: " << plaquette*normalisation << std::endl; 
 
   random_gauge_trafo(U, 654321);
-  plaquette = gauge_energy(U);
+  plaquette = flat_spacetime::gauge_energy(U);
   std::cout << "## Plaquette after rnd trafo: " << plaquette*normalisation << std::endl; 
 
   
@@ -141,14 +141,14 @@ int main(int ac, char* av[]) {
     size_t inew = (i - mcparams.icounter) / threads + mcparams.icounter;
     rate += sweep(U, engines, mcparams.delta, mcparams.N_hit, pparams.beta, pparams.xi, pparams.anisotropic);
     
-    double energy = gauge_energy(U, true);
+    double energy = flat_spacetime::gauge_energy(U, true);
     double E = 0., Q = 0.;
     energy_density(U, E, Q);
     //measuring spatial plaquettes only means only (ndims-1)/ndims of all plaquettes are measured, so need facnorm for normalization to 1
     std::cout << inew << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy*normalisation*facnorm << " " ;
     os << inew << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy*normalisation*facnorm << " " ;
     
-    energy=gauge_energy(U, false);
+    energy=flat_spacetime::gauge_energy(U, false);
     std::cout << energy*normalisation << " " << Q << " ";
     os << energy*normalisation << " " << Q << " ";
     energy_density(U, E, Q, false);

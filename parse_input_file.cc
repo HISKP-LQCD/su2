@@ -145,7 +145,7 @@ namespace input_file_parsing {
         // hmc-u1 parameters
         in.read_verb<size_t>(hparams.N_save, {"hmc", "n_save"});
         in.read_verb<size_t>(hparams.n_meas, {"hmc", "n_meas"});
-        in.read_verb<size_t>(hparams.icounter, {"hmc", "counter"});
+        in.read_opt_verb<size_t>(hparams.icounter, {"hmc", "icounter"});
         in.read_verb<bool>(hparams.heat, {"hmc", "heat"});
         in.read_opt_verb<size_t>(hparams.seed, {"hmc", "seed"});
         in.read_opt_verb<std::string>(hparams.configfilename, {"hmc", "configname"});
@@ -161,6 +161,25 @@ namespace input_file_parsing {
         in.read_opt_verb<double>(hparams.tau, {"integrator", "tau"});
         in.read_opt_verb<size_t>(hparams.exponent, {"integrator", "exponent"});
         in.read_opt_verb<std::string>(hparams.integrator, {"integrator", "name"});
+
+        if (nd["omeas"]) {
+          hparams.make_omeas = true;
+          in.read_opt_verb<size_t>(hparams.omeas.verbosity, {"omeas", "verbosity"});
+          in.read_opt_verb<size_t>(hparams.omeas.icounter, {"omeas", "icounter"});
+          in.read_opt_verb<size_t>(hparams.omeas.nstep, {"omeas", "nstep"});
+
+          if (nd["omeas"]["pion_staggered"]) {
+            hparams.omeas.pion_staggered = true;
+            in.read_verb<double>(hparams.omeas.m0, {"omeas", "pion_staggered", "mass"});
+          }
+
+          in.read_opt_verb<bool>(hparams.omeas.Wloop, {"omeas", "Wloop"});
+
+          if (nd["omeas"]["gradient"]) {
+            hparams.omeas.gradient = true;
+            in.read_verb<double>(hparams.omeas.tmax, {"omeas", "gradient", "tmax"});
+          }
+        }
 
         in.finalize();
         return 0;

@@ -15,16 +15,19 @@ fi
 mkdir -p build/debug
 mkdir -p build/release
 
-# installing yaml-cpp
-git clone https://github.com/jbeder/yaml-cpp external/yaml-cpp
-rm -rf external/yaml-cpp/build/
 d1=$(pwd -P)
-cd external/yaml-cpp
-mkdir build 
-cd build
-cmake ..
-make -j8
-cd $d1
+
+if ! [ -d external/yaml-cpp/ ]; then
+  # installing yaml-cpp
+  git clone https://github.com/jbeder/yaml-cpp external/yaml-cpp
+#  rm -rf external/yaml-cpp/build/ 
+  cd external/yaml-cpp
+  mkdir build 
+  cd build
+  cmake ..
+  make -j8
+  cd $d1
+fi
 
 YAML_SRC_PATH=$d1/external/yaml-cpp/
 

@@ -5,7 +5,7 @@
 #include"gaugeconfig.hh"
 #include"adjointfield.hh"
 #include"hamiltonian_field.hh"
-#include"gauge_energy.hh"
+#include"flat-gauge_energy.hpp"
 #include"get_staples.hh"
 #include<vector>
 #include<complex>
@@ -17,15 +17,14 @@ public:
   // S_g = sum_x sum_{mu<nu} beta*(1- 1/Nc*Re[Tr[U_{mu nu}]])
   // beta = 2*N_c/g_0^2
   void heatbath(hamiltonian_field<Float, Group> const &h) override {
-    monomial<Float, Group>::Hold = h.U->getBeta()*(h.U->getVolume()*6 - gauge_energy(*(h.U))/double(h.U->getNc()));
+    monomial<Float, Group>::Hold = h.U->getBeta()*(h.U->getVolume()*6 - flat_spacetime::gauge_energy(*(h.U))/double(h.U->getNc()));
     return;
   }
   void accept(hamiltonian_field<Float, Group> const &h) override {
-    monomial<Float, Group>::Hnew = h.U->getBeta()*(h.U->getVolume()*6 - gauge_energy(*(h.U))/double(h.U->getNc()));
+    monomial<Float, Group>::Hnew = h.U->getBeta()*(h.U->getVolume()*6 - flat_spacetime::gauge_energy(*(h.U))/double(h.U->getNc()));
     return;
   }
   void derivative(adjointfield<Float, Group> &deriv, hamiltonian_field<Float, Group> const &h, const Float fac = 1.) const override {
-    std::vector<size_t> x = {0, 0, 0, 0};
     typedef typename accum_type<Group>::type accum;
 #pragma omp parallel for
     for(size_t x0 = 0; x0 < h.U->getLt(); x0++) {

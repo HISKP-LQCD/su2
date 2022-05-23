@@ -4,7 +4,7 @@
 
 #include "accum_type.hh"
 #include "gaugeconfig.hh"
-#include "include/geometry.hh"
+#include "geometry.hh"
 #include "su2.hh"
 
 #ifdef _USE_OMP_

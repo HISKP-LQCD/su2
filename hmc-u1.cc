@@ -179,18 +179,22 @@ int main(int ac, char *av[]) {
 
     if (i > 0 && (i % hparams.N_save) == 0) { // saving U after each N_save trajectories
       std::string path_i = conf_path_basename + "." + std::to_string(i);
+      
+      
+      
+      
       U.save(path_i);
       if (hparams.make_omeas && mdparams.getaccept() && i > hparams.omeas.icounter &&
           i % hparams.omeas.nstep == 0) {
         if (hparams.omeas.Wloop) {
           if (hparams.omeas.verbosity > 0) {
-            std::cout << "online measuring Wilson loop\n";
+            std::cout << "#online measuring Wilson loop\n";
           }
           omeasurements::meas_wilson_loop<_u1>(U, i, hparams.conf_dir);
         }
         if (hparams.omeas.gradient) {
           if (hparams.omeas.verbosity > 0) {
-            std::cout << "online measuring: Gradient flow";
+            std::cout << "#online measuring: Gradient flow";
           }
           omeasurements::meas_gradient_flow<_u1>(U, i, hparams.conf_dir,
                                                  hparams.omeas.tmax);
@@ -198,7 +202,7 @@ int main(int ac, char *av[]) {
 
         if (hparams.omeas.pion_staggered) {
           if (hparams.omeas.verbosity > 0) {
-            std::cout << "online measuring Pion correlator\n";
+            std::cout << "#online measuring Pion correlator\n";
           }
           omeasurements::meas_pion_correlator<_u1>(U, i, pparams.m0, hparams);
         }

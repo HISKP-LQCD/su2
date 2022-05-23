@@ -190,8 +190,8 @@ int main(int ac, char *av[]) {
 
       U.save(path_i);
 
-      io::hmc::update_nconf_counter(hparams.conf_dir, g_heat,  i,
-                                    path_i); // storing last conf index
+      // storing last conf index
+      io::hmc::update_nconf_counter(hparams.conf_dir, g_heat, i, path_i);
 
       // online measurements
       if (hparams.make_omeas && mdparams.getaccept() && i > hparams.omeas.icounter &&

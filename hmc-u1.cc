@@ -190,12 +190,13 @@ int main(int ac, char *av[]) {
 
       U.save(path_i);
 
-      // storing last conf index
-      io::hmc::update_nconf_counter(hparams.conf_dir, g_heat, i, path_i);
-
       // online measurements
       if (hparams.make_omeas && mdparams.getaccept() && i > hparams.omeas.icounter &&
           i % hparams.omeas.nstep == 0) {
+        if (i == g_icounter) {
+          continue; // online measurements already done
+        }
+
         if (hparams.omeas.Wloop) {
           if (hparams.omeas.verbosity > 0) {
             std::cout << "## online measuring: Wilson loop\n";
@@ -217,6 +218,9 @@ int main(int ac, char *av[]) {
           omeasurements::meas_pion_correlator<_u1>(U, i, pparams.m0, hparams);
         }
       }
+
+      // storing last conf index (only after online measurements has been done)
+      io::hmc::update_nconf_counter(hparams.conf_dir, g_heat, i, path_i);
     }
   }
   std::cout << "## Acceptance rate: " << rate / static_cast<double>(hparams.n_meas)

@@ -39,6 +39,7 @@ namespace staggered {
     source({0, 0, 0, 0}) = 1.0;
     const staggered::DDdag_matrix_lat<Float, Complex, Group> DDdag(U, m);
 
+    const double Vs = (U.getVolume() / U.getLt()); // spatial volume
 #pragma omp parallel for
     for (int x0 = 0; x0 < Lt; x0++) {
       if (x0 == 0) {
@@ -56,6 +57,7 @@ namespace staggered {
           }
         }
       }
+      C[x0] /= Vs;
     }
     return C;
   }

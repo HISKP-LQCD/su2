@@ -235,12 +235,15 @@ namespace input_file_parsing {
         }
         // optional parameters for potentials
         if (nd["measurements"]["potential"]) {
-          mparams.potential = true;
+          in.read_opt_verb<bool>(mparams.potential,
+                                 {"measurements", "potential", "potential"});
           in.read_opt_verb<bool>(mparams.potentialsmall,
                                  {"measurements", "potential", "potentialsmall"});
           in.read_opt_verb<bool>(mparams.append, {"measurements", "potential", "append"});
           in.read_opt_verb<bool>(mparams.smear_spatial_only,
                                  {"measurements", "potential", "smear_spatial_only"});
+          in.read_opt_verb<bool>(mparams.smear_temporal_only, 
+                                 {"measurements", "potential", "smear_temporal_only"});
           in.read_opt_verb<size_t>(mparams.n_apesmear,
                                    {"measurements", "potential", "n_apesmear"});
           in.read_opt_verb<double>(mparams.alpha, {"measurements", "potential", "alpha"});
@@ -257,6 +260,8 @@ namespace input_file_parsing {
         in.read_opt_verb<size_t>(mparams.beta_str_width,
                                  {"measurements", "beta_str_width"});
         validate_beta_str_width(mparams.beta_str_width);
+        
+        in.finalize();
 
         in.finalize();
         return 0;
@@ -264,7 +269,19 @@ namespace input_file_parsing {
 
     } // namespace measure
 
-    namespace metropolis {
+    namespace metropolis {  
+      /**
+      * @brief check if N_hit >= 1, otherwise it aborts
+      * @param n N_hit (number of times an update per link is attempted)
+      */
+      void validate_N_hit(const size_t &n) {
+        if (n < 1) {
+        std::cerr << "Error: N_hit should be at least 1, otherwise nothing will happen";
+        std::cerr << "Aborting.\n";
+        abort();
+        }
+        return;
+      }
 
       int parse_input_file(const std::string &file,
                            gp::physics &pparams,
@@ -294,15 +311,18 @@ namespace input_file_parsing {
                                       {"metropolis", "conf_basename"});
         in.read_opt_verb<size_t>(mcparams.beta_str_width,
                                  {"metropolis", "beta_str_width"});
+        validate_beta_str_width(mcparams.beta_str_width);
         in.read_opt_verb<bool>(mcparams.restart, {"metropolis", "restart"});
         if (mcparams.restart) {
           in.read_opt_verb<std::string>(mcparams.configfilename,
                                         {"metropolis", "configfilename"});
         }
 
+
         in.read_verb<double>(mcparams.heat, {"metropolis", "heat"});
         in.read_verb<double>(mcparams.delta, {"metropolis", "delta"});
         in.read_opt_verb<size_t>(mcparams.N_hit, {"metropolis", "N_hit"});
+        validate_N_hit(mcparams.N_hit);
 
         in.finalize();
 

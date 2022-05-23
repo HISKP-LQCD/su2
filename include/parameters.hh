@@ -59,6 +59,7 @@ namespace global_parameters {
     //APE-smearing is done before measuring the potential and small potential, it does not affect the gradient flow and Wilson-loops
     double alpha = 1.0; //parameter alpha for APE smearings
     bool smear_spatial_only = false; //should smearing be done only for spacial links?
+    bool smear_temporal_only = false; //should smearing be done only for temporal links?
 
     std::string conf_basename = "config_u1"; // root of the output files names
     size_t beta_str_width = g_beta_str_width; // length of the beta value config filename  
@@ -120,7 +121,7 @@ namespace global_parameters {
     std::string configfilename = ""; // configuration filename used in case of restart
     std::string conf_dir = "./"; // directory where gauge configurations are stored
     std::string conf_basename = "config_u1"; // root of the output files names
-    size_t beta_str_width = 6; // length of the beta value config filename 
+    size_t beta_str_width = g_beta_str_width; // length of the beta value config filename 
     
     size_t N_hit = 10; //N_hit updates are performed on each link during one sweep
     double heat = 1.0; //determines if thermalization starts from a hot (=1) or cold(=0) config

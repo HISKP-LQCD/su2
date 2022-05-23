@@ -93,7 +93,7 @@ template<class Group=su2> double planar_wilsonloop_dir(const gaugeconfig<Group> 
  * r=(1,1,0,0)=r(1,1) is the temporal plaquette, calculated in the order t->x.
  * the order x->t can be achieved by using r=(0,1,0,0,1) and 4d or r=(0,1,0,1) in 3d.
  * */
-template<class Group=su2> double wilsonloop_non_planar(gaugeconfig<Group> &U, std::vector<size_t> r) {
+template<class Group=su2> double wilsonloop_non_planar(const gaugeconfig<Group> &U, std::vector<size_t> r) {
     //goes path outlined in r in direction t->x->y->z, could go with other orders by using longer vector r and inserting zeros
     //parallelized with code from gauge_energy
   double loop = 0.;

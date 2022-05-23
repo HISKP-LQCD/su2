@@ -65,73 +65,16 @@ int main(int ac, char* av[]) {
   std::string conf_path_basename = output::get_conf_path_basename(pparams, mparams);
   
   //filename needed for saving results from potential and potentialsmall
-  const std::string filename_fine = output::get_filename_fine(pparams, mparams);
-  const std::string filename_coarse = output::get_filename_coarse(pparams, mparams);
-  const std::string filename_nonplanar = output::get_filename_nonplanar(pparams, mparams);  
-
-  //needed for measuring potential
-  std::ofstream resultfile;
-  size_t maxsizenonplanar = (pparams.Lx < 4) ? pparams.Lx : 4;
+  const std::string filename_fine = output::measure::get_filename_fine(pparams, mparams);
+  const std::string filename_coarse = output::measure::get_filename_coarse(pparams, mparams);
+  const std::string filename_nonplanar = output::measure::get_filename_nonplanar(pparams, mparams);  
   
-  // write explanatory headers into result-files
+  // write explanatory headers into result-files, also check if measuring routine is implemented for given dimension
   if(mparams.potential) {
-      //~ open file for saving results
-    if(pparams.ndims == 2){
-      std::cout << "Currently not working for dim = 2, no measurements for the potential will be made" << std::endl;
-      mparams.potential = false;
-    }
-    
-    //~ print heads of columns: W(r, t), W(x, y)
-    if(!mparams.append && (pparams.ndims == 3 || pparams.ndims == 4)){
-      resultfile.open(filename_fine, std::ios::out);
-      resultfile << "##";
-      for (size_t t = 1 ; t <= pparams.Lt*mparams.sizeWloops ; t++){
-          for (size_t x = 1 ; x <= pparams.Lx*mparams.sizeWloops ; x++){
-          resultfile << "W(x=" << x << ",t=" << t << ",y=" << 0 << ")  " ;
-          }
-      }
-      resultfile << "counter";
-      resultfile << std::endl; 
-      resultfile.close();
-      
-      resultfile.open(filename_coarse, std::ios::out);
-      resultfile << "##";
-      for (size_t y = 1 ; y <= pparams.Ly*mparams.sizeWloops ; y++){
-          for (size_t x = 1 ; x <= pparams.Lx*mparams.sizeWloops ; x++){
-          resultfile << "W(x=" << x << ",t=" << 0 << ",y=" << y << ")  " ;
-          }
-      }
-      resultfile << "counter";
-      resultfile << std::endl; 
-      resultfile.close();
-        
-    }
+    output::measure::set_header_planar(pparams, mparams, filename_coarse, filename_fine);
   }
-
-
   if(mparams.potentialsmall) {
-      //~ open file for saving results
-    
-    if(pparams.ndims == 2 || pparams.ndims == 4){
-      std::cout << "Currently not working for dim = 2 and dim = 4, no nonplanar measurements will be made" << std::endl;
-      mparams.potentialsmall = false;
-    }
-    
-    //~ print heads of columns
-    if(!mparams.append && (pparams.ndims == 3)){
-      resultfile.open(filename_nonplanar, std::ios::out);
-      resultfile << "##";
-      for (size_t t = 0 ; t <= pparams.Lt*mparams.sizeWloops ; t++){
-        for (size_t x = 0 ; x <= maxsizenonplanar ; x++){
-          for (size_t y = 0 ; y <= maxsizenonplanar ; y++){
-            resultfile << "W(x=" << x << ",t=" << t << ",y=" << y << ")  " ;
-          }
-        }
-      }
-      resultfile << "counter";
-      resultfile << std::endl; 
-      resultfile.close();        
-    }
+    output::measure::set_header_nonplanar(pparams, mparams, filename_nonplanar);
   }
 
 /** 
@@ -178,77 +121,17 @@ int main(int ac, char* av[]) {
     if(mparams.potential || mparams.potentialsmall){
         //smear lattice
       for (size_t smears = 0 ; smears < mparams.n_apesmear ; smears +=1){
-        smearlatticeape(U, mparams.alpha, mparams.smear_spatial_only);
+        smearlatticeape(U, mparams.alpha, mparams.smear_spatial_only, mparams.smear_temporal_only);
       }
       double loop;
-    if(mparams.potential) {
-      //~ //calculate wilsonloops for potential
-      if(pparams.ndims == 4){
-        resultfile.open(filename_fine, std::ios::app);
-        for (size_t t = 1 ; t <= pparams.Lt*mparams.sizeWloops ; t++){
-          for (size_t x = 1 ; x <= pparams.Lx*mparams.sizeWloops ; x++){
-            loop  = wilsonloop_non_planar(U, {t, x, 0, 0});
-            resultfile << std::setw(14) << std::scientific << loop/U.getVolume() << "  " ;
-          }
-        }
-        resultfile << i;
-        resultfile << std::endl; 
-        resultfile.close();
-        
-        resultfile.open(filename_coarse, std::ios::app);
-        for (size_t y = 1 ; y <= pparams.Ly*mparams.sizeWloops ; y++){
-          for (size_t x = 1 ; x <= pparams.Lx*mparams.sizeWloops ; x++){
-            loop  = wilsonloop_non_planar(U, {0, x, y, 0});
-            loop += wilsonloop_non_planar(U, {0, x, 0, y});
-            resultfile << std::setw(14) << std::scientific << loop/U.getVolume()/2.0 << "  " ;
-          }
-        }
-        resultfile << i;
-        resultfile << std::endl; 
-        resultfile.close();
+      if(mparams.potential) {
+        omeasurements::meas_loops_planar_pot(U, pparams, mparams.sizeWloops, filename_coarse, filename_fine, i);
       }
-      if(pparams.ndims == 3){
-        resultfile.open(filename_fine, std::ios::app);
-        for (size_t t = 1 ; t <= pparams.Lt*mparams.sizeWloops ; t++){
-          for (size_t x = 1 ; x <= pparams.Lx*mparams.sizeWloops ; x++){
-            loop  = wilsonloop_non_planar(U, {t, x, 0});
-            //~ loop  += wilsonloop_non_planar(U, {t, 0, x});
-            resultfile << std::setw(14) << std::scientific << loop/U.getVolume() << "  " ;
-          }
-        }
-        resultfile << i;
-        resultfile << std::endl; 
-        resultfile.close();
-        
-        resultfile.open(filename_coarse, std::ios::app);
-        for (size_t y = 1 ; y <= pparams.Ly*mparams.sizeWloops ; y++){
-          for (size_t x = 1 ; x <= pparams.Lx*mparams.sizeWloops ; x++){
-            loop  = wilsonloop_non_planar(U, {0, x, y});
-            //~ loop += wilsonloop_non_planar(U, {0, y, x});
-            resultfile << std::setw(14) << std::scientific << loop/U.getVolume() << "  " ;
-          }
-        }
-        resultfile << i;
-        resultfile << std::endl; 
-        resultfile.close();
+      
+      if(mparams.potentialsmall) {
+        omeasurements::meas_loops_nonplanar_pot(U, pparams, mparams.sizeWloops, filename_nonplanar, i);
       }
     }
-    
-    if(mparams.potentialsmall) {
-      resultfile.open(filename_nonplanar, std::ios::app);
-      for (size_t t = 0 ; t <= pparams.Lt*mparams.sizeWloops ; t++){
-        for (size_t x = 0 ; x <= maxsizenonplanar ; x++){
-          for (size_t y = 0 ; y <= maxsizenonplanar ; y++){
-            loop  = wilsonloop_non_planar(U, {t, x, y});
-            resultfile << std::setw(14) << std::scientific << loop/U.getVolume() << "  " ;
-          }
-        }
-      }
-      resultfile << i;
-      resultfile << std::endl; 
-      resultfile.close();  
-  }
-  }
 
   }
 

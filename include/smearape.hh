@@ -21,18 +21,27 @@
 //not tested for SU2, for U1 lattice stays the same when smearing with alpha=1
 //norm is the number of staples which are used in the summation
 //if spacial=true, only the staples with mu>=1 are smeared and taken into account for the staples
-template<class Group> void smearlatticeape(gaugeconfig<Group> &U, double alpha, bool spatial_only=false){
+template<class Group> void smearlatticeape(gaugeconfig<Group> &U, double alpha, bool spatial_only=false, bool temporal_only=false){
   if (U.getndims() == 2 && spatial_only){
     std::cerr << "Spacial smearing is not possible in two dimensions!" << std::endl;
+    return;
+  }
+  if( spatial_only && temporal_only ){
+    std::cerr << "selecting spatial_only and temporal_only at the same time does not make sense!" << std::endl;
     return;
   }
   gaugeconfig<Group> Uold = U;
   typedef typename accum_type<Group>::type accum;
   size_t startmu = 0;
+  size_t endmu = U.getndims();
   size_t norm = 2.0*(U.getndims()-1);
   if(spatial_only){
       startmu = 1;
       norm = 2.0*(U.getndims()-2);
+  }
+  if(temporal_only){
+      startmu = 0;
+      endmu = 1;
   }
   #ifdef _USE_OMP_
   #pragma omp parallel for
@@ -42,7 +51,7 @@ template<class Group> void smearlatticeape(gaugeconfig<Group> &U, double alpha, 
       for(size_t x2 = 0; x2 < U.getLy(); x2++) {
         for(size_t x3 = 0; x3 < U.getLz(); x3++) {
           std::vector<size_t> x = {x0, x1, x2, x3};  
-          for(size_t mu = startmu; mu < U.getndims(); mu++) {
+          for(size_t mu = startmu; mu < endmu; mu++) {
             // K is intialized to (0,0) even if not explicitly specified
             accum K(0.0, 0.0);
             get_staples(K, Uold, x, mu, 1.0, false, spatial_only);
@@ -53,6 +62,6 @@ template<class Group> void smearlatticeape(gaugeconfig<Group> &U, double alpha, 
         }
       }
     }
-  }      
+  }
 }
 

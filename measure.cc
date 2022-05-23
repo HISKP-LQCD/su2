@@ -1,6 +1,6 @@
 #include"su2.hh"
 #include"gaugeconfig.hh"
-#include"gauge_energy.hh"
+#include"flat-gauge_energy.hpp"
 #include"random_gauge_trafo.hh"
 #include"wilsonloop.hh"
 #include"md_update.hh"
@@ -68,14 +68,14 @@ int main(int ac, char* av[]) {
     os << "config." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz << "." << gparams.Lt << ".b" << U.getBeta() << "." << i << std::ends;
     U.load(os.str());
     
-    double plaquette = gauge_energy(U);
+    double plaquette = flat_spacetime::gauge_energy(U);
     double density = 0., Q=0.;
     energy_density(U, density, Q);
     cout << "## Initital Plaquette: " << plaquette/U.getVolume()/double(U.getNc())/6. << endl; 
     cout << "## Initial Energy density: " << density << endl;
     
     random_gauge_trafo(U, gparams.seed);
-    plaquette = gauge_energy(U);
+    plaquette = flat_spacetime::gauge_energy(U);
     energy_density(U, density, Q);
     cout << "## Plaquette after rnd trafo: " << std::scientific << std::setw(15) << plaquette/U.getVolume()/double(U.getNc())/6. << endl; 
     cout << "## Energy density: " << density << endl;

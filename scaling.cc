@@ -1,7 +1,7 @@
 #include"su2.hh"
 #include"u1.hh"
 #include"gaugeconfig.hh"
-#include"gauge_energy.hh"
+#include"flat-gauge_energy.hpp"
 #include"random_gauge_trafo.hh"
 #include"sweep.hh"
 #include"parse_commandline.hh"
@@ -131,7 +131,7 @@ int main(int ac, char* av[]) {
       size_t inew = (i-gparams.icounter)/thread+gparams.icounter;
       
       rate += sweep(U, engines, delta, N_hit, gparams.beta, gparams.xi, gparams.anisotropic);
-      double energy = gauge_energy(U, true);
+      double energy = flat_spacetime::gauge_energy(U, true);
       double E = 0., Q = 0.;
       energy_density(U, E, Q);
       //measuring spatial plaquettes only means only (ndims-1)/ndims of all plaquettes are measured, so need facnorm for normalization to 1

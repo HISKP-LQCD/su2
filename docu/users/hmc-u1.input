@@ -1,6 +1,5 @@
 # Input file example for the u1-hmc program
 
-
 geometry:
   X : 4
   Y : 4
@@ -13,12 +12,12 @@ geometry:
 # hmc parameters
 hmc:
   seed: 93746
-  n_save: 1
+  n_save: 10
   n_meas: 1000
   heat: true
-  counter: 0
+  icounter: 0
   configname: ""
-  conf_dir: "./c1/"
+  conf_dir: "./cnfs/"
 
 integrator:
   name: leapfrog
@@ -40,6 +39,14 @@ monomials:
 #    seed_pf: 22346363
 #    solver: CG
 
-
+omeas:
+  verbosity: 1
+  icounter: 20
+  nstep: 30
+  Wloop: true
+  pion_staggered:
+    mass: 0.1
+#  gradient:
+#    tmax = 1.0
 
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "include/geometry.hh"
+#include "geometry.hh"
 #include "su2.hh"
 #include "u1.hh"
 #include <cassert>

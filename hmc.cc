@@ -1,6 +1,6 @@
 #include"su2.hh"
 #include"gaugeconfig.hh"
-#include"gauge_energy.hh"
+#include"flat-gauge_energy.hpp"
 #include"random_gauge_trafo.hh"
 #include"md_update.hh"
 #include"monomial.hh"
@@ -58,13 +58,13 @@ int main(int ac, char* av[]) {
     hotstart(U, gparams.seed, gparams.heat);
   }
   
-  double plaquette = gauge_energy(U);
+  double plaquette = flat_spacetime::gauge_energy(U);
   double fac = 2./U.getndims()/(U.getndims()-1);
   const double normalisation = fac/U.getVolume()/double(U.getNc());
   cout << "## Initital Plaquette: " << plaquette*normalisation << endl; 
 
   random_gauge_trafo(U, 654321);
-  plaquette = gauge_energy(U);
+  plaquette = flat_spacetime::gauge_energy(U);
   cout << "## Plaquette after rnd trafo: " << plaquette*normalisation << endl; 
 
   // Molecular Dynamics parameters
@@ -98,7 +98,7 @@ int main(int ac, char* av[]) {
     // perform the MD update
     md_update(U, engine, mdparams, monomial_list, *md_integ);
 
-    double energy = gauge_energy(U);
+    double energy = flat_spacetime::gauge_energy(U);
     rate += mdparams.getaccept();
     cout << i << " " << mdparams.getaccept() << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy*normalisation
          << " " << std::setw(15) << mdparams.getdeltaH() << " " 

@@ -14,7 +14,7 @@
 #include"su2.hh"
 #include"u1.hh"
 #include"gaugeconfig.hh"
-#include"gauge_energy.hh"
+#include"flat-gauge_energy.hpp"
 #include"random_gauge_trafo.hh"
 #include"omeasurements.hpp"
 #include"polyakov_loop.hh"
@@ -151,14 +151,14 @@ int main(int ac, char* av[]) {
       continue;
     }
     
-    double plaquette = gauge_energy(U);
+    double plaquette = flat_spacetime::gauge_energy(U);
     double density = 0., Q=0.;
     energy_density(U, density, Q);
     std::cout << "## Initial Plaquette: " << plaquette/U.getVolume()/double(U.getNc())/6. << std::endl; 
     std::cout << "## Initial Energy density: " << density << std::endl;
     
     random_gauge_trafo(U, mparams.seed);
-    plaquette = gauge_energy(U);
+    plaquette = flat_spacetime::gauge_energy(U);
     energy_density(U, density, Q);
     std::cout << "## Plaquette after rnd trafo: " << std::scientific << std::setw(15) << plaquette/U.getVolume()/double(U.getNc())/6. << std::endl; 
     std::cout << "## Energy density: " << density << std::endl;

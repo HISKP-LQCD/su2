@@ -1,4 +1,3 @@
-// hmc-u1.cc
 /**
  * @file hmc-u1.cc
  * @author Carsten Urbach (urbach@hiskp.uni-bonn.de)
@@ -6,17 +5,18 @@
  * @brief Hybrid Monte Carlo for a U(1) theory
  * @version 0.1
  * @date 2022-05-11
- * 
+ *
  * @copyright Copyright (c) 2022
- * 
+ *
  */
 
 #include "energy_density.hh"
-#include "gauge_energy.hh"
+#include "flat-gauge_energy.hpp"
 #include "gaugeconfig.hh"
 #include "integrator.hh"
 #include "md_update.hh"
 #include "monomial.hh"
+#include "omeasurements.hpp"
 #include "output.hh"
 #include "parse_input_file.hh"
 #include "random_gauge_trafo.hh"
@@ -24,7 +24,7 @@
 #include "u1.hh"
 #include "version.hh"
 
-//#include "gaugemonomial_rotating.hh"
+#include "rotating-gaugemonomial.hpp"
 
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
@@ -59,7 +59,7 @@ int main(int ac, char *av[]) {
 
   err = in_hmc::parse_input_file(input_file, pparams, hparams);
   if (err > 0) {
-    return 1;
+    return err;
   }
 
   boost::filesystem::create_directories(boost::filesystem::absolute(hparams.conf_dir));
@@ -78,13 +78,13 @@ int main(int ac, char *av[]) {
     hotstart(U, hparams.seed, heat_val);
   }
 
-  double plaquette = gauge_energy(U);
+  double plaquette = flat_spacetime::gauge_energy(U);
   double fac = 2. / U.getndims() / (U.getndims() - 1);
   const double normalisation = fac / U.getVolume() / double(U.getNc());
   std::cout << "## Initital Plaquette: " << plaquette * normalisation << std::endl;
 
   random_gauge_trafo(U, 654321);
-  plaquette = gauge_energy(U);
+  plaquette = flat_spacetime::gauge_energy(U);
   std::cout << "## Plaquette after rnd trafo: " << plaquette * normalisation << std::endl;
 
   // Molecular Dynamics parameters
@@ -93,25 +93,25 @@ int main(int ac, char *av[]) {
   // generate list of monomials
   std::list<monomial<double, _u1> *> monomial_list;
   gaugemonomial<double, _u1> gm(0);
-//  rotating_frame::gauge_monomial<double, _u1> gm_rot(0, pparams.Omega);
+  rotating_spacetime::gauge_monomial<double, _u1> gm_rot(0, pparams.Omega);
 
   kineticmonomial<double, _u1> km(0);
   km.setmdpassive();
   monomial_list.push_back(&km);
 
-  staggered::detDDdag_monomial<double, _u1> detDDdag(0, pparams.m0, hparams.solver,
-                                          hparams.tolerance_cg, hparams.seed_pf,
-                                          hparams.solver_verbosity);
+  staggered::detDDdag_monomial<double, _u1> detDDdag(
+    0, pparams.m0, hparams.solver, hparams.tolerance_cg, hparams.seed_pf,
+    hparams.solver_verbosity);
 
+  monomial_list.push_back(&gm);
+
+  if (pparams.include_gauge) {
+    if (pparams.rotating_frame) {
+      monomial_list.push_back(&gm_rot);
+    } else {
       monomial_list.push_back(&gm);
-
-  // if (pparams.include_gauge) {
-  //   if (pparams.rotating_frame) {
-  //     monomial_list.push_back(&gm_rot);
-  //   } else {
-  //     monomial_list.push_back(&gm);
-  //   }
-  // }
+    }
+  }
 
   if (pparams.include_staggered_fermions) { // including S_F (fermionic) in the action
     monomial_list.push_back(&detDDdag);
@@ -150,7 +150,7 @@ int main(int ac, char *av[]) {
     // perform the MD update
     md_update(U, engine, mdparams, monomial_list, *md_integ);
 
-    double energy = gauge_energy(U);
+    double energy = flat_spacetime::gauge_energy(U);
     double E = 0., Q = 0.;
     energy_density(U, E, Q);
     rate += mdparams.getaccept();
@@ -180,6 +180,29 @@ int main(int ac, char *av[]) {
     if (i > 0 && (i % hparams.N_save) == 0) { // saving U after each N_save trajectories
       std::string path_i = conf_path_basename + "." + std::to_string(i);
       U.save(path_i);
+      if (hparams.make_omeas && mdparams.getaccept() && i > hparams.omeas.icounter &&
+          i % hparams.omeas.nstep == 0) {
+        if (hparams.omeas.Wloop) {
+          if (hparams.omeas.verbosity > 0) {
+            std::cout << "online measuring Wilson loop\n";
+          }
+          omeasurements::meas_wilson_loop<_u1>(U, i, hparams.conf_dir);
+        }
+        if (hparams.omeas.gradient) {
+          if (hparams.omeas.verbosity > 0) {
+            std::cout << "online measuring: Gradient flow";
+          }
+          omeasurements::meas_gradient_flow<_u1>(U, i, hparams.conf_dir,
+                                                 hparams.omeas.tmax);
+        }
+
+        if (hparams.omeas.pion_staggered) {
+          if (hparams.omeas.verbosity > 0) {
+            std::cout << "online measuring Pion correlator\n";
+          }
+          omeasurements::meas_pion_correlator<_u1>(U, i, pparams.m0, hparams);
+        }
+      }
     }
   }
   std::cout << "## Acceptance rate: " << rate / static_cast<double>(hparams.n_meas)

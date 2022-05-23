@@ -39,11 +39,9 @@
 namespace po = boost::program_options;
 
 int main(int ac, char *av[]) {
-  std::cout << "## HMC Algorithm for U(1) gauge theory" << std::endl;
-  std::cout << "## (C) Carsten Urbach <urbach@hiskp.uni-bonn.de> (2017, 2021)"
-            << std::endl;
-  std::cout << "## GIT branch " << GIT_BRANCH << " on commit " << GIT_COMMIT_HASH
-            << std::endl;
+  std::cout << "## HMC Algorithm for U(1) gauge theory\n";
+  std::cout << "## (C) Carsten Urbach <urbach@hiskp.uni-bonn.de> (2017, 2021)\n";
+  std::cout << "## GIT branch " << GIT_BRANCH << " on commit " << GIT_COMMIT_HASH << "\n";
 
   namespace gp = global_parameters;
   gp::physics pparams; // physics parameters
@@ -150,7 +148,7 @@ int main(int ac, char *av[]) {
     // perform the MD update
     md_update(U, engine, mdparams, monomial_list, *md_integ);
 
-    double energy = flat_spacetime::gauge_energy(U);
+    const double energy = flat_spacetime::gauge_energy(U);
     double E = 0., Q = 0.;
     energy_density(U, E, Q);
     rate += mdparams.getaccept();
@@ -162,8 +160,9 @@ int main(int ac, char *av[]) {
 
     if (mdparams.getrevtest()) {
       std::cout << mdparams.getdeltadeltaH();
-    } else
+    } else {
       std::cout << "NA";
+    }
     std::cout << " " << Q << std::endl;
 
     os << i << " " << mdparams.getaccept() << " " << std::scientific << std::setw(18)
@@ -179,11 +178,12 @@ int main(int ac, char *av[]) {
 
     if (i > 0 && (i % hparams.N_save) == 0) { // saving U after each N_save trajectories
       std::string path_i = conf_path_basename + "." + std::to_string(i);
-      
-      
-      
-      
+
       U.save(path_i);
+
+      output::hmc::update_nconf_counter(hparams.conf_dir, i); // storing last conf index
+
+      // online measurements
       if (hparams.make_omeas && mdparams.getaccept() && i > hparams.omeas.icounter &&
           i % hparams.omeas.nstep == 0) {
         if (hparams.omeas.Wloop) {

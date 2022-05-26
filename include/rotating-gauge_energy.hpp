@@ -13,7 +13,7 @@
 #include "accum_type.hh"
 #include "adjointfield.hh"
 #include "gaugeconfig.hh"
-#include "get_staples.hh"
+//#include "get_staples.hh"
 #include "hamiltonian_field.hh"
 #include "monomial.hh"
 #include "su2.hh"
@@ -227,6 +227,38 @@ namespace rotating_spacetime {
   }
 
   /**
+   * @brief spacetime metric factor multiplying the plaquette U_{\mu \nu} in the action
+   * @param mu
+   * @param nu
+   * @return double
+   */
+  double plaq_factor(const nd_max_arr<size_t> &x,
+                     const size_t &mu,
+                     const size_t &nu,
+                     const double &Omega) {
+    if (mu == 0) {
+      return 1.0;
+    }
+    if (mu == 1 && nu == 2) {
+      return (1 + (std::pow(x[1], 2) + std::pow(x[2], 2)) * std::pow(Omega, 2));
+    }
+    if (mu == 1 && nu == 3) {
+      return (1 + std::pow(x[2], 2) * std::pow(Omega, 2));
+    }
+    if (mu == 2 && nu == 3) {
+      return (1 + std::pow(x[1], 2) * std::pow(Omega, 2));
+    } else {
+#pragma omp single
+      {
+        std::cout << "Error: mu=" << mu << " and nu=" << nu << " not supported by "
+                  << __func__ << "\n";
+      }
+      abort();
+      return 0.0;
+    }
+  }
+
+  /**
    * @brief analogous of gauge energy in flat spacetime (Minkowsky metric)
    * sum of plaquettes such that in the limit Omega=0.0 one obtains the usual gauge energy
    * (see `gauge_energy.hpp`)
@@ -252,17 +284,16 @@ namespace rotating_spacetime {
             const nd_max_arr<size_t> x = {x0, x1, x2, x3};
             const double r2 = x1 * x1 + x2 * x2;
 
-            res += retr_clover_leaf(U, x, 0, 1);
-            res += retr_clover_leaf(U, x, 0, 2);
-            res += retr_clover_leaf(U, x, 0, 3);
-            res += (1 + r2 * Omega2) * retr_clover_leaf(U, x, 1, 2);
-            res += (1 + x2 * x2 * Omega2) * retr_clover_leaf(U, x, 1, 3);
-            res += (1 + x1 * x1 * Omega2) * retr_clover_leaf(U, x, 2, 3);
+            for (size_t nu = 0; nu < U.getndims(); nu++) {
+              for (size_t mu = 0; mu < nu; mu++) {
+                res += plaq_factor(x, mu, nu, Omega) * retr_clover_leaf(U, x, mu, nu);
+              }
+            }
 
-            res += x2 * Omega * retr_asymm_chair(U, x, 0, 1, 2);
-            res -= x1 * Omega * retr_asymm_chair(U, x, 0, 2, 1);
-            res += x2 * Omega * retr_asymm_chair(U, x, 0, 1, 3);
-            res -= x1 * Omega * retr_asymm_chair(U, x, 0, 2, 3);
+            res += x2 * Omega * retr_asymm_chair(U, x, 1, 2, 0);
+            res -= x1 * Omega * retr_asymm_chair(U, x, 2, 1, 0);
+            res += x2 * Omega * retr_asymm_chair(U, x, 1, 3, 0);
+            res -= x1 * Omega * retr_asymm_chair(U, x, 2, 3, 0);
             res += x1 * x2 * Omega2 * retr_asymm_chair(U, x, 1, 3, 2);
           }
         }

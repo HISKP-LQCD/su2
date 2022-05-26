@@ -18,7 +18,7 @@ namespace rotating_spacetime {
   template <class Group>
   double get_S_G(const gaugeconfig<Group> &U, const double &Omega) {
     return U.getBeta() *
-           (U.getVolume() * 6 -
+           (U.getVolume() * spacetime_lattice::num_pLloops_half(U.getndims()) -
             rotating_spacetime::gauge_energy<Group>(U, Omega) / double(U.getNc()));
   }
 

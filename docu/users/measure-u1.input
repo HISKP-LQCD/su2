@@ -3,9 +3,9 @@
 geometry:
   X: 4
   Y: 4
-  Z: 1
-  T: 16
-  ndims: 3
+  Z: 4
+  T: 8
+  ndims: 4
 
 monomials:
   gauge:
@@ -14,19 +14,19 @@ monomials:
 #   xi : 1.0
 
 measurements:
-  conf_dir: "./c1/"
-  icounter: 900
-  n_meas: 100
-  nstep: 1
+  conf_dir: "./confs/"
+  icounter: 0
+  n_meas: 5
+  nstep: 10
   gradient:
-    tmax : 1.0
-  Wloop: true
-  pion_staggered:
-    mass: 0.0
-    tolerance_cg: 1e-8
-    solver_verbosity : 0
-    seed_pf: 22346363
-    solver: BiCGStab
+    tmax : 10.0
+#  Wloop: true
+#  pion_staggered:
+#    mass: 0.0
+#    tolerance_cg: 1e-8
+#    solver_verbosity : 0
+#    seed_pf: 22346363
+#    solver: BiCGStab
 
   potential:
     potentialsmall : false

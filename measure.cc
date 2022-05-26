@@ -1,3 +1,15 @@
+/**
+ * @file measure.cc
+ * @author Carsten Urbach (urbach@hiskp.uni-bonn.de)
+ * @author Simone Romiti (simone.romiti@uni-bonn.de)
+ * @brief 
+ * @version 0.1
+ * @date 2022-05-26
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
+
 #include"su2.hh"
 #include"gaugeconfig.hh"
 #include"flat-gauge_energy.hpp"
@@ -63,6 +75,8 @@ int main(int ac, char* av[]) {
 
   gaugeconfig<su2> U(gparams.Lx, gparams.Ly, gparams.Lz, gparams.Lt, gparams.ndims, gparams.beta);
 
+  const double ndims_factor = spacetime_lattice::num_pLloops_half(U.getndims());
+
   for(size_t i = gparams.icounter; i < gparams.n_meas*nstep+gparams.icounter; i+=nstep) {
     std::ostringstream os;
     os << "config." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz << "." << gparams.Lt << ".b" << U.getBeta() << "." << i << std::ends;
@@ -71,13 +85,13 @@ int main(int ac, char* av[]) {
     double plaquette = flat_spacetime::gauge_energy(U);
     double density = 0., Q=0.;
     energy_density(U, density, Q);
-    cout << "## Initital Plaquette: " << plaquette/U.getVolume()/double(U.getNc())/6. << endl; 
+    cout << "## Initital Plaquette: " << plaquette/U.getVolume()/double(U.getNc())/ndims_factor << endl; 
     cout << "## Initial Energy density: " << density << endl;
     
     random_gauge_trafo(U, gparams.seed);
     plaquette = flat_spacetime::gauge_energy(U);
     energy_density(U, density, Q);
-    cout << "## Plaquette after rnd trafo: " << std::scientific << std::setw(15) << plaquette/U.getVolume()/double(U.getNc())/6. << endl; 
+    cout << "## Plaquette after rnd trafo: " << std::scientific << std::setw(15) << plaquette/U.getVolume()/double(U.getNc())/ndims_factor << endl; 
     cout << "## Energy density: " << density << endl;
     
     if(Wloop) {

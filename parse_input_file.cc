@@ -222,6 +222,7 @@ namespace input_file_parsing {
         in.read_opt_verb<bool>(mparams.Wloop, {"measurements", "Wloop"});
         // optional parameters for gradient
         if (nd["measurements"]["gradient"]) {
+          mparams.gradient = true;
           in.read_opt_verb<double>(mparams.tmax, {"measurements", "gradient", "tmax"});
         }
         // optional parameters for pion

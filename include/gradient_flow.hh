@@ -1,5 +1,5 @@
 #pragma once
-#include"gradient_flow.hh"
+//#include"gradient_flow.hh"
 #include"su2.hh"
 #include"gaugeconfig.hh"
 #include"adjointfield.hh"
@@ -48,8 +48,10 @@ template<typename Float, class Group> void runge_kutta(hamiltonian_field<Float, 
 }
 
 template<class Group> void gradient_flow(const gaugeconfig<Group> &U, std::string const &path, const double tmax) {
+  const double ndims_fact = spacetime_lattice::num_pLloops_half(U.getndims());
+  
   double t[3], P[3], E[3], Q[3];
-  double eps = 0.01;
+  const double eps = 0.01;
   std::ofstream os(path, std::ios::out);
   double density = 0., topQ = 0.;
   for(unsigned int i = 0; i < 3; i++) {
@@ -58,37 +60,42 @@ template<class Group> void gradient_flow(const gaugeconfig<Group> &U, std::strin
     E[i] = 0.;
     Q[i] = 0.;
   }
-  P[2] = flat_spacetime::gauge_energy(U)/U.getVolume()/double(U.getNc())/6.;
+  P[2] = flat_spacetime::gauge_energy(U)/U.getVolume()/double(U.getNc())/ndims_fact;
   energy_density(U, density, topQ);
   E[2] = density;
 
+  // definine a fictitious gauge configuration Vt, momenta and hamiltonian field to evolve with the flow
   gaugeconfig<Group> Vt(U);
   adjointfield<double, Group> deriv(U.getLx(), U.getLy(), U.getLz(), U.getLt(), U.getndims());
   hamiltonian_field<double, Group> h(deriv, Vt);
-  gaugemonomial<double, Group> SW(0);
+  gaugemonomial<double, Group> SW(0); // we're computing the gradient flow for the Wilson (pure) gauge action
 
+  // evolution of t[1] until tmax 
+  //(note: eps=0.01 and tmax>0 --> the loop ends at some point)
+  // at each step we consider a triplet of values for t,P,E,Q
   while(t[1] < tmax) {
+    // splicing the results at t[2] to the new o-th temporal time slice
     t[0] = t[2];
     P[0] = P[2];
     E[0] = E[2];
     Q[0] = Q[2];
     for(unsigned int x0 = 1; x0 < 3; x0++) {
       t[x0] = t[x0-1] + eps;
-      runge_kutta(h, SW, eps);
-      P[x0] = flat_spacetime::gauge_energy(Vt)/U.getVolume()/double(U.getNc())/6.;
+      runge_kutta(h, SW, eps); // 
+      P[x0] = flat_spacetime::gauge_energy(Vt)/U.getVolume()/double(U.getNc())/ndims_fact;
       energy_density(Vt, density, topQ);
       E[x0] = density;
       Q[x0] = topQ;
     }
-    double tsqP = t[1]*t[1]*2*U.getNc()*6.*(1-P[1]);
+    double tsqP = t[1]*t[1]*2*U.getNc()*spacetime_lattice::num_pLloops_half(h.U->getndims())*(1-P[1]);
     double tsqE = t[1]*t[1]*E[1];
     os << std::scientific << std::setw(15) << t[1] << " ";
-    os << P[1] << " ";
-    os << 2*U.getNc()*6.*(1.-P[1]) << " ";
-    os << tsqP << " ";
-    os << E[1] << " ";
-    os << tsqE << " ";
-    os << topQ << std::endl;
+    os << P[1] << " "; // expectation value of the plaquette
+    os << 2*U.getNc()*ndims_fact*(1.-P[1]) << " "; // energy (from simple plaquette)
+    os << tsqP << " "; // t^2*E(t) 
+    os << E[1] << " "; // energy (from clover-leaf plaquette)
+    os << tsqE << " "; // t^2*E(t) (improved)
+    os << topQ << std::endl; // topological charge Q
   }
 
   return;

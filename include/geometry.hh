@@ -19,6 +19,23 @@ namespace spacetime_lattice {
     return N;
   }
 
+  /**
+   * @brief number of positive-oriented L-shaped links starting from a point x
+   * This function gives the following sum: $\sum_{\mu \neq \nu} 1.
+   * The result is casted into double because it's often used in denominators
+   * @param d number of dimensions
+   * @return double value of the sum
+   */
+  inline double num_pLloops(const size_t &d) { return d * (d - 1); }
+
+  /**
+   * @brief num_pLloops(d)/2
+   * This function gives the following sum: $\sum_{\mu < \nu} 1.
+   * @param d
+   * @return double
+   */
+  inline double num_pLloops_half(const int &d) { return num_pLloops(d) / 2.0; }
+
 } // namespace spacetime_lattice
 
 class geometry {

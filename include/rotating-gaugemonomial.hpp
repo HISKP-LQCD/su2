@@ -118,10 +118,10 @@ namespace rotating_spacetime {
      * for all the staples in the (\nu,\mu) plane.
      * Notes:
      * - if both staples are both in their positive/negative semi-plane,
-     * i.e. (p[0] ^ p[1])==false --> the orientation of 2nd staple is clockwise, i.e.
+     * i.e. (p[0] XOR p[1])==false --> the orientation of 2nd staple is clockwise, i.e.
      * or2==false
      * - if the staples are one in its positive and one in its negative semi-plane,
-     * i.e. (p[0] ^ p[1])==true --> the orientation of 2nd staple is counterclockwise,
+     * i.e. (p[0] XOR p[1])==true --> the orientation of 2nd staple is counterclockwise,
      * i.e. or2==true
      */
     const bool or1 = true;
@@ -183,14 +183,18 @@ namespace rotating_spacetime {
             const double &Omega) {
     T St1;
 
-    for (size_t nu = mu + 1; nu < U.getndims(); nu++) {
+    for (size_t nu = 0; nu < U.getndims(); nu++) {
+      if (mu == nu) {
+        continue;
+      }
+
       T S_tt = get_staple<T, G>(U, x, mu, nu, true, true);
       T S_tf = get_staple<T, G>(U, x, mu, nu, true, false);
       T S_ft = get_staple<T, G>(U, x, mu, nu, false, true);
       T S_ff = get_staple<T, G>(U, x, mu, nu, false, false);
 
       // the 2 contributions from the clover plaquette at x
-      St1 += plaq_factor(x, mu, nu, Omega) * (S_tt + S_ff);
+      St1 += (S_tt + S_ff); // plaq_factor(x, mu, nu, Omega) * (S_tt + S_ff);
 
       /* contributions from nearest neighbors */
 
@@ -205,8 +209,8 @@ namespace rotating_spacetime {
       // x+\mu-\nu
       St1 += plaq_factor(xp(xm(x, nu), mu), mu, nu, Omega) * S_ff;
     }
-
     St1 /= 4.0; // each plaquette comes from an average over the clover
+
 
     T St2;
 
@@ -216,8 +220,11 @@ namespace rotating_spacetime {
     // Stap -= x1 * Omega * retr_asymm_chair(U, x, 0, 2, 3);
     // Stap += x1 * x2 * Omega2 * retr_asymm_chair(U, x, 1, 3, 2);
 
+    return U(x, mu) * St1;
+
     T Stap = U(x, mu) * (St1 + St2);
-    return St1;
+
+    return Stap;
   }
 
   /**
@@ -235,10 +242,12 @@ namespace rotating_spacetime {
   public:
     gauge_monomial<Float, Group>(unsigned int _timescale, const double &_Omega)
       : monomial<Float, Group>::monomial(_timescale), Omega(_Omega) {}
+    
     void heatbath(hamiltonian_field<Float, Group> const &h) override {
       monomial<Float, Group>::Hold = get_S_G(*h.U, (*this).Omega);
       return;
     }
+    
     void accept(hamiltonian_field<Float, Group> const &h) override {
       monomial<Float, Group>::Hnew = get_S_G(*h.U, (*this).Omega);
       return;

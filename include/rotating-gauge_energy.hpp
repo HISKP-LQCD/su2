@@ -236,16 +236,16 @@ namespace rotating_spacetime {
                      const size_t &mu,
                      const size_t &nu,
                      const double &Omega) {
-    if (mu == 0) {
+    if (mu == 0 || nu == 0) {
       return 1.0;
     }
-    if (mu == 1 && nu == 2) {
+    if ((mu == 1 && nu == 2) || (mu == 2 && nu == 1)) {
       return (1 + (std::pow(x[1], 2) + std::pow(x[2], 2)) * std::pow(Omega, 2));
     }
-    if (mu == 1 && nu == 3) {
+    if ((mu == 1 && nu == 3) || (mu == 3 && nu == 1)) {
       return (1 + std::pow(x[2], 2) * std::pow(Omega, 2));
     }
-    if (mu == 2 && nu == 3) {
+    if ((mu == 2 && nu == 3) || (mu == 3 && nu == 2)) {
       return (1 + std::pow(x[1], 2) * std::pow(Omega, 2));
     } else {
 #pragma omp single

@@ -110,8 +110,6 @@ int main(int ac, char *av[]) {
     0, pparams.m0, hparams.solver, hparams.tolerance_cg, hparams.seed_pf,
     hparams.solver_verbosity);
 
-  monomial_list.push_back(&gm);
-
   if (pparams.include_gauge) {
     if (pparams.rotating_frame) {
       monomial_list.push_back(&gm_rot);

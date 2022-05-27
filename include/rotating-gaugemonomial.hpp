@@ -230,15 +230,15 @@ namespace rotating_spacetime {
   /**
    * @brief gauge monomial in a rotating frame of reference
    * class describing the gauge monomial S_G in a rotating frame of reference as in
-   * https://arxiv.org/pdf/1303.6292.pdf Without loss of generality, it is always assumed
-   * that the rotation is around the 'z' axis.
+   * https://arxiv.org/pdf/1303.6292.pdf. 
+   * Without loss of generality, it is assumed a rotation around the 'z' axis.
    * @tparam Float
    * @tparam Group
    */
   template <typename Float, class Group>
   class gauge_monomial : public monomial<Float, Group> {
   private:
-    const double Omega; // imaginary angular velocity
+    double Omega; // imaginary angular velocity
   public:
     gauge_monomial<Float, Group>(unsigned int _timescale, const double &_Omega)
       : monomial<Float, Group>::monomial(_timescale), Omega(_Omega) {}
@@ -268,7 +268,7 @@ namespace rotating_spacetime {
      * metric)
      *   3. In curved spacetime we consider the clover leaf plaquette,
      *      hence there are 2*(nd-1) contributions with the "spacetime" weight at 'x'
-     *      and other 2*(nd-1) weighted with the metric at the nearest neighbors points.
+     *      and other 6*(nd-1) weighted with the metric at the nearest neighbors points.
      * @param deriv reference to the derivative object
      * @param h hamiltonian field
      * @param fac

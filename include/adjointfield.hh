@@ -166,14 +166,12 @@ public:
 
   template<class Type>
   value_type &operator()(const nd_max_arr<Type> &x, const size_t& mu) {
-    const geometry g(Lx, Ly, Lz, Lt); // note the order
-    return data[g.getIndex(x[0], x[1], x[2], x[3])];
+    return data[getIndex(x[0], x[1], x[2], x[3], mu)];
   }
 
   template<class Type>
   const value_type &operator()(const nd_max_arr<Type> &x, const size_t& mu) const {
-    const geometry g(Lx, Ly, Lz, Lt); // note the order
-    return data[g.getIndex(x[0], x[1], x[2], x[3])];
+    return data[getIndex(x[0], x[1], x[2], x[3], mu)];
   }
 
   value_type &operator[](size_t const index) { return data[index]; }

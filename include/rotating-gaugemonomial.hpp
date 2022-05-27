@@ -36,6 +36,7 @@ namespace rotating_spacetime {
                                                       (sum_x2 + sum_y2) *
                                                       std::pow(Omega, 2);
     const double two = rot_st::gauge_energy<Group>(U, Omega) / double(U.getNc());
+
     return U.getBeta() * (one - two);
   }
 
@@ -134,41 +135,6 @@ namespace rotating_spacetime {
   }
 
   /**
-   * @brief spacetime metric factor multiplying the chair staple
-   * @param mu
-   * @param nu
-   * @return double
-   */
-  double chair_staple_factor(const nd_max_arr<size_t> &x,
-                             const size_t &mu,
-                             const size_t &nu,
-                             const size_t &rho,
-                             const double &Omega) {
-    if (mu == 0) {
-      if (nu == 1 && rho == 2) {
-        return x[2] * Omega;
-      }
-      if (nu == 2 && rho == 1) {
-        return -x[1] * Omega;
-      }
-      if (nu == 1 && rho == 3) {
-        return x[2] * Omega;
-      }
-      if (nu == 2 && rho == 3) {
-        return -x[1] * Omega;
-      }
-    }
-    if (mu == 1 && nu == 3 && rho == 2) {
-      return x[1] * x[2] * std::pow(Omega, 2);
-    } else {
-      std::cout << "Error: mu=" << mu << " and nu=" << nu << " not supported by "
-                << __func__ << "\n";
-      abort();
-      return 0.0;
-    }
-  }
-
-  /**
    * @brief gauge force in the HMC
    *
    * @tparam Group
@@ -211,7 +177,6 @@ namespace rotating_spacetime {
     }
     St1 /= 4.0; // each plaquette comes from an average over the clover
 
-
     T St2;
 
     // Stap += x2 * Omega * retr_asymm_chair(U, x, 0, 1, 2);
@@ -219,8 +184,6 @@ namespace rotating_spacetime {
     // Stap += x2 * Omega * retr_asymm_chair(U, x, 0, 1, 3);
     // Stap -= x1 * Omega * retr_asymm_chair(U, x, 0, 2, 3);
     // Stap += x1 * x2 * Omega2 * retr_asymm_chair(U, x, 1, 3, 2);
-
-    return U(x, mu) * St1;
 
     T Stap = U(x, mu) * (St1 + St2);
 
@@ -230,7 +193,7 @@ namespace rotating_spacetime {
   /**
    * @brief gauge monomial in a rotating frame of reference
    * class describing the gauge monomial S_G in a rotating frame of reference as in
-   * https://arxiv.org/pdf/1303.6292.pdf. 
+   * https://arxiv.org/pdf/1303.6292.pdf.
    * Without loss of generality, it is assumed a rotation around the 'z' axis.
    * @tparam Float
    * @tparam Group
@@ -242,12 +205,12 @@ namespace rotating_spacetime {
   public:
     gauge_monomial<Float, Group>(unsigned int _timescale, const double &_Omega)
       : monomial<Float, Group>::monomial(_timescale), Omega(_Omega) {}
-    
+
     void heatbath(hamiltonian_field<Float, Group> const &h) override {
       monomial<Float, Group>::Hold = get_S_G(*h.U, (*this).Omega);
       return;
     }
-    
+
     void accept(hamiltonian_field<Float, Group> const &h) override {
       monomial<Float, Group>::Hnew = get_S_G(*h.U, (*this).Omega);
       return;
@@ -287,12 +250,6 @@ namespace rotating_spacetime {
                 accum F = get_F_G<accum>(*h.U, x, mu, Omega);
                 deriv(x, mu) +=
                   fac * h.U->getBeta() / double(h.U->getNc()) * get_deriv<double>(F);
-
-                // accum S;
-                // get_staples(S, *h.U, x, mu);
-                // S = (*h.U)(x, mu) * S;
-                // deriv(x, mu) += fac*h.U->getBeta()/double(h.U->getNc()) *
-                // get_deriv<double>(S);
               }
             }
           }

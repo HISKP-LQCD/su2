@@ -227,6 +227,41 @@ namespace rotating_spacetime {
   }
 
   /**
+   * @brief spacetime metric factor multiplying the chair staple
+   * @param mu
+   * @param nu
+   * @return double
+   */
+  double chair_stm_factor(const nd_max_arr<size_t> &x,
+                          const size_t &mu,
+                          const size_t &nu,
+                          const size_t &rho,
+                          const double &Omega) {
+    if (mu == 0) {
+      if (nu == 1 && rho == 2) {
+        return x[2] * Omega;
+      }
+      if (nu == 2 && rho == 1) {
+        return -x[1] * Omega;
+      }
+      if (nu == 1 && rho == 3) {
+        return x[2] * Omega;
+      }
+      if (nu == 2 && rho == 3) {
+        return -x[1] * Omega;
+      }
+    }
+    if (mu == 1 && nu == 3 && rho == 2) {
+      return x[1] * x[2] * std::pow(Omega, 2);
+    } else {
+      std::cout << "Error: mu=" << mu << " and nu=" << nu << " not supported by "
+                << __func__ << "\n";
+      abort();
+      return 0.0;
+    }
+  }
+
+  /**
    * @brief spacetime metric factor multiplying the plaquette U_{\mu \nu} in the action
    * @param mu
    * @param nu
@@ -290,11 +325,17 @@ namespace rotating_spacetime {
               }
             }
 
-            res += x2 * Omega * retr_asymm_chair(U, x, 1, 2, 0);
-            res -= x1 * Omega * retr_asymm_chair(U, x, 2, 1, 0);
-            res += x2 * Omega * retr_asymm_chair(U, x, 1, 3, 0);
-            res -= x1 * Omega * retr_asymm_chair(U, x, 2, 3, 0);
-            res += x1 * x2 * Omega2 * retr_asymm_chair(U, x, 1, 3, 2);
+            for (size_t mu = 0; mu < U.getndims() - 2; mu++) {
+              for (size_t nu = mu + 1; nu < U.getndims() - 1; nu++) {
+                for (size_t rho = 1; rho < U.getndims(); rho++) {
+                  if (rho == mu || rho == nu) {
+                    continue;
+                  }
+                  res += chair_stm_factor(x, mu, nu, rho, Omega) *
+                         retr_asymm_chair(U, x, mu, nu, rho);
+                }
+              }
+            }
           }
         }
       }

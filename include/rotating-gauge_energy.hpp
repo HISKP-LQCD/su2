@@ -52,6 +52,49 @@ namespace rotating_spacetime {
   }
 
   /**
+   * @brief Get the staple object S_{\mu \nu}(x)
+   * returns, in the adjoint representation T :
+   * - ccwise==true :
+   *   S_{\mu \nu}(x) =
+   *   U_{\nu}(x+\mu) U_{\mu}^{\dagger}(x+\nu) U_{\nu}^{\dagger}(x)
+   * - ccwise==false :
+   *   S_{\mu \nu}(x) =
+   *   U_{\nu}(x+\mu-\nu)^{\dagger} * U_{\mu}^{\dagger}(x-\nu) * U_{\nu}(x-\nu)
+   * @tparam T --> has to be the adjoint representation
+   * @tparam S gauge group
+   * @tparam Arr
+   * @param U gauge configuration
+   * @param x point of application of the staple
+   * @param mu
+   * @param nu
+   * @param up true when the staple is in the positive '\nu' semi-plane
+   * @param ccwise  true when the staple orientation is counterclockwise
+   */
+  template <class T, class S, class Arr>
+  T get_staple(const gaugeconfig<S> &U,
+               const Arr &x,
+               const size_t &mu,
+               const size_t &nu,
+               const bool &up,
+               const bool &ccwise) {
+    T K;
+    S res;
+    if (up) {
+      res = U(xp(x, mu), nu) * U(xp(x, nu), mu).dagger() * U(x, nu).dagger();
+    } else {
+      res = U(xm(x, nu), nu).dagger() * U(xm(x, nu), mu) * U(xm(xp(x, mu), nu), nu);
+    }
+
+    if (ccwise) {
+      K = res;
+    } else {
+      K = res.dagger();
+    }
+
+    return K;
+  }
+
+  /**
    * @brief Get the plaquette U_{\mu\nu} as in eq. (2.48) of
    * https://link.springer.com/book/10.1007/978-3-642-01850-3
    * @tparam Group
@@ -65,15 +108,42 @@ namespace rotating_spacetime {
   Group plaquette(const gaugeconfig<Group> &U,
                   const nd_max_arr<size_t> &x,
                   const size_t &mu,
-                  const size_t &nu) {
-    const Group res =
-      U(x, mu) * U(xp(x, mu), nu) * U(xp(x, nu), mu).dagger() * U(x, nu).dagger();
-    return res;
+                  const size_t &nu,
+                  const bool &up,
+                  const bool &ccwise) {
+    Group S = get_staple<Group, Group>(U, x, mu, nu, up, ccwise);
+
+    if (up ^ ccwise) {
+      return S * U(x, mu).dagger();
+    } else {
+      return U(x, mu) * S;
+    }
   }
 
   /**
-   * @brief Get the clover leaf plaquette Ubar as in eq. 16 of
-   * https://arxiv.org/pdf/1303.6292.pdf See also eq. (9.12) of
+   * @brief real part and trace of the plaquette
+   *
+   * @tparam Group
+   * @param U
+   * @param x
+   * @param mu
+   * @param nu
+   * @param up
+   * @param ccwise
+   * @return Group
+   */
+  template <class Group>
+  double retr_plaquette(const gaugeconfig<Group> &U,
+                        const nd_max_arr<size_t> &x,
+                        const size_t &mu,
+                        const size_t &nu) {
+    const bool or1 = true; // orientation doesn't matter when taking the Re(Tr(...))
+    return retrace(plaquette(U, x, mu, nu, true, !or1));
+  }
+
+  /**
+   * @brief Get the clover leaf plaquette \bar{U} as in eq. 16 of
+   * https://arxiv.org/pdf/1303.6292.pdf. See also eq. (9.12) of
    * https://link.springer.com/book/10.1007/978-3-642-01850-3
    *
    * Note: In the end, we always sum over all points of the lattice.
@@ -95,57 +165,72 @@ namespace rotating_spacetime {
                           const size_t &nu) {
     double res = 0.0;
 
-    res += retrace(plaquette(U, x, mu, nu));
-    res += retrace(plaquette(U, xm(x, mu), mu, nu));
-    res += retrace(plaquette(U, xm(xm(x, mu), nu), mu, nu));
-    res += retrace(plaquette(U, xm(x, nu), mu, nu));
+    res += retr_plaquette(U, x, mu, nu);
+    res += retr_plaquette(U, xm(x, mu), mu, nu);
+    res += retr_plaquette(U, xm(xm(x, mu), nu), mu, nu);
+    res += retr_plaquette(U, xm(x, nu), mu, nu);
 
     return res / 4.0;
   }
 
   /**
-   * @brief chair loop
-   * chair loop built as the product of 2 orthogonal plaquettes: see eq. 17 of
-   * https://arxiv.org/pdf/1303.6292.pdf
-   * @tparam Group
+   * @brief Get the chair loop object CL_{\mu \nu \rho}(x)
+   * CL_{\mu \nu \rho}(x) is product of 2 staples.
+   * see eq. 17 of https://arxiv.org/pdf/1303.6292.pdf.
+   * @tparam S gauge group
+   * @tparam Arr
    * @param U gauge configuration
-   * @param x_munu origin of the 1st plaquette (plane mu, nu)
-   * @param x_nurho origin of the 2nd plaquette (plane nu, rho)
+   * @param x point of application of the staple
    * @param mu
    * @param nu
-   * @param rho
-   * @param flip  true if orientation is flipped for the 2nd plaquette
-   * @return double
+   * @param p array of bool flags for the directions \mu and \rho
+   * for i=\mu,\rho : p[i]==true when the chair is in the positive semi-plane of the
+   * direction 'i'.
+   * The chairs in the negative '\nu' semi-plane are obtained translating the chair ar
+   * x-\nu
    */
-  template <class Group>
-  Group chair_loop(const gaugeconfig<Group> &U,
-                   const nd_max_arr<size_t> &x_munu,
-                   const nd_max_arr<size_t> &x_nurho,
-                   const size_t &mu,
-                   const size_t &nu,
-                   const size_t &rho,
-                   const bool &flip = true) {
-    Group C = plaquette(U, x_munu, mu, nu);
+  template <class S, class Arr>
+  S chair_loop(const gaugeconfig<S> &U,
+               const Arr &x,
+               const size_t &mu,
+               const size_t &nu,
+               const size_t &rho,
+               const std::array<bool, 2> &p) {
+    S K;
 
-    if (flip) {
-      C *= plaquette(U, x_nurho, nu, rho).dagger();
-    } else {
-      C *= plaquette(U, x_nurho, nu, rho);
-    }
+    S K_numu, K_nurho; // staples in the planes (\nu,\mu) [not (\mu,\nu)] and (\nu,\rho)
 
-    return C;
+    /**
+     * @brief semi-plane given by p[0], orientation is not unique.
+     * The following argument applies also for or1==false,
+     * but here we fix counterclockwise, i.e. or1==true,
+     * for all the staples in the (\nu,\mu) plane.
+     * Notes:
+     * - if both staples are both in their positive/negative semi-plane,
+     * i.e. (p[0] XOR p[1])==false --> the orientation of 2nd staple is clockwise, i.e.
+     * or2==false
+     * - if the staples are one in its positive and one in its negative semi-plane,
+     * i.e. (p[0] XOR p[1])==true --> the orientation of 2nd staple is counterclockwise,
+     * i.e. or2==true
+     */
+    const bool or1 = true;
+    const bool or2 = !(or1 ^ (p[0] ^ p[1]));
+    K_numu = get_staple<S>(U, x, nu, mu, p[0], or1);
+    K_nurho = get_staple<S>(U, x, nu, rho, p[1], or2);
+
+    K = K_numu * K_nurho;
+    return K;
   }
 
   // Re(Tr(chair))
   template <class Group>
   double retr_chair_loop(const gaugeconfig<Group> &U,
-                         const nd_max_arr<size_t> &x_munu,
-                         const nd_max_arr<size_t> &x_nurho,
+                         const nd_max_arr<size_t> &x,
                          const size_t &mu,
                          const size_t &nu,
                          const size_t &rho,
-                         const bool &flip = true) {
-    return retrace(chair_loop(U, x_munu, x_nurho, mu, nu, rho, flip));
+                         const std::array<bool, 2> &p) {
+    return retrace(chair_loop(U, x, mu, nu, rho, p));
   }
 
   /**
@@ -167,13 +252,15 @@ namespace rotating_spacetime {
                            const size_t &rho) {
     double res = 0.0;
 
-    res += retr_chair_loop(U, x, x, mu, nu, rho);
-    res += retr_chair_loop(U, xm(x, nu), xm(x, nu), mu, nu, rho);
+    const nd_max_arr<size_t> xmnu = xm(x, nu);
 
-    res += retr_chair_loop(U, xm(x, mu), xm(x, rho), mu, nu, rho);
-    res += retr_chair_loop(U, xm(xm(x, mu), nu), xm(xm(x, rho), nu), mu, nu, rho);
+    res += retr_chair_loop(U, x, mu, nu, rho, {true, true});
+    res += retr_chair_loop(U, xmnu, mu, nu, rho, {true, true});
 
-    return res;
+    res += retr_chair_loop(U, x, mu, nu, rho, {false, false});
+    res += retr_chair_loop(U, xmnu, mu, nu, rho, {false, false});
+
+    return res / 8.0;
   }
 
   /**
@@ -195,13 +282,15 @@ namespace rotating_spacetime {
                            const size_t &rho) {
     double res = 0.0;
 
-    res += retr_chair_loop(U, x, xm(x, rho), mu, nu, rho, true);
-    res += retr_chair_loop(U, xm(x, nu), xm(xm(x, rho), nu), mu, nu, rho, true);
+    const nd_max_arr<size_t> xmnu = xm(x, nu);
 
-    res += retr_chair_loop(U, xm(x, mu), x, mu, nu, rho, true);
-    res += retr_chair_loop(U, xm(xm(x, mu), nu), xm(x, nu), mu, nu, rho, true);
+    res += retr_chair_loop(U, x, mu, nu, rho, {true, false});
+    res += retr_chair_loop(U, xmnu, mu, nu, rho, {true, false});
 
-    return res;
+    res += retr_chair_loop(U, x, mu, nu, rho, {false, true});
+    res += retr_chair_loop(U, xmnu, mu, nu, rho, {false, true});
+
+    return res / 8.0;
   }
 
   /**
@@ -222,8 +311,7 @@ namespace rotating_spacetime {
                           const size_t &mu,
                           const size_t &nu,
                           const size_t &rho) {
-    return (retr_chair_loop_1(U, x, mu, nu, rho) - retr_chair_loop_2(U, x, mu, nu, rho)) /
-           8.0;
+    return (retr_chair_loop_1(U, x, mu, nu, rho) - retr_chair_loop_2(U, x, mu, nu, rho));
   }
 
   /**

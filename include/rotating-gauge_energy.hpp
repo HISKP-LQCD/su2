@@ -53,15 +53,11 @@ namespace rotating_spacetime {
 
   /**
    * @brief Get the staple object S_{\mu \nu}(x)
-   * returns, in the adjoint representation T :
-   * - ccwise==true :
-   *   S_{\mu \nu}(x) =
-   *   U_{\nu}(x+\mu) U_{\mu}^{\dagger}(x+\nu) U_{\nu}^{\dagger}(x)
-   * - ccwise==false :
-   *   S_{\mu \nu}(x) =
-   *   U_{\nu}(x+\mu-\nu)^{\dagger} * U_{\mu}^{\dagger}(x-\nu) * U_{\nu}(x-\nu)
-   * @tparam T --> has to be the adjoint representation
-   * @tparam S gauge group
+   * returns, in the representation T the staple
+   * - in the positive/negative \nu semi-plane : up==true/false
+   * - counterclockwise/clockwise oriented in the : ccwise==true/false
+   * @tparam T gauge group (representation T)
+   * @tparam S gauge group (representation S)
    * @tparam Arr
    * @param U gauge configuration
    * @param x point of application of the staple
@@ -92,6 +88,63 @@ namespace rotating_spacetime {
     }
 
     return K;
+  }
+
+  /**
+   * @brief Get the chair staple object CS_{\mu \nu}(x)
+   * returns, in the representation T the staple
+   * - in the positive/negative \nu semi-plane : up==true/false
+   * - counterclockwise/clockwise oriented in the : ccwise==true/false
+   * @tparam T --> has to be the adjoint representation
+   * @tparam S gauge group
+   * @tparam Arr
+   * @param U gauge configuration
+   * @param x point of application of the staple
+   * @param mu
+   * @param nu
+   * @param p array of 2 values:
+   * p[0]==true : staple is in the positive \mu semi-plane
+   * p[1]==true : staple is in the positive \rho semi-plane
+   * @param cc if true staple is oriented counterclockwise in the plane (\nu,\rho)
+   * Note that this orientation is sufficient to characterize the chair staple,
+   * since the orientation of the 1st staple coincides with p[0]
+   */
+  template <class T, class S, class Arr>
+  T get_chair_staple(const gaugeconfig<S> &U,
+                     const Arr &x,
+                     const size_t &mu,
+                     const size_t &nu,
+                     const size_t rho,
+                     const std::array<bool, 2> &p,
+                     const bool &cc) {
+    const bool dag_all = (p[0] ^ (p[1] && cc)); // wether to dagger in the end
+
+    // Note: if taking the dagger in the end, the orientations are reversed
+    const std::array<bool, 2> dd = {(bool)(p[0] ^ dag_all), (bool)(cc ^ dag_all)};
+    S K1 = get_staple<S, S>(U, x, mu, nu, p[0], dd[0]);
+
+    Arr y = x;
+    if (!p[0]) {
+      y[nu]--;
+    }
+    if (p[0] ^ (!(p[1] ^ cc))) {
+      y[mu]++;
+    }
+    S M = U(y, nu); // link in the middle between the staples K1 and K2
+
+    const bool dag_U = cc;
+    if (dag_U) {
+      M = M.dagger();
+    }
+
+    S K2 = get_staple<S, S>(U, y, nu, rho, p[1], cc);
+
+    S K = K1 * M * K2;
+    if (dag_all) {
+      K = K.dagger();
+    }
+
+    return (T)K;
   }
 
   /**
@@ -138,7 +191,7 @@ namespace rotating_spacetime {
                         const size_t &mu,
                         const size_t &nu) {
     const bool or1 = true; // orientation doesn't matter when taking the Re(Tr(...))
-    return retrace(plaquette(U, x, mu, nu, true, !or1));
+    return retrace(plaquette(U, x, mu, nu, true, or1));
   }
 
   /**
@@ -195,31 +248,10 @@ namespace rotating_spacetime {
                const size_t &mu,
                const size_t &nu,
                const size_t &rho,
-               const std::array<bool, 2> &p) {
-    S K;
-
-    S K_numu, K_nurho; // staples in the planes (\nu,\mu) [not (\mu,\nu)] and (\nu,\rho)
-
-    /**
-     * @brief semi-plane given by p[0], orientation is not unique.
-     * The following argument applies also for or1==false,
-     * but here we fix counterclockwise, i.e. or1==true,
-     * for all the staples in the (\nu,\mu) plane.
-     * Notes:
-     * - if both staples are both in their positive/negative semi-plane,
-     * i.e. (p[0] XOR p[1])==false --> the orientation of 2nd staple is clockwise, i.e.
-     * or2==false
-     * - if the staples are one in its positive and one in its negative semi-plane,
-     * i.e. (p[0] XOR p[1])==true --> the orientation of 2nd staple is counterclockwise,
-     * i.e. or2==true
-     */
-    const bool or1 = true;
-    const bool or2 = !(or1 ^ (p[0] ^ p[1]));
-    K_numu = get_staple<S>(U, x, nu, mu, p[0], or1);
-    K_nurho = get_staple<S>(U, x, nu, rho, p[1], or2);
-
-    K = K_numu * K_nurho;
-    return K;
+               const std::array<bool, 2> &p,
+               const bool &cc) {
+    S K = get_chair_staple<S, S>(U, x, mu, nu, rho, p, cc);
+    return U(x, mu) * K;
   }
 
   // Re(Tr(chair))
@@ -230,7 +262,8 @@ namespace rotating_spacetime {
                          const size_t &nu,
                          const size_t &rho,
                          const std::array<bool, 2> &p) {
-    return retrace(chair_loop(U, x, mu, nu, rho, p));
+    const bool or1 = true; // orientation doesn't matter when taking the Re(Tr(...))
+    return retrace(chair_loop(U, x, mu, nu, rho, p, or1));
   }
 
   /**
@@ -342,8 +375,11 @@ namespace rotating_spacetime {
     if (mu == 1 && nu == 3 && rho == 2) {
       return x[1] * x[2] * std::pow(Omega, 2);
     } else {
-      std::cout << "Error: mu=" << mu << " and nu=" << nu << " not supported by "
-                << __func__ << "\n";
+#pragma omp single
+      {
+        std::cout << "Error: (mu,nu,rho)=(" << mu << "," << nu << "," << rho
+                  << ") not supported by " << __func__ << "\n";
+      }
       abort();
       return 0.0;
     }
@@ -363,13 +399,13 @@ namespace rotating_spacetime {
       return 1.0;
     }
     if ((mu == 1 && nu == 2) || (mu == 2 && nu == 1)) {
-      return (1 + (std::pow(x[1], 2) + std::pow(x[2], 2)) * std::pow(Omega, 2));
+      return (1.0 + (std::pow(x[1], 2) + std::pow(x[2], 2)) * std::pow(Omega, 2));
     }
     if ((mu == 1 && nu == 3) || (mu == 3 && nu == 1)) {
-      return (1 + std::pow(x[2], 2) * std::pow(Omega, 2));
+      return (1.0 + std::pow(x[2], 2) * std::pow(Omega, 2));
     }
     if ((mu == 2 && nu == 3) || (mu == 3 && nu == 2)) {
-      return (1 + std::pow(x[1], 2) * std::pow(Omega, 2));
+      return (1.0 + std::pow(x[1], 2) * std::pow(Omega, 2));
     } else {
 #pragma omp single
       {
@@ -416,7 +452,7 @@ namespace rotating_spacetime {
             for (size_t mu = 0; mu < U.getndims() - 2; mu++) {
               for (size_t nu = mu + 1; nu < U.getndims() - 1; nu++) {
                 for (size_t rho = 1; rho < U.getndims(); rho++) {
-                  if (rho == mu || rho == nu) {
+                  if (rho == mu || rho == nu || rho == 3) {
                     continue;
                   }
                   res += chair_stm_factor(x, mu, nu, rho, Omega) *

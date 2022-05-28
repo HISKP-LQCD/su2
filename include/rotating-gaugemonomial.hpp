@@ -40,7 +40,6 @@ namespace rotating_spacetime {
     return U.getBeta() * (one - two);
   }
 
-
   /**
    * @brief gauge force in the HMC
    *
@@ -55,19 +54,17 @@ namespace rotating_spacetime {
             const size_t &mu,
             const double &Omega) {
     T St1;
-
     for (size_t nu = 0; nu < U.getndims(); nu++) {
       if (mu == nu) {
         continue;
       }
 
-      T S_tt = get_staple<T, G>(U, x, mu, nu, true, true);
-      T S_tf = get_staple<T, G>(U, x, mu, nu, true, false);
-      T S_ft = get_staple<T, G>(U, x, mu, nu, false, true);
-      T S_ff = get_staple<T, G>(U, x, mu, nu, false, false);
+      // "/4.0" --> each plaquette comes from an average over the clover
+      const T S_tt = get_staple<T, G>(U, x, mu, nu, true, true) / 4.0;
+      const T S_ff = get_staple<T, G>(U, x, mu, nu, false, false) / 4.0;
 
-      // the 2 contributions from the clover plaquette at x
-      St1 += (S_tt + S_ff); // plaq_factor(x, mu, nu, Omega) * (S_tt + S_ff);
+      // 2 contributions from the clover plaquette at x
+      St1 += plaq_factor(x, mu, nu, Omega) * (S_tt + S_ff);
 
       /* contributions from nearest neighbors */
 
@@ -82,19 +79,46 @@ namespace rotating_spacetime {
       // x+\mu-\nu
       St1 += plaq_factor(xp(xm(x, nu), mu), mu, nu, Omega) * S_ff;
     }
-    St1 /= 4.0; // each plaquette comes from an average over the clover
 
     T St2;
+    for (size_t nu = mu + 1; nu < U.getndims() - 1; nu++) {
+      for (size_t rho = 1; rho < U.getndims(); rho++) {
+        if (rho == mu || rho == nu || rho == 3) {
+          continue;
+        }
 
-    // Stap += x2 * Omega * retr_asymm_chair(U, x, 0, 1, 2);
-    // Stap -= x1 * Omega * retr_asymm_chair(U, x, 0, 2, 1);
-    // Stap += x2 * Omega * retr_asymm_chair(U, x, 0, 1, 3);
-    // Stap -= x1 * Omega * retr_asymm_chair(U, x, 0, 2, 3);
-    // Stap += x1 * x2 * Omega2 * retr_asymm_chair(U, x, 1, 3, 2);
+        // "/8.0" --> each chair loop is divided by 8.0
+        const T S_tt_t = get_chair_staple<T, G>(U, x, mu, nu, rho, {1, 1}, 1) / 8.0;
+        const T S_tt_f = get_chair_staple<T, G>(U, x, mu, nu, rho, {1, 1}, 0) / 8.0;
+        const T S_tf_t = get_chair_staple<T, G>(U, x, mu, nu, rho, {1, 0}, 1) / 8.0;
+        const T S_tf_f = get_chair_staple<T, G>(U, x, mu, nu, rho, {1, 0}, 0) / 8.0;
+        const T S_ft_t = get_chair_staple<T, G>(U, x, mu, nu, rho, {0, 1}, 1) / 8.0;
+        const T S_ft_f = get_chair_staple<T, G>(U, x, mu, nu, rho, {0, 1}, 0) / 8.0;
+        const T S_ff_t = get_chair_staple<T, G>(U, x, mu, nu, rho, {0, 0}, 1) / 8.0;
+        const T S_ff_f = get_chair_staple<T, G>(U, x, mu, nu, rho, {0, 0}, 0) / 8.0;
+
+        // 4 contributions from the chairs at x
+        St2 +=
+          chair_stm_factor(x, mu, nu, rho, Omega) * (S_tt_t + S_ft_f - S_tf_f - S_ff_t);
+
+        // x+\nu
+        St2 += chair_stm_factor(xp(x, nu), mu, nu, rho, Omega) * (S_tt_t - S_tf_f);
+        // x+\mu+\nu
+        St2 +=
+          chair_stm_factor(xp(xp(x, mu), nu), mu, nu, rho, Omega) * (S_tf_t - S_tt_f);
+        // x+\mu
+        St2 += chair_stm_factor(xp(x, mu), mu, nu, rho, Omega) *
+               (S_tf_t + S_ff_f - S_tt_f - S_ft_t);
+        // // x-\nu
+        St2 += chair_stm_factor(xm(x, nu), mu, nu, rho, Omega) * (S_ft_f - S_ff_t);
+        // x+\mu-\nu
+        St2 +=
+          chair_stm_factor(xp(xm(x, nu), mu), mu, nu, rho, Omega) * (S_ff_f - S_ft_t);
+      }
+    }
 
     T Stap = U(x, mu) * (St1 + St2);
-
-    return Stap;
+    return U.getBeta() / double(U.getNc()) * Stap;
   }
 
   /**
@@ -108,7 +132,7 @@ namespace rotating_spacetime {
   template <typename Float, class Group>
   class gauge_monomial : public monomial<Float, Group> {
   private:
-    double Omega; // imaginary angular velocity
+    const double Omega; // imaginary angular velocity
   public:
     gauge_monomial<Float, Group>(unsigned int _timescale, const double &_Omega)
       : monomial<Float, Group>::monomial(_timescale), Omega(_Omega) {}
@@ -155,8 +179,7 @@ namespace rotating_spacetime {
               const nd_max_arr<size_t> x = {x0, x1, x2, x3};
               for (size_t mu = 0; mu < h.U->getndims(); mu++) {
                 accum F = get_F_G<accum>(*h.U, x, mu, Omega);
-                deriv(x, mu) +=
-                  fac * h.U->getBeta() / double(h.U->getNc()) * get_deriv<double>(F);
+                deriv(x, mu) += fac * get_deriv<double>(F);
               }
             }
           }

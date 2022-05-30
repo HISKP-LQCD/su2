@@ -51,10 +51,17 @@ namespace flat_spacetime {
    * @param res
    * @param Q
    * @param cloverdef
+   * @param ss compute only the spatial-spatial contribution (continuum limit given by
+   * eq. 3.1 of https://arxiv.org/pdf/1205.0781.pdf)
    */
   template <class T>
-  void
-  energy_density(const gaugeconfig<T> &U, double &res, double &Q, bool cloverdef = true) {
+  void energy_density(const gaugeconfig<T> &U,
+                      double &res,
+                      double &Q,
+                      bool cloverdef = true,
+                      const bool &ss = false) {
+    const size_t mu_start = ss ? 1 : 0;
+
     res = 0.;
     Q = 0.;
 
@@ -71,7 +78,7 @@ namespace flat_spacetime {
             std::vector<size_t> x2 = x;
             std::vector<size_t> x3 = x;
             accum G[4][4];
-            for (size_t mu = 0; mu < U.getndims() - 1; mu++) {
+            for (size_t mu = mu_start; mu < U.getndims() - 1; mu++) {
               for (size_t nu = mu + 1; nu < U.getndims(); nu++) {
                 x1[mu] += 1;
                 x2[nu] += 1;

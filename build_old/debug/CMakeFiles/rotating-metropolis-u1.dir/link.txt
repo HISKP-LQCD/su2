@@ -1,1 +1,0 @@
-/usr/bin/c++   -fopenmp -D_USE_OMP_ -g  -rdynamic CMakeFiles/rotating-metropolis-u1.dir/rotating-metropolis-u1.cc.o  -o rotating-metropolis-u1 

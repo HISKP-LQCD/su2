@@ -1,2 +1,0 @@
-/usr/bin/ar qc libsu2.a  CMakeFiles/su2.dir/exp_gauge.cc.o CMakeFiles/su2.dir/print_program_options.cc.o CMakeFiles/su2.dir/parse_commandline.cc.o CMakeFiles/su2.dir/parse_input_file.cc.o
-/usr/bin/ranlib libsu2.a

@@ -204,7 +204,7 @@ int main(int ac, char *av[]) {
         }
         if (hparams.omeas.gradient) {
           if (hparams.omeas.verbosity > 0) {
-            std::cout << "## online measuring: Gradient flow";
+            std::cout << "## online measuring: Gradient flow\n";
           }
           omeasurements::meas_gradient_flow<_u1>(U, i, hparams.conf_dir,
                                                  hparams.omeas.tmax);

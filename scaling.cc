@@ -3,9 +3,9 @@
 #include"gaugeconfig.hh"
 #include"flat-gauge_energy.hpp"
 #include"random_gauge_trafo.hh"
-#include"sweep.hh"
+#include"flat-sweep.hh"
 #include"parse_commandline.hh"
-#include"energy_density.hh"
+#include"flat-energy_density.hh"
 #include"version.hh"
 #include"vectorfunctions.hh"
 #include"wilsonloop.hh"
@@ -28,6 +28,8 @@ using std::cout;
 using std::endl;
 namespace po = boost::program_options;
 using Complex = std::complex<double>;
+
+
 
 /**
  * This programm is intended to determine the optimal number of threads to use for generating configurations using MCMC
@@ -133,20 +135,20 @@ int main(int ac, char* av[]) {
         for(size_t engine=0;engine<thread;engine+=1){
           engines[engine].seed(gparams.seed+i+engine);
         }
-        rate += sweep(U, engines, delta, N_hit, gparams.beta, gparams.xi, gparams.anisotropic);
+        rate += flat_spacetime::sweep(U, engines, delta, N_hit, gparams.beta, gparams.xi, gparams.anisotropic);
       }
       if(oneengine){
         blankrng.seed(gparams.seed+i);
-        rate += sweepone(U, blankrng, delta, N_hit, gparams.beta, gparams.xi, gparams.anisotropic);
+        rate += flat_spacetime::sweepone(U, blankrng, delta, N_hit, gparams.beta, gparams.xi, gparams.anisotropic);
       }
     //inew counts loops, loop-variable needed to have one RNG per thread with different seeds for every measurement
       size_t inew = (i-gparams.icounter)/thread+gparams.icounter;
       
-      rate += sweep(U, engines, delta, N_hit, gparams.beta, gparams.xi, gparams.anisotropic);
+      rate += flat_spacetime::sweep(U, engines, delta, N_hit, gparams.beta, gparams.xi, gparams.anisotropic);
       double energy = flat_spacetime::gauge_energy(U, true);
 
       double E = 0., Q = 0.;
-      energy_density(U, E, Q);
+      flat_spacetime::energy_density(U, E, Q);
       //measuring spatial plaquettes only means only (ndims-1)/ndims of all plaquettes are measured, so need facnorm for normalization to 1
       cout << inew << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy*normalisation*facnorm << "  " << Q << endl;
       if(inew > 0 && (inew % gparams.N_save) == 0) {

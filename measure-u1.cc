@@ -12,7 +12,7 @@
  *
  */
 
-#include "energy_density.hh"
+#include "flat-energy_density.hh"
 #include "flat-gauge_energy.hpp"
 #include "gaugeconfig.hh"
 #include "io.hh"
@@ -108,14 +108,14 @@ int main(int ac, char *av[]) {
       spacetime_lattice::num_pLloops_half(U.getndims()); // d*(d-1)/2
     double plaquette = flat_spacetime::gauge_energy(U);
     double density = 0., Q = 0.;
-    energy_density(U, density, Q);
+    flat_spacetime::energy_density(U, density, Q);
     std::cout << "## Initial Plaquette: "
               << plaquette / U.getVolume() / double(U.getNc()) / ndims_fact << std::endl;
     std::cout << "## Initial Energy density: " << density << std::endl;
 
     random_gauge_trafo(U, mparams.seed);
     plaquette = flat_spacetime::gauge_energy(U);
-    energy_density(U, density, Q);
+    flat_spacetime::energy_density(U, density, Q);
     std::cout << "## Plaquette after rnd trafo: " << std::scientific << std::setw(15)
               << plaquette / U.getVolume() / double(U.getNc()) / ndims_fact << std::endl;
     std::cout << "## Energy density: " << density << std::endl;

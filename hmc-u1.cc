@@ -10,7 +10,7 @@
  *
  */
 
-#include "energy_density.hh"
+#include "flat-energy_density.hh"
 #include "flat-gauge_energy.hpp"
 #include "gaugeconfig.hh"
 #include "integrator.hh"
@@ -110,6 +110,7 @@ int main(int ac, char *av[]) {
     0, pparams.m0, hparams.solver, hparams.tolerance_cg, hparams.seed_pf,
     hparams.solver_verbosity);
 
+
   if (pparams.include_gauge) {
     if (pparams.rotating_frame) {
       monomial_list.push_back(&gm_rot);
@@ -157,7 +158,7 @@ int main(int ac, char *av[]) {
 
     const double energy = flat_spacetime::gauge_energy(U);
     double E = 0., Q = 0.;
-    energy_density(U, E, Q);
+    flat_spacetime::energy_density(U, E, Q);
     rate += mdparams.getaccept();
 
     std::cout << i << " " << mdparams.getaccept() << " " << std::scientific

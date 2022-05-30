@@ -36,6 +36,12 @@ namespace spacetime_lattice {
    */
   inline double num_pLloops_half(const int &d) { return num_pLloops(d) / 2.0; }
 
+  inline void fatal_error(const std::string msg, char const *function_name) {
+    std::cerr << "# FATAL ERROR: " << msg << " " << function_name << ".\nAborting.";
+    abort();
+    return;
+  }
+
 } // namespace spacetime_lattice
 
 class geometry {

@@ -6,8 +6,8 @@ geometry:
   Z: 1
   T: 4
   ndims: 3
-  rotating_frame:
-    Omega: 0.5
+#  rotating_frame:
+#    Omega: 0.0
 
 monomials:
   gauge:
@@ -16,11 +16,11 @@ monomials:
     #anisotropic : false
 
 metropolis:
-  conf_dir: "./c1/"
+  conf_dir: "./confs/"
   n_meas: 100
-  N_save: 2
-  N_hit: 10
-  delta: 0.5
-  heat: 1
+  N_save: 10
+  N_hit: 1000
+  delta: 0.01
+  heat: 1.0
   restart: false
   

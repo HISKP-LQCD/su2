@@ -1,0 +1,26 @@
+# metropolis.input
+
+geometry:
+  X: 4
+  Y: 4
+  Z: 1
+  T: 4
+  ndims: 3
+#  rotating_frame:
+#    Omega: 0.0
+
+monomials:
+  gauge:
+    beta: 1.9
+    #xi : 1.0
+    #anisotropic : false
+
+metropolis:
+  conf_dir: "./confs/"
+  n_meas: 100
+  N_save: 10
+  N_hit: 1000
+  delta: 0.01
+  heat: 1.0
+  restart: false
+  

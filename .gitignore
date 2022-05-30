@@ -37,8 +37,7 @@ build/
 external/
 
 # non-text files from the documentation
-docu/*.pdf
-docu/fermions/*.pdf
-docu/fermions/*.dvi
+*.html
+*.pdf
 
 

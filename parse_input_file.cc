@@ -99,6 +99,7 @@ namespace input_file_parsing {
       YAML::Node R = in.get_root();
       if (R["geometry"]["rotating_frame"]) {
         pparams.rotating_frame = true;
+        pparams.flat_metric = false; // metric is not flat
         in.read_verb<double>(pparams.Omega, {"geometry", "rotating_frame", "Omega"});
       }
 
@@ -145,12 +146,20 @@ namespace input_file_parsing {
         // hmc-u1 parameters
         in.read_verb<size_t>(hparams.N_save, {"hmc", "n_save"});
         in.read_verb<size_t>(hparams.n_meas, {"hmc", "n_meas"});
-        in.read_verb<size_t>(hparams.icounter, {"hmc", "counter"});
-        in.read_verb<bool>(hparams.heat, {"hmc", "heat"});
+
+        std::cout << "check "<< hparams.restart<<"\n";
+        in.read_opt_verb<bool>(hparams.restart, {"hmc", "restart"});
+        std::cout << "check "<< hparams.restart<<"\n";
+        if (!hparams.restart) {
+          in.read_verb<bool>(hparams.heat, {"hmc", "heat"});
+        }
+        std::cout << "check "<< hparams.restart<<"\n";
+
         in.read_opt_verb<size_t>(hparams.seed, {"hmc", "seed"});
         in.read_opt_verb<std::string>(hparams.configfilename, {"hmc", "configname"});
-        in.read_opt_verb<std::string>(hparams.outdir, {"hmc", "outdir"});
+        in.read_opt_verb<std::string>(hparams.conf_dir, {"hmc", "conf_dir"});
         in.read_opt_verb<std::string>(hparams.conf_basename, {"hmc", "conf_basename"});
+        in.read_opt_verb<bool>(hparams.lenghty_conf_name, {"hmc", "lenghty_conf_name"});
 
         in.read_opt_verb<size_t>(hparams.beta_str_width, {"hmc", "beta_str_width"});
         validate_beta_str_width(hparams.beta_str_width);
@@ -161,6 +170,25 @@ namespace input_file_parsing {
         in.read_opt_verb<double>(hparams.tau, {"integrator", "tau"});
         in.read_opt_verb<size_t>(hparams.exponent, {"integrator", "exponent"});
         in.read_opt_verb<std::string>(hparams.integrator, {"integrator", "name"});
+
+        if (nd["omeas"]) {
+          hparams.make_omeas = true;
+          in.read_opt_verb<size_t>(hparams.omeas.verbosity, {"omeas", "verbosity"});
+          in.read_opt_verb<size_t>(hparams.omeas.icounter, {"omeas", "icounter"});
+          in.read_opt_verb<size_t>(hparams.omeas.nstep, {"omeas", "nstep"});
+
+          if (nd["omeas"]["pion_staggered"]) {
+            hparams.omeas.pion_staggered = true;
+            in.read_verb<double>(hparams.omeas.m0, {"omeas", "pion_staggered", "mass"});
+          }
+
+          in.read_opt_verb<bool>(hparams.omeas.Wloop, {"omeas", "Wloop"});
+
+          if (nd["omeas"]["gradient"]) {
+            hparams.omeas.gradient = true;
+            in.read_verb<double>(hparams.omeas.tmax, {"omeas", "gradient", "tmax"});
+          }
+        }
 
         in.finalize();
         return 0;
@@ -195,16 +223,37 @@ namespace input_file_parsing {
         in.read_opt_verb<bool>(mparams.Wloop, {"measurements", "Wloop"});
         // optional parameters for gradient
         if (nd["measurements"]["gradient"]) {
+          mparams.gradient = true;
           in.read_opt_verb<double>(mparams.tmax, {"measurements", "gradient", "tmax"});
+        }
+        // optional parameters for pion
+        if (nd["measurements"]["pion_staggered"]) {
+          pparams.include_staggered_fermions = true;
+
+          mparams.pion_staggered = true;
+          in.read_verb<double>(pparams.m0, {"measurements", "pion_staggered", "mass"});
+
+          in.read_opt_verb<std::string>(mparams.solver,
+                                        {"measurements", "pion_staggered", "solver"});
+          in.read_opt_verb<double>(mparams.tolerance_cg,
+                                   {"measurements", "pion_staggered", "tolerance_cg"});
+          in.read_opt_verb<size_t>(
+            mparams.solver_verbosity,
+            {"measurements", "pion_staggered", "solver_verbosity"});
+          in.read_opt_verb<size_t>(mparams.seed_pf,
+                                   {"measurements", "pion_staggered", "seed_pf"});
         }
         // optional parameters for potentials
         if (nd["measurements"]["potential"]) {
-          mparams.potential = true;
+          in.read_opt_verb<bool>(mparams.potential,
+                                 {"measurements", "potential", "potential"});
           in.read_opt_verb<bool>(mparams.potentialsmall,
                                  {"measurements", "potential", "potentialsmall"});
           in.read_opt_verb<bool>(mparams.append, {"measurements", "potential", "append"});
           in.read_opt_verb<bool>(mparams.smear_spatial_only,
                                  {"measurements", "potential", "smear_spatial_only"});
+          in.read_opt_verb<bool>(mparams.smear_temporal_only,
+                                 {"measurements", "potential", "smear_temporal_only"});
           in.read_opt_verb<size_t>(mparams.n_apesmear,
                                    {"measurements", "potential", "n_apesmear"});
           in.read_opt_verb<double>(mparams.alpha, {"measurements", "potential", "alpha"});
@@ -212,7 +261,7 @@ namespace input_file_parsing {
                                    {"measurements", "potential", "sizeWloops"});
         }
 
-        in.read_opt_verb<std::string>(mparams.confdir, {"measurements", "confdir"});
+        in.read_opt_verb<std::string>(mparams.conf_dir, {"measurements", "conf_dir"});
         in.read_opt_verb<std::string>(mparams.resdir, {"measurements", "resdir"});
 
         in.read_opt_verb<std::string>(mparams.conf_basename,
@@ -223,12 +272,26 @@ namespace input_file_parsing {
         validate_beta_str_width(mparams.beta_str_width);
 
         in.finalize();
+
+        in.finalize();
         return 0;
       }
 
     } // namespace measure
 
     namespace metropolis {
+      /**
+       * @brief check if N_hit >= 1, otherwise it aborts
+       * @param n N_hit (number of times an update per link is attempted)
+       */
+      void validate_N_hit(const size_t &n) {
+        if (n < 1) {
+          std::cerr << "Error: N_hit should be at least 1, otherwise nothing will happen";
+          std::cerr << "Aborting.\n";
+          abort();
+        }
+        return;
+      }
 
       int parse_input_file(const std::string &file,
                            gp::physics &pparams,
@@ -253,20 +316,23 @@ namespace input_file_parsing {
         in.read_opt_verb<size_t>(mcparams.icounter, {"metropolis", "icounter"});
         in.read_opt_verb<size_t>(mcparams.seed, {"metropolis", "seed"});
 
-        in.read_opt_verb<std::string>(mcparams.outdir, {"metropolis", "outdir"});
+        in.read_opt_verb<std::string>(mcparams.conf_dir, {"metropolis", "conf_dir"});
         in.read_opt_verb<std::string>(mcparams.conf_basename,
                                       {"metropolis", "conf_basename"});
         in.read_opt_verb<size_t>(mcparams.beta_str_width,
                                  {"metropolis", "beta_str_width"});
+        validate_beta_str_width(mcparams.beta_str_width);
         in.read_opt_verb<bool>(mcparams.restart, {"metropolis", "restart"});
         if (mcparams.restart) {
           in.read_opt_verb<std::string>(mcparams.configfilename,
                                         {"metropolis", "configfilename"});
+        } else {
+          in.read_verb<double>(mcparams.heat, {"metropolis", "heat"});
         }
 
-        in.read_verb<double>(mcparams.heat, {"metropolis", "heat"});
         in.read_verb<double>(mcparams.delta, {"metropolis", "delta"});
         in.read_opt_verb<size_t>(mcparams.N_hit, {"metropolis", "N_hit"});
+        validate_N_hit(mcparams.N_hit);
 
         in.finalize();
 

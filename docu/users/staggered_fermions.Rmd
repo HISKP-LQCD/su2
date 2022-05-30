@@ -1,0 +1,219 @@
+---
+title: Staggered fermions
+author: Simone Romiti
+output: html_document
+bibliography: biblio.bib  
+csl: 2d-materials.csl
+link-citations: true
+---
+
+For staggered fermions the Dirac operator is:
+
+$$
+D(x,y) = G(x,y) + m \delta_{x,y} = \\ 
+=  \sum_{\mu} \frac{1}{2} \eta_{\mu}(x) 
+    [U_{\mu}(x) \delta_{x+\mu, y} -
+     U^{\dagger}_{\mu}(x-\mu) \delta_{x-\mu, y} ]
++ m \delta_{x, y}
+$$
+
+with $\eta_{\mu}(x) = \prod_{\nu<\mu} (-1)^{x_{\nu}}$.
+
+The fermionic action is:
+
+$$
+S_F = \sum_{x, y} \bar{\psi}(x) D(x,y) \psi(y)
+$$
+
+## Dirac propagator
+
+The Dirac propagator $S(x,y)$ is given by the inverse of the Dirac operator $D(x|y)$ @gattringer2009quantum . Here we compute it as:
+
+$$
+S(x, y) 
+= D^{-1}(x, y) 
+= (D^{\dagger} \cdot (D D^{\dagger})^{-1} )(x,y)
+= \psi_x^{\dagger} (D^{\dagger} \cdot (D D^{\dagger})^{-1} ) \psi_y
+\quad ,
+$$
+
+where $\psi_z$ is defined a vector with components $\psi_z(w)=\delta_{z,w}$. Note that this is done in order to have to invert $D D^{\dagger}$ for which, being hermitian, can be inverted using the $CG$ algorithms.
+
+The pion correlator at rest ($\vec{p}=\vec{0}$) is given by:
+$$
+C(t) = \frac{1}{V} \sum_{\vec{x}} |S(x|0)|^2
+$$
+
+
+## Hybrid Monte Carlo
+
+We want to include staggered fermions @BITAR1989377 in the action of a $U(1)$ theory in $2+1$ dimensions.
+
+### Steps of the implementation
+
+The HMC consists of the following steps:
+
+1. **Heat bath** : Generation of random momenta
+2. **Molecular Dynamics (MD)**: Evolution of the field configurations according to an effective Hamiltonian
+3. **Accept-Reject**: Acceptance of rejection of the final configuration according to some given probability distribution.
+
+The inclusion of fermions in the action means the presence of the fermionic determinant in the partition function. 
+This can be evaluated as a Gaussian integral over pseudo-fermionic degrees of freedom (spinor structure but with bosonic algebra):
+$$
+\text{det} D = 
+\int d \phi^{\dagger} d \phi 
+\, \text{exp}(-\phi^{\dagger} D^{-1} \phi)
+\quad .
+$$
+
+### Numerical implementation
+
+In order to generate pseudo-fermion fields with the heatbath method, is more convenient to evaluate instead (see eq. (10) of @BITAR1989377):
+
+$$
+\text{det} D D^{\dagger} = 
+\int d \phi^{\dagger} d \phi 
+\, \text{exp}(-\phi^{\dagger} (D D^{\dagger})^{-1} \phi)
+$$
+
+interpreting the product of the determinants as coming from the degenerate $u$ and $d$ quarks. 
+Note that staggered Dirac operator is anti-hermitian (see eq. (10.26) of @gattringer2009quantum), so that the above integral is equivalent to $(\text{det} D)^2$.
+In practice, what we do is the following:
+
+1. Generate a Gaussian vector $R$ of $n$ components, where $n$ is the number of lattice sites.
+2. Evaluate and store $\phi = D R$.
+3. Evolve with the MD, keeping in mind that since:
+    $$
+    S_F = 
+    \phi^{\dagger} (D D^{\dagger})^{-1} \phi = 
+    \phi^{\dagger} M^{-1} \phi
+    $$
+    
+    we have:
+    
+    $$
+    \delta S_F 
+    = - \phi^{\dagger} M^{-1} \cdot \delta M \cdot M^{-1} \phi 
+    = - \chi^{\dagger} \delta M \chi
+    $$
+    
+    where $\chi = M^{-1} \cdot \phi$. After the MD trajectory we compute the new $R^{\dagger} R$ :
+    $$
+    \vec{R} = D^{\dagger} \vec{\chi} 
+    = D^{\dagger} \cdot ( (D D^{\dagger})^{-1} \cdot \vec{\phi})
+    $$
+    
+    where $\phi$ is the one computed at the beginning of the trajectory, and $D$, $D^{\dagger}$ are evaluated from the new gauge configuration. 
+    
+    Note that $\chi$ is evaluated first, so that we have to invert $(D D^{\dagger})^{-1}$ and not $D^{-1}$ .  This is done in order to invert an hermitian matrix for which, for instance, the Conjugate Gradient algorithm always converges.
+    
+    Note also that we don't find the inverse matrix explicitly, but its application to a given vector: if we want to compute $A^{-1} \vec{b}$, we find the numerical solution $\vec{x}$ to $A \vec{x} = \vec{b}$.
+    
+
+
+### Derivative with respect to the gauge field
+
+The derivative with respect to $U_{\rho}(z)$ is defined as @gattringer2009quantum:
+
+$$
+\frac{\partial }{\partial U_{\rho}(z)} f(U_\mu(x))
+= \delta_{\mu \rho} \delta_{x, z} \sum_i T_i \frac{\partial}{\partial \omega_{\mu}^{i}} f(U)
+\\
+=  \delta_{\mu \rho} \delta_{x, z}  \sum_i T_i \frac{\partial}{\partial \omega} 
+f( e^{i \omega T_i} U)\big\vert_{\omega=0}
+$$
+
+In a $U(1)$ theory we have only one generator $T=1$, so:
+$$
+\frac{\partial }{\partial U_{\rho}(z)} f(U_{\mu}(x))
+=  \delta_{\mu \rho} \delta_{x, z}  \frac{\partial}{\partial \omega} f( e^{i \omega} U)\big\vert_{\omega=0}
+$$
+
+Therefore:
+$$
+\frac{\partial }{\partial U_{\rho}(z)} U_{\mu}(x) = 
+i U_{\mu}(x) \delta_{\mu \rho} \delta_{x, z}
+\\
+\frac{\partial }{\partial U_{\rho}(z)} U^\dagger_{\mu}(x) = 
+-i U^\dagger_{\mu}(x) \delta_{\mu \rho} \delta_{x, z}
+$$
+
+It is also easy to verify that this derivative satisfy the Leibniz rule for the derivative of products.
+
+Applying the above result we get the following results:
+
+$$
+\frac{\partial D(x,y)}{\partial U_{\rho}(z)} 
+=  \sum_{\mu} \frac{1}{2} \eta_{\mu}(x) 
+    [i U_{\mu}(x) \delta_{x,z} \delta_{x+\mu, y}
+     + i U^{\dagger}_{\mu}(x-\mu) \delta_{x-\mu,z} \delta_{x-\mu, y} ]
+$$
+
+$$
+\frac{\partial D^{\dagger}(x,y)}{\partial U_{\rho}(z)} 
+=  \sum_{\mu} \frac{1}{2} \eta_{\mu}(x) 
+    [-i U^{\dagger}_{\mu}(x) \delta_{x,z} \delta_{x+\mu, y}
+     - i U_{\mu}(x-\mu) \delta_{x-\mu,z} \delta_{x-\mu, y} ]
+$$
+
+The fermionic force $F_{\mu}(x)$ is:
+$$
+F_{\mu}(x) = 
+ = \frac{\partial S_F}{\partial U_{\mu}(x)}
+ = \phi^\dagger \frac{\partial (D D^{\dagger})}{\partial U_{\mu}(x)} \phi
+$$
+
+With the notation of eq. \@ref(eq:dSF.generic) we write (compare with eq. (8.44) of @gattringer2009quantum):
+$$
+\frac{\partial S_F}{\partial U_{\mu}(x)}
+= 
+- \chi^{\dagger}
+\left( 
+\frac{\partial D}{\partial U_{\mu}(x)} D^{\dagger}
++
+D \frac{\partial D^{\dagger}}{\partial U_{\mu}(x)}
+\right) 
+\chi
+$$
+
+We observe that since
+
+$$
+\frac{\partial D^{\dagger}(x,y)}{\partial U_{\rho}(z)} =
+\left(
+\frac{\partial D(x,y)}{\partial U_{\rho}(z)}
+\right)^{\dagger}
+\quad ,
+$$
+
+we have:
+
+
+$$
+\frac{\partial S_F}{\partial U_{\mu}(x)}
+= 
+- \chi^{\dagger}
+\left( 
+\frac{\partial D}{\partial U_{\mu}(x)} 
+D^{\dagger}
++
+\left(
+\frac{\partial D}{\partial U_{\mu}(x)} 
+D^{\dagger} \right)^\dagger
+\right) 
+\chi
+$$
+
+Calling  $Q = \frac{\partial D}{\partial U_{\mu}(x)}
+D^{\dagger}$, the above equation leads to:
+
+\begin{equation}
+\frac{\partial S_F}{\partial U_{\mu}(x)}
+= - \chi^{\dagger}( Q + Q^\dagger ) \chi 
+= - 2 \operatorname{Re} \left( \chi^{\dagger} Q  \chi \right)
+= - 2 \operatorname{Re} \left( \chi^{\dagger}  \frac{\partial D}{\partial U_{\mu}(x)} D^{\dagger}  \chi \right)
+\end{equation}
+
+
+### References
+

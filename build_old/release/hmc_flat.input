@@ -1,0 +1,52 @@
+# Input file example for the u1-hmc program
+
+geometry:
+  X : 2
+  Y : 2
+  Z : 2
+  T : 2
+  ndims : 4
+
+# hmc parameters
+hmc:
+  seed: 93746
+  n_save: 10
+  n_meas: 1000
+  heat: true
+  configname: ""
+  lenghty_conf_name: true
+  conf_dir: "./confs/"
+
+integrator:
+  name: leapfrog
+  N_rev: 0
+  n_steps: 50
+  tau: 1.0
+  exponent: 0
+
+#operators: 
+#  staggered:
+#    mass: 0.1
+
+monomials:
+  gauge:
+    beta: 1.9
+#  staggered_det_DDdag:
+#    tolerance_cg: 1e-10
+#    solver_verbosity : 0
+#    seed_pf: 22346363
+#    solver: CG
+
+omeas:
+  verbosity: 1
+  icounter: 20
+  nstep: 30
+  Wloop: true
+#  gradient:
+#    tmax = 1.0
+#  pion_staggered:
+#    mass: 0.1
+
+
+
+

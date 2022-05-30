@@ -13,9 +13,9 @@
 #include "accum_type.hh"
 #include "adjointfield.hh"
 #include "gaugeconfig.hh"
-//#include "get_staples.hh"
 #include "hamiltonian_field.hh"
 #include "monomial.hh"
+#include "rotating-get_staples.hpp"
 #include "su2.hh"
 #include "u1.hh"
 
@@ -30,28 +30,6 @@ namespace rotating_spacetime {
   template <class T> using nd_max_arr = spacetime_lattice::nd_max_arr<T>;
 
   /**
-   * @brief return x+\hat{\mu}
-   * @param x
-   * @param mu
-   * @return nd_max_arr
-   */
-  nd_max_arr<size_t> xp(nd_max_arr<size_t> x, const size_t &mu) {
-    x[mu]++; // note: 'x' is passed value (this is a copy)
-    return x;
-  }
-
-  /**
-   * @brief return x-\hat{\mu}
-   * @param x
-   * @param mu
-   * @return nd_max_arr
-   */
-  nd_max_arr<size_t> xm(nd_max_arr<size_t> x, const size_t &mu) {
-    x[mu]--; // note: 'x' passed by value (this is a copy)
-    return x;
-  }
-
-  /**
    * @brief Get the plaquette U_{\mu\nu} as in eq. (2.48) of
    * https://link.springer.com/book/10.1007/978-3-642-01850-3
    * @tparam Group
@@ -61,19 +39,46 @@ namespace rotating_spacetime {
    * @param nu
    * @return double
    */
-  template <class Group>
-  Group plaquette(const gaugeconfig<Group> &U,
+  template <class T, class Group>
+  T plaquette(const gaugeconfig<Group> &U,
                   const nd_max_arr<size_t> &x,
                   const size_t &mu,
-                  const size_t &nu) {
-    const Group res =
-      U(x, mu) * U(xp(x, mu), nu) * U(xp(x, nu), mu).dagger() * U(x, nu).dagger();
-    return res;
+                  const size_t &nu,
+                  const bool &up,
+                  const bool &ccwise) {
+    Group S = get_staple<Group, Group>(U, x, mu, nu, up, ccwise);
+
+    if (up ^ ccwise) {
+      return S * U(x, mu).dagger();
+    } else {
+      return U(x, mu) * S;
+    }
   }
 
   /**
-   * @brief Get the clover leaf plaquette Ubar as in eq. 16 of
-   * https://arxiv.org/pdf/1303.6292.pdf See also eq. (9.12) of
+   * @brief real part and trace of the plaquette
+   *
+   * @tparam Group
+   * @param U
+   * @param x
+   * @param mu
+   * @param nu
+   * @param up
+   * @param ccwise
+   * @return Group
+   */
+  template <class Group>
+  double retr_plaquette(const gaugeconfig<Group> &U,
+                        const nd_max_arr<size_t> &x,
+                        const size_t &mu,
+                        const size_t &nu) {
+    const bool or1 = true; // orientation doesn't matter when taking the Re(Tr(...))
+    return retrace(plaquette<Group,Group>(U, x, mu, nu, true, or1));
+  }
+
+  /**
+   * @brief Get the clover leaf plaquette \bar{U} as in eq. 16 of
+   * https://arxiv.org/pdf/1303.6292.pdf. See also eq. (9.12) of
    * https://link.springer.com/book/10.1007/978-3-642-01850-3
    *
    * Note: In the end, we always sum over all points of the lattice.
@@ -88,6 +93,24 @@ namespace rotating_spacetime {
    * @param nu
    * @return double
    */
+  template <class S, class Group, class Arr>
+  S clover_leaf(const gaugeconfig<Group> &U,
+                     const nd_max_arr<size_t> &x,
+                     const size_t &mu,
+                     const size_t &nu) {
+    S res;
+
+    res += plaquette<S, Group>(U, x, mu, nu, true, true);
+    res += plaquette<S, Group>(U, xm(x, mu), mu, nu, true, true);
+    res += plaquette<S, Group>(U, xm(xm(x, mu), nu), mu, nu, true, true);
+    res += plaquette<S, Group>(U, xm(x, nu), mu, nu, true, true);
+
+    return res / 4.0;
+  }
+
+  /**
+   * @brief real part and trace of the clover leaf plaquette
+   */
   template <class Group>
   double retr_clover_leaf(const gaugeconfig<Group> &U,
                           const nd_max_arr<size_t> &x,
@@ -95,57 +118,52 @@ namespace rotating_spacetime {
                           const size_t &nu) {
     double res = 0.0;
 
-    res += retrace(plaquette(U, x, mu, nu));
-    res += retrace(plaquette(U, xm(x, mu), mu, nu));
-    res += retrace(plaquette(U, xm(xm(x, mu), nu), mu, nu));
-    res += retrace(plaquette(U, xm(x, nu), mu, nu));
+    res += retr_plaquette(U, x, mu, nu);
+    res += retr_plaquette(U, xm(x, mu), mu, nu);
+    res += retr_plaquette(U, xm(xm(x, mu), nu), mu, nu);
+    res += retr_plaquette(U, xm(x, nu), mu, nu);
 
     return res / 4.0;
   }
 
   /**
-   * @brief chair loop
-   * chair loop built as the product of 2 orthogonal plaquettes: see eq. 17 of
-   * https://arxiv.org/pdf/1303.6292.pdf
-   * @tparam Group
+   * @brief Get the chair loop object CL_{\mu \nu \rho}(x)
+   * CL_{\mu \nu \rho}(x) is product of 2 staples.
+   * see eq. 17 of https://arxiv.org/pdf/1303.6292.pdf.
+   * @tparam S gauge group
+   * @tparam Arr
    * @param U gauge configuration
-   * @param x_munu origin of the 1st plaquette (plane mu, nu)
-   * @param x_nurho origin of the 2nd plaquette (plane nu, rho)
+   * @param x point of application of the staple
    * @param mu
    * @param nu
-   * @param rho
-   * @param flip  true if orientation is flipped for the 2nd plaquette
-   * @return double
+   * @param p array of bool flags for the directions \mu and \rho
+   * for i=\mu,\rho : p[i]==true when the chair is in the positive semi-plane of the
+   * direction 'i'.
+   * The chairs in the negative '\nu' semi-plane are obtained translating the chair ar
+   * x-\nu
    */
-  template <class Group>
-  Group chair_loop(const gaugeconfig<Group> &U,
-                   const nd_max_arr<size_t> &x_munu,
-                   const nd_max_arr<size_t> &x_nurho,
-                   const size_t &mu,
-                   const size_t &nu,
-                   const size_t &rho,
-                   const bool &flip = true) {
-    Group C = plaquette(U, x_munu, mu, nu);
-
-    if (flip) {
-      C *= plaquette(U, x_nurho, nu, rho).dagger();
-    } else {
-      C *= plaquette(U, x_nurho, nu, rho);
-    }
-
-    return C;
+  template <class S, class Arr>
+  S chair_loop(const gaugeconfig<S> &U,
+               const Arr &x,
+               const size_t &mu,
+               const size_t &nu,
+               const size_t &rho,
+               const std::array<bool, 2> &p,
+               const bool &cc) {
+    S K = get_chair_staple<S, S>(U, x, mu, nu, rho, p, cc);
+    return U(x, mu) * K;
   }
 
   // Re(Tr(chair))
   template <class Group>
   double retr_chair_loop(const gaugeconfig<Group> &U,
-                         const nd_max_arr<size_t> &x_munu,
-                         const nd_max_arr<size_t> &x_nurho,
+                         const nd_max_arr<size_t> &x,
                          const size_t &mu,
                          const size_t &nu,
                          const size_t &rho,
-                         const bool &flip = true) {
-    return retrace(chair_loop(U, x_munu, x_nurho, mu, nu, rho, flip));
+                         const std::array<bool, 2> &p) {
+    const bool or1 = true; // orientation doesn't matter when taking the Re(Tr(...))
+    return retrace(chair_loop(U, x, mu, nu, rho, p, or1));
   }
 
   /**
@@ -167,13 +185,15 @@ namespace rotating_spacetime {
                            const size_t &rho) {
     double res = 0.0;
 
-    res += retr_chair_loop(U, x, x, mu, nu, rho);
-    res += retr_chair_loop(U, xm(x, nu), xm(x, nu), mu, nu, rho);
+    const nd_max_arr<size_t> xmnu = xm(x, nu);
 
-    res += retr_chair_loop(U, xm(x, mu), xm(x, rho), mu, nu, rho);
-    res += retr_chair_loop(U, xm(xm(x, mu), nu), xm(xm(x, rho), nu), mu, nu, rho);
+    res += retr_chair_loop(U, x, mu, nu, rho, {true, true});
+    res += retr_chair_loop(U, xmnu, mu, nu, rho, {true, true});
 
-    return res;
+    res += retr_chair_loop(U, x, mu, nu, rho, {false, false});
+    res += retr_chair_loop(U, xmnu, mu, nu, rho, {false, false});
+
+    return res / 8.0;
   }
 
   /**
@@ -195,13 +215,15 @@ namespace rotating_spacetime {
                            const size_t &rho) {
     double res = 0.0;
 
-    res += retr_chair_loop(U, x, xm(x, rho), mu, nu, rho, true);
-    res += retr_chair_loop(U, xm(x, nu), xm(xm(x, rho), nu), mu, nu, rho, true);
+    const nd_max_arr<size_t> xmnu = xm(x, nu);
 
-    res += retr_chair_loop(U, xm(x, mu), x, mu, nu, rho, true);
-    res += retr_chair_loop(U, xm(xm(x, mu), nu), xm(x, nu), mu, nu, rho, true);
+    res += retr_chair_loop(U, x, mu, nu, rho, {true, false});
+    res += retr_chair_loop(U, xmnu, mu, nu, rho, {true, false});
 
-    return res;
+    res += retr_chair_loop(U, x, mu, nu, rho, {false, true});
+    res += retr_chair_loop(U, xmnu, mu, nu, rho, {false, true});
+
+    return res / 8.0;
   }
 
   /**
@@ -222,75 +244,7 @@ namespace rotating_spacetime {
                           const size_t &mu,
                           const size_t &nu,
                           const size_t &rho) {
-    return (retr_chair_loop_1(U, x, mu, nu, rho) - retr_chair_loop_2(U, x, mu, nu, rho)) /
-           8.0;
-  }
-
-  /**
-   * @brief spacetime metric factor multiplying the chair staple
-   * @param mu
-   * @param nu
-   * @return double
-   */
-  double chair_stm_factor(const nd_max_arr<size_t> &x,
-                          const size_t &mu,
-                          const size_t &nu,
-                          const size_t &rho,
-                          const double &Omega) {
-    if (mu == 0) {
-      if (nu == 1 && rho == 2) {
-        return x[2] * Omega;
-      }
-      if (nu == 2 && rho == 1) {
-        return -x[1] * Omega;
-      }
-      if (nu == 1 && rho == 3) {
-        return x[2] * Omega;
-      }
-      if (nu == 2 && rho == 3) {
-        return -x[1] * Omega;
-      }
-    }
-    if (mu == 1 && nu == 3 && rho == 2) {
-      return x[1] * x[2] * std::pow(Omega, 2);
-    } else {
-      std::cout << "Error: mu=" << mu << " and nu=" << nu << " not supported by "
-                << __func__ << "\n";
-      abort();
-      return 0.0;
-    }
-  }
-
-  /**
-   * @brief spacetime metric factor multiplying the plaquette U_{\mu \nu} in the action
-   * @param mu
-   * @param nu
-   * @return double
-   */
-  double plaq_factor(const nd_max_arr<size_t> &x,
-                     const size_t &mu,
-                     const size_t &nu,
-                     const double &Omega) {
-    if (mu == 0 || nu == 0) {
-      return 1.0;
-    }
-    if ((mu == 1 && nu == 2) || (mu == 2 && nu == 1)) {
-      return (1 + (std::pow(x[1], 2) + std::pow(x[2], 2)) * std::pow(Omega, 2));
-    }
-    if ((mu == 1 && nu == 3) || (mu == 3 && nu == 1)) {
-      return (1 + std::pow(x[2], 2) * std::pow(Omega, 2));
-    }
-    if ((mu == 2 && nu == 3) || (mu == 3 && nu == 2)) {
-      return (1 + std::pow(x[1], 2) * std::pow(Omega, 2));
-    } else {
-#pragma omp single
-      {
-        std::cout << "Error: mu=" << mu << " and nu=" << nu << " not supported by "
-                  << __func__ << "\n";
-      }
-      abort();
-      return 0.0;
-    }
+    return (retr_chair_loop_1(U, x, mu, nu, rho) - retr_chair_loop_2(U, x, mu, nu, rho));
   }
 
   /**
@@ -328,7 +282,7 @@ namespace rotating_spacetime {
             for (size_t mu = 0; mu < U.getndims() - 2; mu++) {
               for (size_t nu = mu + 1; nu < U.getndims() - 1; nu++) {
                 for (size_t rho = 1; rho < U.getndims(); rho++) {
-                  if (rho == mu || rho == nu) {
+                  if (rho == mu || rho == nu || rho == 3) {
                     continue;
                   }
                   res += chair_stm_factor(x, mu, nu, rho, Omega) *

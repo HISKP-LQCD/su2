@@ -18,7 +18,7 @@
 #include"md_update.hh"
 #include"monomial.hh"
 #include"gradient_flow.hh"
-#include"energy_density.hh"
+#include"flat-energy_density.hh"
 #include"parse_commandline.hh"
 #include"lyapunov.hh"
 #include"version.hh"
@@ -84,13 +84,13 @@ int main(int ac, char* av[]) {
     
     double plaquette = flat_spacetime::gauge_energy(U);
     double density = 0., Q=0.;
-    energy_density(U, density, Q);
+    flat_spacetime::energy_density(U, density, Q);
     cout << "## Initital Plaquette: " << plaquette/U.getVolume()/double(U.getNc())/ndims_factor << endl; 
     cout << "## Initial Energy density: " << density << endl;
     
     random_gauge_trafo(U, gparams.seed);
     plaquette = flat_spacetime::gauge_energy(U);
-    energy_density(U, density, Q);
+    flat_spacetime::energy_density(U, density, Q);
     cout << "## Plaquette after rnd trafo: " << std::scientific << std::setw(15) << plaquette/U.getVolume()/double(U.getNc())/ndims_factor << endl; 
     cout << "## Energy density: " << density << endl;
     

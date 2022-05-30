@@ -30,7 +30,7 @@ namespace rotating_spacetime {
     const double ndims_fact = spacetime_lattice::num_pLloops_half(U.getndims());
 
     const double sum_x2 = Lx * (Lx + 1) * (2 * Lx + 1) / 6.0; // \sum_{x_1=1}^{Lx} x_1^2
-    const double sum_y2 = Ly * (Ly + 1) * (2 * Ly + 1) / 6.0; // \sum_{y_1=1}^{Ly} x_2^2
+    const double sum_y2 = Ly * (Ly + 1) * (2 * Ly + 1) / 6.0; // \sum_{x_2=1}^{Ly} x_2^2
 
     const double one = U.getVolume() * ndims_fact + Lt * Lz * (U.getndims() - 2) *
                                                       (sum_x2 + sum_y2) *
@@ -40,155 +40,6 @@ namespace rotating_spacetime {
     return U.getBeta() * (one - two);
   }
 
-  /**
-   * @brief Get the staple object S_{\mu \nu}(x)
-   * returns, in the adjoint representation T :
-   * - ccwise==true :
-   *   S_{\mu \nu}(x) =
-   *   U_{\nu}(x+\mu) U_{\mu}^{\dagger}(x+\nu) U_{\nu}^{\dagger}(x)
-   * - ccwise==false :
-   *   S_{\mu \nu}(x) =
-   *   U_{\nu}(x+\mu-\nu)^{\dagger} * U_{\mu}^{\dagger}(x-\nu) * U_{\nu}(x-\nu)
-   * @tparam T --> has to be the adjoint representation
-   * @tparam S gauge group
-   * @tparam Arr
-   * @param U gauge configuration
-   * @param x point of application of the staple
-   * @param mu
-   * @param nu
-   * @param up true when the staple is in the positive '\nu' semi-plane
-   * @param ccwise  true when the staple orientation is counterclockwise
-   */
-  template <class T, class S, class Arr>
-  T get_staple(const gaugeconfig<S> &U,
-               const Arr &x,
-               const size_t &mu,
-               const size_t &nu,
-               const bool &up,
-               const bool &ccwise) {
-    T K;
-    S res;
-    if (up) {
-      res = U(xp(x, mu), nu) * U(xp(x, nu), mu).dagger() * U(x, nu).dagger();
-    } else {
-      res = U(xm(x, nu), nu).dagger() * U(xm(x, nu), mu) * U(xm(xp(x, mu), nu), nu);
-    }
-
-    if (ccwise) {
-      K = res;
-    } else {
-      K = res.dagger();
-    }
-
-    return K;
-  }
-
-  /**
-   * @brief Get the chair staple object S_{\mu \nu \rho}(x)
-   * return S_{\mu \nu \rho}(x) = U_{\mu}(x)^{\dagger}*chair_loop,
-   * where chair_loop is product of 2 orthogonal plaquettes: see eq. 17 of
-   * https://arxiv.org/pdf/1303.6292.pdf.
-   * The result is computed as the product of a staple and a plaquette
-   * @tparam T --> has to be the adjoint representation
-   * @tparam S gauge group
-   * @tparam Arr
-   * @param U gauge configuration
-   * @param x point of application of the staple
-   * @param mu
-   * @param nu
-   * @param p array of bool flags for the directions \mu and \rho
-   * for i=\mu,\rho : p[i]==true when the chair is in the positive semi-plane of the
-   * direction 'i' the chairs in the negative '\nu' semi-plane are obtained translating
-   * the chair ar x-\nu
-   */
-  template <class T, class S, class Arr>
-  T get_chair_staple(gaugeconfig<S> &U,
-                     const Arr &x,
-                     const size_t &mu,
-                     const size_t &nu,
-                     const size_t &rho,
-                     const std::array<bool, 2> &p) {
-    T K;
-
-    S K_numu, K_nurho; // staples in the planes (\nu,\mu) [not (\mu,\nu)] and (\nu,\rho)
-
-    /**
-     * @brief semi-plane given by p[0], orientation is not unique.
-     * The following argument applies also for or1==false,
-     * but here we fix counterclockwise, i.e. or1==true,
-     * for all the staples in the (\nu,\mu) plane.
-     * Notes:
-     * - if both staples are both in their positive/negative semi-plane,
-     * i.e. (p[0] XOR p[1])==false --> the orientation of 2nd staple is clockwise, i.e.
-     * or2==false
-     * - if the staples are one in its positive and one in its negative semi-plane,
-     * i.e. (p[0] XOR p[1])==true --> the orientation of 2nd staple is counterclockwise,
-     * i.e. or2==true
-     */
-    const bool or1 = true;
-    const bool or2 = !(or1 ^ (p[0] ^ p[1]));
-    K_numu = get_staple(U, x, nu, mu, p[0], or1);
-    K_nurho = get_staple(U, x, nu, rho, p[1], or2);
-
-    K = K_numu * K_nurho;
-    return K;
-  }
-
-  /**
-   * @brief gauge force in the HMC
-   *
-   * @tparam Group
-   * @param U
-   * @param Omega
-   * @return Group
-   */
-  template <class T, class G>
-  T get_F_G(const gaugeconfig<G> &U,
-            const nd_max_arr<size_t> &x,
-            const size_t &mu,
-            const double &Omega) {
-    T St1;
-
-    for (size_t nu = 0; nu < U.getndims(); nu++) {
-      if (mu == nu) {
-        continue;
-      }
-
-      T S_tt = get_staple<T, G>(U, x, mu, nu, true, true);
-      T S_tf = get_staple<T, G>(U, x, mu, nu, true, false);
-      T S_ft = get_staple<T, G>(U, x, mu, nu, false, true);
-      T S_ff = get_staple<T, G>(U, x, mu, nu, false, false);
-
-      // the 2 contributions from the clover plaquette at x
-      St1 += (S_tt + S_ff); // plaq_factor(x, mu, nu, Omega) * (S_tt + S_ff);
-
-      /* contributions from nearest neighbors */
-
-      // x+\nu
-      St1 += plaq_factor(xp(x, nu), mu, nu, Omega) * S_tt;
-      //  x+\mu+\nu
-      St1 += plaq_factor(xp(xp(x, mu), nu), mu, nu, Omega) * S_tt;
-      //  x+\mu
-      St1 += plaq_factor(xp(x, mu), mu, nu, Omega) * (S_tt + S_ff);
-      // x-\nu
-      St1 += plaq_factor(xm(x, nu), mu, nu, Omega) * S_ff;
-      // x+\mu-\nu
-      St1 += plaq_factor(xp(xm(x, nu), mu), mu, nu, Omega) * S_ff;
-    }
-    St1 /= 4.0; // each plaquette comes from an average over the clover
-
-    T St2;
-
-    // Stap += x2 * Omega * retr_asymm_chair(U, x, 0, 1, 2);
-    // Stap -= x1 * Omega * retr_asymm_chair(U, x, 0, 2, 1);
-    // Stap += x2 * Omega * retr_asymm_chair(U, x, 0, 1, 3);
-    // Stap -= x1 * Omega * retr_asymm_chair(U, x, 0, 2, 3);
-    // Stap += x1 * x2 * Omega2 * retr_asymm_chair(U, x, 1, 3, 2);
-
-    T Stap = U(x, mu) * (St1 + St2);
-
-    return Stap;
-  }
 
   /**
    * @brief gauge monomial in a rotating frame of reference
@@ -201,7 +52,7 @@ namespace rotating_spacetime {
   template <typename Float, class Group>
   class gauge_monomial : public monomial<Float, Group> {
   private:
-    double Omega; // imaginary angular velocity
+    const double Omega; // imaginary angular velocity
   public:
     gauge_monomial<Float, Group>(unsigned int _timescale, const double &_Omega)
       : monomial<Float, Group>::monomial(_timescale), Omega(_Omega) {}
@@ -247,9 +98,8 @@ namespace rotating_spacetime {
             for (size_t x3 = 0; x3 < h.U->getLz(); x3++) {
               const nd_max_arr<size_t> x = {x0, x1, x2, x3};
               for (size_t mu = 0; mu < h.U->getndims(); mu++) {
-                accum F = get_F_G<accum>(*h.U, x, mu, Omega);
-                deriv(x, mu) +=
-                  fac * h.U->getBeta() / double(h.U->getNc()) * get_deriv<double>(F);
+                accum F = get_staples_with_st_fact<accum>(*h.U, x, mu, Omega);
+                deriv(x, mu) += fac * get_deriv<double>(F);
               }
             }
           }

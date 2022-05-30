@@ -1,0 +1,2 @@
+heat i path_conf
+0 10 ./confs/u1_conf.16.16.1.16.Omega_0.03.b1.000000.10

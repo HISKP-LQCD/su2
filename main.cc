@@ -2,9 +2,9 @@
 #include"gaugeconfig.hh"
 #include"flat-gauge_energy.hpp"
 #include"random_gauge_trafo.hh"
-#include"sweep.hh"
+#include"flat-sweep.hh"
 #include"parse_commandline.hh"
-#include"energy_density.hh"
+#include"flat-energy_density.hh"
 #include"version.hh"
 #include"vectorfunctions.hh"
 
@@ -114,10 +114,10 @@ int main(int ac, char* av[]) {
     }
     //inew counts loops, loop-variable needed to have one RNG per thread with different seeds for every measurement
     size_t inew = (i-gparams.icounter) / threads + gparams.icounter;
-    rate += sweep(U, engines, delta, N_hit, gparams.beta);
+    rate += flat_spacetime::sweep(U, engines, delta, N_hit, gparams.beta);
     double energy = flat_spacetime::gauge_energy(U);
     double E = 0., Q = 0.;
-    energy_density(U, E, Q);
+    flat_spacetime::energy_density(U, E, Q);
     cout << inew << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy*normalisation << " " << Q << endl;
     os << inew << " " << std::scientific << std::setw(18) << std::setprecision(15) << energy*normalisation << " " << Q << endl;
     if(inew > 0 && (inew % gparams.N_save) == 0) {

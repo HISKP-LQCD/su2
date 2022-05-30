@@ -1,8 +1,14 @@
-// parameters.hh
 /**
+ * @file parameters.hh
+ * @author Simone Romiti (simone.romiti@uni-bonn.de)
  * @brief global parameters of the programs
  * This file contains a set of 'struct' which serve as containers for the parameters of
  * the programs.
+ * @version 0.1
+ * @date 2022-05-30
+ *
+ * @copyright Copyright (c) 2022
+ *
  */
 
 #pragma once
@@ -17,12 +23,13 @@ namespace global_parameters {
   /* struct for parameters concerning the physics of the system */
   struct physics {
   public:
-    size_t Lx; // spatial lattice size x > 0
-    size_t Ly; // spatial lattice size y > 0
-    size_t Lz; // spatial lattice size z > 0
-    size_t Lt; // temporal lattice size > 0
+    size_t Lx; // spatial  lattice size X > 0
+    size_t Ly; // spatial  lattice size Y > 0
+    size_t Lz; // spatial  lattice size Z > 0
+    size_t Lt; // temporal lattice size T > 0
     size_t ndims = 4; // number of dimensions, 2 <= ndims <= 4
 
+    bool flat_metric = true; // false when considering spacetime curvature
     bool rotating_frame = false; // true when we consider a rotating lattice
     double Omega = 0.0; // imaginary angular frequency (rotating lattice)
 
@@ -30,7 +37,7 @@ namespace global_parameters {
     double beta; // beta value
 
     bool include_staggered_fermions =
-      false; // truen when the action contains staggered fermions.
+      false; // true when the action contains staggered fermions.
     double m0; // bare quark mass
     double xi = 1.0; // anisotropy parameter
     bool anisotropic = false; // use anisotropic lattice

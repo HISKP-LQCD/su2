@@ -99,6 +99,7 @@ namespace input_file_parsing {
       YAML::Node R = in.get_root();
       if (R["geometry"]["rotating_frame"]) {
         pparams.rotating_frame = true;
+        pparams.flat_metric = false; // metric is not flat
         in.read_verb<double>(pparams.Omega, {"geometry", "rotating_frame", "Omega"});
       }
 

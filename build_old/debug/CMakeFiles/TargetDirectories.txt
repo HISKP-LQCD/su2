@@ -1,0 +1,14 @@
+/home/simone/Documents/bonn_work/U1_project/su2/build/debug/CMakeFiles/try.dir
+/home/simone/Documents/bonn_work/U1_project/su2/build/debug/CMakeFiles/su2-metropolis.dir
+/home/simone/Documents/bonn_work/U1_project/su2/build/debug/CMakeFiles/su2.dir
+/home/simone/Documents/bonn_work/U1_project/su2/build/debug/CMakeFiles/u1-metropolis.dir
+/home/simone/Documents/bonn_work/U1_project/su2/build/debug/CMakeFiles/su2-hmc.dir
+/home/simone/Documents/bonn_work/U1_project/su2/build/debug/CMakeFiles/u1-hmc.dir
+/home/simone/Documents/bonn_work/U1_project/su2/build/debug/CMakeFiles/su2-kramers.dir
+/home/simone/Documents/bonn_work/U1_project/su2/build/debug/CMakeFiles/su2-measure.dir
+/home/simone/Documents/bonn_work/U1_project/su2/build/debug/CMakeFiles/u1-measure.dir
+/home/simone/Documents/bonn_work/U1_project/su2/build/debug/CMakeFiles/rotating-metropolis-u1.dir
+/home/simone/Documents/bonn_work/U1_project/su2/build/debug/CMakeFiles/test-groups.dir
+/home/simone/Documents/bonn_work/U1_project/su2/build/debug/CMakeFiles/scaling.dir
+/home/simone/Documents/bonn_work/U1_project/su2/build/debug/CMakeFiles/rebuild_cache.dir
+/home/simone/Documents/bonn_work/U1_project/su2/build/debug/CMakeFiles/edit_cache.dir

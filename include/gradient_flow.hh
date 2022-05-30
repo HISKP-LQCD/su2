@@ -4,7 +4,7 @@
 #include"gaugeconfig.hh"
 #include"adjointfield.hh"
 #include"flat-gauge_energy.hpp"
-#include"energy_density.hh"
+#include"flat-energy_density.hh"
 #include"monomial.hh"
 #include"gaugemonomial.hh"
 #include"hamiltonian_field.hh"
@@ -61,7 +61,7 @@ template<class Group> void gradient_flow(const gaugeconfig<Group> &U, std::strin
     Q[i] = 0.;
   }
   P[2] = flat_spacetime::gauge_energy(U)/U.getVolume()/double(U.getNc())/ndims_fact;
-  energy_density(U, density, topQ);
+  flat_spacetime::energy_density(U, density, topQ);
   E[2] = density;
 
   // definine a fictitious gauge configuration Vt, momenta and hamiltonian field to evolve with the flow
@@ -83,7 +83,7 @@ template<class Group> void gradient_flow(const gaugeconfig<Group> &U, std::strin
       t[x0] = t[x0-1] + eps;
       runge_kutta(h, SW, eps); // 
       P[x0] = flat_spacetime::gauge_energy(Vt)/U.getVolume()/double(U.getNc())/ndims_fact;
-      energy_density(Vt, density, topQ);
+      flat_spacetime::energy_density(Vt, density, topQ);
       E[x0] = density;
       Q[x0] = topQ;
     }

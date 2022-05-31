@@ -119,8 +119,8 @@ void gradient_flow(const gaugeconfig<Group> &U,
       E[x0] = density;
       Q[x0] = topQ;
       flat_spacetime::energy_density(Vt, density_ss, topQ_ss, true);
-      E[x0] = density_ss;
-      Q[x0] = topQ_ss;
+      E_ss[x0] = density_ss;
+      Q_ss[x0] = topQ_ss;
     }
 
     const double tsqr = t[1] * t[1];

@@ -51,7 +51,7 @@ struct hmc_u1_params {
     //~ size_t nmeas; //number of configurations that should be measured
     //~ size_t nstep = 1; //measure each nstep config
     //~ bool Wloop = false; //measure Wilson-loops
-    //~ bool gradient = false; //measure Grandient flow
+    //~ bool gradient_flow= false; //measure Grandient flow
     //~ double tmax = 9.99; //tmax for gradient flow
     //~ std::string confdir = "."; //directory where configs are stored
     //~ bool potential = false; //measure potential: the loops W(x, t, y=z=0) and W(x, y, t=z=0) are measured with a maximum size of lattice extent * sizeloops, and written to separate files. Only available for ndims=3,4

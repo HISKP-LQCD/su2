@@ -53,7 +53,7 @@ template <class Group>
 void gradient_flow(const gaugeconfig<Group> &U,
                    std::string const &path,
                    const double tmax,
-                   const double &eps = 0.01) {
+                   const double &eps) {
   const double ndims_fact = spacetime_lattice::num_pLloops_half(U.getndims());
 
   double t[3];

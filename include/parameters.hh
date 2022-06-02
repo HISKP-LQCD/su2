@@ -52,8 +52,10 @@ namespace global_parameters {
     size_t seed = 13526463; // PRNG seed
 
     size_t nstep = 1; // measure each nstep config
-    bool Wloop = false; // wether to measure the Wilson loops or not
-    bool gradient = false; // wether to measure the gredient flow or not
+    bool Wloop = false; // whether to measure the Wilson loops or not
+    bool gradient_flow = false; // whether to measure the gradient flow or not
+    double epsilon_gradient_flow =
+      0.01; // step size in the integration of the gradient flow equations
     double tmax = 1.0; // tmax for gradient flow
     std::string conf_dir = "./"; // directory where gauge configurations are stored
     std::string resdir = "./"; // directory where results from measurements for potential,
@@ -82,7 +84,8 @@ namespace global_parameters {
     bool lenghty_conf_name = true; // add ensemble information in configuration name
     size_t beta_str_width = g_beta_str_width; // length of the beta value config filename
 
-    bool pion_staggered = false; // wether to measure the staggered pion correlator or not
+    bool pion_staggered =
+      false; // whether to measure the staggered pion correlator or not
     double m0; // bare quark mass
     std::string solver = "CG"; // Type of solver: CG, BiCGStab
     double tolerance_cg = 1e-10; // Tolerance for the solver for the dirac operator

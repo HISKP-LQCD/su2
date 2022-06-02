@@ -113,7 +113,8 @@ int main(int ac, char* av[]) {
       os << i;
       os.width(prevw);
       os.fill(prevf);
-      gradient_flow(U, os.str(), tmax);
+      double eps = 0.01; // default value 
+      gradient_flow(U, os.str(), tmax, eps);
     }
     if(lyapunov) {
       std::ostringstream os;

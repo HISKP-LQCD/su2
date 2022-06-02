@@ -147,13 +147,13 @@ namespace input_file_parsing {
         in.read_verb<size_t>(hparams.N_save, {"hmc", "n_save"});
         in.read_verb<size_t>(hparams.n_meas, {"hmc", "n_meas"});
 
-        std::cout << "check "<< hparams.restart<<"\n";
+        std::cout << "check " << hparams.restart << "\n";
         in.read_opt_verb<bool>(hparams.restart, {"hmc", "restart"});
-        std::cout << "check "<< hparams.restart<<"\n";
+        std::cout << "check " << hparams.restart << "\n";
         if (!hparams.restart) {
           in.read_verb<bool>(hparams.heat, {"hmc", "heat"});
         }
-        std::cout << "check "<< hparams.restart<<"\n";
+        std::cout << "check " << hparams.restart << "\n";
 
         in.read_opt_verb<size_t>(hparams.seed, {"hmc", "seed"});
         in.read_opt_verb<std::string>(hparams.configfilename, {"hmc", "configname"});
@@ -184,9 +184,11 @@ namespace input_file_parsing {
 
           in.read_opt_verb<bool>(hparams.omeas.Wloop, {"omeas", "Wloop"});
 
-          if (nd["omeas"]["gradient"]) {
-            hparams.omeas.gradient = true;
-            in.read_verb<double>(hparams.omeas.tmax, {"omeas", "gradient", "tmax"});
+          if (nd["omeas"]["gradient_flow"]) {
+            hparams.omeas.gradient_flow = true;
+            in.read_opt_verb<double>(hparams.omeas.epsilon_gradient_flow,
+                                     {"omeas", "gradient_flow", "epsilon"});
+            in.read_verb<double>(hparams.omeas.tmax, {"omeas", "gradient_flow", "tmax"});
           }
         }
 
@@ -222,9 +224,13 @@ namespace input_file_parsing {
         in.read_opt_verb<size_t>(mparams.seed, {"measurements", "seed"});
         in.read_opt_verb<bool>(mparams.Wloop, {"measurements", "Wloop"});
         // optional parameters for gradient
-        if (nd["measurements"]["gradient"]) {
-          mparams.gradient = true;
-          in.read_opt_verb<double>(mparams.tmax, {"measurements", "gradient", "tmax"});
+        if (nd["measurements"]["gradient_flow"]) {
+          mparams.gradient_flow = true;
+          in.read_opt_verb<double>(mparams.epsilon_gradient_flow,
+                                   {"omeas", "gradient_flow", "epsilon"});
+
+          in.read_opt_verb<double>(mparams.tmax,
+                                   {"measurements", "gradient_flow", "tmax"});
         }
         // optional parameters for pion
         if (nd["measurements"]["pion_staggered"]) {

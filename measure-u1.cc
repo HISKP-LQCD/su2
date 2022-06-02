@@ -124,8 +124,8 @@ int main(int ac, char *av[]) {
       omeasurements::meas_wilson_loop<_u1>(U, i, mparams.conf_dir);
     }
 
-    if (mparams.gradient) {
-      omeasurements::meas_gradient_flow<_u1>(U, i, mparams.conf_dir, mparams.tmax);
+    if (mparams.gradient_flow) {
+      omeasurements::meas_gradient_flow<_u1>(U, i, mparams);
     }
 
     if (mparams.pion_staggered) {

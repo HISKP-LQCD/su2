@@ -48,15 +48,19 @@ namespace omeasurements {
    * @brief compute and print the gradient flow of a given configuration
    *
    * @tparam Group
+   * @tparam sparams struct containing info on computation and output
    * @param U gauge config
    * @param i configurationn index
    * @param conf_dir
    */
-  template <class Group>
+  template <class Group, class sparams>
   void meas_gradient_flow(const gaugeconfig<Group> &U,
                           const size_t &i,
-                          const std::string &conf_dir,
-                          const double &tmax) {
+const sparams& S) {
+    const std::string conf_dir = S.conf_dir;
+    const double eps =  S.epsilon_gradient_flow;
+    const double tmax =  S.tmax;
+    
     std::ostringstream os;
     os << conf_dir + "/gradient_flow.";
     auto prevw = os.width(6);
@@ -64,7 +68,7 @@ namespace omeasurements {
     os << i;
     os.width(prevw);
     os.fill(prevf);
-    gradient_flow(U, os.str(), tmax);
+    gradient_flow(U, os.str(), tmax, eps);
 
     return;
   }

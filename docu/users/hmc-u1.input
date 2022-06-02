@@ -47,7 +47,8 @@ omeas:
   Wloop: true
   pion_staggered:
     mass: 0.1
-  gradient:
+  gradient_flow:
+    epsilon: 0.01
     tmax: 1.0
 
 

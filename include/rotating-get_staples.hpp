@@ -189,7 +189,7 @@ namespace rotating_spacetime {
                      const size_t rho,
                      const std::array<bool, 2> &p,
                      const bool &cc) {
-    const bool dag_all = (p[0] ^ (p[1] && cc)); // wether to dagger in the end
+    const bool dag_all = (p[0] ^ (p[1] && cc)); // whether to dagger in the end
 
     // Note: if taking the dagger in the end, the orientations are reversed
     const std::array<bool, 2> dd = {(bool)(p[0] ^ dag_all), (bool)(cc ^ dag_all)};

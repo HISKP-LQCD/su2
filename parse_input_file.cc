@@ -53,12 +53,16 @@ namespace input_file_parsing {
       std::cerr << "All box extents must be > 1!" << std::endl;
       return 1;
     }
-    if (pparams.ndims == 2) { // flattening 'y' and 'z' directions
-      pparams.Ly = 1;
+    if (pparams.ndims < 4) {
+      std::cerr << "## Warning: ndims==" << pparams.ndims << " --> flattening the \'z\' ";
       pparams.Lz = 1;
-    }
-    if (pparams.ndims == 3) { // flattening 'z' direction
-      pparams.Lz = 1;
+      std::string s_end = "";
+      if (pparams.ndims < 3) {
+        pparams.Ly = 1;
+        std::cerr << "and \'y\' ";
+        s_end = "s";
+      }
+      std::cerr << "direction" << s_end << "\n";
     }
 
     return 0;
@@ -82,21 +86,46 @@ namespace input_file_parsing {
     namespace Yp = YAML_parsing;
 
     void parse_geometry(Yp::inspect_node &in, gp::physics &pparams) {
-      in.read_verb<size_t>(pparams.Lx, {"geometry", "X"});
-      in.read_verb<size_t>(pparams.Ly, {"geometry", "Y"});
-      in.read_verb<size_t>(pparams.Lz, {"geometry", "Z"});
+      YAML::Node R = in.get_root();
+
+      const bool spec_L = (bool)R["geometry"]["L"];
+      const bool spec_Lxyz =
+        (R["geometry"]["X"] || R["geometry"]["Y"] || R["geometry"]["Z"]);
+
+      if (spec_L ^ spec_Lxyz) {
+        // either L^3*T or Lx*Ly*Lz*T have been specified (but not both)
+
+        if (spec_L) {
+          size_t L;
+          in.read_verb<size_t>(L, {"geometry", "L"});
+          pparams.Lx = L;
+          pparams.Ly = L;
+          pparams.Lz = L;
+        } else {
+          in.read_verb<size_t>(pparams.Lx, {"geometry", "X"});
+          in.read_verb<size_t>(pparams.Ly, {"geometry", "Y"});
+          in.read_verb<size_t>(pparams.Lz, {"geometry", "Z"});
+        }
+
+      } else {
+        std::cerr << "Error: check your input file. ";
+        std::cerr
+          << "Either you specify L=Lx=Ly=Lz or each dimension separately, not both.\n";
+        std::cerr << "Aborting.\n";
+        std::abort();
+      }
+
       in.read_verb<size_t>(pparams.Lt, {"geometry", "T"});
       in.read_verb<size_t>(pparams.ndims, {"geometry", "ndims"});
 
       int gerr = validate_geometry(pparams);
       if (gerr > 0) {
-        std::cerr
-          << "Error: invalid geometry parameters. Check X,Y,Z,ndims in your input file.";
+        std::cerr << "Error: invalid geometry parameters. Check L (or X,Y,Z), T, ndims "
+                     "in your input file.";
         std::cerr << "Aborting.\n";
         abort();
       }
 
-      YAML::Node R = in.get_root();
       if (R["geometry"]["rotating_frame"]) {
         pparams.rotating_frame = true;
         pparams.flat_metric = false; // metric is not flat
@@ -147,13 +176,10 @@ namespace input_file_parsing {
         in.read_verb<size_t>(hparams.N_save, {"hmc", "n_save"});
         in.read_verb<size_t>(hparams.n_meas, {"hmc", "n_meas"});
 
-        std::cout << "check " << hparams.restart << "\n";
         in.read_opt_verb<bool>(hparams.restart, {"hmc", "restart"});
-        std::cout << "check " << hparams.restart << "\n";
         if (!hparams.restart) {
           in.read_verb<bool>(hparams.heat, {"hmc", "heat"});
         }
-        std::cout << "check " << hparams.restart << "\n";
 
         in.read_opt_verb<size_t>(hparams.seed, {"hmc", "seed"});
         in.read_opt_verb<std::string>(hparams.configfilename, {"hmc", "configname"});

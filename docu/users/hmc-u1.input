@@ -1,9 +1,7 @@
 # Input file example for the u1-hmc program
 
 geometry:
-  X : 4
-  Y : 4
-  Z : 1
+  L : 20
   T : 16
   ndims : 3
 #  rotating_frame:
@@ -13,7 +11,7 @@ geometry:
 hmc:
   seed: 93746
   n_save: 10
-  n_meas: 1000
+  n_meas: 100
   #restart: true
   heat: true
   configname: ""

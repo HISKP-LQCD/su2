@@ -37,6 +37,7 @@ build/
 external/
 
 # non-text files from the documentation
+*.Rhistory
 *.html
 *.pdf
 

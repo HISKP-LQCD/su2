@@ -1,11 +1,25 @@
 # Makefile
 
-all: staggered
+# file paths and variables
+STAGG = ./staggered_fermions.Rmd
+INPUT_FILE = ./input_file.Rmd
+
+define generate_html
+	Rscript -e 'library(rmarkdown); rmarkdown::render("$(1)", "html_document")'
+endef
+
+all: staggered input_file
 	make clean
 
-STAGG = ./staggered_fermions.Rmd
+
+input_file: $(INPUT_FILE)
+	$(call generate_html,$(INPUT_FILE))
+
 staggered: $(STAGG)
-	Rscript -e 'library(rmarkdown); rmarkdown::render("$(STAGG)", "html_document")'
+	$(call generate_html,$(STAGG))
+
+#Rscript -e 'library(rmarkdown); rmarkdown::render("$(STAGG)", "html_document")'
+
 
 clean:
 	@rm *~ *.gz *.fls *.fdb_latexmk *.log *.aux *.xml \

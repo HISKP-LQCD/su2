@@ -95,7 +95,7 @@ void gradient_flow(const gaugeconfig<Group> &U,
   os << "t^2*Ep(t) t^2*Ep_ss(t) "; // t^2 * E_p(t)
   os << "Ec Ec_ss "; // energy from clover-leaf plaquette
   os << "t^2*Ec(t) t^2*Ec_ss(t) "; // t^2 * E_c(t)
-  os << "Q Q_ss " << std::endl;
+  os << "Q Q_ss" << std::endl;
 
   // evolution of t[1] until tmax
   //(note: eps=0.01 and tmax>0 --> the loop ends at some point)

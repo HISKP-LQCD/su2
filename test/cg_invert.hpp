@@ -51,7 +51,7 @@ private:
         if(!b)
         {
             std::cerr << "Error. cg inverter hasn't been initialized. Aborting.\n";
-            abort();
+           std::abort();
         }
     }
 

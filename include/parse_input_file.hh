@@ -52,7 +52,7 @@ namespace YAML_parsing {
         
         if(G.count(beg + k)==1){
           std::cerr<<"Error: The input file contains 2 or more identical nodes with name "<< beg+k <<"\n";
-          abort();
+         std::abort();
         }
 
         G.insert(beg + k);
@@ -113,7 +113,7 @@ namespace YAML_parsing {
       } catch (...) {
         std::cerr << "Error: check \"" << g_str << "\" in your YAML input file. ";
         std::cerr << boost::typeindex::type_id<T>() << " type was expected. \n";
-        abort();
+       std::abort();
       }
 
       // adding the node string identifiers to the std::set (*this).U
@@ -176,7 +176,7 @@ namespace YAML_parsing {
         }
 
         if (ierr == 1) {
-          abort();
+         std::abort();
         }
       }
     }

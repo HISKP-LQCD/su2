@@ -220,7 +220,7 @@ namespace io {
       if (!boost::filesystem::exists(input_file)) {
         std::cerr << "Error from " << __func__ << "\n";
         std::cerr << input_file << ": no such file or directory. Aborting.\n";
-        abort();
+       std::abort();
       }
 
       std::ifstream nconf_counter(input_file);

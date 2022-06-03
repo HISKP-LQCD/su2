@@ -62,7 +62,7 @@ int main(int ac, char *av[]) {
 
   boost::filesystem::create_directories(boost::filesystem::absolute(hparams.conf_dir));
 
-  double g_heat; // hot or cold starting configuration
+  bool g_heat; // hot or cold starting configuration
   size_t g_icounter; // 1st configuration(trajectory) to load from
 
   gaugeconfig<_u1> U(pparams.Lx, pparams.Ly, pparams.Lz, pparams.Lt, pparams.ndims,
@@ -70,7 +70,7 @@ int main(int ac, char *av[]) {
   if (hparams.restart) {
     std::cout << "## restart " << hparams.restart << "\n";
     std::vector<std::string> v_ncc = io::hmc::read_nconf_counter(hparams.conf_dir);
-    g_heat = std::stod(v_ncc[0]);
+    g_heat = boost::lexical_cast<bool>(v_ncc[0]);
     g_icounter = std::stoi(v_ncc[1]);
     std::string config_path = v_ncc[2];
 

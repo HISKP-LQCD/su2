@@ -77,7 +77,7 @@ namespace rotating_spacetime {
         std::cout << "Error: mu=" << mu << " and nu=" << nu << " not supported by "
                   << __func__ << "\n";
       }
-      abort();
+     std::abort();
       return 0.0;
     }
   }
@@ -117,7 +117,7 @@ namespace rotating_spacetime {
         std::cout << "Error: (mu,nu,rho)=(" << mu << "," << nu << "," << rho
                   << ") not supported by " << __func__ << "\n";
       }
-      abort();
+     std::abort();
       return 0.0;
     }
   }

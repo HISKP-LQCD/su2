@@ -77,7 +77,7 @@ namespace input_file_parsing {
       std::cerr << "Error: beta string width in the output file should have at least "
                    "decimal 1 digit.";
       std::cerr << "Aborting.\n";
-      abort();
+     std::abort();
     }
     return;
   }
@@ -123,7 +123,7 @@ namespace input_file_parsing {
         std::cerr << "Error: invalid geometry parameters. Check L (or X,Y,Z), T, ndims "
                      "in your input file.";
         std::cerr << "Aborting.\n";
-        abort();
+       std::abort();
       }
 
       if (R["geometry"]["rotating_frame"]) {
@@ -320,7 +320,7 @@ namespace input_file_parsing {
         if (n < 1) {
           std::cerr << "Error: N_hit should be at least 1, otherwise nothing will happen";
           std::cerr << "Aborting.\n";
-          abort();
+         std::abort();
         }
         return;
       }

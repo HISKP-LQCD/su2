@@ -191,6 +191,14 @@ template <class T> void coldstart(gaugeconfig<_u1> &config) {
   }
 }
 
+/**
+ * @brief Initialize the gauge configuration to either hot or cold start.
+ * Each value of the configuration array is set equal to a random number distributed as specified by `random_element()`.
+ * @tparam T 
+ * @param config gauge configuration to be initialized
+ * @param seed seed of the random number generator
+ * @param _delta parameter of the random distribution
+ */
 template <class T>
 void hotstart(gaugeconfig<T> &config, const int seed, const double _delta) {
   double delta = _delta;
@@ -200,6 +208,19 @@ void hotstart(gaugeconfig<T> &config, const int seed, const double _delta) {
     delta = 1.;
   std::mt19937 engine(seed);
 
+  for (size_t i = 0; i < config.getSize(); i++) {
+    random_element(config[i], engine, delta);
+  }
+}
+
+/**
+ * @brief copy for the homonymous function which takes `double _delta` as parameter.
+ * @param hot : _delta = (double) hot
+ */
+template <class T>
+void hotstart(gaugeconfig<T> &config, const int seed, const bool& hot) {
+  const double delta = (double) hot;
+  std::mt19937 engine(seed);
   for (size_t i = 0; i < config.getSize(); i++) {
     random_element(config[i], engine, delta);
   }

@@ -77,7 +77,7 @@ namespace CG_solver {
       if (!solved) {
         std::cerr << "Error. Can't get the trajectory: solution hasn't been found yet. "
                      "Aborting.\n";
-        abort();
+       std::abort();
       }
     }
 
@@ -89,7 +89,7 @@ namespace CG_solver {
       if (_A.rows() != _b.size()) {
         std::cout
           << "Error. Invalid linear system. Check matrix and vector sizes. Aborting. \n";
-        abort();
+       std::abort();
       }
 
       A = _A;
@@ -106,7 +106,7 @@ namespace CG_solver {
         std::cerr << "A.cols(): " << A.cols() << "\n";
         std::cerr << "x0.cols(): " << x0.size() << "\n";
         std::cerr << "Aborting.\n";
-        abort();
+       std::abort();
       }
     }
 

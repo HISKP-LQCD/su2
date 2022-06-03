@@ -13,7 +13,7 @@ hmc:
   n_save: 10
   n_meas: 100
   #restart: true
-  heat: true
+  heat: false
   configname: ""
   lenghty_conf_name: false
   conf_dir: "./confs/"

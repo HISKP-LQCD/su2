@@ -38,7 +38,7 @@ namespace spacetime_lattice {
 
   inline void fatal_error(const std::string msg, char const *function_name) {
     std::cerr << "# FATAL ERROR: " << msg << " " << function_name << ".\nAborting.";
-    abort();
+   std::abort();
     return;
   }
 

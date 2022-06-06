@@ -88,7 +88,7 @@ int main(int ac, char *av[]) {
   double plaquette = flat_spacetime::gauge_energy(U);
   double fac = 2. / U.getndims() / (U.getndims() - 1);
   const double normalisation = fac / U.getVolume() / double(U.getNc());
-  std::cout << "## Initital Plaquette: " << plaquette * normalisation << std::endl;
+  std::cout << "## Initial Plaquette: " << plaquette * normalisation << std::endl;
 
   random_gauge_trafo(U, 654321);
   plaquette = flat_spacetime::gauge_energy(U);
@@ -99,7 +99,7 @@ int main(int ac, char *av[]) {
 
   // generate list of monomials
   std::list<monomial<double, _u1> *> monomial_list;
-  gaugemonomial<double, _u1> gm(0);
+  flat_spacetime::gaugemonomial<double, _u1> gm(0, pparams.xi);
   rotating_spacetime::gauge_monomial<double, _u1> gm_rot(0, pparams.Omega);
 
   kineticmonomial<double, _u1> km(0);
@@ -109,7 +109,6 @@ int main(int ac, char *av[]) {
   staggered::detDDdag_monomial<double, _u1> detDDdag(
     0, pparams.m0, hparams.solver, hparams.tolerance_cg, hparams.seed_pf,
     hparams.solver_verbosity);
-
 
   if (pparams.include_gauge) {
     if (pparams.rotating_frame) {

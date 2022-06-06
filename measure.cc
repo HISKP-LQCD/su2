@@ -17,7 +17,7 @@
 #include"wilsonloop.hh"
 #include"md_update.hh"
 #include"monomial.hh"
-#include"gradient_flow.hh"
+#include"flat-gradient_flow.hh"
 #include"flat-energy_density.hh"
 #include"parse_commandline.hh"
 #include"lyapunov.hh"
@@ -114,7 +114,7 @@ int main(int ac, char* av[]) {
       os.width(prevw);
       os.fill(prevf);
       double eps = 0.01; // default value 
-      gradient_flow(U, os.str(), tmax, eps);
+      flat_spacetime::gradient_flow(U, os.str(), tmax, eps);
     }
     if(lyapunov) {
       std::ostringstream os;
@@ -127,7 +127,7 @@ int main(int ac, char* av[]) {
 
       // PRNG engine
       std::mt19937 engine(gparams.seed+i);
-      gaugemonomial<double, su2> gm(0);
+      flat_spacetime::gaugemonomial<double, su2> gm(0);
       kineticmonomial<double, su2> km(0);
       km.setmdpassive();
       

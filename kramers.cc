@@ -91,7 +91,7 @@ int main(int ac, char *av[]) {
   cout << "## Plaquette after rnd trafo: " << plaquette * norm_factor << endl;
 
   // generate list of monomials
-  gaugemonomial<double, su2> gm(0);
+  flat_spacetime::gaugemonomial<double, su2> gm(0);
   kineticmonomial<double, su2> km(0);
   km.setmdpassive();
 

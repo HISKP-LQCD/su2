@@ -12,7 +12,7 @@
 #include <sstream>
 #include <vector>
 
-#include "gradient_flow.hh"
+#include "flat-gradient_flow.hh"
 #include "parameters.hh"
 #include "propagator.hpp"
 #include "wilsonloop.hh"
@@ -68,7 +68,7 @@ const sparams& S) {
     os << i;
     os.width(prevw);
     os.fill(prevf);
-    gradient_flow(U, os.str(), tmax, eps);
+    flat_spacetime::gradient_flow(U, os.str(), tmax, eps);
 
     return;
   }

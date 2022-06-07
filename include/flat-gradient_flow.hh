@@ -80,7 +80,7 @@ namespace flat_spacetime {
     P_ss[2] = flat_spacetime::gauge_energy(U, true) / den;
     flat_spacetime::energy_density(U, density, topQ);
     E[2] = density;
-    flat_spacetime::energy_density(U, density_ss, topQ_ss, true);
+    flat_spacetime::energy_density(U, density_ss, topQ_ss, true, true);
     E_ss[2] = density_ss;
 
     // definine a fictitious gauge configuration Vt, momenta and hamiltonian field to
@@ -132,19 +132,15 @@ namespace flat_spacetime {
 
       const double Ep = factP * (1. - P[1]);
       const double Ep_ss = factP * (1. - P_ss[1]);
-      // const double Ep_st = Ep - Ep_ss;
 
       const double t2Ep = tsqr * Ep;
       const double t2Ep_ss = tsqr * Ep_ss;
-      // const double t2Ep_st = tsqr * Ep_st;
 
       const double Ec = E[1];
       const double Ec_ss = E_ss[1];
-      // const double Ec_st = Ec - Ec_st;
 
       const double t2Ec = tsqr * Ec;
       const double t2Ec_ss = tsqr * Ec_ss;
-      // const double t2Ec_st = tsqr * Ec_st;
 
       os << std::scientific; // using scientifc notation
       os.precision(16);

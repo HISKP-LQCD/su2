@@ -60,7 +60,12 @@ int main(int ac, char *av[]) {
     return err;
   }
 
+  // configurations folder
   boost::filesystem::create_directories(boost::filesystem::absolute(hparams.conf_dir));
+  
+  // online measurements folder
+  boost::filesystem::create_directories(
+    boost::filesystem::absolute(hparams.omeas.res_dir));
 
   bool g_heat; // hot or cold starting configuration
   size_t g_icounter; // 1st configuration(trajectory) to load from

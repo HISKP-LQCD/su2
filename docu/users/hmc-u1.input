@@ -1,8 +1,8 @@
 # Input file example for the u1-hmc program
 
 geometry:
-  L : 16
-  T : 32
+  L : 4
+  T : 4
   ndims : 3
 #  rotating_frame:
 #    Omega: 0.05
@@ -11,7 +11,7 @@ geometry:
 hmc:
   seed: 93746
   n_save: 10
-  n_meas: 100
+  n_meas: 5010
   #restart: true
   heat: true
   configname: ""
@@ -31,7 +31,7 @@ integrator:
 
 monomials:
   gauge:
-    beta: 1.9
+    beta: 1.0
     anisotropic:
       xi: 1.0
 #  staggered_det_DDdag:
@@ -40,15 +40,16 @@ monomials:
 #    seed_pf: 22346363
 #    solver: CG
 
-#omeas:
-#  verbosity: 1
-#  icounter: 20
-#  nstep: 30
+omeas:
+  res_dir: ./omeas/
+  verbosity: 1
+  icounter: 0
+  nstep: 1
+  gradient_flow:
+    epsilon: 0.01
+    tmax: 2.0
 #  Wloop: true
 #  pion_staggered:
 #    mass: 0.1
-#  gradient_flow:
-#    epsilon: 0.01
-#    tmax: 1.0
 
 

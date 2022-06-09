@@ -204,6 +204,11 @@ namespace input_file_parsing {
 
         if (nd["omeas"]) {
           hparams.make_omeas = true;
+
+          hparams.omeas.res_dir = hparams.conf_dir; // default
+          in.read_opt_verb<std::string>(hparams.omeas.res_dir , {"omeas", "res_dir"});
+
+
           in.read_opt_verb<size_t>(hparams.omeas.verbosity, {"omeas", "verbosity"});
           in.read_opt_verb<size_t>(hparams.omeas.icounter, {"omeas", "icounter"});
           in.read_opt_verb<size_t>(hparams.omeas.nstep, {"omeas", "nstep"});
@@ -299,7 +304,7 @@ namespace input_file_parsing {
         }
 
         in.read_opt_verb<std::string>(mparams.conf_dir, {"measurements", "conf_dir"});
-        in.read_opt_verb<std::string>(mparams.resdir, {"measurements", "resdir"});
+        in.read_opt_verb<std::string>(mparams.res_dir, {"measurements", "res_dir"});
 
         in.read_opt_verb<std::string>(mparams.conf_basename,
                                       {"measurements", "conf_basename"});

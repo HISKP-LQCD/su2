@@ -58,7 +58,7 @@ namespace global_parameters {
       0.01; // step size in the integration of the gradient flow equations
     double tmax = 1.0; // tmax for gradient flow
     std::string conf_dir = "./"; // directory where gauge configurations are stored
-    std::string resdir = "./"; // directory where results from measurements for potential,
+    std::string res_dir = "./"; // directory where results from measurements for potential,
                                // potentialsmall are stored
 
     bool potential =

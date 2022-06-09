@@ -3,8 +3,8 @@
 #include "adjointfield.hh"
 #include "flat-energy_density.hh"
 #include "flat-gauge_energy.hpp"
-#include "gaugeconfig.hh"
 #include "flat-gaugemonomial.hh"
+#include "gaugeconfig.hh"
 #include "hamiltonian_field.hh"
 #include "monomial.hh"
 #include "su2.hh"
@@ -51,12 +51,30 @@ void runge_kutta(hamiltonian_field<Float, Group> &h,
 
 namespace flat_spacetime {
 
+  /**
+   * @brief Printing Wilson gradient flow evolution on 'path'
+   * Prints a dataframe for the Wilson flow evolution of
+   * flowtime, Plaquette(full, spatial-spatial, temporal-spatial), Energy_plaquette(...),
+   * Energy_clover[improved formula](...), etc.
+   * Notes:
+   * - Each type of plaquette has limit 1 --> different normalization factors for P_ss and
+   * P_ts.
+   * - E_i = 1 - P_i, i="","ss","ts"
+   * - E = E_ss + E_ts
+   * @tparam Group
+   * @param U
+   * @param path
+   * @param tmax
+   * @param eps
+   */
   template <class Group>
   void gradient_flow(const gaugeconfig<Group> &U,
                      std::string const &path,
-                     const double tmax,
+                     const double &tmax,
                      const double &eps) {
-    const double ndims_fact = spacetime_lattice::num_pLloops_half(U.getndims());
+    const size_t d = U.getndims();
+    const double ndims_fact = spacetime_lattice::num_pLloops_half(d);
+    const double ndims_fact_ss = spacetime_lattice::num_pLloops_half(d - 1);
 
     double t[3];
     double P[3], E[3], Q[3];
@@ -75,9 +93,12 @@ namespace flat_spacetime {
       E_ss[i] = 0.;
       Q_ss[i] = 0.;
     }
-    const double den = U.getVolume() * double(U.getNc()) * ndims_fact;
-    P[2] = flat_spacetime::gauge_energy(U) / den;
-    P_ss[2] = flat_spacetime::gauge_energy(U, true) / den;
+
+    const double den_common = U.getVolume() * double(U.getNc());
+    // const double den = den_common * ndims_fact;
+    // const double den_ss = den_common * ndims_fact_ss;
+    P[2] = flat_spacetime::gauge_energy(U) / den_common;
+    P_ss[2] = flat_spacetime::gauge_energy(U, true) / den_common;
     flat_spacetime::energy_density(U, density, topQ);
     E[2] = density;
     flat_spacetime::energy_density(U, density_ss, topQ_ss, true, true);
@@ -86,25 +107,24 @@ namespace flat_spacetime {
     // definine a fictitious gauge configuration Vt, momenta and hamiltonian field to
     // evolve with the flow
     gaugeconfig<Group> Vt(U);
-    adjointfield<double, Group> deriv(U.getLx(), U.getLy(), U.getLz(), U.getLt(),
-                                      U.getndims());
+    adjointfield<double, Group> deriv(U.getLx(), U.getLy(), U.getLz(), U.getLt(), d);
     hamiltonian_field<double, Group> h(deriv, Vt);
     gaugemonomial<double, Group> SW(
       0); // gradient flow for the Wilson (pure) gauge action
 
     os << "t "; // flow time
-    os << "P P_ss "; // plaquette
-    os << "Ep Ep_ss "; // energy from regular plaquette
-    os << "t^2*Ep(t) t^2*Ep_ss(t) "; // t^2 * E_p(t)
-    os << "Ec Ec_ss "; // energy from clover-leaf plaquette
-    os << "t^2*Ec(t) t^2*Ec_ss(t) "; // t^2 * E_c(t)
-    os << "Q Q_ss" << std::endl;
+    os << "P P_ss P_ts "; // plaquette
+    os << "Ep Ep_ss Ep_ts "; // energy from regular plaquette
+    os << "t^2*Ep t^2*Ep_ss t^2*Ep_ts "; // t^2 * E_plaquette(t)
+    os << "Ec Ec_ss Ec_ts "; // energy from clover-leaf plaquette
+    os << "t^2*Ec t^2*Ec_ss t^2*Ec_ts "; // t^2 * E_clover(t)
+    os << "Q Q_ss Q_ts" << std::endl;
 
     // evolution of t[1] until tmax
     //(note: eps=0.01 and tmax>0 --> the loop ends at some point)
     // at each step we consider a triplet of values for t,P,E,Q
     while (t[1] < tmax) {
-      // splicing the results at t[2] to the new o-th temporal time slice
+      // splicing the results at t[2] to the new 0-th temporal time slice
       t[0] = t[2];
       P[0] = P[2];
       E[0] = E[2];
@@ -116,41 +136,48 @@ namespace flat_spacetime {
       for (unsigned int x0 = 1; x0 < 3; x0++) {
         t[x0] = t[x0 - 1] + eps;
         runge_kutta(h, SW, eps); //
-        P[x0] = flat_spacetime::gauge_energy(Vt) / den;
-        P_ss[x0] = flat_spacetime::gauge_energy(Vt, true) / den;
-        flat_spacetime::energy_density(Vt, density, topQ);
+        P[x0] = flat_spacetime::gauge_energy(Vt) / den_common;
+        P_ss[x0] = flat_spacetime::gauge_energy(Vt, true) / den_common;
+        flat_spacetime::energy_density(Vt, density, topQ, true);
         E[x0] = density;
         Q[x0] = topQ;
-        flat_spacetime::energy_density(Vt, density_ss, topQ_ss, true);
+        flat_spacetime::energy_density(Vt, density_ss, topQ_ss, true, true);
         E_ss[x0] = density_ss;
         Q_ss[x0] = topQ_ss;
       }
 
+      const double P_ts = P[1] - P_ss[1];
+      const double Q_ts = Q[1] - Q_ss[1];
+
       const double tsqr = t[1] * t[1];
 
-      const double factP = 2 * U.getNc() * ndims_fact; // normalization factor
+      // const double factP = 2 * U.getNc() * ndims_fact; // normalization factor
 
-      const double Ep = factP * (1. - P[1]);
-      const double Ep_ss = factP * (1. - P_ss[1]);
+      const double Ep = ndims_fact - P[1]; // factP * (1. - P[1]);
+      const double Ep_ss = ndims_fact_ss - P_ss[1]; // factP * (1. - P_ss[1]);
+      const double Ep_ts = double(d - 1.0) - P_ts;
 
       const double t2Ep = tsqr * Ep;
       const double t2Ep_ss = tsqr * Ep_ss;
+      const double t2Ep_ts = tsqr * Ep_ts;
 
       const double Ec = E[1];
       const double Ec_ss = E_ss[1];
+      const double Ec_ts = Ec - Ec_ss;
 
       const double t2Ec = tsqr * Ec;
       const double t2Ec_ss = tsqr * Ec_ss;
+      const double t2Ec_ts = tsqr * Ec_ts;
 
-      os << std::scientific; // using scientifc notation
+      os << std::scientific; // using scientific notation
       os.precision(16);
       os << t[1] << " ";
-      os << P[1] << " " << P_ss[1] << " ";
-      os << Ep << " " << Ep_ss << " ";
-      os << t2Ep << " " << t2Ep_ss << " ";
-      os << Ec << " " << Ec_ss << " ";
-      os << t2Ec << " " << t2Ec_ss << " ";
-      os << Q[1] << " " << Q_ss[1] << "\n";
+      os << P[1] << " " << P_ss[1] << " " << P_ts << " ";
+      os << Ep << " " << Ep_ss << " " << Ep_ts << " ";
+      os << t2Ep << " " << t2Ep_ss << " " << t2Ep_ts << " ";
+      os << Ec << " " << Ec_ss << " " << Ec_ts << " ";
+      os << t2Ec << " " << t2Ec_ss << " " << t2Ec_ts << " ";
+      os << Q[1] << " " << Q_ss[1] << " " << Q_ts << "\n";
     }
 
     return;

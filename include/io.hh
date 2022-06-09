@@ -67,7 +67,7 @@ namespace io {
                                   const gp::measure_u1 &mparams) {
       std::ostringstream filename_fine;
 
-      filename_fine << mparams.resdir << "/"
+      filename_fine << mparams.res_dir << "/"
                     << "result" << pparams.ndims - 1 << "p1d.u1potential.rotated.Nt"
                     << pparams.Lt << ".Ns" << pparams.Lx << ".b" << std::fixed
                     << std::setprecision(mparams.beta_str_width) << pparams.beta << ".xi"
@@ -82,7 +82,7 @@ namespace io {
                                     const gp::measure_u1 &mparams) {
       std::ostringstream f;
 
-      f << mparams.resdir << "/"
+      f << mparams.res_dir << "/"
         << "result" << pparams.ndims - 1 << "p1d.u1potential.rotated.Nt" << pparams.Lt
         << ".Ns" << pparams.Lx << ".b" << std::fixed
         << std::setprecision(mparams.beta_str_width) << pparams.beta << ".xi"
@@ -97,7 +97,7 @@ namespace io {
                                        const gp::measure_u1 &mparams) {
       std::ostringstream f;
 
-      f << mparams.resdir << "/"
+      f << mparams.res_dir << "/"
         << "result" << pparams.ndims - 1 << "p1d.u1potential.Nt" << pparams.Lt << ".Ns"
         << pparams.Lx << ".b" << std::fixed << std::setprecision(mparams.beta_str_width)
         << pparams.beta << ".xi" << std::fixed

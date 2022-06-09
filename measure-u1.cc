@@ -62,7 +62,7 @@ int main(int ac, char *av[]) {
   }
 
   boost::filesystem::create_directories(boost::filesystem::absolute(mparams.conf_dir));
-  boost::filesystem::create_directories(boost::filesystem::absolute(mparams.resdir));
+  boost::filesystem::create_directories(boost::filesystem::absolute(mparams.res_dir));
 
   gaugeconfig<_u1> U(pparams.Lx, pparams.Ly, pparams.Lz, pparams.Lt, pparams.ndims,
                      pparams.beta);

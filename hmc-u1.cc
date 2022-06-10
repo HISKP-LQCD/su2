@@ -62,7 +62,7 @@ int main(int ac, char *av[]) {
 
   // configurations folder
   boost::filesystem::create_directories(boost::filesystem::absolute(hparams.conf_dir));
-  
+
   // online measurements folder
   boost::filesystem::create_directories(
     boost::filesystem::absolute(hparams.omeas.res_dir));
@@ -217,7 +217,14 @@ int main(int ac, char *av[]) {
           if (hparams.omeas.verbosity > 0) {
             std::cout << "## online measuring: Pion correlator\n";
           }
-          omeasurements::meas_pion_correlator<_u1>(U, i, pparams.m0, hparams);
+          omeasurements::meas_pion_correlator<_u1>(U, i, pparams.m0, hparams.omeas);
+        }
+
+        if (hparams.omeas.glueball) {
+          if (hparams.omeas.verbosity > 0) {
+            std::cout << "## online measuring: Glueballs 0^{PC} correlators\n";
+          }
+          omeasurements::meas_glueball_correlator<_u1>(U, i, hparams.omeas);
         }
       }
 

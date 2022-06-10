@@ -58,8 +58,8 @@ namespace global_parameters {
       0.01; // step size in the integration of the gradient flow equations
     double tmax = 1.0; // tmax for gradient flow
     std::string conf_dir = "./"; // directory where gauge configurations are stored
-    std::string res_dir = "./"; // directory where results from measurements for potential,
-                               // potentialsmall are stored
+    std::string res_dir = "./"; // directory where results from measurements for
+                                // potential, potentialsmall are stored
 
     bool potential =
       false; // measure potential: the loops W(x, t, y=z=0) and W(x, y, t=z=0) are
@@ -91,6 +91,8 @@ namespace global_parameters {
     double tolerance_cg = 1e-10; // Tolerance for the solver for the dirac operator
     size_t solver_verbosity = 0; // Verbosity for the solver for the dirac operator
     size_t seed_pf = 97234719; // Seed for the evaluation of the fermion determinant
+
+    bool glueball = false; // measure the glueball correlator
   };
 
   /* Optional parameters for the hmc the in U(1) theory */

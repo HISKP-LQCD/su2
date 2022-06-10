@@ -220,6 +220,8 @@ namespace input_file_parsing {
 
           in.read_opt_verb<bool>(hparams.omeas.Wloop, {"omeas", "Wloop"});
 
+          in.read_opt_verb<bool>(hparams.omeas.glueball, {"omeas", "glueball"});
+
           if (nd["omeas"]["gradient_flow"]) {
             hparams.omeas.gradient_flow = true;
             in.read_opt_verb<double>(hparams.omeas.epsilon_gradient_flow,
@@ -285,6 +287,8 @@ namespace input_file_parsing {
           in.read_opt_verb<size_t>(mparams.seed_pf,
                                    {"measurements", "pion_staggered", "seed_pf"});
         }
+        in.read_opt_verb<bool>(mparams.glueball, {"omeas", "glueball"});
+
         // optional parameters for potentials
         if (nd["measurements"]["potential"]) {
           in.read_opt_verb<bool>(mparams.potential,

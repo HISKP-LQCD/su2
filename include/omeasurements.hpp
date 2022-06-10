@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "flat-gradient_flow.hh"
+#include "operators.hpp"
 #include "parameters.hh"
 #include "propagator.hpp"
 #include "wilsonloop.hh"
@@ -88,7 +89,7 @@ namespace omeasurements {
                             const double &m,
                             const sparams &S) {
     std::ostringstream oss;
-    oss << S.conf_dir + "/C_pion.";
+    oss << S.res_dir + "/C_pion.";
     auto prevw = oss.width(6);
     auto prevf = oss.fill('0');
     oss << i;
@@ -103,6 +104,66 @@ namespace omeasurements {
       U, m, S.solver, S.tolerance_cg, S.solver_verbosity, S.seed_pf);
     for (size_t i = 0; i < U.getLt(); i++) {
       ofs << std::scientific << std::setprecision(16) << i << " " << Cpi[i] << "\n";
+    }
+    ofs.close();
+
+    return;
+  }
+
+  /**
+   * @brief measure the glueball 0^{PC} correlators
+   * measure the glueball correlators 0^{++}, 0^{+-}, 0^{-+}, 0^{--}
+   * @tparam Group
+   * @tparam sparams struct containing info on computation and output
+   * @param U gauge configuration
+   * @param i trajectory index
+   * @param S
+   */
+  template <class Group, class sparams>
+  void meas_glueball_correlator(const gaugeconfig<Group> &U,
+                                const size_t &i,
+                                const sparams &S) {
+    std::ostringstream oss;
+    oss << S.res_dir + "/C_glueball.";
+    auto prevw = oss.width(6);
+    auto prevf = oss.fill('0');
+    oss << i;
+    oss.width(prevw);
+    oss.fill(prevf);
+
+    const std::string path = oss.str();
+    std::ofstream ofs(path, std::ios::out);
+
+    ofs << "t C_{++}(t) C_{+-}(t) C_{-+}(t) C_{--}(t)" << std::endl;
+    double source[4];
+    for (size_t t = 0; t < U.getLt(); t++) {
+      typedef typename accum_type<Group>::type accum;
+      const accum Uij = operators::get_sum_tr_U_ij<accum, Group>(U, t, false);
+      const accum PUij = operators::get_sum_tr_U_ij<accum, Group>(U, t, true);
+
+      ofs << t;
+      size_t i_PC = 0;
+      for (int sP = 1; sP >= -1; sP -= 2) {
+        for (int iC = 1; iC >= 0; iC--) {
+          const bool C = bool(iC);
+          const std::complex<double> comb = Uij + sP * PUij;
+          double sink;
+          if (C) {
+            sink = std::real(comb);
+          } else {
+            sink = std::imag(comb);
+          }
+
+          if (t == 0) {
+            source[i_PC] = sink; // sink=source only at t=0
+          }
+
+          ofs << " " << std::scientific << std::setprecision(16) << sink * source[i_PC];
+          ++i_PC;
+        }
+      }
+
+      ofs << std::endl;
     }
     ofs.close();
 

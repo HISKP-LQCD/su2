@@ -27,73 +27,6 @@ namespace operators {
   template <class T> using nd_max_arr = spacetime_lattice::nd_max_arr<T>;
 
   /**
-   * @brief \vec{p}=\vec{0} (at rest) trace of the spatial plaquette P*(U_ij) [P=spatial
-   * parity operator]
-   *
-   * @tparam T
-   * @tparam Group
-   * @param U
-   * @param t
-   * @param i
-   * @param j
-   * @param P
-   * @return T
-   */
-  template <class T, class Group>
-  T rest_plaquette_ij_P(const gaugeconfig<Group> &U,
-                        const size_t &t,
-                        const size_t &i,
-                        const size_t &j,
-                        const bool &P) {
-    T res;
-
-#pragma omp parallel for reduction(+ : res)
-    for (int x1 = 0; x1 < U.getLx(); x1++) {
-      for (int x2 = 0; x2 < U.getLy(); x2++) {
-        for (int x3 = 0; x3 < U.getLz(); x3++) {
-          if (!P) {
-            const nd_max_arr<int> x = {int(t), x1, x2, x3};
-            nd_max_arr<int> xpi = x;
-            nd_max_arr<int> xpj = x;
-
-            xpi[i]++;
-            xpj[j]++;
-
-            const Group U_ij =
-              U(x, i) * U(xpi, j) * U(xpj, i).dagger() * U(x, j).dagger();
-            res += trace(U_ij);
-
-            xpi[i]--;
-            xpj[j]--;
-
-          } else {
-            const nd_max_arr<int> Px = {int(t), -x1, -x2,
-                                        -x3}; // spatial parity applied to 'x'
-            nd_max_arr<int> Px_mimj = Px;
-            nd_max_arr<int> Px_mi = Px;
-            nd_max_arr<int> Px_mj = Px;
-
-            Px_mimj[i]--;
-            Px_mimj[j]--;
-            Px_mi[i]--;
-            Px_mj[j]--;
-
-            const Group U_ij =
-              U(Px_mi, i).dagger() * U(Px_mimj, j).dagger() * U(Px_mimj, i) * U(Px_mj, j);
-
-            res += trace(U_ij);
-            Px_mimj[i]++;
-            Px_mimj[j]++;
-            Px_mi[i]++;
-            Px_mj[j]++;
-          }
-        }
-      }
-    }
-    return res;
-  }
-
-  /**
    * idea: make operators into a struct, so it is more compact. Maybe extend it into a
    * class with methods like checking for a closed loop and rotating an operator?
    * **/
@@ -310,25 +243,102 @@ namespace operators {
     return res;
   }
 
+  template <class T, class Group>
+  T plaquette_Pij(const gaugeconfig<Group> &U,
+                  const nd_max_arr<int> &x,
+                  const size_t &i,
+                  const size_t &j,
+                  const bool &P) {
+    T res;
+
+    if (!P) {
+      nd_max_arr<int> xpi = x;
+      nd_max_arr<int> xpj = x;
+
+      xpi[i]++;
+      xpj[j]++;
+
+      res = U(x, i) * U(xpi, j) * U(xpj, i).dagger() * U(x, j).dagger();
+
+    } else {
+      const nd_max_arr<int> Px = {x[0], -x[1], -x[2],
+                                  -x[3]}; // spatial parity applied to 'x'
+      nd_max_arr<int> Px_mimj = Px;
+      nd_max_arr<int> Px_mi = Px;
+      nd_max_arr<int> Px_mj = Px;
+
+      Px_mimj[i]--;
+      Px_mimj[j]--;
+      Px_mi[i]--;
+      Px_mj[j]--;
+
+      res = U(Px_mi, i).dagger() * U(Px_mimj, j).dagger() * U(Px_mimj, i) * U(Px_mj, j);
+    }
+    return res / double(U.getNc());
+  }
+
   /**
-   * @brief Get the sum U ij object
-   * returns \frac{2}{(d-1)*(d-2) * Lx*Ly*Lz} \sum_{\vec{x}} \sum_{i<j} Tr(P*U_{ij}(t,
+   * @brief \vec{p}=\vec{0} (at rest) trace of the spatial plaquette P*(U_ij) [P=spatial
+   * parity operator]
+   */
+  template <class T, class Group>
+  T rest_plaquette_P_ij(const gaugeconfig<Group> &U,
+                        const size_t &t,
+                        const size_t &i,
+                        const size_t &j,
+                        const bool &P) {
+    T res;
+
+#pragma omp parallel for reduction(+ : res)
+    for (int x1 = 0; x1 < U.getLx(); x1++) {
+      for (int x2 = 0; x2 < U.getLy(); x2++) {
+        for (int x3 = 0; x3 < U.getLz(); x3++) {
+          const nd_max_arr<int> x = {int(t), x1, x2, x3};
+          res += plaquette_Pij<T, Group>(U, x, i, j, P);
+        }
+      }
+    }
+    return res / (double(U.getVolume()) / double(U.getLt()));
+  }
+
+  /**
+   * @brief Get the sum tr U ij object
+   * returns \frac{2}{(d-1)*(d-2)*Nc} \sum_{i<j} Tr(P*U_{ij}(t,
    * \vec{x}))
-   * P=parity operator
+   */
+  template <class T, class Group>
+  T get_tr_sum_U_ij(const gaugeconfig<Group> &U,
+                    const nd_max_arr<int> &x,
+                    const bool &P) {
+    T Uij;
+    for (size_t i = 0; i < U.getndims() - 1; i++) {
+      for (size_t j = i + 1; j < U.getndims() - 1; j++) {
+        Uij += operators::plaquette_Pij<T, Group>(U, x, i, j, P);
+      }
+    }
+    const double dims_fact = spacetime_lattice::num_pLloops_half(U.getndims() - 1);
+    Uij /= double(dims_fact);
+    return Uij;
+  }
+
+  /**
+   * @brief Get the U ij object at rest
+   * returns \frac{2}{(d-1)*(d-2) * Lx*Ly*Lz * Nc} \sum_{\vec{x}} \sum_{i<j}
+   * Tr(P*U_{ij}(t, \vec{x})) P=parity operator
    * @tparam Group
    * @param U gauge configuration
    * @param P whether to apply the parity operator or not
    */
   template <class T, class Group>
-  T get_sum_tr_U_ij(const gaugeconfig<Group> &U, const size_t &t, const bool &P) {
-    T Uij = 0.0;
+  T get_rest_tr_sum_U_ij(const gaugeconfig<Group> &U, const size_t &t, const bool &P) {
+    T Uij;
     for (size_t i = 0; i < U.getndims() - 1; i++) {
       for (size_t j = i + 1; j < U.getndims() - 1; j++) {
-        Uij += operators::rest_plaquette_ij_P<T, Group>(U, t, i, j, P);
+        Uij += operators::rest_plaquette_P_ij<T, Group>(U, t, i, j, P);
       }
     }
     const double dims_fact = spacetime_lattice::num_pLloops_half(U.getndims() - 1);
-    Uij /= double(dims_fact * U.getVolume()) / double(U.getLt());
+    Uij /= double(dims_fact);
     return Uij;
   }
 

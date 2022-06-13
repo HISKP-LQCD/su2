@@ -123,6 +123,8 @@ namespace omeasurements {
   void meas_glueball_correlator(const gaugeconfig<Group> &U,
                                 const size_t &i,
                                 const sparams &S) {
+    typedef typename accum_type<Group>::type accum;
+
     std::ostringstream oss;
     oss << S.res_dir + "/C_glueball.";
     auto prevw = oss.width(6);
@@ -137,9 +139,8 @@ namespace omeasurements {
     ofs << "t C_{++}(t) C_{+-}(t) C_{-+}(t) C_{--}(t)" << std::endl;
     double source[4];
     for (size_t t = 0; t < U.getLt(); t++) {
-      typedef typename accum_type<Group>::type accum;
-      const accum Uij = operators::get_sum_tr_U_ij<accum, Group>(U, t, false);
-      const accum PUij = operators::get_sum_tr_U_ij<accum, Group>(U, t, true);
+      const accum Uij = operators::get_rest_tr_sum_U_ij<accum, Group>(U, t, false);
+      const accum PUij = operators::get_rest_tr_sum_U_ij<accum, Group>(U, t, true);
 
       ofs << t;
       size_t i_PC = 0;
@@ -155,14 +156,22 @@ namespace omeasurements {
           }
 
           if (t == 0) {
-            source[i_PC] = sink; // sink=source only at t=0
+            // sink=source only at t=0
+            const std::complex<double> comb_snk =
+              operators::get_tr_sum_U_ij<accum, Group>(U, {0, 0, 0, 0}, false) +
+              sP * operators::get_tr_sum_U_ij<accum, Group>(U, {0, 0, 0, 0}, true);
+
+            if (C) {
+              source[i_PC] = std::real(comb_snk);
+            } else {
+              source[i_PC] = std::imag(comb_snk);
+            }
           }
 
           ofs << " " << std::scientific << std::setprecision(16) << sink * source[i_PC];
           ++i_PC;
         }
       }
-
       ofs << std::endl;
     }
     ofs.close();

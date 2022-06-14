@@ -287,7 +287,7 @@ namespace input_file_parsing {
           in.read_opt_verb<size_t>(mparams.seed_pf,
                                    {"measurements", "pion_staggered", "seed_pf"});
         }
-        in.read_opt_verb<bool>(mparams.glueball, {"omeas", "glueball"});
+        in.read_opt_verb<bool>(mparams.glueball, {"measurements", "glueball"});
 
         // optional parameters for potentials
         if (nd["measurements"]["potential"]) {

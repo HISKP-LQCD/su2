@@ -147,26 +147,29 @@ namespace omeasurements {
       for (int sP = 1; sP >= -1; sP -= 2) {
         for (int iC = 1; iC >= 0; iC--) {
           const bool C = bool(iC);
-          const std::complex<double> comb = Uij + sP * PUij;
+          const std::complex<double> comb_snk = Uij + double(sP) * PUij;
           double sink;
           if (C) {
-            sink = std::real(comb);
+            sink = std::real(comb_snk);
           } else {
-            sink = std::imag(comb);
+            sink = std::imag(comb_snk);
           }
 
+          std::complex<double> comb_src;
           if (t == 0) {
             // sink=source only at t=0
-            const std::complex<double> comb_snk =
-              operators::get_tr_sum_U_ij<accum, Group>(U, {0, 0, 0, 0}, false) +
-              sP * operators::get_tr_sum_U_ij<accum, Group>(U, {0, 0, 0, 0}, true);
+            comb_src = operators::get_tr_sum_U_ij<accum, Group>(U, {0, 0, 0, 0}, false) +
+                       double(sP) *
+                         operators::get_tr_sum_U_ij<accum, Group>(U, {0, 0, 0, 0}, true);
 
             if (C) {
-              source[i_PC] = std::real(comb_snk);
+              source[i_PC] = std::real(comb_src);
             } else {
-              source[i_PC] = std::imag(comb_snk);
+              source[i_PC] = std::imag(comb_src);
             }
           }
+          // std::cout << "t=" << t << " iPC=" << i_PC << " " << std::scientific
+          //           << std::setprecision(16) << comb_snk << " " << comb_src << "\n";
 
           ofs << " " << std::scientific << std::setprecision(16) << sink * source[i_PC];
           ++i_PC;

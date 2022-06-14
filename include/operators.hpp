@@ -298,7 +298,7 @@ namespace operators {
         }
       }
     }
-    return res / (double(U.getVolume()) / double(U.getLt()));
+    return res / double(U.getNc()) / (double(U.getVolume()) / double(U.getLt()));
   }
 
   /**
@@ -311,8 +311,8 @@ namespace operators {
                     const nd_max_arr<int> &x,
                     const bool &P) {
     T Uij;
-    for (size_t i = 0; i < U.getndims() - 1; i++) {
-      for (size_t j = i + 1; j < U.getndims() - 1; j++) {
+    for (size_t i = 1; i < U.getndims(); i++) {
+      for (size_t j = i + 1; j < U.getndims(); j++) {
         Uij += operators::plaquette_Pij<T, Group>(U, x, i, j, P);
       }
     }
@@ -332,8 +332,8 @@ namespace operators {
   template <class T, class Group>
   T get_rest_tr_sum_U_ij(const gaugeconfig<Group> &U, const size_t &t, const bool &P) {
     T Uij;
-    for (size_t i = 0; i < U.getndims() - 1; i++) {
-      for (size_t j = i + 1; j < U.getndims() - 1; j++) {
+    for (size_t i = 1; i < U.getndims(); i++) {
+      for (size_t j = i + 1; j < U.getndims(); j++) {
         Uij += operators::rest_plaquette_P_ij<T, Group>(U, t, i, j, P);
       }
     }

@@ -136,20 +136,17 @@ namespace omeasurements {
     const std::string path = oss.str();
     std::ofstream ofs(path, std::ios::out);
 
-    ofs << "t C_{++}(t) C_{+-}(t) C_{-+}(t) C_{--}(t)" << std::endl;
-    double source[4];
+    std::vector<double> sinks[4]; // sink at 't'
+    std::vector<double> sources[4]; // source at 't'
+    for (size_t i_PC = 0; i_PC < 4; i_PC++) {
+      sinks[i_PC].resize(U.getLt());
+      sources[i_PC].resize(U.getLt());
+    }
+
     for (size_t t = 0; t < U.getLt(); t++) {
       const accum Uij = operators::get_rest_tr_sum_U_ij<accum, Group>(U, t, false);
       const accum PUij = operators::get_rest_tr_sum_U_ij<accum, Group>(U, t, true);
 
-      //      std::cout << t << " "<< operators::plaquette_Pij<accum, Group>(U, {t,0,0,0},
-      //      1, 2, true)<< " " <<  Uij << " "<< PUij <<"\n";
-      // std::cout << t << " "<< operators::rest_plaquette_P_ij<accum, Group>(U, t, 1, 2,
-      // false)<< " " <<  Uij << " "<< PUij <<"\n"; std::cout << t << " "<<
-      // operators::rest_plaquette_P_ij<accum, Group>(U, t, 1, 2, true)<< " " <<  Uij << "
-      // "<< PUij <<"\n";
-
-      ofs << t;
       size_t i_PC = 0;
       for (int sP = 1; sP >= -1; sP -= 2) {
         for (int iC = 1; iC >= 0; iC--) {
@@ -157,37 +154,49 @@ namespace omeasurements {
           std::complex<double> comb_snk = Uij + double(sP) * PUij;
           comb_snk /= 2.0;
 
-          double sink;
+          double snk;
           if (C) {
-            sink = std::real(comb_snk);
+            snk = std::real(comb_snk);
           } else {
-            sink = std::imag(comb_snk);
+            snk = std::imag(comb_snk);
           }
-          sink = 1.0 - sink;
+          snk = 1.0 - snk; // vacuum subtraction
+          sinks[i_PC][t] = snk;
 
-          if (t == 0) {
-            // sink=source only at t=0
-            std::complex<double> comb_src =
-              operators::get_tr_sum_U_ij<accum, Group>(U, {0, 0, 0, 0}, false) +
-              double(sP) *
-                operators::get_tr_sum_U_ij<accum, Group>(U, {0, 0, 0, 0}, true);
-                comb_src /= 2.0;
+          std::complex<double> comb_src =
+            operators::get_tr_sum_U_ij<accum, Group>(U, {int(t), 0, 0, 0}, false) +
+            double(sP) * operators::get_tr_sum_U_ij<accum, Group>(U, {int(t), 0, 0, 0}, true);
+          comb_src /= 2.0;
 
-            if (C) {
-              source[i_PC] = std::real(comb_src);
-            } else {
-              source[i_PC] = std::imag(comb_src);
-            }
-
-            source[i_PC] = 1.0 - source[i_PC];
+          double src;
+          if (C) {
+            src = std::real(comb_src);
+          } else {
+            src = std::imag(comb_src);
           }
 
-          ofs << " " << std::scientific << std::setprecision(16) << sink * source[i_PC];
+          sources[i_PC][t] = 1.0 - src;// vacuum subtraction
+
           ++i_PC;
         }
       }
+    }
+
+    ofs << "t C_{++}(t) C_{+-}(t) C_{-+}(t) C_{--}(t)" << std::endl; // header
+    const size_t T_ext = U.getLt(); // lattice temporal time extent
+    for (size_t t = 0; t < T_ext; t++) {
+      ofs << t;
+      for (size_t i_PC = 0; i_PC < 4; i_PC++) {
+        double Ct = 0.0;
+        for (size_t tau = 0; tau < T_ext; tau++) {
+          Ct += sinks[i_PC][(t + tau) % T_ext] * sinks[i_PC][tau];
+        }
+        Ct /= double(T_ext); // average over all times
+        ofs << " " << std::scientific << std::setprecision(16) << Ct;
+      }
       ofs << std::endl;
     }
+
     ofs.close();
 
     return;

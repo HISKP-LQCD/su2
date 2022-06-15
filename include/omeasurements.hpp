@@ -142,34 +142,45 @@ namespace omeasurements {
       const accum Uij = operators::get_rest_tr_sum_U_ij<accum, Group>(U, t, false);
       const accum PUij = operators::get_rest_tr_sum_U_ij<accum, Group>(U, t, true);
 
+      //      std::cout << t << " "<< operators::plaquette_Pij<accum, Group>(U, {t,0,0,0},
+      //      1, 2, true)<< " " <<  Uij << " "<< PUij <<"\n";
+      // std::cout << t << " "<< operators::rest_plaquette_P_ij<accum, Group>(U, t, 1, 2,
+      // false)<< " " <<  Uij << " "<< PUij <<"\n"; std::cout << t << " "<<
+      // operators::rest_plaquette_P_ij<accum, Group>(U, t, 1, 2, true)<< " " <<  Uij << "
+      // "<< PUij <<"\n";
+
       ofs << t;
       size_t i_PC = 0;
       for (int sP = 1; sP >= -1; sP -= 2) {
         for (int iC = 1; iC >= 0; iC--) {
           const bool C = bool(iC);
-          const std::complex<double> comb_snk = Uij + double(sP) * PUij;
+          std::complex<double> comb_snk = Uij + double(sP) * PUij;
+          comb_snk /= 2.0;
+
           double sink;
           if (C) {
             sink = std::real(comb_snk);
           } else {
             sink = std::imag(comb_snk);
           }
+          sink = 1.0 - sink;
 
-          std::complex<double> comb_src;
           if (t == 0) {
             // sink=source only at t=0
-            comb_src = operators::get_tr_sum_U_ij<accum, Group>(U, {0, 0, 0, 0}, false) +
-                       double(sP) *
-                         operators::get_tr_sum_U_ij<accum, Group>(U, {0, 0, 0, 0}, true);
+            std::complex<double> comb_src =
+              operators::get_tr_sum_U_ij<accum, Group>(U, {0, 0, 0, 0}, false) +
+              double(sP) *
+                operators::get_tr_sum_U_ij<accum, Group>(U, {0, 0, 0, 0}, true);
+                comb_src /= 2.0;
 
             if (C) {
               source[i_PC] = std::real(comb_src);
             } else {
               source[i_PC] = std::imag(comb_src);
             }
+
+            source[i_PC] = 1.0 - source[i_PC];
           }
-          // std::cout << "t=" << t << " iPC=" << i_PC << " " << std::scientific
-          //           << std::setprecision(16) << comb_snk << " " << comb_src << "\n";
 
           ofs << " " << std::scientific << std::setprecision(16) << sink * source[i_PC];
           ++i_PC;

@@ -311,8 +311,12 @@ namespace operators {
                     const nd_max_arr<int> &x,
                     const bool &P) {
     T Uij;
+#pragma omp parallel for reduction(+ : Uij) collapse(2)
     for (size_t i = 1; i < U.getndims(); i++) {
-      for (size_t j = i + 1; j < U.getndims(); j++) {
+      for (size_t j = 2; j < U.getndims(); j++) {
+        if (j <= i) { // we want j>i. If j<=i --> do nothing
+          continue;
+        }
         Uij += operators::plaquette_Pij<T, Group>(U, x, i, j, P);
       }
     }

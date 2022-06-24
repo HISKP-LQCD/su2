@@ -80,7 +80,7 @@ namespace flat_spacetime {
     double P[3], E[3], Q[3];
     double P_ss[3], E_ss[3], Q_ss[3]; // spatial-spatial contribution
 
-    std::ofstream os(path, std::ios::out);
+    std::ostringstream oss;
 
     double density = 0., topQ = 0.; // dummy variables
     double density_ss = 0., topQ_ss = 0.; // dummy variables
@@ -112,13 +112,13 @@ namespace flat_spacetime {
     gaugemonomial<double, Group> SW(
       0); // gradient flow for the Wilson (pure) gauge action
 
-    os << "t "; // flow time
-    os << "P P_ss P_ts "; // plaquette
-    os << "Ep Ep_ss Ep_ts "; // energy from regular plaquette
-    os << "t^2*Ep t^2*Ep_ss t^2*Ep_ts "; // t^2 * E_plaquette(t)
-    os << "Ec Ec_ss Ec_ts "; // energy from clover-leaf plaquette
-    os << "t^2*Ec t^2*Ec_ss t^2*Ec_ts "; // t^2 * E_clover(t)
-    os << "Q Q_ss Q_ts" << std::endl;
+    oss << "t "; // flow time
+    oss << "P P_ss P_ts "; // plaquette
+    oss << "Ep Ep_ss Ep_ts "; // energy from regular plaquette
+    oss << "t^2*Ep t^2*Ep_ss t^2*Ep_ts "; // t^2 * E_plaquette(t)
+    oss << "Ec Ec_ss Ec_ts "; // energy from clover-leaf plaquette
+    oss << "t^2*Ec t^2*Ec_ss t^2*Ec_ts "; // t^2 * E_clover(t)
+    oss << "Q Q_ss Q_ts" << std::endl;
 
     // evolution of t[1] until tmax
     //(note: eps=0.01 and tmax>0 --> the loop ends at some point)
@@ -135,7 +135,7 @@ namespace flat_spacetime {
 
       for (unsigned int x0 = 1; x0 < 3; x0++) {
         t[x0] = t[x0 - 1] + eps;
-        runge_kutta(h, SW, eps); //
+        runge_kutta(h, SW, eps); // apply Runge-Kutta integration method
         P[x0] = flat_spacetime::gauge_energy(Vt) / den_common;
         P_ss[x0] = flat_spacetime::gauge_energy(Vt, true) / den_common;
         flat_spacetime::energy_density(Vt, density, topQ, true);
@@ -151,10 +151,8 @@ namespace flat_spacetime {
 
       const double tsqr = t[1] * t[1];
 
-      // const double factP = 2 * U.getNc() * ndims_fact; // normalization factor
-
-      const double Ep = ndims_fact - P[1]; // factP * (1. - P[1]);
-      const double Ep_ss = ndims_fact_ss - P_ss[1]; // factP * (1. - P_ss[1]);
+      const double Ep = ndims_fact - P[1]; 
+      const double Ep_ss = ndims_fact_ss - P_ss[1];
       const double Ep_ts = double(d - 1.0) - P_ts;
 
       const double t2Ep = tsqr * Ep;
@@ -169,16 +167,19 @@ namespace flat_spacetime {
       const double t2Ec_ss = tsqr * Ec_ss;
       const double t2Ec_ts = tsqr * Ec_ts;
 
-      os << std::scientific; // using scientific notation
-      os.precision(16);
-      os << t[1] << " ";
-      os << P[1] << " " << P_ss[1] << " " << P_ts << " ";
-      os << Ep << " " << Ep_ss << " " << Ep_ts << " ";
-      os << t2Ep << " " << t2Ep_ss << " " << t2Ep_ts << " ";
-      os << Ec << " " << Ec_ss << " " << Ec_ts << " ";
-      os << t2Ec << " " << t2Ec_ss << " " << t2Ec_ts << " ";
-      os << Q[1] << " " << Q_ss[1] << " " << Q_ts << "\n";
+      oss << std::scientific; // using scientific notation
+      oss.precision(16);
+      oss << t[1] << " ";
+      oss << P[1] << " " << P_ss[1] << " " << P_ts << " ";
+      oss << Ep << " " << Ep_ss << " " << Ep_ts << " ";
+      oss << t2Ep << " " << t2Ep_ss << " " << t2Ep_ts << " ";
+      oss << Ec << " " << Ec_ss << " " << Ec_ts << " ";
+      oss << t2Ec << " " << t2Ec_ss << " " << t2Ec_ts << " ";
+      oss << Q[1] << " " << Q_ss[1] << " " << Q_ts << "\n";
     }
+
+    std::ofstream ofs(path, std::ios::out);
+    ofs << oss.str();
 
     return;
   }

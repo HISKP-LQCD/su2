@@ -28,7 +28,15 @@ The geometry of the lattice is specified in the `geometry` YAML node.
 
 ## `hmc-u1.cc`
 
+This program can be used to perform the HMC evolution of a gauge configuration which:
+- was previously generated
+- is "hot" (random elements in the group)
+- is "cold" (identity operator in the group)
 
+It can be used in 3 ways:
+  - hmc evolution (`hmc:do_hmc:true in the input file)
+  - hmc evolution with online measurements (`omeas` node in the input file)
+  - online measurements without hmc evolution (`hmc:do_hmc:false but `omeas` node in the input file).
 
 ### References
 

@@ -2,17 +2,18 @@
 
 geometry:
   L : 4
-  T : 4
+  T : 16
   ndims : 3
 #  rotating_frame:
 #    Omega: 0.05
 
 # hmc parameters
 hmc:
+  do_hmc: false
   seed: 93746
   n_save: 10
-  n_meas: 5010
-  #restart: true
+  n_meas: 100
+#  restart: true
   heat: true
   configname: ""
   lenghty_conf_name: false
@@ -21,35 +22,34 @@ hmc:
 integrator:
   name: leapfrog
   N_rev: 0
-  n_steps: 50
+#  n_steps: 100
   tau: 1.0
   exponent: 0
+
+
+monomials:
+  gauge:
+    beta: 2.2
+    anisotropic:
+      xi: 1.0
 
 #operators: 
 #  staggered:
 #    mass: 0.1
-
-monomials:
-  gauge:
-    beta: 1.0
-    anisotropic:
-      xi: 1.0
-#  staggered_det_DDdag:
-#    tolerance_cg: 1e-10
-#    solver_verbosity : 0
-#    seed_pf: 22346363
-#    solver: CG
 
 omeas:
   res_dir: ./omeas/
   verbosity: 1
   icounter: 0
   nstep: 1
-  gradient_flow:
-    epsilon: 0.01
-    tmax: 2.0
+#  gradient_flow:
+#    epsilon: 0.01
+#    tmax: 2.0
+  glueball:
+    do_APE_smearing: true
+    APE_smearing:
+      n: 100
+      alpha: 1.0
 #  Wloop: true
 #  pion_staggered:
 #    mass: 0.1
-
-

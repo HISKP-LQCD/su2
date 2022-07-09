@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include<boost/program_options.hpp>
+#include <boost/program_options.hpp>
 #include <boost/type_index.hpp>
 #include <set>
 #include <string>
@@ -32,31 +32,45 @@ namespace YAML_parsing {
    *
    * At the beginning, all keys are stored in a std::set G (given). Nesting is rendered
    * naming the std::strings in it using ":". Each time a read function is called, a
-   * parameter string is added to the first set U (used) If in the input file more
+   * parameter string is added to the first set U (used). If in the input file more
    * parameters have been provided than the ones initialized, or some's names have been
    * miswritten, an error is reported and the program aborts.
+   *
+   * The attribute InnerTree is a std::vector<std::string> containing the list of
+   * nested nodes identifiers, such that only those submodes will be parsed and the
+   * structure of the given (G) and used (U) parameters is preserved.
+   * Example: {"a","b","c"} --> only nodes out of "a:b:c" will we parsed by the read()
+   * function. This is useful when we one wnats to write functions specific to a given
+   * block structure in the YAML input file. In that case, one should set the
+   * InnerTree variable before the parsing (and pass the 'inspect_node' object by
+   * reference)
    */
   class inspect_node {
   private:
-    YAML::Node N; // node analyzed
+    YAML::Node InnerNode; // node analyzed
     std::set<std::string> G, U; // set of given (G) and used (U) parameters
+    std::vector<std::string> InnerTree = {}; // node from which we start reading
+    YAML::Node OuterNode; // node analyzed, already prepended according to InnerTree
 
     /**
      * @brief fills the std::set (*this).G
-     * Finds all nodes and subnodes of (*this).N and stores the keys in (*this).G
+     * Finds all nodes and subnodes of (*this).InnerNode and stores the keys in (*this).G
      * @param beg beginning of the string key of the node analyzed
      */
     void find_all(const YAML::Node &node, const std::string &beg) {
       for (YAML::const_iterator it = node.begin(); it != node.end(); ++it) {
         std::string k = it->first.as<std::string>(); // key
-        
-        if(G.count(beg + k)==1){
-          std::cerr<<"Error: The input file contains 2 or more identical nodes with name "<< beg+k <<"\n";
-         std::abort();
+
+        if (G.count(beg + k) == 1) {
+          std::cerr
+            << "Error: The input file contains 2 or more identical nodes with name "
+            << beg + k << "\n";
+          std::abort();
         }
 
         G.insert(beg + k);
-        //This does the recursion: if there is no further subnode to beg+k, the function does nothing
+        // This does the recursion: if there is no further subnode to beg+k, the function
+        // does nothing
         this->find_all(node[k], beg + k + ":");
       }
     }
@@ -80,12 +94,12 @@ namespace YAML_parsing {
 
   public:
     inspect_node(const YAML::Node &n) {
-      N = YAML::Clone(n);
-      this->find_all((*this).N, "");
+      (*this).InnerNode = YAML::Clone(n);
+      this->find_all((*this).InnerNode, "");
     }
 
     YAML::Node get_outer_node(const std::vector<std::string> &tree) const {
-      YAML::Node node_i = YAML::Clone((*this).N);
+      YAML::Node node_i = YAML::Clone((*this).InnerNode);
       const size_t nt = tree.size();
       for (int i = 0; i < nt; ++i) {
         node_i = YAML::Clone(node_i[tree[i]]);
@@ -93,7 +107,11 @@ namespace YAML_parsing {
       return node_i;
     }
 
-    YAML::Node get_root() { return YAML::Clone((*this).N); }
+    std::vector<std::string> get_InnerTree() const { return (*this).InnerTree; }
+
+    YAML::Node get_root() { return YAML::Clone((*this).InnerNode); }
+
+    void set_InnerTree(const std::vector<std::string> &pt) { (*this).InnerTree = pt; }
 
     /**
      * @brief saving value from YAML node
@@ -101,10 +119,11 @@ namespace YAML_parsing {
      * If the key doesn't exist, nothing is done
      * @tparam T cast type of the parameter
      * @param x address of the value
-     * @param nd YAML node
-     * @param name string name of the parameter
+     * @param outer_tree vector of strings determining the path to the input value
      */
-    template <class T> void read(T &x, const std::vector<std::string> &tree) {
+    template <class T> void read(T &x, const std::vector<std::string> &outer_tree) {
+      std::vector<std::string> tree = InnerTree;
+      tree.insert(tree.end(), outer_tree.begin(), outer_tree.end());
       const YAML::Node node_i = YAML::Clone(this->get_outer_node(tree));
       const std::string g_str = this->get_node_str(tree);
 
@@ -113,7 +132,7 @@ namespace YAML_parsing {
       } catch (...) {
         std::cerr << "Error: check \"" << g_str << "\" in your YAML input file. ";
         std::cerr << boost::typeindex::type_id<T>() << " type was expected. \n";
-       std::abort();
+        std::abort();
       }
 
       // adding the node string identifiers to the std::set (*this).U
@@ -176,7 +195,7 @@ namespace YAML_parsing {
         }
 
         if (ierr == 1) {
-         std::abort();
+          std::abort();
         }
       }
     }
@@ -201,13 +220,12 @@ namespace input_file_parsing {
   /**
    * @brief command line parsing
    * check if "help" has been called or if input file hasn't been specified correctly
-   * @param ac argc from main() 
+   * @param ac argc from main()
    * @param av argv from main()
    * @param input_file input file reference
    * @return int exit statu
    */
   int parse_command_line(int ac, char *av[], std::string &input_file);
-
 
   /**
    * @brief check geometry parameters

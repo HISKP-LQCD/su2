@@ -131,7 +131,7 @@ int main(int ac, char *av[]) {
     if (mparams.pion_staggered) {
       omeasurements::meas_pion_correlator<_u1>(U, i, pparams.m0, mparams);
     }
-    if (mparams.glueball) {
+    if (mparams.measure_glueball_params.do_measure) {
       omeasurements::meas_glueball_correlator<_u1>(U, i, mparams);
     }
 

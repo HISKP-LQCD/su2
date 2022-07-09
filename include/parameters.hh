@@ -43,6 +43,13 @@ namespace global_parameters {
     bool anisotropic = false; // use anisotropic lattice
   };
 
+  struct measure_glueball_u1 {
+    bool do_measure = false; // measure the glueball correlator
+    bool doAPEsmear = false; // apply APE smearing to the links
+    size_t nAPEsmear; // number of APE smearing iterations
+    double alphaAPEsmear; // alpha parameter for the smearing. alpha=1 -> no smearing.
+  };
+
   /* optional parameters for the measure program the in U(1) theory */
   struct measure_u1 {
     size_t verbosity = 0; // verbosity of the output
@@ -92,7 +99,7 @@ namespace global_parameters {
     size_t solver_verbosity = 0; // Verbosity for the solver for the dirac operator
     size_t seed_pf = 97234719; // Seed for the evaluation of the fermion determinant
 
-    bool glueball = false; // measure the glueball correlator
+    measure_glueball_u1 measure_glueball_params; // structure for the measure of the glueball
   };
 
   /* Optional parameters for the hmc the in U(1) theory */

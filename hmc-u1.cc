@@ -220,7 +220,7 @@ int main(int ac, char *av[]) {
           omeasurements::meas_pion_correlator<_u1>(U, i, pparams.m0, hparams.omeas);
         }
 
-        if (hparams.omeas.glueball) {
+        if (hparams.omeas.measure_glueball_params.do_measure) {
           if (hparams.omeas.verbosity > 0) {
             std::cout << "## online measuring: Glueballs 0^{PC} correlators\n";
           }

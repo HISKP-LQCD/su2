@@ -135,6 +135,20 @@ namespace input_file_parsing {
       return;
     }
 
+    /**
+     * @brief parsing parameters from node of glueball correlator
+     * @param in input file parser
+     * @param mgparams measure_glueball_parameters structure
+     */
+    void parse_glueball_measure(Yp::inspect_node &in, gp::measure_glueball_u1 &mgparams) {
+      YAML::Node R = in.get_outer_node(in.get_InnerTree());
+      in.read_verb<bool>(mgparams.doAPEsmear, {"do_APE_smearing"});
+      if (mgparams.doAPEsmear) {
+        in.read_verb<size_t>(mgparams.nAPEsmear, {"APE_smearing", "n"});
+        in.read_verb<double>(mgparams.alphaAPEsmear, {"APE_smearing", "alpha"});
+      }
+    }
+
     namespace hmc {
       int parse_input_file(const std::string &file,
                            gp::physics &pparams,
@@ -206,8 +220,7 @@ namespace input_file_parsing {
           hparams.make_omeas = true;
 
           hparams.omeas.res_dir = hparams.conf_dir; // default
-          in.read_opt_verb<std::string>(hparams.omeas.res_dir , {"omeas", "res_dir"});
-
+          in.read_opt_verb<std::string>(hparams.omeas.res_dir, {"omeas", "res_dir"});
 
           in.read_opt_verb<size_t>(hparams.omeas.verbosity, {"omeas", "verbosity"});
           in.read_opt_verb<size_t>(hparams.omeas.icounter, {"omeas", "icounter"});
@@ -220,7 +233,12 @@ namespace input_file_parsing {
 
           in.read_opt_verb<bool>(hparams.omeas.Wloop, {"omeas", "Wloop"});
 
-          in.read_opt_verb<bool>(hparams.omeas.glueball, {"omeas", "glueball"});
+          if (nd["omeas"]["glueball"]) {
+            hparams.omeas.measure_glueball_params.do_measure = true;
+            in.set_InnerTree({"omeas", "glueball"});
+            parse_glueball_measure(in, hparams.omeas.measure_glueball_params);
+            in.set_InnerTree({}); // reset to previous state
+          }
 
           if (nd["omeas"]["gradient_flow"]) {
             hparams.omeas.gradient_flow = true;
@@ -287,7 +305,13 @@ namespace input_file_parsing {
           in.read_opt_verb<size_t>(mparams.seed_pf,
                                    {"measurements", "pion_staggered", "seed_pf"});
         }
-        in.read_opt_verb<bool>(mparams.glueball, {"measurements", "glueball"});
+
+        if (nd["measurement"]["glueball"]) {
+          mparams.measure_glueball_params.do_measure = true;
+          in.set_InnerTree({"omeas", "glueball"});
+          parse_glueball_measure(in, mparams.measure_glueball_params);
+          in.set_InnerTree({}); // reset to previous state
+        }
 
         // optional parameters for potentials
         if (nd["measurements"]["potential"]) {

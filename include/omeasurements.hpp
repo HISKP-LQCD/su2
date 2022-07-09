@@ -16,6 +16,7 @@
 #include "operators.hpp"
 #include "parameters.hh"
 #include "propagator.hpp"
+#include "smearape.hh"
 #include "wilsonloop.hh"
 
 namespace omeasurements {
@@ -117,17 +118,27 @@ namespace omeasurements {
    * @tparam sparams struct containing info on computation and output
    * @param U gauge configuration
    * @param i trajectory index
-   * @param S
+   * @param S specific parameters
    */
   template <class Group, class sparams>
-  void meas_glueball_correlator(const gaugeconfig<Group> &U,
+  void meas_glueball_correlator(const gaugeconfig<Group> &U0,
                                 const size_t &i,
                                 const sparams &S) {
     typedef typename accum_type<Group>::type accum;
 
     std::ostringstream oss;
-    oss << S.res_dir + "/C_glueball.";
-    auto prevw = oss.width(6);
+    oss << S.res_dir + "/C_glueball";
+
+    gaugeconfig<Group> U = U0;
+    if (S.measure_glueball_params.doAPEsmear) {
+      for (size_t i = 0; i < S.measure_glueball_params.nAPEsmear; i++) {
+        smearlatticeape<Group>(U, S.measure_glueball_params.alphaAPEsmear, true);
+      }
+      oss << "_smearAPEn" << S.measure_glueball_params.nAPEsmear << "alpha"
+          << S.measure_glueball_params.alphaAPEsmear;
+    }
+    oss << "_";
+    auto prevw = oss.width(8);
     auto prevf = oss.fill('0');
     oss << i;
     oss.width(prevw);
@@ -165,7 +176,8 @@ namespace omeasurements {
 
           std::complex<double> comb_src =
             operators::get_tr_sum_U_ij<accum, Group>(U, {int(t), 0, 0, 0}, false) +
-            double(sP) * operators::get_tr_sum_U_ij<accum, Group>(U, {int(t), 0, 0, 0}, true);
+            double(sP) *
+              operators::get_tr_sum_U_ij<accum, Group>(U, {int(t), 0, 0, 0}, true);
           comb_src /= 2.0;
 
           double src;
@@ -175,7 +187,7 @@ namespace omeasurements {
             src = std::imag(comb_src);
           }
 
-          sources[i_PC][t] = 1.0 - src;// vacuum subtraction
+          sources[i_PC][t] = 1.0 - src; // vacuum subtraction
 
           ++i_PC;
         }

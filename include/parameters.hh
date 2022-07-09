@@ -104,6 +104,9 @@ namespace global_parameters {
 
   /* Optional parameters for the hmc the in U(1) theory */
   struct hmc_u1 {
+
+    bool do_hmc = true; // whether to do the hmc evolution or not
+
     size_t N_save = 100; // N_save
     size_t n_meas = 10; // total number of sweeps
     size_t icounter = 0; // initial counter for updates

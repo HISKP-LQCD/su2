@@ -223,9 +223,8 @@ namespace input_file_parsing {
    * @param ac argc from main()
    * @param av argv from main()
    * @param input_file input file reference
-   * @return int exit statu
    */
-  int parse_command_line(int ac, char *av[], std::string &input_file);
+  void parse_command_line(int ac, char *av[], std::string &input_file);
 
   /**
    * @brief check geometry parameters
@@ -252,7 +251,7 @@ namespace input_file_parsing {
     void parse_geometry(const YAML::Node &nd, gp::physics &pparams);
 
     namespace hmc {
-      int parse_input_file(const std::string &file,
+      void parse_input_file(const std::string &file,
                            gp::physics &pparams,
                            gp::hmc_u1 &hmc_params);
     }

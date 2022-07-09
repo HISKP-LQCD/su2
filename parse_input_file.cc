@@ -17,7 +17,7 @@
 
 namespace input_file_parsing {
 
-  int parse_command_line(int ac, char *av[], std::string &input_file) {
+  void parse_command_line(int ac, char *av[], std::string &input_file) {
     namespace po = boost::program_options;
 
     po::options_description desc("Allowed options");
@@ -31,17 +31,17 @@ namespace input_file_parsing {
 
     if (vm.count("help")) {
       std::cout << desc << "\n";
-      return 1;
+      std::abort();
     }
 
     if (input_file == "NONE") {
       std::cout << "Error: invalid command line parameters.\nCheck using the "
                    "\"-h/--help\" option."
                 << "\n";
-      return 1;
+      std::abort();
     }
 
-    return 0;
+    return;
   }
 
   int validate_geometry(gp::physics &pparams) {
@@ -150,7 +150,7 @@ namespace input_file_parsing {
     }
 
     namespace hmc {
-      int parse_input_file(const std::string &file,
+      void parse_input_file(const std::string &file,
                            gp::physics &pparams,
                            gp::hmc_u1 &hparams) {
         std::cout << "## Parsing input file: " << file << "\n";
@@ -194,6 +194,8 @@ namespace input_file_parsing {
         // hmc-u1 parameters
         in.read_verb<size_t>(hparams.N_save, {"hmc", "n_save"});
         in.read_verb<size_t>(hparams.n_meas, {"hmc", "n_meas"});
+
+        in.read_opt_verb<bool>(hparams.do_hmc, {"hmc", "do_hmc"});
 
         in.read_opt_verb<bool>(hparams.restart, {"hmc", "restart"});
         if (!hparams.restart) {
@@ -249,7 +251,7 @@ namespace input_file_parsing {
         }
 
         in.finalize();
-        return 0;
+        return;
       }
 
     } // namespace hmc
@@ -274,39 +276,39 @@ namespace input_file_parsing {
         }
 
         // measure-u1 parameters
-        in.read_opt_verb<size_t>(mparams.n_meas, {"measurements", "n_meas"});
-        in.read_opt_verb<size_t>(mparams.nstep, {"measurements", "nstep"});
-        in.read_opt_verb<size_t>(mparams.icounter, {"measurements", "icounter"});
-        in.read_opt_verb<size_t>(mparams.seed, {"measurements", "seed"});
-        in.read_opt_verb<bool>(mparams.Wloop, {"measurements", "Wloop"});
+        in.read_opt_verb<size_t>(mparams.n_meas, {"omeas", "n_meas"});
+        in.read_opt_verb<size_t>(mparams.nstep, {"omeas", "nstep"});
+        in.read_opt_verb<size_t>(mparams.icounter, {"omeas", "icounter"});
+        in.read_opt_verb<size_t>(mparams.seed, {"omeas", "seed"});
+        in.read_opt_verb<bool>(mparams.Wloop, {"omeas", "Wloop"});
         // optional parameters for gradient
-        if (nd["measurements"]["gradient_flow"]) {
+        if (nd["omeas"]["gradient_flow"]) {
           mparams.gradient_flow = true;
           in.read_opt_verb<double>(mparams.epsilon_gradient_flow,
                                    {"omeas", "gradient_flow", "epsilon"});
 
           in.read_opt_verb<double>(mparams.tmax,
-                                   {"measurements", "gradient_flow", "tmax"});
+                                   {"omeas", "gradient_flow", "tmax"});
         }
         // optional parameters for pion
-        if (nd["measurements"]["pion_staggered"]) {
+        if (nd["omeas"]["pion_staggered"]) {
           pparams.include_staggered_fermions = true;
 
           mparams.pion_staggered = true;
-          in.read_verb<double>(pparams.m0, {"measurements", "pion_staggered", "mass"});
+          in.read_verb<double>(pparams.m0, {"omeas", "pion_staggered", "mass"});
 
           in.read_opt_verb<std::string>(mparams.solver,
-                                        {"measurements", "pion_staggered", "solver"});
+                                        {"omeas", "pion_staggered", "solver"});
           in.read_opt_verb<double>(mparams.tolerance_cg,
-                                   {"measurements", "pion_staggered", "tolerance_cg"});
+                                   {"omeas", "pion_staggered", "tolerance_cg"});
           in.read_opt_verb<size_t>(
             mparams.solver_verbosity,
-            {"measurements", "pion_staggered", "solver_verbosity"});
+            {"omeas", "pion_staggered", "solver_verbosity"});
           in.read_opt_verb<size_t>(mparams.seed_pf,
-                                   {"measurements", "pion_staggered", "seed_pf"});
+                                   {"omeas", "pion_staggered", "seed_pf"});
         }
 
-        if (nd["measurement"]["glueball"]) {
+        if (nd["omeas"]["glueball"]) {
           mparams.measure_glueball_params.do_measure = true;
           in.set_InnerTree({"omeas", "glueball"});
           parse_glueball_measure(in, mparams.measure_glueball_params);
@@ -314,31 +316,31 @@ namespace input_file_parsing {
         }
 
         // optional parameters for potentials
-        if (nd["measurements"]["potential"]) {
+        if (nd["omeas"]["potential"]) {
           in.read_opt_verb<bool>(mparams.potential,
-                                 {"measurements", "potential", "potential"});
+                                 {"omeas", "potential", "potential"});
           in.read_opt_verb<bool>(mparams.potentialsmall,
-                                 {"measurements", "potential", "potentialsmall"});
-          in.read_opt_verb<bool>(mparams.append, {"measurements", "potential", "append"});
+                                 {"omeas", "potential", "potentialsmall"});
+          in.read_opt_verb<bool>(mparams.append, {"omeas", "potential", "append"});
           in.read_opt_verb<bool>(mparams.smear_spatial_only,
-                                 {"measurements", "potential", "smear_spatial_only"});
+                                 {"omeas", "potential", "smear_spatial_only"});
           in.read_opt_verb<bool>(mparams.smear_temporal_only,
-                                 {"measurements", "potential", "smear_temporal_only"});
+                                 {"omeas", "potential", "smear_temporal_only"});
           in.read_opt_verb<size_t>(mparams.n_apesmear,
-                                   {"measurements", "potential", "n_apesmear"});
-          in.read_opt_verb<double>(mparams.alpha, {"measurements", "potential", "alpha"});
+                                   {"omeas", "potential", "n_apesmear"});
+          in.read_opt_verb<double>(mparams.alpha, {"omeas", "potential", "alpha"});
           in.read_opt_verb<double>(mparams.sizeWloops,
-                                   {"measurements", "potential", "sizeWloops"});
+                                   {"omeas", "potential", "sizeWloops"});
         }
 
-        in.read_opt_verb<std::string>(mparams.conf_dir, {"measurements", "conf_dir"});
-        in.read_opt_verb<std::string>(mparams.res_dir, {"measurements", "res_dir"});
+        in.read_opt_verb<std::string>(mparams.conf_dir, {"omeas", "conf_dir"});
+        in.read_opt_verb<std::string>(mparams.res_dir, {"omeas", "res_dir"});
 
         in.read_opt_verb<std::string>(mparams.conf_basename,
-                                      {"measurements", "conf_basename"});
+                                      {"omeas", "conf_basename"});
 
         in.read_opt_verb<size_t>(mparams.beta_str_width,
-                                 {"measurements", "beta_str_width"});
+                                 {"omeas", "beta_str_width"});
         validate_beta_str_width(mparams.beta_str_width);
 
         in.finalize();

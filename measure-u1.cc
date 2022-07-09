@@ -50,13 +50,10 @@ int main(int ac, char *av[]) {
   gp::measure_u1 mparams; // measure parameters
 
   std::string input_file; // yaml input file path
-  int err = input_file_parsing::parse_command_line(ac, av, input_file);
-  if (err > 0) {
-    return err;
-  }
+  input_file_parsing::parse_command_line(ac, av, input_file);
 
   namespace in_meas = input_file_parsing::u1::measure;
-  err = in_meas::parse_input_file(input_file, pparams, mparams);
+  int err = in_meas::parse_input_file(input_file, pparams, mparams);
   if (err > 0) {
     return err;
   }

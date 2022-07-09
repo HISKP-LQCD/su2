@@ -37,67 +37,45 @@
 #include "detDDdag_monomial.hh"
 
 namespace po = boost::program_options;
+namespace gp = global_parameters;
+namespace fsys = boost::filesystem;
+/**
+ * @brief initialize gaige configuration for the hmc
+ */
+void initialize_U_hmc(gaugeconfig<_u1> &U,
+                      bool &g_heat,
+                      size_t &g_icounter,
+                      double &normalisation,
+                      const gp::physics &pparams,
+                      const gp::hmc_u1 &hparams);
 
 int main(int ac, char *av[]) {
   std::cout << "## HMC Algorithm for U(1) gauge theory\n";
   std::cout << "## (C) Carsten Urbach <urbach@hiskp.uni-bonn.de> (2017, 2021)\n";
   std::cout << "## GIT branch " << GIT_BRANCH << " on commit " << GIT_COMMIT_HASH << "\n";
 
-  namespace gp = global_parameters;
   gp::physics pparams; // physics parameters
   gp::hmc_u1 hparams; // hmc parameters
 
   std::string input_file; // yaml input file path
-  int err = input_file_parsing::parse_command_line(ac, av, input_file);
-  if (err > 0) {
-    return err;
-  }
+  input_file_parsing::parse_command_line(ac, av, input_file);
 
   namespace in_hmc = input_file_parsing::u1::hmc;
-
-  err = in_hmc::parse_input_file(input_file, pparams, hparams);
-  if (err > 0) {
-    return err;
-  }
+  in_hmc::parse_input_file(input_file, pparams, hparams);
 
   // configurations folder
-  boost::filesystem::create_directories(boost::filesystem::absolute(hparams.conf_dir));
+  fsys::create_directories(fsys::absolute(hparams.conf_dir));
 
   // online measurements folder
-  boost::filesystem::create_directories(
-    boost::filesystem::absolute(hparams.omeas.res_dir));
+  const fsys::path abs_omeas_res = fsys::absolute(hparams.omeas.res_dir);
+  fsys::create_directories(abs_omeas_res);
 
   bool g_heat; // hot or cold starting configuration
   size_t g_icounter; // 1st configuration(trajectory) to load from
-
   gaugeconfig<_u1> U(pparams.Lx, pparams.Ly, pparams.Lz, pparams.Lt, pparams.ndims,
                      pparams.beta);
-  if (hparams.restart) {
-    std::cout << "## restart " << hparams.restart << "\n";
-    std::vector<std::string> v_ncc = io::hmc::read_nconf_counter(hparams.conf_dir);
-    g_heat = boost::lexical_cast<bool>(v_ncc[0]);
-    g_icounter = std::stoi(v_ncc[1]);
-    std::string config_path = v_ncc[2];
-
-    err = U.load(config_path);
-    if (err != 0) {
-      return err;
-    }
-  } else {
-    std::cout << "hotstart " << hparams.seed << " " << hparams.heat << "\n";
-    g_heat = (hparams.heat == true) ? 1.0 : 0.0;
-    g_icounter = 0;
-    hotstart(U, hparams.seed, g_heat);
-  }
-
-  double plaquette = flat_spacetime::gauge_energy(U);
-  double fac = 2. / U.getndims() / (U.getndims() - 1);
-  const double normalisation = fac / U.getVolume() / double(U.getNc());
-  std::cout << "## Initial Plaquette: " << plaquette * normalisation << std::endl;
-
-  random_gauge_trafo(U, 654321);
-  plaquette = flat_spacetime::gauge_energy(U);
-  std::cout << "## Plaquette after rnd trafo: " << plaquette * normalisation << std::endl;
+  double normalisation;
+  initialize_U_hmc(U, g_heat, g_icounter, normalisation, pparams, hparams);
 
   // Molecular Dynamics parameters
   md_params mdparams(hparams.n_steps, hparams.tau);
@@ -132,11 +110,11 @@ int main(int ac, char *av[]) {
     set_integrator<double, _u1>(hparams.integrator, hparams.exponent);
 
   std::ofstream os;
-  if (g_icounter == 0)
+  if (g_icounter == 0) {
     os.open(hparams.conf_dir + "/output.hmc.data", std::ios::out);
-  else
+  } else {
     os.open(hparams.conf_dir + "/output.hmc.data", std::ios::app);
-
+  }
   std::cout << "## Normalization factor: A = 2/(d*(d-1)*N_lat*N_c) = " << std::scientific
             << std::setw(18) << std::setprecision(15) << normalisation << "\n";
   std::cout << "## Acceptance rate parcentage: rho = rate/(i+1)\n";
@@ -151,52 +129,67 @@ int main(int ac, char *av[]) {
   const std::string conf_path_basename = io::get_conf_path_basename(pparams, hparams);
 
   for (size_t i = g_icounter; i < hparams.n_meas + g_icounter; i++) {
-    mdparams.disablerevtest();
-    if (i > 0 && hparams.N_rev != 0 && (i) % hparams.N_rev == 0) {
-      mdparams.enablerevtest();
+    if (hparams.do_hmc) {
+      mdparams.disablerevtest();
+      if (i > 0 && hparams.N_rev != 0 && (i) % hparams.N_rev == 0) {
+        mdparams.enablerevtest();
+      }
+      // PRNG engine
+      std::mt19937 engine(hparams.seed + i);
+      // perform the MD update
+      md_update(U, engine, mdparams, monomial_list, *md_integ);
+
+      const double energy = flat_spacetime::gauge_energy(U);
+      double E = 0., Q = 0.;
+      flat_spacetime::energy_density(U, E, Q);
+      rate += mdparams.getaccept();
+
+      std::cout << i << " " << mdparams.getaccept() << " " << std::scientific
+                << std::setw(18) << std::setprecision(15) << energy * normalisation << " "
+                << std::setw(15) << mdparams.getdeltaH() << " " << std::setw(15)
+                << rate / static_cast<double>(i + 1) << " ";
+
+      if (mdparams.getrevtest()) {
+        std::cout << mdparams.getdeltadeltaH();
+      } else {
+        std::cout << "NA";
+      }
+      std::cout << " " << Q << std::endl;
+
+      os << i << " " << mdparams.getaccept() << " " << std::scientific << std::setw(18)
+         << std::setprecision(15) << energy * normalisation << " " << std::setw(15)
+         << mdparams.getdeltaH() << " " << std::setw(15)
+         << rate / static_cast<double>(i + 1) << " ";
+      if (mdparams.getrevtest()) {
+        os << mdparams.getdeltadeltaH();
+      } else {
+        os << "NA";
+      }
+      os << " " << Q << std::endl;
     }
-    // PRNG engine
-    std::mt19937 engine(hparams.seed + i);
-    // perform the MD update
-    md_update(U, engine, mdparams, monomial_list, *md_integ);
-
-    const double energy = flat_spacetime::gauge_energy(U);
-    double E = 0., Q = 0.;
-    flat_spacetime::energy_density(U, E, Q);
-    rate += mdparams.getaccept();
-
-    std::cout << i << " " << mdparams.getaccept() << " " << std::scientific
-              << std::setw(18) << std::setprecision(15) << energy * normalisation << " "
-              << std::setw(15) << mdparams.getdeltaH() << " " << std::setw(15)
-              << rate / static_cast<double>(i + 1) << " ";
-
-    if (mdparams.getrevtest()) {
-      std::cout << mdparams.getdeltadeltaH();
-    } else {
-      std::cout << "NA";
-    }
-    std::cout << " " << Q << std::endl;
-
-    os << i << " " << mdparams.getaccept() << " " << std::scientific << std::setw(18)
-       << std::setprecision(15) << energy * normalisation << " " << std::setw(15)
-       << mdparams.getdeltaH() << " " << std::setw(15)
-       << rate / static_cast<double>(i + 1) << " ";
-    if (mdparams.getrevtest()) {
-      os << mdparams.getdeltadeltaH();
-    } else {
-      os << "NA";
-    }
-    os << " " << Q << std::endl;
 
     if (i > 0 && (i % hparams.N_save) == 0) { // saving U after each N_save trajectories
       std::string path_i = conf_path_basename + "." + std::to_string(i);
 
-      U.save(path_i);
+      if (hparams.do_hmc) {
+        U.save(path_i);
+      } else {
+        int lerr = U.load(path_i);
+        if (lerr == 1) {
+          continue;
+        }
+      }
 
       // online measurements
-      if (hparams.make_omeas && mdparams.getaccept() && i > hparams.omeas.icounter &&
-          i % hparams.omeas.nstep == 0) {
-        if (i == g_icounter) {
+      bool do_omeas =
+        hparams.make_omeas && i > hparams.omeas.icounter && i % hparams.omeas.nstep == 0;
+      if (hparams.do_hmc) {
+        // check also if trajectory was accepted
+        do_omeas = do_omeas && mdparams.getaccept();
+      }
+
+      if (do_omeas) {
+        if (i == g_icounter && hparams.do_hmc) {
           continue; // online measurements already done
         }
 
@@ -228,15 +221,55 @@ int main(int ac, char *av[]) {
         }
       }
 
-      // storing last conf index (only after online measurements has been done)
-      io::hmc::update_nconf_counter(hparams.conf_dir, g_heat, i, path_i);
+      if (hparams.do_hmc) { // storing last conf index (only after online measurements has
+                            // been done)
+        io::hmc::update_nconf_counter(hparams.conf_dir, g_heat, i, path_i);
+      }
     }
   }
-  std::cout << "## Acceptance rate: " << rate / static_cast<double>(hparams.n_meas)
-            << std::endl;
 
-  std::string path_final = conf_path_basename + ".final";
-  U.save(path_final);
+  if (hparams.do_hmc) {
+    std::cout << "## Acceptance rate: " << rate / static_cast<double>(hparams.n_meas)
+              << std::endl;
+    std::string path_final = conf_path_basename + ".final";
+    U.save(path_final);
+  }
 
   return (0);
+}
+
+void initialize_U_hmc(gaugeconfig<_u1> &U,
+                      bool &g_heat,
+                      size_t &g_icounter,
+                      double &normalisation,
+                      const gp::physics &pparams,
+                      const gp::hmc_u1 &hparams) {
+  if (hparams.restart) {
+    std::cout << "## restart " << hparams.restart << "\n";
+    std::vector<std::string> v_ncc = io::hmc::read_nconf_counter(hparams.conf_dir);
+    g_heat = boost::lexical_cast<bool>(v_ncc[0]);
+    g_icounter = std::stoi(v_ncc[1]);
+    std::string config_path = v_ncc[2];
+
+    const size_t err = U.load(config_path);
+    if (err != 0) {
+      std::cout
+        << "Error: failed to load initial gauge configuration for hmc. Aborting.\n";
+      std::abort();
+    }
+  } else {
+    std::cout << "hotstart " << hparams.seed << " " << hparams.heat << "\n";
+    g_heat = (hparams.heat == true) ? 1.0 : 0.0;
+    g_icounter = 0;
+    hotstart(U, hparams.seed, g_heat);
+  }
+
+  double plaquette = flat_spacetime::gauge_energy(U);
+  double fac = 2. / U.getndims() / (U.getndims() - 1);
+  normalisation = fac / U.getVolume() / double(U.getNc());
+  std::cout << "## Initial Plaquette: " << plaquette * normalisation << std::endl;
+
+  random_gauge_trafo(U, 654321);
+  plaquette = flat_spacetime::gauge_energy(U);
+  std::cout << "## Plaquette after rnd trafo: " << plaquette * normalisation << std::endl;
 }

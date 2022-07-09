@@ -151,8 +151,8 @@ namespace input_file_parsing {
 
     namespace hmc {
       void parse_input_file(const std::string &file,
-                           gp::physics &pparams,
-                           gp::hmc_u1 &hparams) {
+                            gp::physics &pparams,
+                            gp::hmc_u1 &hparams) {
         std::cout << "## Parsing input file: " << file << "\n";
         const YAML::Node nd = YAML::LoadFile(file);
         Yp::inspect_node in(nd);
@@ -197,10 +197,21 @@ namespace input_file_parsing {
 
         in.read_opt_verb<bool>(hparams.do_hmc, {"hmc", "do_hmc"});
 
-        in.read_opt_verb<bool>(hparams.restart, {"hmc", "restart"});
-        if (!hparams.restart) {
-          in.read_verb<bool>(hparams.heat, {"hmc", "heat"});
+        if (nd["hmc"]["restart"] && nd["hmc"]["heat"]) {
+          std::cerr << "Error: "
+                    << "'restart' and 'heat' conditions are incompatible in the hmc. "
+                    << "Aborting.\n";
+          abort();
         }
+        if (!nd["hmc"]["restart"] && !nd["hmc"]["heat"]) {
+          std::cerr << "Error: "
+                    << "Please pass either 'restart' or 'heat' to the hmc. "
+                    << "Aborting.\n";
+          abort();
+        }
+
+        in.read_opt_verb<bool>(hparams.restart, {"hmc", "restart"});
+        in.read_opt_verb<bool>(hparams.heat, {"hmc", "heat"});
 
         in.read_opt_verb<size_t>(hparams.seed, {"hmc", "seed"});
         in.read_opt_verb<std::string>(hparams.configfilename, {"hmc", "configname"});
@@ -287,8 +298,7 @@ namespace input_file_parsing {
           in.read_opt_verb<double>(mparams.epsilon_gradient_flow,
                                    {"omeas", "gradient_flow", "epsilon"});
 
-          in.read_opt_verb<double>(mparams.tmax,
-                                   {"omeas", "gradient_flow", "tmax"});
+          in.read_opt_verb<double>(mparams.tmax, {"omeas", "gradient_flow", "tmax"});
         }
         // optional parameters for pion
         if (nd["omeas"]["pion_staggered"]) {
@@ -301,9 +311,8 @@ namespace input_file_parsing {
                                         {"omeas", "pion_staggered", "solver"});
           in.read_opt_verb<double>(mparams.tolerance_cg,
                                    {"omeas", "pion_staggered", "tolerance_cg"});
-          in.read_opt_verb<size_t>(
-            mparams.solver_verbosity,
-            {"omeas", "pion_staggered", "solver_verbosity"});
+          in.read_opt_verb<size_t>(mparams.solver_verbosity,
+                                   {"omeas", "pion_staggered", "solver_verbosity"});
           in.read_opt_verb<size_t>(mparams.seed_pf,
                                    {"omeas", "pion_staggered", "seed_pf"});
         }
@@ -317,8 +326,7 @@ namespace input_file_parsing {
 
         // optional parameters for potentials
         if (nd["omeas"]["potential"]) {
-          in.read_opt_verb<bool>(mparams.potential,
-                                 {"omeas", "potential", "potential"});
+          in.read_opt_verb<bool>(mparams.potential, {"omeas", "potential", "potential"});
           in.read_opt_verb<bool>(mparams.potentialsmall,
                                  {"omeas", "potential", "potentialsmall"});
           in.read_opt_verb<bool>(mparams.append, {"omeas", "potential", "append"});
@@ -336,11 +344,9 @@ namespace input_file_parsing {
         in.read_opt_verb<std::string>(mparams.conf_dir, {"omeas", "conf_dir"});
         in.read_opt_verb<std::string>(mparams.res_dir, {"omeas", "res_dir"});
 
-        in.read_opt_verb<std::string>(mparams.conf_basename,
-                                      {"omeas", "conf_basename"});
+        in.read_opt_verb<std::string>(mparams.conf_basename, {"omeas", "conf_basename"});
 
-        in.read_opt_verb<size_t>(mparams.beta_str_width,
-                                 {"omeas", "beta_str_width"});
+        in.read_opt_verb<size_t>(mparams.beta_str_width, {"omeas", "beta_str_width"});
         validate_beta_str_width(mparams.beta_str_width);
 
         in.finalize();

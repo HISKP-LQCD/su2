@@ -40,5 +40,5 @@ external/
 *.Rhistory
 *.html
 *.pdf
-
+.vscode/*
 

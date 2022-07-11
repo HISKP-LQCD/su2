@@ -48,6 +48,7 @@ namespace global_parameters {
     bool doAPEsmear = false; // apply APE smearing to the links
     size_t nAPEsmear; // number of APE smearing iterations
     double alphaAPEsmear; // alpha parameter for the smearing. alpha=1 -> no smearing.
+    size_t max_length_loops = 4; // maximum length of loops interpolating the glueballs
   };
 
   /* optional parameters for the measure program the in U(1) theory */
@@ -99,12 +100,12 @@ namespace global_parameters {
     size_t solver_verbosity = 0; // Verbosity for the solver for the dirac operator
     size_t seed_pf = 97234719; // Seed for the evaluation of the fermion determinant
 
-    measure_glueball_u1 measure_glueball_params; // structure for the measure of the glueball
+    measure_glueball_u1
+      measure_glueball_params; // structure for the measure of the glueball
   };
 
   /* Optional parameters for the hmc the in U(1) theory */
   struct hmc_u1 {
-
     bool do_hmc = true; // whether to do the hmc evolution or not
 
     size_t N_save = 100; // N_save

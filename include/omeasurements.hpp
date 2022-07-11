@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "flat-gradient_flow.hh"
+#include "loops.hpp"
 #include "operators.hpp"
 #include "parameters.hh"
 #include "propagator.hpp"
@@ -147,66 +148,52 @@ namespace omeasurements {
     const std::string path = oss.str();
     std::ofstream ofs(path, std::ios::out);
 
-    std::vector<double> sinks[4]; // sink at 't'
-    std::vector<double> sources[4]; // source at 't'
-    for (size_t i_PC = 0; i_PC < 4; i_PC++) {
-      sinks[i_PC].resize(U.getLt());
-      sources[i_PC].resize(U.getLt());
-    }
+    const size_t max_length_loops = S.measure_glueball_params.max_length_loops;
+    const links::closed_paths clpf(U.getndims(), 1, max_length_loops); // spatial only
+    const std::vector<links::path> clpaths = clpf.get_paths(); // all closed paths
+    const size_t nl = clpaths.size();
 
-    for (size_t t = 0; t < U.getLt(); t++) {
-      const accum Uij = operators::get_rest_tr_sum_U_ij<accum, Group>(U, t, false);
-      const accum PUij = operators::get_rest_tr_sum_U_ij<accum, Group>(U, t, true);
+    // phi_i(t)^{PC}
+    std::vector<std::vector<std::array<std::array<double, 2>, 2>>> phi(nl);
 
-      size_t i_PC = 0;
-      for (int sP = 1; sP >= -1; sP -= 2) {
-        for (int iC = 1; iC >= 0; iC--) {
-          const bool C = bool(iC);
-          std::complex<double> comb_snk = Uij + double(sP) * PUij;
-          comb_snk /= 2.0;
-
-          double snk;
-          if (C) {
-            snk = std::real(comb_snk);
-          } else {
-            snk = std::imag(comb_snk);
-          }
-          snk = 1.0 - snk; // vacuum subtraction
-          sinks[i_PC][t] = snk;
-
-          std::complex<double> comb_src =
-            operators::get_tr_sum_U_ij<accum, Group>(U, {int(t), 0, 0, 0}, false) +
-            double(sP) *
-              operators::get_tr_sum_U_ij<accum, Group>(U, {int(t), 0, 0, 0}, true);
-          comb_src /= 2.0;
-
-          double src;
-          if (C) {
-            src = std::real(comb_src);
-          } else {
-            src = std::imag(comb_src);
-          }
-
-          sources[i_PC][t] = 1.0 - src; // vacuum subtraction
-
-          ++i_PC;
-        }
+    for (size_t i = 0; i < nl; i++) {
+      phi[i].resize(U.getLt());
+      for (size_t t = 0; t < U.getLt(); t++) {
+        const std::complex<double> Pp =
+          operators::trace_rest_loop<std::complex<double>, Group>(t, U, clpaths[i],
+                                                                  false);
+        const std::complex<double> Pm =
+          operators::trace_rest_loop<std::complex<double>, Group>(t, U, clpaths[i], true);
+        phi[i][t][0][0] = (Pp + Pm).real(); // PC=++
+        phi[i][t][0][1] = (Pp + Pm).imag(); // PC=+-
+        phi[i][t][1][0] = (Pp - Pm).real(); // PC=-+
+        phi[i][t][1][1] = (Pp - Pm).imag(); // PC=--
       }
     }
 
     ofs << "t C_{++}(t) C_{+-}(t) C_{-+}(t) C_{--}(t)" << std::endl; // header
     const size_t T_ext = U.getLt(); // lattice temporal time extent
-    for (size_t t = 0; t < T_ext; t++) {
-      ofs << t;
-      for (size_t i_PC = 0; i_PC < 4; i_PC++) {
-        double Ct = 0.0;
-        for (size_t tau = 0; tau < T_ext; tau++) {
-          Ct += sinks[i_PC][(t + tau) % T_ext] * sinks[i_PC][tau];
+    for (size_t i = 0; i < nl; i++) {
+      for (size_t j = 0; j <= i; j++) { // C_{ij} == C_{ji}
+        ofs << "#(" << i << "," << j << ")" << std::endl;
+        for (size_t t = 0; t < T_ext; t++) {
+          ofs << t;
+          for (size_t P = 0; P <= 1; P++) {
+            for (size_t C = 0; C <= 1; C++) {
+              double Ct = 0.0;
+              for (size_t tau = 0; tau < T_ext; tau++) {
+                Ct += phi[i][(t + tau) % T_ext][P][C] * phi[j][tau][P][C];
+              }
+              Ct /= double(T_ext); // average over all times
+              ofs << " " << std::scientific << std::setprecision(16) << Ct;
+            }
+          }
+          ofs << std::endl;
+
+          // for (size_t i_PC = 0; i_PC < 4; i_PC++) {
+          // }
         }
-        Ct /= double(T_ext); // average over all times
-        ofs << " " << std::scientific << std::setprecision(16) << Ct;
       }
-      ofs << std::endl;
     }
 
     ofs.close();

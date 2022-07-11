@@ -147,6 +147,9 @@ namespace input_file_parsing {
         in.read_verb<size_t>(mgparams.nAPEsmear, {"APE_smearing", "n"});
         in.read_verb<double>(mgparams.alphaAPEsmear, {"APE_smearing", "alpha"});
       }
+      if (R["max_length_loops"]) {
+        in.read_verb<size_t>(mgparams.max_length_loops, {"max_length_loops"});
+      }
     }
 
     namespace hmc {

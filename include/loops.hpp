@@ -76,6 +76,44 @@ namespace links {
       (*this).pos.insert((*this).pos.end(), pos1.begin(), pos1.end());
       return;
     }
+
+    /**
+     * @brief product of links along the path
+     *
+     * @tparam Group gauge group U belongs to
+     * @param p path
+     * @param U gauge configuration
+     * @param x starting point
+     * @param apply_P true when applying spatial parity operator
+     * @return Group
+     */
+    template <class Group>
+    Group to_gauge(const gaugeconfig<Group> &U,
+                   const nd_max_arr<int> &x,
+                   const bool &apply_P = false) const {
+      const std::vector<nd_max_arr<int>> steps = this->get_steps();
+      const std::vector<size_t> dirs = this->get_dirs();
+      const std::vector<bool> pos = this->get_pos();
+
+      size_t n_steps = steps.size();
+      nd_max_arr<int> y = x;
+      if (apply_P) {
+        for (size_t i = 1; i < spacetime_lattice::nd_max; i++) {
+          y[i] *= -1; // (y0, yi) --> (y0, -yi)
+        }
+      }
+
+      Group L;
+      for (size_t i = 0; i < n_steps; i++) {
+        const Group Ui = U(y, dirs[i], pos[i] ^ apply_P);
+
+        L = L * Ui;
+
+        y[dirs[i]] += std::pow(-1, apply_P && (dirs[i] != 0)) *
+                      steps[i][dirs[i]]; // updating 'y' after one step
+      }
+      return L;
+    }
   };
 
   /**
@@ -91,7 +129,12 @@ namespace links {
 
     void find_all(path &pt, const size_t &l) {
       if (l == 0) {
-        if (pt.is_closed()) {
+        std::vector<bool> pos = pt.get_pos();
+        // considering only closed loops
+        bool cond = pt.is_closed();
+        // avoid loops equivalent up to translations
+        cond = cond && (pos[0] == true) && (pos.back() == false);
+        if (cond) {
           P.push_back(pt);
         }
       } else {
@@ -197,20 +240,7 @@ namespace links {
     };
     ~links_loops() {}
 
-    Group from_path(const path &p) {
-      const std::vector<nd_max_arr<int>> steps = p.get_steps();
-      const std::vector<size_t> dirs = p.get_dirs();
-      const std::vector<bool> pos = p.get_pos();
-
-      size_t n = steps.size();
-      nd_max_arr<int> y = x;
-      Group L;
-      for (size_t i = 0; i < n; i++) {
-        L = L * U(y, dirs[i], pos[i]);
-        y[dirs[i]] += steps[i][dirs[i]]; // updating 'y' after one step
-      }
-      return L;
-    }
+    Group from_path(const path &p) { return p.to_gauge<Group>(U, x); }
 
     void find_all(const size_t &li) {
       closed_paths CP(d, first_dim, li);

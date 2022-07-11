@@ -14,6 +14,7 @@
 
 #include "flat-gradient_flow.hh"
 #include "gaugeconfig.hh"
+#include "loops.hpp"
 #include "parameters.hh"
 #include "propagator.hpp"
 #include "vectorfunctions.hh"
@@ -295,6 +296,34 @@ namespace operators {
         for (int x3 = 0; x3 < U.getLz(); x3++) {
           const nd_max_arr<int> x = {int(t), x1, x2, x3};
           res += plaquette_Pij<T, Group>(U, x, i, j, P);
+        }
+      }
+    }
+    return res / double(U.getNc()) / (double(U.getVolume()) / double(U.getLt()));
+  }
+
+
+
+  /**
+   * @brief trace of product of links along a path, projected to '0' spatial momentum
+   * 
+   * @tparam T type to b returbed, e.g. std::complex<double>
+   * @tparam Group 
+   * @param t time
+   * @param U gauge configuration
+   * @param path_lat path along the lattice
+   * @param P apply parity transformation
+   * @return T trace of the product of the links along the path specified by variable 'path'
+   */
+  template <class T, class Group>
+  T trace_rest_loop(const int& t, const gaugeconfig<Group> &U, const links::path &path_lat, const bool& P) {
+    T res;
+#pragma omp parallel for reduction(+ : res)
+    for (int x1 = 0; x1 < U.getLx(); x1++) {
+      for (int x2 = 0; x2 < U.getLy(); x2++) {
+        for (int x3 = 0; x3 < U.getLz(); x3++) {
+          const nd_max_arr<int> x = {t, x1, x2, x3};
+          res += trace(path_lat.to_gauge<Group>(U, x, P));
         }
       }
     }

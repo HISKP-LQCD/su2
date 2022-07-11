@@ -14,7 +14,7 @@
 
 #include "flat-gradient_flow.hh"
 #include "gaugeconfig.hh"
-#include "loops.hpp"
+#include "links.hpp"
 #include "parameters.hh"
 #include "propagator.hpp"
 #include "vectorfunctions.hh"

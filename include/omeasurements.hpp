@@ -13,7 +13,7 @@
 #include <vector>
 
 #include "flat-gradient_flow.hh"
-#include "loops.hpp"
+#include "links.hpp"
 #include "operators.hpp"
 #include "parameters.hh"
 #include "propagator.hpp"
@@ -149,8 +149,14 @@ namespace omeasurements {
     std::ofstream ofs(path, std::ios::out);
 
     const size_t max_length_loops = S.measure_glueball_params.max_length_loops;
-    const links::closed_paths clpf(U.getndims(), 1, max_length_loops); // spatial only
-    const std::vector<links::path> clpaths = clpf.get_paths(); // all closed paths
+    std::vector<links::path> clpaths(0);
+
+    for (size_t ll = 1; ll <= max_length_loops; ll++) {
+      const links::closed_paths clpf(U.getndims(), 0, ll);
+      const std::vector<links::path> cll = clpf.get_paths(); // vector of closed paths found
+      clpaths.insert(clpaths.end(), cll.begin(), cll.end()); // all closed paths
+    }
+
     const size_t nl = clpaths.size();
 
     // phi_i(t)^{PC}

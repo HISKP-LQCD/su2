@@ -3,24 +3,27 @@
 #include <complex>
 
 #include "../include/adjointfield.hh"
-#include "../include/loops.hpp"
+#include "../include/links.hpp"
 #include "../include/operators.hpp"
 #include "../include/u1.hh"
 
 template <class T> using nd_max_arr = spacetime_lattice::nd_max_arr<T>;
 
 int main(int argc, char const *argv[]) {
-  size_t nd = 2, l = 4;
+  size_t nd = 2, l = 6;
 
   std::cout << nd << " " << l << "\n";
 
-  links::closed_paths clP(nd, 0, l);
-  std::cout << clP.size() << "\n";
+  links::closed_paths clP1(nd, 0, l);
+  std::cout << clP1.size() << "\n";
 
-  // std::cout << "Printing loop:\n";
-  // P.print();
-  // std::cout << "Aborting\n";
-  // std::abort();
+  std::cout << "Printing loop:\n";
+  clP1.print();
+
+  std::cout<< "Comparing with manual computation of plaquette:\n";
+
+  l=4;
+  links::closed_paths clP(nd, 0, l);
 
   gaugeconfig<_u1> U(4, 1, 1, 8, nd, 1.2345678);
   hotstart(U, 1391693, true); // random gauge config

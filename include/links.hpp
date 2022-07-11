@@ -1,5 +1,5 @@
 /**
- * @file loops.hpp
+ * @file links.hpp
  * @author Simone Romiti (simone.romiti@uni-bonn.de)
  * @brief
  * @version 0.1
@@ -95,7 +95,7 @@ namespace links {
       const std::vector<size_t> dirs = this->get_dirs();
       const std::vector<bool> pos = this->get_pos();
 
-      size_t n_steps = steps.size();
+      const size_t n_steps = steps.size();
       nd_max_arr<int> y = x;
       if (apply_P) {
         for (size_t i = 1; i < spacetime_lattice::nd_max; i++) {
@@ -129,11 +129,16 @@ namespace links {
 
     void find_all(path &pt, const size_t &l) {
       if (l == 0) {
-        std::vector<bool> pos = pt.get_pos();
+        const std::vector<size_t> dirs = pt.get_dirs();
+        const std::vector<bool> pos = pt.get_pos();
         // considering only closed loops
         bool cond = pt.is_closed();
         // avoid loops equivalent up to translations
         cond = cond && (pos[0] == true) && (pos.back() == false);
+        // check if the first and last link don't cancel when taking the trace
+        cond = cond && !(dirs[0] == dirs.back());
+        // check if the loop in not a replica of another just run across the other direction
+        cond = cond && (dirs[0] == (*this).first_dim);
         if (cond) {
           P.push_back(pt);
         }
@@ -156,6 +161,15 @@ namespace links {
             if ((step + prev_step) == zero_step) {
               continue;
             }
+
+            // /**
+            //  * @brief force 1st step in this axis to be along positive direction
+            //  * This serves to not include loops that are simply some other loop run across
+            //  * in the other direction.
+            //  */
+            // if (is == i - (*this).first_dim && (s != 1)) {
+            //   continue;
+            // }
 
             const path pi({step}, {i}, {(s == 1)}); // elementary path of just one step
 

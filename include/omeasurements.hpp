@@ -19,8 +19,11 @@
 #include "propagator.hpp"
 #include "smearape.hh"
 #include "wilsonloop.hh"
+#include <boost/filesystem.hpp>
 
 namespace omeasurements {
+
+  namespace fsys = boost::filesystem;
 
   /**
    * @brief compute and print the wilson loop of a given configuration
@@ -128,15 +131,28 @@ namespace omeasurements {
     typedef typename accum_type<Group>::type accum;
 
     std::ostringstream oss;
-    oss << S.res_dir + "/C_glueball";
+    oss << S.res_dir + "/";
+
+    std::ostringstream oss_meas_det;
+    oss_meas_det << "smearAPEn" << S.measure_glueball_params.nAPEsmear << "alpha"
+                 << S.measure_glueball_params.alphaAPEsmear;
+    std::string meas_details = oss_meas_det.str();
+
+    if (S.measure_glueball_params.save_in_subfolder) {
+      oss << meas_details + "/";
+      fsys::create_directories(fsys::absolute(oss.str()));
+    }
+
+    oss << "C_glueball";
 
     gaugeconfig<Group> U = U0;
     if (S.measure_glueball_params.doAPEsmear) {
       for (size_t i = 0; i < S.measure_glueball_params.nAPEsmear; i++) {
         smearlatticeape<Group>(U, S.measure_glueball_params.alphaAPEsmear, true);
       }
-      oss << "_smearAPEn" << S.measure_glueball_params.nAPEsmear << "alpha"
-          << S.measure_glueball_params.alphaAPEsmear;
+      if (S.measure_glueball_params.lengthy_file_name) {
+        oss << "_" << meas_details;
+      }
     }
     oss << "_";
     auto prevw = oss.width(8);
@@ -153,7 +169,8 @@ namespace omeasurements {
 
     for (size_t ll = 1; ll <= max_length_loops; ll++) {
       const links::closed_paths clpf(U.getndims(), 0, ll);
-      const std::vector<links::path> cll = clpf.get_paths(); // vector of closed paths found
+      const std::vector<links::path> cll =
+        clpf.get_paths(); // vector of closed paths found
       clpaths.insert(clpaths.end(), cll.begin(), cll.end()); // all closed paths
     }
 

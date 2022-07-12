@@ -143,7 +143,7 @@ namespace input_file_parsing {
     void parse_glueball_measure(Yp::inspect_node &in,
                                 const std::vector<std::string> &inner_tree,
                                 gp::measure_glueball_u1 &mgparams) {
-      in.set_InnerTree(inner_tree);
+      in.set_InnerTree(inner_tree); // entering the glueball node
 
       in.read_verb<bool>(mgparams.doAPEsmear, {"do_APE_smearing"});
       if (mgparams.doAPEsmear) {
@@ -151,6 +151,9 @@ namespace input_file_parsing {
         in.read_verb<double>(mgparams.alphaAPEsmear, {"APE_smearing", "alpha"});
       }
       in.read_opt_verb<size_t>(mgparams.max_length_loops, {"max_length_loops"});
+      in.read_opt_verb<bool>(mgparams.lengthy_file_name, {"lenghty_file_name"});
+      in.read_opt_verb<bool>(mgparams.save_in_subfolder, {"save_in_subfolder"});
+
       in.set_InnerTree({}); // reset to previous state
     }
 

@@ -49,6 +49,8 @@ namespace global_parameters {
     size_t nAPEsmear; // number of APE smearing iterations
     double alphaAPEsmear; // alpha parameter for the smearing. alpha=1 -> no smearing.
     size_t max_length_loops = 4; // maximum length of loops interpolating the glueballs
+    std::string subfld = "./"; // subfolder for the measure of glueball correlators only
+    bool lenghty_conf_name = true; // add measure information in correlator filename
   };
 
   /* optional parameters for the measure program the in U(1) theory */

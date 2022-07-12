@@ -258,7 +258,6 @@ void initialize_U_hmc(gaugeconfig<_u1> &U,
       std::abort();
     }
   } else {
-    std::cout << "hotstart " << hparams.seed << " " << hparams.heat << "\n";
     g_heat = (hparams.heat == true) ? 1.0 : 0.0;
     g_icounter = 0;
     hotstart(U, hparams.seed, g_heat);

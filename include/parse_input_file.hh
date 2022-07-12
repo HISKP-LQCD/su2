@@ -122,7 +122,7 @@ namespace YAML_parsing {
      * @param outer_tree vector of strings determining the path to the input value
      */
     template <class T> void read(T &x, const std::vector<std::string> &outer_tree) {
-      std::vector<std::string> tree = InnerTree;
+      std::vector<std::string> tree = (*this).InnerTree;
       tree.insert(tree.end(), outer_tree.begin(), outer_tree.end());
       const YAML::Node node_i = YAML::Clone(this->get_outer_node(tree));
       const std::string g_str = this->get_node_str(tree);
@@ -146,10 +146,17 @@ namespace YAML_parsing {
       return;
     }
 
+    std::vector<std::string> get_full_tree(const std::vector<std::string>& tree){
+      std::vector<std::string> full_tree = (*this).InnerTree;
+      full_tree.insert(full_tree.end(), tree.begin(), tree.end());
+      return full_tree;
+    }
+
     // read() and output on std::cout
     template <class T> void read_verb(T &x, const std::vector<std::string> &tree) {
       this->read<T>(x, tree);
-      std::cout << "## " << this->get_node_str(tree) << "=" << x << "\n";
+      std::vector<std::string> tree2 = this->get_full_tree(tree);
+      std::cout << "## " << this->get_node_str(tree2) << "=" << x << "\n";
       return;
     }
 
@@ -157,20 +164,10 @@ namespace YAML_parsing {
     Reading optional argument: same as read(), but if the key doesn't exist, nothing is
     done This function should be used with parameters that have a default argument.
     */
-    template <class T> void read_optional(T &x, const std::vector<std::string> &tree) {
-      if (this->get_outer_node(tree)) {
-        this->read<T>(x, tree);
-      }
-      return;
-    }
-
-    // read_optional() and output on std::cout
     template <class T> void read_opt_verb(T &x, const std::vector<std::string> &tree) {
-      std::vector<std::string> tree2 = tree; // 1 level more inside
+      std::vector<std::string> tree2 = this->get_full_tree(tree);
       tree2.pop_back();
-      const size_t n = tree2.size();
-      const YAML::Node n2 = YAML::Clone(this->get_outer_node(tree2));
-      if (n2[tree[n]]) {
+      if (this->get_outer_node(tree2)[tree.back()]) {
         this->read_verb<T>(x, tree);
       } else {
         std::cout << "## " << this->get_node_str(tree) << "=" << x << " (default)\n";
@@ -252,8 +249,8 @@ namespace input_file_parsing {
 
     namespace hmc {
       void parse_input_file(const std::string &file,
-                           gp::physics &pparams,
-                           gp::hmc_u1 &hmc_params);
+                            gp::physics &pparams,
+                            gp::hmc_u1 &hmc_params);
     }
 
     namespace measure {

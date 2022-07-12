@@ -140,16 +140,18 @@ namespace input_file_parsing {
      * @param in input file parser
      * @param mgparams measure_glueball_parameters structure
      */
-    void parse_glueball_measure(Yp::inspect_node &in, gp::measure_glueball_u1 &mgparams) {
-      YAML::Node R = in.get_outer_node(in.get_InnerTree());
+    void parse_glueball_measure(Yp::inspect_node &in,
+                                const std::vector<std::string> &inner_tree,
+                                gp::measure_glueball_u1 &mgparams) {
+      in.set_InnerTree(inner_tree);
+
       in.read_verb<bool>(mgparams.doAPEsmear, {"do_APE_smearing"});
       if (mgparams.doAPEsmear) {
         in.read_verb<size_t>(mgparams.nAPEsmear, {"APE_smearing", "n"});
         in.read_verb<double>(mgparams.alphaAPEsmear, {"APE_smearing", "alpha"});
       }
-      if (R["max_length_loops"]) {
-        in.read_verb<size_t>(mgparams.max_length_loops, {"max_length_loops"});
-      }
+      in.read_opt_verb<size_t>(mgparams.max_length_loops, {"max_length_loops"});
+      in.set_InnerTree({}); // reset to previous state
     }
 
     namespace hmc {
@@ -251,9 +253,8 @@ namespace input_file_parsing {
 
           if (nd["omeas"]["glueball"]) {
             hparams.omeas.measure_glueball_params.do_measure = true;
-            in.set_InnerTree({"omeas", "glueball"});
-            parse_glueball_measure(in, hparams.omeas.measure_glueball_params);
-            in.set_InnerTree({}); // reset to previous state
+            parse_glueball_measure(in, {"omeas", "glueball"},
+                                   hparams.omeas.measure_glueball_params);
           }
 
           if (nd["omeas"]["gradient_flow"]) {
@@ -322,9 +323,8 @@ namespace input_file_parsing {
 
         if (nd["omeas"]["glueball"]) {
           mparams.measure_glueball_params.do_measure = true;
-          in.set_InnerTree({"omeas", "glueball"});
-          parse_glueball_measure(in, mparams.measure_glueball_params);
-          in.set_InnerTree({}); // reset to previous state
+          parse_glueball_measure(in, {"omeas", "glueball"},
+                                 mparams.measure_glueball_params);
         }
 
         // optional parameters for potentials

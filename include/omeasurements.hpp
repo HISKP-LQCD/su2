@@ -130,20 +130,20 @@ namespace omeasurements {
                                 const sparams &S) {
     typedef typename accum_type<Group>::type accum;
 
-    std::ostringstream oss;
-    oss << S.res_dir + "/";
+    std::ostringstream oss_dir, oss_name;
+    oss_dir << S.res_dir + "/";
 
-    std::ostringstream oss_meas_det;
-    oss_meas_det << "smearAPEn" << S.measure_glueball_params.nAPEsmear << "alpha"
-                 << S.measure_glueball_params.alphaAPEsmear;
-    std::string meas_details = oss_meas_det.str();
+    std::ostringstream oss_details;
+    oss_details << "smearAPEn" << S.measure_glueball_params.nAPEsmear << "alpha"
+                << S.measure_glueball_params.alphaAPEsmear;
+    std::string meas_details = oss_details.str();
 
     if (S.measure_glueball_params.save_in_subfolder) {
-      oss << meas_details + "/";
-      fsys::create_directories(fsys::absolute(oss.str()));
+      oss_dir << meas_details + "/";
+      fsys::create_directories(fsys::absolute(oss_dir.str()));
     }
 
-    oss << "C_glueball";
+    // oss_name << "C_glueball";
 
     gaugeconfig<Group> U = U0;
     if (S.measure_glueball_params.doAPEsmear) {
@@ -151,18 +151,15 @@ namespace omeasurements {
         smearlatticeape<Group>(U, S.measure_glueball_params.alphaAPEsmear, true);
       }
       if (S.measure_glueball_params.lengthy_file_name) {
-        oss << "_" << meas_details;
+        oss_name << "_" << meas_details;
       }
     }
-    oss << "_";
-    auto prevw = oss.width(8);
-    auto prevf = oss.fill('0');
-    oss << i;
-    oss.width(prevw);
-    oss.fill(prevf);
-
-    const std::string path = oss.str();
-    std::ofstream ofs(path, std::ios::out);
+    oss_name << "_";
+    auto prevw = oss_name.width(8);
+    auto prevf = oss_name.fill('0');
+    oss_name << i;
+    oss_name.width(prevw);
+    oss_name.fill(prevf);
 
     const size_t max_length_loops = S.measure_glueball_params.max_length_loops;
     std::vector<links::path> clpaths(0);
@@ -194,13 +191,15 @@ namespace omeasurements {
       }
     }
 
-    ofs << "t C_{++}(t) C_{+-}(t) C_{-+}(t) C_{--}(t)" << std::endl; // header
     const size_t T_ext = U.getLt(); // lattice temporal time extent
     for (size_t i = 0; i < nl; i++) {
       for (size_t j = 0; j <= i; j++) { // C_{ij} == C_{ji}
-        ofs << "#(" << i << "," << j << ")" << std::endl;
+        const std::string path = oss_dir.str() + "C_glueball_" + std::to_string(i) + "_" +
+                                 std::to_string(j) + oss_name.str();
+        std::ostringstream oss_ij;
+        oss_ij << "t C_{++}(t) C_{+-}(t) C_{-+}(t) C_{--}(t)" << std::endl; // header
         for (size_t t = 0; t < T_ext; t++) {
-          ofs << t;
+          oss_ij << t;
           for (size_t P = 0; P <= 1; P++) {
             for (size_t C = 0; C <= 1; C++) {
               double Ct = 0.0;
@@ -208,18 +207,17 @@ namespace omeasurements {
                 Ct += phi[i][(t + tau) % T_ext][P][C] * phi[j][tau][P][C];
               }
               Ct /= double(T_ext); // average over all times
-              ofs << " " << std::scientific << std::setprecision(16) << Ct;
+              oss_ij << " " << std::scientific << std::setprecision(16) << Ct;
             }
           }
-          ofs << std::endl;
-
-          // for (size_t i_PC = 0; i_PC < 4; i_PC++) {
-          // }
+          oss_ij << std::endl;
         }
+
+        std::ofstream ofs(path, std::ios::out);
+        ofs << oss_ij.str();
+        ofs.close();
       }
     }
-
-    ofs.close();
 
     return;
   }

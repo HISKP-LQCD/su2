@@ -63,8 +63,11 @@ namespace io {
 
   namespace measure {
 
-    std::string get_filename_fine(const gp::physics &pparams,
-                                  const gp::measure_u1 &mparams) {
+    /**
+     * gets filename with several physical characteristics that are contained in pparams and S, which should be either metropolis_u1 or measure_u1
+     * **/
+    template <class S> std::string get_filename_fine(const gp::physics &pparams,
+                                  const S &mparams) {
       std::ostringstream filename_fine;
 
       filename_fine << mparams.res_dir << "/"
@@ -78,8 +81,11 @@ namespace io {
       return filename_fine.str();
     }
 
-    std::string get_filename_coarse(const gp::physics &pparams,
-                                    const gp::measure_u1 &mparams) {
+    /**
+     * gets filename with several physical characteristics that are contained in pparams and S, which should be either metropolis_u1 or measure_u1
+     * **/
+    template <class S> std::string get_filename_coarse(const gp::physics &pparams,
+                                    const S &mparams) {
       std::ostringstream f;
 
       f << mparams.res_dir << "/"
@@ -92,9 +98,12 @@ namespace io {
 
       return f.str();
     }
-
-    std::string get_filename_nonplanar(const gp::physics &pparams,
-                                       const gp::measure_u1 &mparams) {
+    
+    /**
+     * gets filename with several physical characteristics that are contained in pparams and S, which should be either metropolis_u1 or measure_u1
+     * **/
+    template <class S> std::string get_filename_nonplanar(const gp::physics &pparams,
+                                       const S &mparams) {
       std::ostringstream f;
 
       f << mparams.res_dir << "/"
@@ -114,11 +123,11 @@ namespace io {
      * a_t<=a_s.
      * @param pparams physical parameters
      * @param mparams parameters specific to measurement. May change if a non-valid
-     * dimension is given, so cannot be const.
+     * dimension is given, so cannot be const. S is metropolis_u1 or measure_u1.
      * @param filenamecoarse, filenamefine: names of the files where results are stored.
      * **/
-    void set_header_planar(const gp::physics &pparams,
-                           gp::measure_u1 &mparams,
+    template <class S> void set_header_planar(const gp::physics &pparams,
+                           S &mparams,
                            const std::string &filename_coarse,
                            const std::string &filename_fine) {
       //~ open file for saving results
@@ -127,7 +136,7 @@ namespace io {
         std::cerr << "Currently not working for dim = 2, no measurements for the "
                      "potential will be made"
                   << std::endl;
-        mparams.potential = false;
+        mparams.potentialplanar = false;
       }
 
       //~ print heads of columns: W(r, t), W(x, y)
@@ -161,11 +170,11 @@ namespace io {
      * file.
      * @param pparams physical parameters
      * @param mparams parameters specific to measurement. May change if a non-valid
-     * dimension is given, so cannot be const.
+     * dimension is given, so cannot be const. S is metropolis_u1 or measure_u1.
      * @param filenamenonplanar: name of the files where results are stored.
      * **/
-    void set_header_nonplanar(const gp::physics &pparams,
-                              gp::measure_u1 &mparams,
+    template <class S> void set_header_nonplanar(const gp::physics &pparams,
+                              S &mparams,
                               const std::string &filename_nonplanar) {
       //~ open file for saving results
       std::ofstream resultfile;
@@ -175,7 +184,7 @@ namespace io {
         std::cerr << "Currently not working for dim = 2 and dim = 4, no nonplanar "
                      "measurements will be made"
                   << std::endl;
-        mparams.potentialsmall = false;
+        mparams.potentialnonplanar = false;
       }
 
       //~ print heads of columns

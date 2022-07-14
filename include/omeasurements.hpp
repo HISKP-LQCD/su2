@@ -194,8 +194,8 @@ namespace omeasurements {
     const size_t T_ext = U.getLt(); // lattice temporal time extent
     for (size_t i = 0; i < nl; i++) {
       for (size_t j = 0; j <= i; j++) { // C_{ij} == C_{ji}
-        const std::string path = oss_dir.str() + "C_glueball_" + std::to_string(i) + "_" +
-                                 std::to_string(j) + oss_name.str();
+        const std::string path = oss_dir.str() + std::to_string(i) + "_" +
+                                 std::to_string(j) + "/C_glueball_" + +oss_name.str();
         std::ostringstream oss_ij;
         oss_ij << "t C_{++}(t) C_{+-}(t) C_{-+}(t) C_{--}(t)" << std::endl; // header
         for (size_t t = 0; t < T_ext; t++) {

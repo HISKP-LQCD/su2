@@ -48,9 +48,12 @@ namespace global_parameters {
     bool doAPEsmear = false; // apply APE smearing to the links
     size_t nAPEsmear; // number of APE smearing iterations
     double alphaAPEsmear; // alpha parameter for the smearing. alpha=1 -> no smearing.
+    bool do_GEVP = false; // 'true' when computing C_ij for the various loops
+    bool spatial_plaquettes = false; // true when interpolating with the spatial plaquette
     size_t max_length_loops = 4; // maximum length of loops interpolating the glueballs
     bool save_in_subfolder = true; // whether to save the measures in a subfolder 
     bool lengthy_file_name = true; // add measure information in correlator filename
+
   };
 
   /* optional parameters for the measure program the in U(1) theory */

@@ -154,6 +154,9 @@ namespace input_file_parsing {
       in.read_opt_verb<bool>(mgparams.lengthy_file_name, {"lenghty_file_name"});
       in.read_opt_verb<bool>(mgparams.save_in_subfolder, {"save_in_subfolder"});
 
+      in.read_opt_verb<bool>(mgparams.do_GEVP, {"do_GEVP"});
+      in.read_opt_verb<bool>(mgparams.spatial_plaquettes, {"spatial_plaquettes"});
+
       in.set_InnerTree({}); // reset to previous state
     }
 

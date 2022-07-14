@@ -217,7 +217,13 @@ int main(int ac, char *av[]) {
           if (hparams.omeas.verbosity > 0) {
             std::cout << "## online measuring: Glueballs 0^{PC} correlators\n";
           }
-          omeasurements::meas_glueball_correlator<_u1>(U, i, hparams.omeas);
+          if (hparams.omeas.measure_glueball_params.do_GEVP) {
+            omeasurements::meas_glueball_correlator_GEVP<_u1>(U, i, hparams.omeas);
+          }
+          if (hparams.omeas.measure_glueball_params.spatial_plaquettes) {
+            omeasurements::meas_glueball_correlator_spatial_U_ij<_u1>(U, i,
+                                                                      hparams.omeas);
+          }
         }
       }
 

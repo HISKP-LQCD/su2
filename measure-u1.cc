@@ -129,7 +129,12 @@ int main(int ac, char *av[]) {
       omeasurements::meas_pion_correlator<_u1>(U, i, pparams.m0, mparams);
     }
     if (mparams.measure_glueball_params.do_measure) {
-      omeasurements::meas_glueball_correlator<_u1>(U, i, mparams);
+      if (mparams.measure_glueball_params.do_GEVP) {
+        omeasurements::meas_glueball_correlator_GEVP<_u1>(U, i, mparams);
+      }
+      if (mparams.measure_glueball_params.spatial_plaquettes) {
+        omeasurements::meas_glueball_correlator_spatial_U_ij<_u1>(U, i, mparams);
+      }
     }
 
     if (mparams.potential || mparams.potentialsmall) {

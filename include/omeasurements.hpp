@@ -116,8 +116,8 @@ namespace omeasurements {
   }
 
   /**
-   * @brief measure the glueball 0^{PC} correlators
-   * measure the glueball correlators 0^{++}, 0^{+-}, 0^{-+}, 0^{--}
+   * @brief measure the glueball 0^{PC} correlators from the spatial plaquettes:
+   * \sum_{j<i} U_ij measure the glueball correlators 0^{++}, 0^{+-}, 0^{-+}, 0^{--}
    * @tparam Group
    * @tparam sparams struct containing info on computation and output
    * @param U gauge configuration
@@ -125,9 +125,115 @@ namespace omeasurements {
    * @param S specific parameters
    */
   template <class Group, class sparams>
-  void meas_glueball_correlator(const gaugeconfig<Group> &U0,
-                                const size_t &i,
-                                const sparams &S) {
+  void meas_glueball_correlator_spatial_U_ij(const gaugeconfig<Group> &U0,
+                                             const size_t &i,
+                                             const sparams &S) {
+    typedef typename accum_type<Group>::type accum;
+
+    std::ostringstream oss;
+    oss << S.res_dir + "/U_ij/C_glueball";
+    fsys::create_directories(fsys::absolute(S.res_dir + "/U_ij/"));
+
+    gaugeconfig<Group> U = U0;
+    if (S.measure_glueball_params.doAPEsmear) {
+      for (size_t i = 0; i < S.measure_glueball_params.nAPEsmear; i++) {
+        smearlatticeape<Group>(U, S.measure_glueball_params.alphaAPEsmear, true);
+      }
+      oss << "_smearAPEn" << S.measure_glueball_params.nAPEsmear << "alpha"
+          << S.measure_glueball_params.alphaAPEsmear;
+    }
+    oss << "_";
+    auto prevw = oss.width(8);
+    auto prevf = oss.fill('0');
+    oss << i;
+    oss.width(prevw);
+    oss.fill(prevf);
+
+    const std::string path = oss.str();
+    std::ofstream ofs(path, std::ios::out);
+
+    std::vector<double> sinks[4]; // sink at 't'
+    std::vector<double> sources[4]; // source at 't'
+    for (size_t i_PC = 0; i_PC < 4; i_PC++) {
+      sinks[i_PC].resize(U.getLt());
+      sources[i_PC].resize(U.getLt());
+    }
+
+    for (size_t t = 0; t < U.getLt(); t++) {
+      const accum Uij = operators::get_rest_tr_sum_U_ij<accum, Group>(U, t, false);
+      const accum PUij = operators::get_rest_tr_sum_U_ij<accum, Group>(U, t, true);
+
+      size_t i_PC = 0;
+      for (int sP = 1; sP >= -1; sP -= 2) {
+        for (int iC = 1; iC >= 0; iC--) {
+          const bool C = bool(iC);
+          std::complex<double> comb_snk = Uij + double(sP) * PUij;
+          comb_snk /= 2.0;
+
+          double snk;
+          if (C) {
+            snk = std::real(comb_snk);
+          } else {
+            snk = std::imag(comb_snk);
+          }
+          snk = 1.0 - snk; // vacuum subtraction
+          sinks[i_PC][t] = snk;
+
+          std::complex<double> comb_src =
+            operators::get_tr_sum_U_ij<accum, Group>(U, {int(t), 0, 0, 0}, false) +
+            double(sP) *
+              operators::get_tr_sum_U_ij<accum, Group>(U, {int(t), 0, 0, 0}, true);
+          comb_src /= 2.0;
+
+          double src;
+          if (C) {
+            src = std::real(comb_src);
+          } else {
+            src = std::imag(comb_src);
+          }
+
+          sources[i_PC][t] = 1.0 - src; // vacuum subtraction
+
+          ++i_PC;
+        }
+      }
+    }
+
+    ofs << "t C_{++}(t) C_{+-}(t) C_{-+}(t) C_{--}(t)" << std::endl; // header
+    const size_t T_ext = U.getLt(); // lattice temporal time extent
+    for (size_t t = 0; t < T_ext; t++) {
+      ofs << t;
+      for (size_t i_PC = 0; i_PC < 4; i_PC++) {
+        double Ct = 0.0;
+        for (size_t tau = 0; tau < T_ext; tau++) {
+          Ct += sinks[i_PC][(t + tau) % T_ext] * sinks[i_PC][tau];
+        }
+        Ct /= double(T_ext); // average over all times
+        ofs << " " << std::scientific << std::setprecision(16) << Ct;
+      }
+      ofs << std::endl;
+    }
+
+    ofs.close();
+
+    return;
+  }
+
+  /**
+   * @brief measure the glueball 0^{PC} correlators for the GEVP
+   * measure the glueball correlators ij for the 0^{++}, 0^{+-}, 0^{-+}, 0^{--} glueballs.
+   * j<i and i runs from 0 to L-1, where L is the maximum lenght of the loops specified in
+   * the 'sparams' struct.
+   * @tparam Group
+   * @tparam sparams struct containing info on computation and output
+   * @param U gauge configuration
+   * @param i trajectory index
+   * @param S specific parameters
+   */
+  template <class Group, class sparams>
+  void meas_glueball_correlator_GEVP(const gaugeconfig<Group> &U0,
+                                     const size_t &i,
+                                     const sparams &S) {
     typedef typename accum_type<Group>::type accum;
 
     std::ostringstream oss_dir, oss_name;
@@ -194,9 +300,11 @@ namespace omeasurements {
     for (size_t i = 0; i < nl; i++) {
       for (size_t j = 0; j <= i; j++) { // C_{ij} == C_{ji}
 
-	const std::string dir_ij = oss_dir.str() + std::to_string(i) + "_" + std::to_string(j) + "/"; // directory path
-	fsys::create_directories(fsys::absolute(dir_ij)); // creating directory
-	const std::string path = dir_ij + "C_glueball" + oss_name.str(); // full path of output file
+        const std::string dir_ij = oss_dir.str() + std::to_string(i) + "_" +
+                                   std::to_string(j) + "/"; // directory path
+        fsys::create_directories(fsys::absolute(dir_ij)); // creating directory
+        const std::string path =
+          dir_ij + "C_glueball" + oss_name.str(); // full path of output file
 
         std::ostringstream oss_ij;
         oss_ij << "t C_{++}(t) C_{+-}(t) C_{-+}(t) C_{--}(t)" << std::endl; // header

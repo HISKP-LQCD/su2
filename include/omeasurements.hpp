@@ -140,7 +140,6 @@ namespace omeasurements {
 
     if (S.measure_glueball_params.save_in_subfolder) {
       oss_dir << meas_details + "/";
-      fsys::create_directories(fsys::absolute(oss_dir.str()));
     }
 
     // oss_name << "C_glueball";
@@ -194,8 +193,11 @@ namespace omeasurements {
     const size_t T_ext = U.getLt(); // lattice temporal time extent
     for (size_t i = 0; i < nl; i++) {
       for (size_t j = 0; j <= i; j++) { // C_{ij} == C_{ji}
-        const std::string path = oss_dir.str() + std::to_string(i) + "_" +
-                                 std::to_string(j) + "/C_glueball_" + +oss_name.str();
+
+	const std::string dir_ij = oss_dir.str() + std::to_string(i) + "_" + std::to_string(j) + "/"; // directory path
+	fsys::create_directories(fsys::absolute(dir_ij)); // creating directory
+	const std::string path = dir_ij + "C_glueball" + oss_name.str(); // full path of output file
+
         std::ostringstream oss_ij;
         oss_ij << "t C_{++}(t) C_{+-}(t) C_{-+}(t) C_{--}(t)" << std::endl; // header
         for (size_t t = 0; t < T_ext; t++) {

@@ -116,8 +116,8 @@ namespace omeasurements {
   }
 
   /**
-   * @brief measure the glueball 0^{PC} correlators 
-   * the interpolators are average plaquettes: sum_{\nu<\mu} U_{\mu \nu} 
+   * @brief measure the glueball 0^{PC} correlators
+   * the interpolators are average plaquettes: sum_{\nu<\mu} U_{\mu \nu}
    * measure the glueball correlators 0^{++}, 0^{+-}, 0^{-+}, 0^{--}
    * @tparam Group
    * @tparam sparams struct containing info on computation and output
@@ -127,25 +127,33 @@ namespace omeasurements {
    */
   template <class Group, class sparams>
   void meas_glueball_correlator_U_munu(const gaugeconfig<Group> &U0,
-                                             const size_t &i,
-                                             const sparams &S, const  bool& spatial_only) {
+                                       const size_t &i,
+                                       const sparams &S,
+                                       const bool &spatial_only) {
     typedef typename accum_type<Group>::type accum;
 
     std::ostringstream oss;
-    std::string subdir = "U_munu/";
-    if(spatial_only){subdir="U_ij/";}
-    oss << S.res_dir + "/"+subdir+"C_glueball";
-    fsys::create_directories(fsys::absolute(S.res_dir + "/" + subdir + "/"));
-
+    oss << S.res_dir+"/"; 
+    
+    // apply smearing
     gaugeconfig<Group> U = U0;
     if (S.glueball.doAPEsmear) {
       for (size_t i = 0; i < S.glueball.nAPEsmear; i++) {
         smearlatticeape<Group>(U, S.glueball.alphaAPEsmear, true);
       }
-      oss << "_smearAPEn" << S.glueball.nAPEsmear << "alpha"
-          << S.glueball.alphaAPEsmear;
+      oss << "/smearAPEn" << S.glueball.nAPEsmear << "alpha" << S.glueball.alphaAPEsmear
+          << "/";
     }
-    oss << "_";
+
+    // interpolator folder
+    std::string subdir = "U_munu/";
+    if (spatial_only) {
+      subdir = "U_ij/";
+    }
+    oss << subdir;
+    fsys::create_directories(fsys::absolute(oss.str()));
+
+    oss << "C_glueball_";
     auto prevw = oss.width(8);
     auto prevf = oss.fill('0');
     oss << i;
@@ -163,8 +171,10 @@ namespace omeasurements {
     }
 
     for (size_t t = 0; t < U.getLt(); t++) {
-      const accum Uij = operators::get_rest_tr_sum_U_munu<accum, Group>(U, t, spatial_only, false);
-      const accum PUij = operators::get_rest_tr_sum_U_munu<accum, Group>(U, t, spatial_only, true);
+      const accum Uij =
+        operators::get_rest_tr_sum_U_munu<accum, Group>(U, t, spatial_only, false);
+      const accum PUij =
+        operators::get_rest_tr_sum_U_munu<accum, Group>(U, t, spatial_only, true);
 
       size_t i_PC = 0;
       for (int sP = 1; sP >= -1; sP -= 2) {

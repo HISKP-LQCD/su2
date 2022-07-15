@@ -213,16 +213,20 @@ int main(int ac, char *av[]) {
           omeasurements::meas_pion_correlator<_u1>(U, i, pparams.m0, hparams.omeas);
         }
 
-        if (hparams.omeas.measure_glueball_params.do_measure) {
+        if (hparams.omeas.glueball.do_measure) {
           if (hparams.omeas.verbosity > 0) {
-            std::cout << "## online measuring: Glueballs 0^{PC} correlators\n";
+            std::cout << "## online measuring: J^{PC} glueball correlators.\n";
           }
-          if (hparams.omeas.measure_glueball_params.do_GEVP) {
+          if (hparams.omeas.glueball.loops_GEVP) {
             omeasurements::meas_glueball_correlator_GEVP<_u1>(U, i, hparams.omeas);
           }
-          if (hparams.omeas.measure_glueball_params.spatial_plaquettes) {
-            omeasurements::meas_glueball_correlator_spatial_U_ij<_u1>(U, i,
-                                                                      hparams.omeas);
+          if (hparams.omeas.glueball.U_munu) {
+            omeasurements::meas_glueball_correlator_U_munu<_u1>(U, i, hparams.omeas,
+                                                                false);
+          }
+          if (hparams.omeas.glueball.U_ij) {
+            omeasurements::meas_glueball_correlator_U_munu<_u1>(U, i, hparams.omeas,
+                                                                true);
           }
         }
       }

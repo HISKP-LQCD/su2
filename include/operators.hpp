@@ -244,50 +244,64 @@ namespace operators {
     return res;
   }
 
-  template <class T, class Group>
-  T plaquette_Pij(const gaugeconfig<Group> &U,
-                  const nd_max_arr<int> &x,
-                  const size_t &i,
-                  const size_t &j,
-                  const bool &P) {
-    T res;
+  /**
+   * @brief parity trasformed link
+   * Apply parity operator \mathcal{P}_\mu to U_{nu}(x) as in eq. (5.75) of
+   * https://link.springer.com/book/10.1007/978-3-642-01850-3
+   *
+   */
+  template <class Group>
+  Group parity(const bool &doit,
+               const size_t &mu,
+               const gaugeconfig<Group> &U,
+               nd_max_arr<int> x,
+               const size_t &nu) {
+    if (doit) {
+      for (int &xi : x) {
+        xi = -xi;
+      }
+      x[mu] = -x[mu]; // mu index is not transformed
 
-    if (!P) {
-      nd_max_arr<int> xpi = x;
-      nd_max_arr<int> xpj = x;
-
-      xpi[i]++;
-      xpj[j]++;
-
-      res = U(x, i) * U(xpi, j) * U(xpj, i).dagger() * U(x, j).dagger();
+      if (mu == nu) {
+        return U(x, nu);
+      } else {
+        x[nu]--;
+        return U(x, nu).dagger();
+      }
 
     } else {
-      const nd_max_arr<int> Px = {x[0], -x[1], -x[2],
-                                  -x[3]}; // spatial parity applied to 'x'
-      nd_max_arr<int> Px_mimj = Px;
-      nd_max_arr<int> Px_mi = Px;
-      nd_max_arr<int> Px_mj = Px;
-
-      Px_mimj[i]--;
-      Px_mimj[j]--;
-      Px_mi[i]--;
-      Px_mj[j]--;
-
-      res = U(Px_mi, i).dagger() * U(Px_mimj, j).dagger() * U(Px_mimj, i) * U(Px_mj, j);
+      return U(x, nu);
     }
+  }
+
+  template <class T, class Group>
+  T plaquette_P_munu(const gaugeconfig<Group> &U,
+                    nd_max_arr<int> x,
+                    const size_t &mu,
+                    const size_t &nu,
+                    const bool &Px) {
+    T res;
+
+    nd_max_arr<int> xpm = x;
+    nd_max_arr<int> xpn = x;
+
+    xpm[mu]++;
+    xpn[nu]++;
+    res = parity(Px, 0, U, x, mu) * parity(Px, 0, U, xpm, nu) *
+          parity(Px, 0, U, xpn, mu).dagger() * parity(Px, 0, U, x, nu).dagger();
     return res / double(U.getNc());
   }
 
   /**
-   * @brief \vec{p}=\vec{0} (at rest) trace of the spatial plaquette P*(U_ij) [P=spatial
-   * parity operator]
+   * @brief \vec{p}=\vec{0} (at rest) trace of the plaquette P*(U_{\mu\nu})
+   * [P=spatial parity operator]
    */
   template <class T, class Group>
-  T rest_plaquette_P_ij(const gaugeconfig<Group> &U,
-                        const size_t &t,
-                        const size_t &i,
-                        const size_t &j,
-                        const bool &P) {
+  T rest_plaquette_P_munu(const gaugeconfig<Group> &U,
+                          const size_t &t,
+                          const size_t &mu,
+                          const size_t &nu,
+                          const bool &apply_Px) {
     T res;
 
 #pragma omp parallel for reduction(+ : res)
@@ -295,28 +309,30 @@ namespace operators {
       for (int x2 = 0; x2 < U.getLy(); x2++) {
         for (int x3 = 0; x3 < U.getLz(); x3++) {
           const nd_max_arr<int> x = {int(t), x1, x2, x3};
-          res += plaquette_Pij<T, Group>(U, x, i, j, P);
+          res += plaquette_P_munu<T, Group>(U, x, mu, nu, apply_Px);
         }
       }
     }
-    return res / double(U.getNc()) / (double(U.getVolume()) / double(U.getLt()));
+    return res / (double(U.getVolume()) / double(U.getLt()));
   }
-
-
 
   /**
    * @brief trace of product of links along a path, projected to '0' spatial momentum
-   * 
+   *
    * @tparam T type to b returbed, e.g. std::complex<double>
-   * @tparam Group 
+   * @tparam Group
    * @param t time
    * @param U gauge configuration
    * @param path_lat path along the lattice
    * @param P apply parity transformation
-   * @return T trace of the product of the links along the path specified by variable 'path'
+   * @return T trace of the product of the links along the path specified by variable
+   * 'path'
    */
   template <class T, class Group>
-  T trace_rest_loop(const int& t, const gaugeconfig<Group> &U, const links::path &path_lat, const bool& P) {
+  T trace_rest_loop(const int &t,
+                    const gaugeconfig<Group> &U,
+                    const links::path &path_lat,
+                    const bool &P) {
     T res;
 #pragma omp parallel for reduction(+ : res)
     for (int x1 = 0; x1 < U.getLx(); x1++) {
@@ -327,7 +343,7 @@ namespace operators {
         }
       }
     }
-    return res / double(U.getNc()) / (double(U.getVolume()) / double(U.getLt()));
+    return res / (double(U.getVolume()) / double(U.getLt()));
   }
 
   /**
@@ -339,19 +355,19 @@ namespace operators {
   T get_tr_sum_U_ij(const gaugeconfig<Group> &U,
                     const nd_max_arr<int> &x,
                     const bool &P) {
-    T Uij;
-#pragma omp parallel for reduction(+ : Uij) collapse(2)
-    for (size_t i = 1; i < U.getndims(); i++) {
-      for (size_t j = 2; j < U.getndims(); j++) {
-        if (j <= i) { // we want j>i. If j<=i --> do nothing
+    T Umunu;
+#pragma omp parallel for reduction(+ : Umunu) collapse(2)
+    for (size_t mu = 1; mu < U.getndims(); mu++) {
+      for (size_t nu = 2; nu < U.getndims(); nu++) {
+        if (nu <= mu) { // we want j>i. If j<=i --> do nothing
           continue;
         }
-        Uij += operators::plaquette_Pij<T, Group>(U, x, i, j, P);
+        Umunu += operators::plaquette_P_munu<T, Group>(U, x, mu, nu, P);
       }
     }
     const double dims_fact = spacetime_lattice::num_pLloops_half(U.getndims() - 1);
-    Uij /= double(dims_fact);
-    return Uij;
+    Umunu /= double(dims_fact);
+    return Umunu;
   }
 
   /**
@@ -363,16 +379,21 @@ namespace operators {
    * @param P whether to apply the parity operator or not
    */
   template <class T, class Group>
-  T get_rest_tr_sum_U_ij(const gaugeconfig<Group> &U, const size_t &t, const bool &P) {
-    T Uij;
-    for (size_t i = 1; i < U.getndims(); i++) {
-      for (size_t j = i + 1; j < U.getndims(); j++) {
-        Uij += operators::rest_plaquette_P_ij<T, Group>(U, t, i, j, P);
+  T get_rest_tr_sum_U_munu(const gaugeconfig<Group> &U,
+                           const size_t &t,
+                           const bool &spatial_only,
+                           const bool &P) {
+    T Umunu;
+    size_t mu_start = size_t(spatial_only); // 0 or 1
+    for (size_t mu = mu_start; mu < U.getndims(); mu++) {
+      for (size_t nu = mu + 1; nu < U.getndims(); nu++) {
+        Umunu += operators::rest_plaquette_P_munu<T, Group>(U, t, mu, nu, P);
       }
     }
-    const double dims_fact = spacetime_lattice::num_pLloops_half(U.getndims() - 1);
-    Uij /= double(dims_fact);
-    return Uij;
+    const size_t dms = U.getndims() - mu_start;
+    const double dims_fact = spacetime_lattice::num_pLloops_half(dms);
+    Umunu /= double(dims_fact);
+    return Umunu;
   }
 
 } // namespace operators

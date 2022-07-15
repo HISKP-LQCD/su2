@@ -44,16 +44,19 @@ namespace global_parameters {
   };
 
   struct measure_glueball_u1 {
+    bool use_res_dir = true; // path of the correlators, relative to the measurements
+    bool lengthy_file_name = true; // add measure information in correlator filename
+
     bool do_measure = false; // measure the glueball correlator
     bool doAPEsmear = false; // apply APE smearing to the links
     size_t nAPEsmear; // number of APE smearing iterations
     double alphaAPEsmear; // alpha parameter for the smearing. alpha=1 -> no smearing.
-    bool do_GEVP = false; // 'true' when computing C_ij for the various loops
-    bool spatial_plaquettes = false; // true when interpolating with the spatial plaquette
-    size_t max_length_loops = 4; // maximum length of loops interpolating the glueballs
-    bool save_in_subfolder = true; // whether to save the measures in a subfolder 
-    bool lengthy_file_name = true; // add measure information in correlator filename
 
+    bool loops_GEVP = false; // 'true' when computing C_ij for the various loops
+    size_t max_length_loops = 4; // maximum length of loops interpolating the glueballs
+
+    bool U_ij = false; // interpolating with the average spatial plaquette U_ij
+    bool U_munu = false; // interpolating with the average plaquette U_munu
   };
 
   /* optional parameters for the measure program the in U(1) theory */
@@ -106,7 +109,7 @@ namespace global_parameters {
     size_t seed_pf = 97234719; // Seed for the evaluation of the fermion determinant
 
     measure_glueball_u1
-      measure_glueball_params; // structure for the measure of the glueball
+      glueball; // structure for the measure of the glueball
   };
 
   /* Optional parameters for the hmc the in U(1) theory */

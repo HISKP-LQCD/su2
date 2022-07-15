@@ -107,6 +107,8 @@ namespace YAML_parsing {
       return node_i;
     }
 
+    YAML::Node get_outer_node() const { return this->get_outer_node((*this).InnerTree); }
+
     std::vector<std::string> get_InnerTree() const { return (*this).InnerTree; }
 
     YAML::Node get_root() { return YAML::Clone((*this).InnerNode); }
@@ -146,7 +148,7 @@ namespace YAML_parsing {
       return;
     }
 
-    std::vector<std::string> get_full_tree(const std::vector<std::string>& tree){
+    std::vector<std::string> get_full_tree(const std::vector<std::string> &tree) {
       std::vector<std::string> full_tree = (*this).InnerTree;
       full_tree.insert(full_tree.end(), tree.begin(), tree.end());
       return full_tree;
@@ -170,7 +172,7 @@ namespace YAML_parsing {
       if (this->get_outer_node(tree2)[tree.back()]) {
         this->read_verb<T>(x, tree);
       } else {
-        std::cout << "## " << this->get_node_str(tree) << "=" << x << " (default)\n";
+        std::cout << "## " << this->get_node_str(tree2) << "=" << x << " (default)\n";
       }
       return;
     }

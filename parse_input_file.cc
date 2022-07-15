@@ -150,12 +150,14 @@ namespace input_file_parsing {
         in.read_verb<size_t>(mgparams.nAPEsmear, {"APE_smearing", "n"});
         in.read_verb<double>(mgparams.alphaAPEsmear, {"APE_smearing", "alpha"});
       }
-      in.read_opt_verb<size_t>(mgparams.max_length_loops, {"max_length_loops"});
       in.read_opt_verb<bool>(mgparams.lengthy_file_name, {"lenghty_file_name"});
-      in.read_opt_verb<bool>(mgparams.save_in_subfolder, {"save_in_subfolder"});
+      in.read_opt_verb<bool>(mgparams.use_res_dir, {"res_dir"});
 
-      in.read_opt_verb<bool>(mgparams.do_GEVP, {"do_GEVP"});
-      in.read_opt_verb<bool>(mgparams.spatial_plaquettes, {"spatial_plaquettes"});
+      in.read_opt_verb<bool>(mgparams.loops_GEVP, {"interpolators", "loops_GEVP"});
+      in.read_opt_verb<size_t>(mgparams.max_length_loops, {"max_length_loops"});
+
+      in.read_opt_verb<bool>(mgparams.U_ij, {"interpolators", "U_ij"});
+      in.read_opt_verb<bool>(mgparams.U_munu, {"interpolators", "U_munu"});
 
       in.set_InnerTree({}); // reset to previous state
     }
@@ -258,9 +260,9 @@ namespace input_file_parsing {
           in.read_opt_verb<bool>(hparams.omeas.Wloop, {"omeas", "Wloop"});
 
           if (nd["omeas"]["glueball"]) {
-            hparams.omeas.measure_glueball_params.do_measure = true;
+            hparams.omeas.glueball.do_measure = true;
             parse_glueball_measure(in, {"omeas", "glueball"},
-                                   hparams.omeas.measure_glueball_params);
+                                   hparams.omeas.glueball);
           }
 
           if (nd["omeas"]["gradient_flow"]) {
@@ -328,9 +330,9 @@ namespace input_file_parsing {
         }
 
         if (nd["omeas"]["glueball"]) {
-          mparams.measure_glueball_params.do_measure = true;
+          mparams.glueball.do_measure = true;
           parse_glueball_measure(in, {"omeas", "glueball"},
-                                 mparams.measure_glueball_params);
+                                 mparams.glueball);
         }
 
         // optional parameters for potentials

@@ -128,12 +128,18 @@ int main(int ac, char *av[]) {
     if (mparams.pion_staggered) {
       omeasurements::meas_pion_correlator<_u1>(U, i, pparams.m0, mparams);
     }
-    if (mparams.measure_glueball_params.do_measure) {
-      if (mparams.measure_glueball_params.do_GEVP) {
+    if (mparams.glueball.do_measure) {
+          if (mparams.verbosity > 0) {
+            std::cout << "## online measuring: J^{PC} glueball correlators.\n";
+          }
+      if (mparams.glueball.loops_GEVP) {
         omeasurements::meas_glueball_correlator_GEVP<_u1>(U, i, mparams);
       }
-      if (mparams.measure_glueball_params.spatial_plaquettes) {
-        omeasurements::meas_glueball_correlator_spatial_U_ij<_u1>(U, i, mparams);
+      if (mparams.glueball.U_munu) {
+        omeasurements::meas_glueball_correlator_U_munu<_u1>(U, i, mparams, false);
+      }
+      if (mparams.glueball.U_ij) {
+        omeasurements::meas_glueball_correlator_U_munu<_u1>(U, i, mparams, true);
       }
     }
 

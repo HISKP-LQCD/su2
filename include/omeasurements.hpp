@@ -116,8 +116,9 @@ namespace omeasurements {
   }
 
   /**
-   * @brief measure the glueball 0^{PC} correlators from the spatial plaquettes:
-   * \sum_{j<i} U_ij measure the glueball correlators 0^{++}, 0^{+-}, 0^{-+}, 0^{--}
+   * @brief measure the glueball 0^{PC} correlators 
+   * the interpolators are average plaquettes: sum_{\nu<\mu} U_{\mu \nu} 
+   * measure the glueball correlators 0^{++}, 0^{+-}, 0^{-+}, 0^{--}
    * @tparam Group
    * @tparam sparams struct containing info on computation and output
    * @param U gauge configuration
@@ -125,22 +126,24 @@ namespace omeasurements {
    * @param S specific parameters
    */
   template <class Group, class sparams>
-  void meas_glueball_correlator_spatial_U_ij(const gaugeconfig<Group> &U0,
+  void meas_glueball_correlator_U_munu(const gaugeconfig<Group> &U0,
                                              const size_t &i,
-                                             const sparams &S) {
+                                             const sparams &S, const  bool& spatial_only) {
     typedef typename accum_type<Group>::type accum;
 
     std::ostringstream oss;
-    oss << S.res_dir + "/U_ij/C_glueball";
-    fsys::create_directories(fsys::absolute(S.res_dir + "/U_ij/"));
+    std::string subdir = "U_munu/";
+    if(spatial_only){subdir="U_ij/";}
+    oss << S.res_dir + "/"+subdir+"C_glueball";
+    fsys::create_directories(fsys::absolute(S.res_dir + "/" + subdir + "/"));
 
     gaugeconfig<Group> U = U0;
-    if (S.measure_glueball_params.doAPEsmear) {
-      for (size_t i = 0; i < S.measure_glueball_params.nAPEsmear; i++) {
-        smearlatticeape<Group>(U, S.measure_glueball_params.alphaAPEsmear, true);
+    if (S.glueball.doAPEsmear) {
+      for (size_t i = 0; i < S.glueball.nAPEsmear; i++) {
+        smearlatticeape<Group>(U, S.glueball.alphaAPEsmear, true);
       }
-      oss << "_smearAPEn" << S.measure_glueball_params.nAPEsmear << "alpha"
-          << S.measure_glueball_params.alphaAPEsmear;
+      oss << "_smearAPEn" << S.glueball.nAPEsmear << "alpha"
+          << S.glueball.alphaAPEsmear;
     }
     oss << "_";
     auto prevw = oss.width(8);
@@ -153,15 +156,15 @@ namespace omeasurements {
     std::ofstream ofs(path, std::ios::out);
 
     std::vector<double> sinks[4]; // sink at 't'
-    std::vector<double> sources[4]; // source at 't'
+    // std::vector<double> sources[4]; // source at 't'
     for (size_t i_PC = 0; i_PC < 4; i_PC++) {
       sinks[i_PC].resize(U.getLt());
-      sources[i_PC].resize(U.getLt());
+      // sources[i_PC].resize(U.getLt());
     }
 
     for (size_t t = 0; t < U.getLt(); t++) {
-      const accum Uij = operators::get_rest_tr_sum_U_ij<accum, Group>(U, t, false);
-      const accum PUij = operators::get_rest_tr_sum_U_ij<accum, Group>(U, t, true);
+      const accum Uij = operators::get_rest_tr_sum_U_munu<accum, Group>(U, t, spatial_only, false);
+      const accum PUij = operators::get_rest_tr_sum_U_munu<accum, Group>(U, t, spatial_only, true);
 
       size_t i_PC = 0;
       for (int sP = 1; sP >= -1; sP -= 2) {
@@ -176,23 +179,23 @@ namespace omeasurements {
           } else {
             snk = std::imag(comb_snk);
           }
-          snk = 1.0 - snk; // vacuum subtraction
+          // snk = 1.0 - snk; // vacuum subtraction
           sinks[i_PC][t] = snk;
 
-          std::complex<double> comb_src =
-            operators::get_tr_sum_U_ij<accum, Group>(U, {int(t), 0, 0, 0}, false) +
-            double(sP) *
-              operators::get_tr_sum_U_ij<accum, Group>(U, {int(t), 0, 0, 0}, true);
-          comb_src /= 2.0;
+          // std::complex<double> comb_src =
+          //   operators::get_tr_sum_U_ij<accum, Group>(U, {int(t), 0, 0, 0}, false) +
+          //   double(sP) *
+          //     operators::get_tr_sum_U_ij<accum, Group>(U, {int(t), 0, 0, 0}, true);
+          // comb_src /= 2.0;
 
-          double src;
-          if (C) {
-            src = std::real(comb_src);
-          } else {
-            src = std::imag(comb_src);
-          }
+          // double src;
+          // if (C) {
+          //   src = std::real(comb_src);
+          // } else {
+          //   src = std::imag(comb_src);
+          // }
 
-          sources[i_PC][t] = 1.0 - src; // vacuum subtraction
+          // sources[i_PC][t] = 1.0 - src; // vacuum subtraction
 
           ++i_PC;
         }
@@ -240,22 +243,22 @@ namespace omeasurements {
     oss_dir << S.res_dir + "/";
 
     std::ostringstream oss_details;
-    oss_details << "smearAPEn" << S.measure_glueball_params.nAPEsmear << "alpha"
-                << S.measure_glueball_params.alphaAPEsmear;
+    oss_details << "smearAPEn" << S.glueball.nAPEsmear << "alpha"
+                << S.glueball.alphaAPEsmear;
     std::string meas_details = oss_details.str();
 
-    if (S.measure_glueball_params.save_in_subfolder) {
+    if (S.glueball.use_res_dir) {
       oss_dir << meas_details + "/";
     }
 
     // oss_name << "C_glueball";
 
     gaugeconfig<Group> U = U0;
-    if (S.measure_glueball_params.doAPEsmear) {
-      for (size_t i = 0; i < S.measure_glueball_params.nAPEsmear; i++) {
-        smearlatticeape<Group>(U, S.measure_glueball_params.alphaAPEsmear, true);
+    if (S.glueball.doAPEsmear) {
+      for (size_t i = 0; i < S.glueball.nAPEsmear; i++) {
+        smearlatticeape<Group>(U, S.glueball.alphaAPEsmear, true);
       }
-      if (S.measure_glueball_params.lengthy_file_name) {
+      if (S.glueball.lengthy_file_name) {
         oss_name << "_" << meas_details;
       }
     }
@@ -266,7 +269,7 @@ namespace omeasurements {
     oss_name.width(prevw);
     oss_name.fill(prevf);
 
-    const size_t max_length_loops = S.measure_glueball_params.max_length_loops;
+    const size_t max_length_loops = S.glueball.max_length_loops;
     std::vector<links::path> clpaths(0);
 
     for (size_t ll = 1; ll <= max_length_loops; ll++) {

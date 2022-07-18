@@ -139,7 +139,7 @@ namespace omeasurements {
     gaugeconfig<Group> U = U0;
     if (S.glueball.doAPEsmear) {
       for (size_t i = 0; i < S.glueball.nAPEsmear; i++) {
-        smearlatticeape<Group>(U, S.glueball.alphaAPEsmear, true);
+        spatial_smearlatticeape<Group>(U, S.glueball.alphaAPEsmear);
       }
       oss << "/smearAPEn" << S.glueball.nAPEsmear << "alpha" << S.glueball.alphaAPEsmear
           << "/";
@@ -175,6 +175,16 @@ namespace omeasurements {
         operators::get_rest_tr_sum_U_munu<accum, Group>(U, t, spatial_only, false);
       const accum PUij =
         operators::get_rest_tr_sum_U_munu<accum, Group>(U, t, spatial_only, true);
+
+      //~ // CHECK GAUGE INVARIANCE
+      //~ {
+      //~   gaugeconfig<Group> U1 = U;
+      //~   random_gauge_trafo(U1, 314);
+      //~   const accum Uij_1 = operators::get_rest_tr_sum_U_munu<accum, Group>(U1, t, spatial_only, false);
+      //~   if((abs(Uij - Uij_1 )>1e-15)){
+      //~   std::cout << "gauge invariance not fullfilled " << t << " " << (abs(Uij - Uij_1 )<1e-15) << "== 1 ?\n";
+      //~   }
+      //~ }
 
       size_t i_PC = 0;
       for (int sP = 1; sP >= -1; sP -= 2) {
@@ -266,7 +276,7 @@ namespace omeasurements {
     gaugeconfig<Group> U = U0;
     if (S.glueball.doAPEsmear) {
       for (size_t i = 0; i < S.glueball.nAPEsmear; i++) {
-        smearlatticeape<Group>(U, S.glueball.alphaAPEsmear, true);
+        spatial_smearlatticeape<Group>(U, S.glueball.alphaAPEsmear);
       }
       if (S.glueball.lengthy_file_name) {
         oss_name << "_" << meas_details;

@@ -133,8 +133,8 @@ namespace omeasurements {
     typedef typename accum_type<Group>::type accum;
 
     std::ostringstream oss;
-    oss << S.res_dir+"/"; 
-    
+    oss << S.res_dir + "/";
+
     // apply smearing
     gaugeconfig<Group> U = U0;
     if (S.glueball.doAPEsmear) {
@@ -180,11 +180,10 @@ namespace omeasurements {
       //~ {
       //~   gaugeconfig<Group> U1 = U;
       //~   random_gauge_trafo(U1, 314);
-      //~   const accum Uij_1 = operators::get_rest_tr_sum_U_munu<accum, Group>(U1, t, spatial_only, false);
-      //~   if((abs(Uij - Uij_1 )>1e-15)){
-      //~   std::cout << "gauge invariance not fullfilled " << t << " " << (abs(Uij - Uij_1 )<1e-15) << "== 1 ?\n";
-      //~   }
-      //~ }
+      //~   const accum Uij_1 = operators::get_rest_tr_sum_U_munu<accum, Group>(U1, t,
+      // spatial_only, false); ~   if((abs(Uij - Uij_1 )>1e-15)){ ~   std::cout << "gauge
+      // invariance not fullfilled " << t << " " << (abs(Uij - Uij_1 )<1e-15) << "== 1
+      //?\n"; ~   } ~ }
 
       size_t i_PC = 0;
       for (int sP = 1; sP >= -1; sP -= 2) {
@@ -229,7 +228,9 @@ namespace omeasurements {
       for (size_t i_PC = 0; i_PC < 4; i_PC++) {
         double Ct = 0.0;
         for (size_t tau = 0; tau < T_ext; tau++) {
-          Ct += sinks[i_PC][(t + tau) % T_ext] * sinks[i_PC][tau];
+          const double vev = sinks[i_PC][tau] * sinks[i_PC][tau];
+          double s_tau = sinks[i_PC][(t + tau) % T_ext] * sinks[i_PC][tau];
+          Ct += s_tau - vev;
         }
         Ct /= double(T_ext); // average over all times
         ofs << " " << std::scientific << std::setprecision(16) << Ct;

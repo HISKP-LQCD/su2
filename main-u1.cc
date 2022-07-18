@@ -231,7 +231,7 @@ int main(int ac, char *av[]) {
     if (inew > 0 && (inew % mcparams.N_save) == 0) {
       std::ostringstream oss_i;
       oss_i << conf_path_basename << "." << inew << std::ends;
-      U.save(mcparams.conf_dir + "/" + oss_i.str());
+      U.save(oss_i.str());
     }
   }
   // save acceptance rates to additional file to keep track of measurements

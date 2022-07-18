@@ -164,10 +164,8 @@ namespace omeasurements {
     std::ofstream ofs(path, std::ios::out);
 
     std::vector<double> sinks[4]; // sink at 't'
-    // std::vector<double> sources[4]; // source at 't'
     for (size_t i_PC = 0; i_PC < 4; i_PC++) {
       sinks[i_PC].resize(U.getLt());
-      // sources[i_PC].resize(U.getLt());
     }
 
     for (size_t t = 0; t < U.getLt(); t++) {
@@ -175,15 +173,6 @@ namespace omeasurements {
         operators::get_rest_tr_sum_U_munu<accum, Group>(U, t, spatial_only, false);
       const accum PUij =
         operators::get_rest_tr_sum_U_munu<accum, Group>(U, t, spatial_only, true);
-
-      //~ // CHECK GAUGE INVARIANCE
-      //~ {
-      //~   gaugeconfig<Group> U1 = U;
-      //~   random_gauge_trafo(U1, 314);
-      //~   const accum Uij_1 = operators::get_rest_tr_sum_U_munu<accum, Group>(U1, t,
-      // spatial_only, false); ~   if((abs(Uij - Uij_1 )>1e-15)){ ~   std::cout << "gauge
-      // invariance not fullfilled " << t << " " << (abs(Uij - Uij_1 )<1e-15) << "== 1
-      //?\n"; ~   } ~ }
 
       size_t i_PC = 0;
       for (int sP = 1; sP >= -1; sP -= 2) {
@@ -198,42 +187,26 @@ namespace omeasurements {
           } else {
             snk = std::imag(comb_snk);
           }
-          // snk = 1.0 - snk; // vacuum subtraction
           sinks[i_PC][t] = snk;
-
-          // std::complex<double> comb_src =
-          //   operators::get_tr_sum_U_ij<accum, Group>(U, {int(t), 0, 0, 0}, false) +
-          //   double(sP) *
-          //     operators::get_tr_sum_U_ij<accum, Group>(U, {int(t), 0, 0, 0}, true);
-          // comb_src /= 2.0;
-
-          // double src;
-          // if (C) {
-          //   src = std::real(comb_src);
-          // } else {
-          //   src = std::imag(comb_src);
-          // }
-
-          // sources[i_PC][t] = 1.0 - src; // vacuum subtraction
 
           ++i_PC;
         }
       }
     }
 
-    ofs << "t C_{++}(t) C_{+-}(t) C_{-+}(t) C_{--}(t)" << std::endl; // header
+    ofs << "t C_{++}(t) phi_{++}(t) C_{+-}(t) phi_{+-}(t) C_{-+}(t) phi_{-+}(t) "
+           "C_{--}(t) phi_{--}(t)"
+        << std::endl; // header
     const size_t T_ext = U.getLt(); // lattice temporal time extent
     for (size_t t = 0; t < T_ext; t++) {
       ofs << t;
       for (size_t i_PC = 0; i_PC < 4; i_PC++) {
         double Ct = 0.0;
         for (size_t tau = 0; tau < T_ext; tau++) {
-          const double vev = sinks[i_PC][tau] * sinks[i_PC][tau];
-          double s_tau = sinks[i_PC][(t + tau) % T_ext] * sinks[i_PC][tau];
-          Ct += s_tau - vev;
+          Ct += sinks[i_PC][(t + tau) % T_ext] * sinks[i_PC][tau];
         }
         Ct /= double(T_ext); // average over all times
-        ofs << " " << std::scientific << std::setprecision(16) << Ct;
+        ofs << " " << std::scientific << std::setprecision(16) << Ct << " " << sinks[i_PC][0];
       }
       ofs << std::endl;
     }

@@ -227,6 +227,7 @@ int main(int ac, char *av[]) {
     std::cout << Q << std::endl;
     os << Q << std::endl;
 
+
     if (inew > 0 && (inew % mcparams.N_save) == 0) {
       std::ostringstream oss_i;
       oss_i << conf_path_basename << "." << inew << std::ends;

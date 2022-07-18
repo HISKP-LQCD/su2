@@ -261,8 +261,7 @@ namespace input_file_parsing {
 
           if (nd["omeas"]["glueball"]) {
             hparams.omeas.glueball.do_measure = true;
-            parse_glueball_measure(in, {"omeas", "glueball"},
-                                   hparams.omeas.glueball);
+            parse_glueball_measure(in, {"omeas", "glueball"}, hparams.omeas.glueball);
           }
 
           if (nd["omeas"]["gradient_flow"]) {
@@ -331,8 +330,7 @@ namespace input_file_parsing {
 
         if (nd["omeas"]["glueball"]) {
           mparams.glueball.do_measure = true;
-          parse_glueball_measure(in, {"omeas", "glueball"},
-                                 mparams.glueball);
+          parse_glueball_measure(in, {"omeas", "glueball"}, mparams.glueball);
         }
 
         // optional parameters for potentials
@@ -408,6 +406,8 @@ namespace input_file_parsing {
         in.read_opt_verb<std::string>(mcparams.conf_dir, {"metropolis", "conf_dir"});
         in.read_opt_verb<std::string>(mcparams.conf_basename,
                                       {"metropolis", "conf_basename"});
+        in.read_opt_verb<bool>(mcparams.lenghty_conf_name,
+                               {"metropolis", "lenghty_conf_name"});
         in.read_opt_verb<size_t>(mcparams.beta_str_width,
                                  {"metropolis", "beta_str_width"});
         validate_beta_str_width(mcparams.beta_str_width);

@@ -148,12 +148,15 @@ int main(int ac, char *av[]) {
 #endif
   // std::cout << "threads " << threads << std::endl;
 
+  // get basename for configs
+  std::string conf_path_basename = io::get_conf_path_basename(pparams, mcparams);
+
   // load/set initial configuration
   gaugeconfig<_u1> U(pparams.Lx, pparams.Ly, pparams.Lz, pparams.Lt, pparams.ndims,
                      pparams.beta);
   if (mcparams.restart) {
     std::cout << "restart " << mcparams.restart << std::endl;
-    err = U.load(mcparams.configfilename);
+    err = U.load(conf_path_basename+"."+std::to_string(mcparams.icounter));
     if (err != 0) {
       return err;
     }
@@ -181,13 +184,11 @@ int main(int ac, char *av[]) {
   std::ofstream os;
   std::ofstream acceptancerates;
   if (mcparams.icounter == 0)
-    os.open(mcparams.conf_dir + "/output.u1-metropolis.data", std::ios::out);
+{    os.open(mcparams.conf_dir + "/output.u1-metropolis.data", std::ios::out);}
   else
-    os.open(mcparams.conf_dir + "/output.u1-metropolis.data", std::ios::app);
+{    os.open(mcparams.conf_dir + "/output.u1-metropolis.data", std::ios::app);}
   std::vector<double> rate = {0., 0.};
 
-  // get basename for configs
-  std::string conf_path_basename = io::get_conf_path_basename(pparams, mcparams);
 
   /**
    * do measurements:

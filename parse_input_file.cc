@@ -400,7 +400,6 @@ namespace input_file_parsing {
         // measure-u1 parameters
         in.read_opt_verb<size_t>(mcparams.n_meas, {"metropolis", "n_meas"});
         in.read_opt_verb<size_t>(mcparams.N_save, {"metropolis", "N_save"});
-        in.read_opt_verb<size_t>(mcparams.icounter, {"metropolis", "icounter"});
         in.read_opt_verb<size_t>(mcparams.seed, {"metropolis", "seed"});
 
         in.read_opt_verb<std::string>(mcparams.conf_dir, {"metropolis", "conf_dir"});
@@ -413,8 +412,7 @@ namespace input_file_parsing {
         validate_beta_str_width(mcparams.beta_str_width);
         in.read_opt_verb<bool>(mcparams.restart, {"metropolis", "restart"});
         if (mcparams.restart) {
-          in.read_opt_verb<std::string>(mcparams.configfilename,
-                                        {"metropolis", "configfilename"});
+          in.read_verb<size_t>(mcparams.icounter, {"metropolis", "icounter"});
         } else {
           in.read_verb<double>(mcparams.heat, {"metropolis", "heat"});
         }

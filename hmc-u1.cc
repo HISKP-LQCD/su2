@@ -173,11 +173,6 @@ int main(int ac, char *av[]) {
 
       if (hparams.do_hmc) {
         U.save(path_i);
-      } else {
-        int lerr = U.load(path_i);
-        if (lerr == 1) {
-          continue;
-        }
       }
 
       // online measurements
@@ -191,6 +186,12 @@ int main(int ac, char *av[]) {
       if (do_omeas) {
         if (i == g_icounter && hparams.do_hmc) {
           continue; // online measurements already done
+        }
+
+        /* loading the gauge configuration */
+        int lerr = U.load(path_i);
+        if (lerr == 1) {
+          continue;
         }
 
         if (hparams.omeas.Wloop) {

@@ -206,7 +206,7 @@ namespace omeasurements {
           Ct += sinks[i_PC][t + tau] * sinks[i_PC][tau];
         }
         Ct /= double(T_ext); // average over all times
-        ofs << " " << std::scientific << std::setprecision(16) << Ct << " " << sinks[i_PC][0];
+        ofs << " " << std::scientific << std::setprecision(16) << Ct << " " << sinks[i_PC][t];
       }
       ofs << std::endl;
     }

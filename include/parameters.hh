@@ -53,7 +53,8 @@ namespace global_parameters {
     double alphaAPEsmear; // alpha parameter for the smearing. alpha=1 -> no smearing.
 
     bool loops_GEVP = false; // 'true' when computing C_ij for the various loops
-    size_t max_length_loops = 4; // maximum length of loops interpolating the glueballs
+//    size_t max_length_loops = 4; // maximum length of loops interpolating the glueballs
+    size_t rmax_GEVP = 0; // maximum length of radial separation of glueball wavefunction
 
     bool U_ij = false; // interpolating with the average spatial plaquette U_ij
     bool U_munu = false; // interpolating with the average plaquette U_munu

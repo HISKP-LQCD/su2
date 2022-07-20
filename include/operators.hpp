@@ -276,10 +276,10 @@ namespace operators {
 
   template <class T, class Group>
   T plaquette_P_munu(const gaugeconfig<Group> &U,
-                    nd_max_arr<int> x,
-                    const size_t &mu,
-                    const size_t &nu,
-                    const bool &Px) {
+                     nd_max_arr<int> x,
+                     const size_t &mu,
+                     const size_t &nu,
+                     const bool &Px) {
     T res;
 
     nd_max_arr<int> xpm = x;
@@ -293,6 +293,73 @@ namespace operators {
   }
 
   /**
+   * @brief Get the sum tr U munu object
+   * returns \frac{2}{d*(d-1)*Nc} \sum_{mu<nu} Tr(P*U_{\mu \nu}(t,
+   * \vec{x}))
+   */
+  template <class T, class Group>
+  T get_tr_sum_U_munu(const gaugeconfig<Group> &U,
+                      const nd_max_arr<int> &x,
+                      const bool &P) {
+    T Umunu;
+#pragma omp parallel for reduction(+ : Umunu) collapse(2)
+    for (size_t mu = 0; mu < U.getndims(); mu++) {
+      for (size_t nu = 0; nu < U.getndims(); nu++) {
+        if (nu <= mu) { // we want j>i. If j<=i --> do nothing
+          continue;
+        }
+        Umunu += operators::plaquette_P_munu<T, Group>(U, x, mu, nu, P);
+      }
+    }
+    const double dims_fact = spacetime_lattice::num_pLloops_half(U.getndims());
+    Umunu /= double(dims_fact);
+    return Umunu;
+  }
+
+  /**
+   * @brief operator Phi(r) of https://arxiv.org/pdf/hep-lat/0603016.pdf,
+   * The averave is done over all possible vectors 'r'
+   */
+  template <class T, class Group>
+  T Phi_r(const size_t &t,
+          const gaugeconfig<Group> &U,
+          const size_t &r,
+          const bool &apply_Px) {
+    const size_t L = U.getLx();
+    // if (r >= L / 2) {
+    //   std::cerr << "Error: Operator Phi(r) can be computed only for r<L/2.
+    //   Aborting.\n"; std::abort();
+    // }
+
+    T res;
+    const size_t d = U.getndims();
+#pragma omp parallel for reduction(+ : res)
+    for (int x1 = 0; x1 < L; x1++) {
+      for (int x2 = 0; x2 < L; x2++) {
+        for (int x3 = 0; x3 < L; x3++) {
+          nd_max_arr<int> x = {int(t), x1, x2, x3};
+          res += get_tr_sum_U_munu<T, Group>(U, x, apply_Px);
+          for (size_t i = 1; i < d; i++) {
+            x[i] = (x[i] + r) % L;
+            // if (x[i] + r < L) {
+            //   x[i] += r;
+            // } else {
+            //   x[i] -= r;
+            // }
+            res += get_tr_sum_U_munu<T, Group>(U, x, apply_Px);
+          }
+        }
+      }
+    }
+    res /= 2 * double(d - 1); // average over all directions
+
+    const double spat_vol = double(U.getVolume()) / double(L);
+    res /= spat_vol; // averave over spatial volume
+
+    return res;
+  }
+
+  /**
    * @brief \vec{p}=\vec{0} (at rest) trace of the plaquette P*(U_{\mu\nu})
    * [P=spatial parity operator]
    */
@@ -303,7 +370,6 @@ namespace operators {
                           const size_t &nu,
                           const bool &apply_Px) {
     T res;
-
 #pragma omp parallel for reduction(+ : res)
     for (int x1 = 0; x1 < U.getLx(); x1++) {
       for (int x2 = 0; x2 < U.getLy(); x2++) {
@@ -313,7 +379,8 @@ namespace operators {
         }
       }
     }
-    return res / (double(U.getVolume()) / double(U.getLt()));
+    double spat_vol = double(U.getVolume()) / double(U.getLt());
+    return res / spat_vol;
   }
 
   /**

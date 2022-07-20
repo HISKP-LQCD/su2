@@ -154,7 +154,10 @@ namespace input_file_parsing {
       in.read_opt_verb<bool>(mgparams.use_res_dir, {"res_dir"});
 
       in.read_opt_verb<bool>(mgparams.loops_GEVP, {"interpolators", "loops_GEVP"});
-      in.read_opt_verb<size_t>(mgparams.max_length_loops, {"max_length_loops"});
+      if (mgparams.loops_GEVP) {
+        // in.read_verb<size_t>(mgparams.max_length_loops, {"max_length_loops"});
+        in.read_verb<size_t>(mgparams.rmax_GEVP, {"interpolators", "rmax_GEVP"});
+      }
 
       in.read_opt_verb<bool>(mgparams.U_ij, {"interpolators", "U_ij"});
       in.read_opt_verb<bool>(mgparams.U_munu, {"interpolators", "U_munu"});

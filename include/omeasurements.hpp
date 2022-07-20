@@ -139,7 +139,7 @@ namespace omeasurements {
     gaugeconfig<Group> U = U0;
     if (S.glueball.doAPEsmear) {
       for (size_t i = 0; i < S.glueball.nAPEsmear; i++) {
-        spatial_smearlatticeape<Group>(U, S.glueball.alphaAPEsmear);
+        spatial_APEsmearing_v2<Group>(U, S.glueball.alphaAPEsmear);
       }
       oss << "/smearAPEn" << S.glueball.nAPEsmear << "alpha" << S.glueball.alphaAPEsmear
           << "/";

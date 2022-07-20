@@ -269,8 +269,6 @@ namespace omeasurements {
 
     const size_t rmax = S.glueball.rmax_GEVP;
     for (size_t i = 0; i <= rmax; i++) {
-      std::cout << "r = " << i << "\n";
-
       phi[i].resize(U.getLt());
       for (size_t t = 0; t < U.getLt(); t++) {
         const std::complex<double> Pp =
@@ -287,14 +285,9 @@ namespace omeasurements {
     const size_t T_ext = U.getLt(); // lattice temporal time extent
     for (size_t i = 0; i <= rmax; i++) {
       for (size_t j = 0; j <= i; j++) { // C_{ij} == C_{ji}
-
-        std::cout << i << " " << j << "\n";
-
         const std::string dir_ij = oss_dir.str() + std::to_string(i) + "_" +
                                    std::to_string(j) + "/"; // directory path
         fsys::create_directories(fsys::absolute(dir_ij)); // creating directory
-
-    std::cout << dir_ij << "---\n";
 
         const std::string path =
           dir_ij + "C_glueball" + oss_name.str(); // full path of output file

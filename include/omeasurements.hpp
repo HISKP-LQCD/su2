@@ -275,10 +275,10 @@ namespace omeasurements {
           operators::Phi_r<std::complex<double>, Group>(t, U, i, false);
         const std::complex<double> Pm =
           operators::Phi_r<std::complex<double>, Group>(t, U, i, true);
-        phi[i][t][0][0] = (Pp + Pm).real(); // PC=++
-        phi[i][t][0][1] = (Pp + Pm).imag(); // PC=+-
-        phi[i][t][1][0] = (Pp - Pm).real(); // PC=-+
-        phi[i][t][1][1] = (Pp - Pm).imag(); // PC=--
+        phi[i][t][0][0] = (Pp + Pm).real() / 2.0; // PC=++
+        phi[i][t][0][1] = (Pp + Pm).imag() / 2.0; // PC=+-
+        phi[i][t][1][0] = (Pp - Pm).real() / 2.0; // PC=-+
+        phi[i][t][1][1] = (Pp - Pm).imag() / 2.0; // PC=--
       }
     }
 
@@ -293,7 +293,12 @@ namespace omeasurements {
           dir_ij + "C_glueball" + oss_name.str(); // full path of output file
 
         std::ostringstream oss_ij;
-        oss_ij << "t C_{++}(t) C_{+-}(t) C_{-+}(t) C_{--}(t)" << std::endl; // header
+        oss_ij << "t "
+               << "C_{++}(t) phi_i_{++}(t) phi_j_{++}(t) "
+               << "C_{+-}(t) phi_i_{+-}(t) phi_j_{+-}(t) "
+               << "C_{-+}(t) phi_i_{-+}(t) phi_j_{-+}(t) "
+               << "C_{--}(t) phi_i_{--}(t) phi_j_{--}(t) " << std::endl; // header
+
         for (size_t t = 0; t < T_ext; t++) {
           oss_ij << t;
           for (size_t P = 0; P <= 1; P++) {
@@ -303,7 +308,8 @@ namespace omeasurements {
                 Ct += phi[i][(t + tau) % T_ext][P][C] * phi[j][tau][P][C];
               }
               Ct /= double(T_ext); // average over all times
-              oss_ij << " " << std::scientific << std::setprecision(16) << Ct;
+              oss_ij << " " << std::scientific << std::setprecision(16) << Ct << " "
+                     << phi[i][t][P][C] << " " << phi[j][t][P][C];
             }
           }
           oss_ij << std::endl;

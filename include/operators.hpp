@@ -334,18 +334,18 @@ namespace operators {
     T res;
     const size_t d = U.getndims();
 #pragma omp parallel for reduction(+ : res)
-    for (int x1 = 0; x1 < L; x1++) {
-      for (int x2 = 0; x2 < L; x2++) {
-        for (int x3 = 0; x3 < L; x3++) {
-          nd_max_arr<int> x = {int(t), x1, x2, x3};
-          res += get_tr_sum_U_munu<T, Group>(U, x, apply_Px);
-          for (size_t i = 1; i < d; i++) {
-            x[i] = (x[i] + r) % L;
-            // if (x[i] + r < L) {
-            //   x[i] += r;
-            // } else {
-            //   x[i] -= r;
-            // }
+    for (size_t i = 1; i < d; i++) {
+      for (int x1 = 0; x1 < U.getLx(); x1++) {
+        for (int x2 = 0; x2 < U.getLy(); x2++) {
+          for (int x3 = 0; x3 < U.getLz(); x3++) {
+            nd_max_arr<int> x = {int(t), x1, x2, x3};
+            res += get_tr_sum_U_munu<T, Group>(U, x, apply_Px);
+            //            x[i] = (x[i] + r) % L;
+            if (x[i] + r < L) {
+              x[i] += r;
+            } else {
+              x[i] -= r;
+            }
             res += get_tr_sum_U_munu<T, Group>(U, x, apply_Px);
           }
         }
@@ -353,8 +353,8 @@ namespace operators {
     }
     res /= 2 * double(d - 1); // average over all directions
 
-    const double spat_vol = double(U.getVolume()) / double(L);
-    res /= spat_vol; // averave over spatial volume
+    const double spat_vol = double(U.getVolume()) / double(U.getLt());
+    res /= spat_vol; // average over spatial volume
 
     return res;
   }

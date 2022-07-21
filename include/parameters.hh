@@ -45,7 +45,7 @@ namespace global_parameters {
 
   struct measure_glueball_u1 {
     bool use_res_dir = true; // path of the correlators, relative to the measurements
-    bool lengthy_file_name = true; // add measure information in correlator filename
+    bool lengthy_file_name = false; // add measure information in correlator filename
 
     bool do_measure = false; // measure the glueball correlator
     bool doAPEsmear = false; // apply APE smearing to the links

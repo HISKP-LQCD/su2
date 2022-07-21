@@ -150,7 +150,7 @@ namespace input_file_parsing {
         in.read_verb<size_t>(mgparams.nAPEsmear, {"APE_smearing", "n"});
         in.read_verb<double>(mgparams.alphaAPEsmear, {"APE_smearing", "alpha"});
       }
-      in.read_opt_verb<bool>(mgparams.lengthy_file_name, {"lenghty_file_name"});
+      in.read_opt_verb<bool>(mgparams.lengthy_file_name, {"lengthy_file_name"});
       in.read_opt_verb<bool>(mgparams.use_res_dir, {"res_dir"});
 
       in.read_opt_verb<bool>(mgparams.loops_GEVP, {"interpolators", "loops_GEVP"});

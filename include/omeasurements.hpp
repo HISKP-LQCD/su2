@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "flat-gradient_flow.hh"
+#include "glueballs.hpp"
 #include "links.hpp"
 #include "operators.hpp"
 #include "parameters.hh"
@@ -262,31 +263,34 @@ namespace omeasurements {
     oss_name.width(prevw);
     oss_name.fill(prevf);
 
-    const size_t L = U.getLx();
+    const size_t T_ext = U.getLt(); // lattice temporal time extent
+    const size_t rmin = S.glueball.rmin_GEVP, rmax = S.glueball.rmax_GEVP;
+    const size_t N_ops = rmax; // number of GEVP interpolatoing operators
 
     // phi_i(t)^{PC}
-    std::vector<std::vector<std::array<std::array<double, 2>, 2>>> phi(L);
+    std::vector<std::vector<std::array<std::array<double, 2>, 2>>> phi(rmax-rmin+1);
 
-    const size_t rmax = S.glueball.rmax_GEVP;
-    for (size_t i = 0; i <= rmax; i++) {
-      phi[i].resize(U.getLt());
-      for (size_t t = 0; t < U.getLt(); t++) {
+    for (size_t ir = 0; ir <= rmax-rmin; ir++) {
+      const size_t r = ir + rmin;
+      phi[ir].resize(T_ext);
+      for (size_t t = 0; t < T_ext; t++) {
         const std::complex<double> Pp =
-          operators::Phi_r<std::complex<double>, Group>(t, U, i, false);
+          glueballs::rest_trace_wloop_munu<double, Group>(t, U, r, r, 1, 2, false);
         const std::complex<double> Pm =
-          operators::Phi_r<std::complex<double>, Group>(t, U, i, true);
-        phi[i][t][0][0] = (Pp + Pm).real() / 2.0; // PC=++
-        phi[i][t][0][1] = (Pp + Pm).imag() / 2.0; // PC=+-
-        phi[i][t][1][0] = (Pp - Pm).real() / 2.0; // PC=-+
-        phi[i][t][1][1] = (Pp - Pm).imag() / 2.0; // PC=--
+          glueballs::rest_trace_wloop_munu<double, Group>(t, U, r, r, 1, 2, true);
+        phi[ir][t][0][0] = (Pp + Pm).real() / 2.0; // PC=++
+        phi[ir][t][0][1] = (Pp + Pm).imag() / 2.0; // PC=+-
+        phi[ir][t][1][0] = (Pp - Pm).real() / 2.0; // PC=-+
+        phi[ir][t][1][1] = (Pp - Pm).imag() / 2.0; // PC=--
       }
     }
 
-    const size_t T_ext = U.getLt(); // lattice temporal time extent
-    for (size_t i = 0; i <= rmax; i++) {
-      for (size_t j = 0; j <= i; j++) { // C_{ij} == C_{ji}
-        const std::string dir_ij = oss_dir.str() + std::to_string(i) + "_" +
-                                   std::to_string(j) + "/"; // directory path
+    for (size_t i1 = 0; i1 <= rmax-rmin; i1++) {
+      const size_t r1 = i1 + rmin;
+      for (size_t i2 = 0; i2 <= i1; i2++) { // C_{ij} == C_{ji}
+        const size_t r2 = i2 + rmin;
+        const std::string dir_ij = oss_dir.str() + std::to_string(r1) + "_" +
+                                   std::to_string(r2) + "/"; // directory path
         fsys::create_directories(fsys::absolute(dir_ij)); // creating directory
 
         const std::string path =
@@ -297,7 +301,7 @@ namespace omeasurements {
                << "C_{++}(t) phi_i_{++}(t) phi_j_{++}(t) "
                << "C_{+-}(t) phi_i_{+-}(t) phi_j_{+-}(t) "
                << "C_{-+}(t) phi_i_{-+}(t) phi_j_{-+}(t) "
-               << "C_{--}(t) phi_i_{--}(t) phi_j_{--}(t) " << std::endl; // header
+               << "C_{--}(t) phi_i_{--}(t) phi_j_{--}(t)" << std::endl; // header
 
         for (size_t t = 0; t < T_ext; t++) {
           oss_ij << t;
@@ -305,11 +309,11 @@ namespace omeasurements {
             for (size_t C = 0; C <= 1; C++) {
               double Ct = 0.0;
               for (size_t tau = 0; tau < T_ext; tau++) {
-                Ct += phi[i][(t + tau) % T_ext][P][C] * phi[j][tau][P][C];
+                Ct += phi[i1][(t + tau) % T_ext][P][C] * phi[i2][tau][P][C];
               }
               Ct /= double(T_ext); // average over all times
               oss_ij << " " << std::scientific << std::setprecision(16) << Ct << " "
-                     << phi[i][t][P][C] << " " << phi[j][t][P][C];
+                     << phi[i1][t][P][C] << " " << phi[i2][t][P][C];
             }
           }
           oss_ij << std::endl;

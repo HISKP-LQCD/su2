@@ -156,6 +156,7 @@ namespace input_file_parsing {
       in.read_opt_verb<bool>(mgparams.loops_GEVP, {"interpolators", "loops_GEVP"});
       if (mgparams.loops_GEVP) {
         // in.read_verb<size_t>(mgparams.max_length_loops, {"max_length_loops"});
+        in.read_verb<size_t>(mgparams.rmin_GEVP, {"interpolators", "rmin_GEVP"});
         in.read_verb<size_t>(mgparams.rmax_GEVP, {"interpolators", "rmax_GEVP"});
       }
 

@@ -96,10 +96,12 @@ void get_staples_APE(
 
       z[nu] -= 2; // z = x - \nu
 
-      y[nu]--; // y = x-nu
+      y[nu]--; // y = x - \nu
+      z[mu]++; // z = x + \mu -\nu
       K += U(y, nu).dagger() * U(y, mu) * U(z, nu);
       y[nu]++; // y = x
-      z[nu]++;
+      z[mu]--; // z = x - \nu
+      z[nu]++; // z = x
     }
   }
 }

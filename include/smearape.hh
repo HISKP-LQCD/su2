@@ -83,15 +83,14 @@ template <class Group> void spatial_smearlatticeape(gaugeconfig<Group> &U, doubl
  * https://journals.aps.org/prd/pdf/10.1103/PhysRevD.70.014504
  * ('v2': 2nd version of this library)
  */
-template <class Group>
-void spatial_APEsmearing_v2(gaugeconfig<Group> &U, const double &alpha) {
+template <class Float, class Group>
+void spatial_APEsmearing_u1(gaugeconfig<Group> &U, const double &alpha) {
   size_t d = U.getndims();
   if (d == 2) {
     std::cerr << "Spatial smearing is not possible in 2 dimensions!" << std::endl;
     return;
   }
   const gaugeconfig<Group> Uold = U;
-  typedef typename accum_type<Group>::type accum;
 
 #ifdef _USE_OMP_
 #pragma omp parallel for
@@ -103,11 +102,11 @@ void spatial_APEsmearing_v2(gaugeconfig<Group> &U, const double &alpha) {
           std::vector<size_t> x = {x0, x1, x2, x3};
           for (size_t i = 1; i < d; i++) {
             // K is intialized to (0,0) even if not explicitly specified
-            accum K(0.0, 0.0);
+            std::complex<Float> K = 0.0;
             get_staples_APE(K, Uold, x, i, true);
-            const Group Uprime(Uold(x, i) + alpha*K);
+            const Group Uprime(alpha*Uold(x, i) + K);
             U(x, i) = Uprime;
-            U(x, i).restoreSU();
+//            U(x, i).restoreSU();
           }
         }
       }

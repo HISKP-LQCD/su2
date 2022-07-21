@@ -90,7 +90,7 @@ void spatial_APEsmearing_v2(gaugeconfig<Group> &U, const double &alpha) {
     std::cerr << "Spatial smearing is not possible in 2 dimensions!" << std::endl;
     return;
   }
-  gaugeconfig<Group> Uold = U;
+  const gaugeconfig<Group> Uold = U;
   typedef typename accum_type<Group>::type accum;
 
 #ifdef _USE_OMP_
@@ -104,8 +104,8 @@ void spatial_APEsmearing_v2(gaugeconfig<Group> &U, const double &alpha) {
           for (size_t i = 1; i < d; i++) {
             // K is intialized to (0,0) even if not explicitly specified
             accum K(0.0, 0.0);
-            get_staples(K, Uold, x, i, 1.0, false, true);
-            const Group Uprime(alpha * Uold(x, i) + K);
+            get_staples_APE(K, Uold, x, i, true);
+            const Group Uprime(Uold(x, i) + alpha*K);
             U(x, i) = Uprime;
             U(x, i).restoreSU();
           }

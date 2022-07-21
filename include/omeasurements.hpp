@@ -250,7 +250,7 @@ namespace omeasurements {
     gaugeconfig<Group> U = U0;
     if (S.glueball.doAPEsmear) {
       for (size_t i = 0; i < S.glueball.nAPEsmear; i++) {
-        spatial_smearlatticeape<Group>(U, S.glueball.alphaAPEsmear);
+        spatial_APEsmearing_v2<Group>(U, S.glueball.alphaAPEsmear);
       }
       if (S.glueball.lengthy_file_name) {
         oss_name << "_" << meas_details;
@@ -328,118 +328,6 @@ namespace omeasurements {
     return;
   }
 
-  /**
-   * @brief [DEPRECATED] measure the glueball 0^{PC} correlators for the GEVP
-   * measure the glueball correlators ij for the 0^{++}, 0^{+-}, 0^{-+}, 0^{--} glueballs.
-   * j<i and i runs from 0 to L-1, where L is the maximum lenght of the loops specified in
-   * the 'sparams' struct.
-   * @tparam Group
-   * @tparam sparams struct containing info on computation and output
-   * @param U gauge configuration
-   * @param i trajectory index
-   * @param S specific parameters
-   */
-  template <class Group, class sparams>
-  void old_meas_glueball_correlator_GEVP(const gaugeconfig<Group> &U0,
-                                         const size_t &i,
-                                         const sparams &S) {
-    typedef typename accum_type<Group>::type accum;
-
-    std::ostringstream oss_dir, oss_name;
-    oss_dir << S.res_dir + "/";
-
-    std::ostringstream oss_details;
-    oss_details << "smearAPEn" << S.glueball.nAPEsmear << "alpha"
-                << S.glueball.alphaAPEsmear;
-    std::string meas_details = oss_details.str();
-
-    if (S.glueball.use_res_dir) {
-      oss_dir << meas_details + "/";
-    }
-
-    // oss_name << "C_glueball";
-
-    gaugeconfig<Group> U = U0;
-    if (S.glueball.doAPEsmear) {
-      for (size_t i = 0; i < S.glueball.nAPEsmear; i++) {
-        spatial_smearlatticeape<Group>(U, S.glueball.alphaAPEsmear);
-      }
-      if (S.glueball.lengthy_file_name) {
-        oss_name << "_" << meas_details;
-      }
-    }
-    oss_name << "_";
-    auto prevw = oss_name.width(8);
-    auto prevf = oss_name.fill('0');
-    oss_name << i;
-    oss_name.width(prevw);
-    oss_name.fill(prevf);
-
-    const size_t max_length_loops = S.glueball.max_length_loops;
-    std::vector<links::path> clpaths(0);
-
-    for (size_t ll = 1; ll <= max_length_loops; ll++) {
-      const links::closed_paths clpf(U.getndims(), 0, ll);
-      const std::vector<links::path> cll =
-        clpf.get_paths(); // vector of closed paths found
-      clpaths.insert(clpaths.end(), cll.begin(), cll.end()); // all closed paths
-    }
-
-    const size_t nl = clpaths.size();
-
-    // phi_i(t)^{PC}
-    std::vector<std::vector<std::array<std::array<double, 2>, 2>>> phi(nl);
-
-    for (size_t i = 0; i < nl; i++) {
-      phi[i].resize(U.getLt());
-      for (size_t t = 0; t < U.getLt(); t++) {
-        const std::complex<double> Pp =
-          operators::trace_rest_loop<std::complex<double>, Group>(t, U, clpaths[i],
-                                                                  false);
-        const std::complex<double> Pm =
-          operators::trace_rest_loop<std::complex<double>, Group>(t, U, clpaths[i], true);
-        phi[i][t][0][0] = (Pp + Pm).real(); // PC=++
-        phi[i][t][0][1] = (Pp + Pm).imag(); // PC=+-
-        phi[i][t][1][0] = (Pp - Pm).real(); // PC=-+
-        phi[i][t][1][1] = (Pp - Pm).imag(); // PC=--
-      }
-    }
-
-    const size_t T_ext = U.getLt(); // lattice temporal time extent
-    for (size_t i = 0; i < nl; i++) {
-      for (size_t j = 0; j <= i; j++) { // C_{ij} == C_{ji}
-
-        const std::string dir_ij = oss_dir.str() + std::to_string(i) + "_" +
-                                   std::to_string(j) + "/"; // directory path
-        fsys::create_directories(fsys::absolute(dir_ij)); // creating directory
-        const std::string path =
-          dir_ij + "C_glueball" + oss_name.str(); // full path of output file
-
-        std::ostringstream oss_ij;
-        oss_ij << "t C_{++}(t) C_{+-}(t) C_{-+}(t) C_{--}(t)" << std::endl; // header
-        for (size_t t = 0; t < T_ext; t++) {
-          oss_ij << t;
-          for (size_t P = 0; P <= 1; P++) {
-            for (size_t C = 0; C <= 1; C++) {
-              double Ct = 0.0;
-              for (size_t tau = 0; tau < T_ext; tau++) {
-                Ct += phi[i][(t + tau) % T_ext][P][C] * phi[j][tau][P][C];
-              }
-              Ct /= double(T_ext); // average over all times
-              oss_ij << " " << std::scientific << std::setprecision(16) << Ct;
-            }
-          }
-          oss_ij << std::endl;
-        }
-
-        std::ofstream ofs(path, std::ios::out);
-        ofs << oss_ij.str();
-        ofs.close();
-      }
-    }
-
-    return;
-  }
 
   /**
    * measures the planar wilson loops in temporal and spacial direction

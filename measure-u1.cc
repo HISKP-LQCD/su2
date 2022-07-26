@@ -122,7 +122,7 @@ int main(int ac, char *av[]) {
     }
 
     if (mparams.gradient_flow) {
-      omeasurements::meas_gradient_flow<_u1>(U, i, mparams);
+      omeasurements::meas_gradient_flow<_u1>(U, i, pparams, mparams);
     }
 
     if (mparams.pion_staggered) {

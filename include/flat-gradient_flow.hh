@@ -18,6 +18,7 @@ template <typename Float, class Group>
 void runge_kutta(hamiltonian_field<Float, Group> &h,
                  monomial<Float, Group> &SW,
                  const double eps) {
+  std::cout << "runge kutta\n";
   double zfac[5] = {(-17.0) / (36.0), (8.0) / (9.0), (-3.0) / (4.0)};
   double expfac[3] = {-36.0 / 4. / 17.0, 1., -1.};
 
@@ -71,7 +72,8 @@ namespace flat_spacetime {
   void gradient_flow(const gaugeconfig<Group> &U,
                      std::string const &path,
                      const double &tmax,
-                     const double &eps) {
+                     const double &eps,
+                     const double &xi = 1.0) {
     const size_t d = U.getndims();
     const double ndims_fact = spacetime_lattice::num_pLloops_half(d);
     const double ndims_fact_ss = spacetime_lattice::num_pLloops_half(d - 1);
@@ -109,8 +111,7 @@ namespace flat_spacetime {
     gaugeconfig<Group> Vt(U);
     adjointfield<double, Group> deriv(U.getLx(), U.getLy(), U.getLz(), U.getLt(), d);
     hamiltonian_field<double, Group> h(deriv, Vt);
-    gaugemonomial<double, Group> SW(
-      0); // gradient flow for the Wilson (pure) gauge action
+    gaugemonomial<double, Group> SW(0, xi); // Wilson (pure) gauge action
 
     oss << "t "; // flow time
     oss << "P P_ss P_ts "; // plaquette
@@ -151,7 +152,7 @@ namespace flat_spacetime {
 
       const double tsqr = t[1] * t[1];
 
-      const double Ep = ndims_fact - P[1]; 
+      const double Ep = ndims_fact - P[1];
       const double Ep_ss = ndims_fact_ss - P_ss[1];
       const double Ep_ts = double(d - 1.0) - P_ts;
 

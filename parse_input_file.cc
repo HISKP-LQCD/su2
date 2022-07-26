@@ -304,6 +304,7 @@ namespace input_file_parsing {
         // measure-u1 parameters
         in.read_opt_verb<size_t>(mparams.n_meas, {"omeas", "n_meas"});
         in.read_opt_verb<size_t>(mparams.nstep, {"omeas", "nstep"});
+        in.read_opt_verb<bool>(mparams.lenghty_conf_name, {"omeas", "lenghty_conf_name"});
         in.read_opt_verb<size_t>(mparams.icounter, {"omeas", "icounter"});
         in.read_opt_verb<size_t>(mparams.seed, {"omeas", "seed"});
         in.read_opt_verb<bool>(mparams.Wloop, {"omeas", "Wloop"});

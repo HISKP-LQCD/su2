@@ -18,7 +18,7 @@ template <typename Float, class Group>
 void runge_kutta(hamiltonian_field<Float, Group> &h,
                  monomial<Float, Group> &SW,
                  const double eps) {
-  std::cout << "runge kutta\n";
+  
   double zfac[5] = {(-17.0) / (36.0), (8.0) / (9.0), (-3.0) / (4.0)};
   double expfac[3] = {-36.0 / 4. / 17.0, 1., -1.};
 

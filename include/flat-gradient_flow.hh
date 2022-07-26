@@ -18,7 +18,6 @@ template <typename Float, class Group>
 void runge_kutta(hamiltonian_field<Float, Group> &h,
                  monomial<Float, Group> &SW,
                  const double eps) {
-  
   double zfac[5] = {(-17.0) / (36.0), (8.0) / (9.0), (-3.0) / (4.0)};
   double expfac[3] = {-36.0 / 4. / 17.0, 1., -1.};
 
@@ -116,14 +115,14 @@ namespace flat_spacetime {
     oss << "t "; // flow time
     oss << "P P_ss P_ts "; // plaquette
     oss << "Ep Ep_ss Ep_ts "; // energy from regular plaquette
-    oss << "t^2*Ep t^2*Ep_ss t^2*Ep_ts "; // t^2 * E_plaquette(t)
+    oss << "xi "; // t^2 * E_plaquette(t)
     oss << "Ec Ec_ss Ec_ts "; // energy from clover-leaf plaquette
-    oss << "t^2*Ec t^2*Ec_ss t^2*Ec_ts "; // t^2 * E_clover(t)
     oss << "Q Q_ss Q_ts" << std::endl;
 
     // evolution of t[1] until tmax
     //(note: eps=0.01 and tmax>0 --> the loop ends at some point)
     // at each step we consider a triplet of values for t,P,E,Q
+
     while (t[1] < tmax) {
       // splicing the results at t[2] to the new 0-th temporal time slice
       t[0] = t[2];
@@ -155,6 +154,7 @@ namespace flat_spacetime {
       const double Ep = ndims_fact - P[1];
       const double Ep_ss = ndims_fact_ss - P_ss[1];
       const double Ep_ts = double(d - 1.0) - P_ts;
+      const double xi_R = sqrt((Ep_ts / Ep_ss) / (U.getndims() - 2)); // renormalized anisotropy
 
       const double t2Ep = tsqr * Ep;
       const double t2Ep_ss = tsqr * Ep_ss;
@@ -173,9 +173,8 @@ namespace flat_spacetime {
       oss << t[1] << " ";
       oss << P[1] << " " << P_ss[1] << " " << P_ts << " ";
       oss << Ep << " " << Ep_ss << " " << Ep_ts << " ";
-      oss << t2Ep << " " << t2Ep_ss << " " << t2Ep_ts << " ";
+      oss << xi_R << " ";
       oss << Ec << " " << Ec_ss << " " << Ec_ts << " ";
-      oss << t2Ec << " " << t2Ec_ss << " " << t2Ec_ts << " ";
       oss << Q[1] << " " << Q_ss[1] << " " << Q_ts << "\n";
     }
 

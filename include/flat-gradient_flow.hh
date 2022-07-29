@@ -71,7 +71,8 @@ namespace flat_spacetime {
   void gradient_flow(const gaugeconfig<Group> &U,
                      std::string const &path,
                      const double &tmax,
-                     const double &eps) {
+                     const double &eps,
+                     const double &xi = 1.0) {
     const size_t d = U.getndims();
     const double ndims_fact = spacetime_lattice::num_pLloops_half(d);
     const double ndims_fact_ss = spacetime_lattice::num_pLloops_half(d - 1);
@@ -109,20 +110,19 @@ namespace flat_spacetime {
     gaugeconfig<Group> Vt(U);
     adjointfield<double, Group> deriv(U.getLx(), U.getLy(), U.getLz(), U.getLt(), d);
     hamiltonian_field<double, Group> h(deriv, Vt);
-    gaugemonomial<double, Group> SW(
-      0); // gradient flow for the Wilson (pure) gauge action
+    gaugemonomial<double, Group> SW(0, xi); // Wilson (pure) gauge action
 
     oss << "t "; // flow time
     oss << "P P_ss P_ts "; // plaquette
     oss << "Ep Ep_ss Ep_ts "; // energy from regular plaquette
-    oss << "t^2*Ep t^2*Ep_ss t^2*Ep_ts "; // t^2 * E_plaquette(t)
+    oss << "xi "; // t^2 * E_plaquette(t)
     oss << "Ec Ec_ss Ec_ts "; // energy from clover-leaf plaquette
-    oss << "t^2*Ec t^2*Ec_ss t^2*Ec_ts "; // t^2 * E_clover(t)
     oss << "Q Q_ss Q_ts" << std::endl;
 
     // evolution of t[1] until tmax
     //(note: eps=0.01 and tmax>0 --> the loop ends at some point)
     // at each step we consider a triplet of values for t,P,E,Q
+
     while (t[1] < tmax) {
       // splicing the results at t[2] to the new 0-th temporal time slice
       t[0] = t[2];
@@ -151,9 +151,10 @@ namespace flat_spacetime {
 
       const double tsqr = t[1] * t[1];
 
-      const double Ep = ndims_fact - P[1]; 
+      const double Ep = ndims_fact - P[1];
       const double Ep_ss = ndims_fact_ss - P_ss[1];
       const double Ep_ts = double(d - 1.0) - P_ts;
+      const double xi_R = sqrt((Ep_ts / Ep_ss) / (U.getndims() - 2)); // renormalized anisotropy
 
       const double t2Ep = tsqr * Ep;
       const double t2Ep_ss = tsqr * Ep_ss;
@@ -172,9 +173,8 @@ namespace flat_spacetime {
       oss << t[1] << " ";
       oss << P[1] << " " << P_ss[1] << " " << P_ts << " ";
       oss << Ep << " " << Ep_ss << " " << Ep_ts << " ";
-      oss << t2Ep << " " << t2Ep_ss << " " << t2Ep_ts << " ";
+      oss << xi_R << " ";
       oss << Ec << " " << Ec_ss << " " << Ec_ts << " ";
-      oss << t2Ec << " " << t2Ec_ss << " " << t2Ec_ts << " ";
       oss << Q[1] << " " << Q_ss[1] << " " << Q_ts << "\n";
     }
 

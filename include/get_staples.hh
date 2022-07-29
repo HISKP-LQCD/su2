@@ -88,13 +88,14 @@ void get_staples_APE(
   T &K, const gaugeconfig<S> &U, Arr const x, const size_t mu, bool spatial_only = false) {
   size_t startnu = size_t(spatial_only); // 0 or 1, casted from bool
   Arr y = x, z = x;
-  y[mu] += 1; // y = x+\mu
   for (size_t nu = startnu; nu < U.getndims(); nu++) {
     if (nu != mu) {
+      y[mu]++; // y = x+\mu
       z[nu]++; // z = x + \nu
       K += U(x, nu) * U(z, mu) * U(y, nu).dagger();
 
       z[nu] -= 2; // z = x - \nu
+      y[mu]--; // y = x
 
       y[nu]--; // y = x - \nu
       z[mu]++; // z = x + \mu -\nu

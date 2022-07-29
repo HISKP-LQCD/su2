@@ -45,7 +45,7 @@ namespace global_parameters {
 
   struct measure_glueball_u1 {
     bool use_res_dir = true; // path of the correlators, relative to the measurements
-    bool lengthy_file_name = true; // add measure information in correlator filename
+    bool lengthy_file_name = false; // add measure information in correlator filename
 
     bool do_measure = false; // measure the glueball correlator
     bool doAPEsmear = false; // apply APE smearing to the links
@@ -53,7 +53,9 @@ namespace global_parameters {
     double alphaAPEsmear; // alpha parameter for the smearing. alpha=1 -> no smearing.
 
     bool loops_GEVP = false; // 'true' when computing C_ij for the various loops
-    size_t max_length_loops = 4; // maximum length of loops interpolating the glueballs
+//    size_t max_length_loops = 4; // maximum length of loops interpolating the glueballs
+    size_t rmin_GEVP = 0; // minimum length of square loop interpolating glueball wavefunction
+    size_t rmax_GEVP = 0; // maximum length of square loop interpolating glueball wavefunction
 
     bool U_ij = false; // interpolating with the average spatial plaquette U_ij
     bool U_munu = false; // interpolating with the average plaquette U_munu

@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "flat-gradient_flow.hh"
+#include "glueballs.hpp"
 #include "links.hpp"
 #include "operators.hpp"
 #include "parameters.hh"
@@ -133,13 +134,13 @@ namespace omeasurements {
     typedef typename accum_type<Group>::type accum;
 
     std::ostringstream oss;
-    oss << S.res_dir+"/"; 
-    
+    oss << S.res_dir + "/";
+
     // apply smearing
     gaugeconfig<Group> U = U0;
     if (S.glueball.doAPEsmear) {
       for (size_t i = 0; i < S.glueball.nAPEsmear; i++) {
-        smearlatticeape<Group>(U, S.glueball.alphaAPEsmear, true);
+        spatial_APEsmearing_u1<double, Group>(U, S.glueball.alphaAPEsmear);
       }
       oss << "/smearAPEn" << S.glueball.nAPEsmear << "alpha" << S.glueball.alphaAPEsmear
           << "/";
@@ -164,10 +165,8 @@ namespace omeasurements {
     std::ofstream ofs(path, std::ios::out);
 
     std::vector<double> sinks[4]; // sink at 't'
-    // std::vector<double> sources[4]; // source at 't'
     for (size_t i_PC = 0; i_PC < 4; i_PC++) {
       sinks[i_PC].resize(U.getLt());
-      // sources[i_PC].resize(U.getLt());
     }
 
     for (size_t t = 0; t < U.getLt(); t++) {
@@ -189,30 +188,16 @@ namespace omeasurements {
           } else {
             snk = std::imag(comb_snk);
           }
-          // snk = 1.0 - snk; // vacuum subtraction
           sinks[i_PC][t] = snk;
-
-          // std::complex<double> comb_src =
-          //   operators::get_tr_sum_U_ij<accum, Group>(U, {int(t), 0, 0, 0}, false) +
-          //   double(sP) *
-          //     operators::get_tr_sum_U_ij<accum, Group>(U, {int(t), 0, 0, 0}, true);
-          // comb_src /= 2.0;
-
-          // double src;
-          // if (C) {
-          //   src = std::real(comb_src);
-          // } else {
-          //   src = std::imag(comb_src);
-          // }
-
-          // sources[i_PC][t] = 1.0 - src; // vacuum subtraction
 
           ++i_PC;
         }
       }
     }
 
-    ofs << "t C_{++}(t) C_{+-}(t) C_{-+}(t) C_{--}(t)" << std::endl; // header
+    ofs << "t C_{++}(t) phi_{++}(t) C_{+-}(t) phi_{+-}(t) C_{-+}(t) phi_{-+}(t) "
+           "C_{--}(t) phi_{--}(t)"
+        << std::endl; // header
     const size_t T_ext = U.getLt(); // lattice temporal time extent
     for (size_t t = 0; t < T_ext; t++) {
       ofs << t;
@@ -222,7 +207,8 @@ namespace omeasurements {
           Ct += sinks[i_PC][(t + tau) % T_ext] * sinks[i_PC][tau];
         }
         Ct /= double(T_ext); // average over all times
-        ofs << " " << std::scientific << std::setprecision(16) << Ct;
+        ofs << " " << std::scientific << std::setprecision(16) << Ct << " "
+            << sinks[i_PC][t];
       }
       ofs << std::endl;
     }
@@ -235,8 +221,7 @@ namespace omeasurements {
   /**
    * @brief measure the glueball 0^{PC} correlators for the GEVP
    * measure the glueball correlators ij for the 0^{++}, 0^{+-}, 0^{-+}, 0^{--} glueballs.
-   * j<i and i runs from 0 to L-1, where L is the maximum lenght of the loops specified in
-   * the 'sparams' struct.
+   * The correlators are built as eq (1) of https://arxiv.org/pdf/hep-lat/0603016.pdf
    * @tparam Group
    * @tparam sparams struct containing info on computation and output
    * @param U gauge configuration
@@ -257,16 +242,15 @@ namespace omeasurements {
                 << S.glueball.alphaAPEsmear;
     std::string meas_details = oss_details.str();
 
-    if (S.glueball.use_res_dir) {
+    if (S.glueball.doAPEsmear) {
       oss_dir << meas_details + "/";
     }
-
-    // oss_name << "C_glueball";
+    fsys::create_directories(fsys::absolute(oss_dir.str()));
 
     gaugeconfig<Group> U = U0;
     if (S.glueball.doAPEsmear) {
       for (size_t i = 0; i < S.glueball.nAPEsmear; i++) {
-        smearlatticeape<Group>(U, S.glueball.alphaAPEsmear, true);
+        spatial_APEsmearing_u1<double, Group>(U, S.glueball.alphaAPEsmear);
       }
       if (S.glueball.lengthy_file_name) {
         oss_name << "_" << meas_details;
@@ -279,58 +263,57 @@ namespace omeasurements {
     oss_name.width(prevw);
     oss_name.fill(prevf);
 
-    const size_t max_length_loops = S.glueball.max_length_loops;
-    std::vector<links::path> clpaths(0);
-
-    for (size_t ll = 1; ll <= max_length_loops; ll++) {
-      const links::closed_paths clpf(U.getndims(), 0, ll);
-      const std::vector<links::path> cll =
-        clpf.get_paths(); // vector of closed paths found
-      clpaths.insert(clpaths.end(), cll.begin(), cll.end()); // all closed paths
-    }
-
-    const size_t nl = clpaths.size();
+    const size_t T_ext = U.getLt(); // lattice temporal time extent
+    const size_t rmin = S.glueball.rmin_GEVP, rmax = S.glueball.rmax_GEVP;
+    const size_t N_ops = rmax; // number of GEVP interpolatoing operators
 
     // phi_i(t)^{PC}
-    std::vector<std::vector<std::array<std::array<double, 2>, 2>>> phi(nl);
+    std::vector<std::vector<std::array<std::array<double, 2>, 2>>> phi(rmax-rmin+1);
 
-    for (size_t i = 0; i < nl; i++) {
-      phi[i].resize(U.getLt());
-      for (size_t t = 0; t < U.getLt(); t++) {
+    for (size_t ir = 0; ir <= rmax-rmin; ir++) {
+      const size_t r = ir + rmin;
+      phi[ir].resize(T_ext);
+      for (size_t t = 0; t < T_ext; t++) {
         const std::complex<double> Pp =
-          operators::trace_rest_loop<std::complex<double>, Group>(t, U, clpaths[i],
-                                                                  false);
+          glueballs::rest_trace_wloop_munu<double, Group>(t, U, r, r, 1, 2, false);
         const std::complex<double> Pm =
-          operators::trace_rest_loop<std::complex<double>, Group>(t, U, clpaths[i], true);
-        phi[i][t][0][0] = (Pp + Pm).real(); // PC=++
-        phi[i][t][0][1] = (Pp + Pm).imag(); // PC=+-
-        phi[i][t][1][0] = (Pp - Pm).real(); // PC=-+
-        phi[i][t][1][1] = (Pp - Pm).imag(); // PC=--
+          glueballs::rest_trace_wloop_munu<double, Group>(t, U, r, r, 1, 2, true);
+        phi[ir][t][0][0] = (Pp + Pm).real() / 2.0; // PC=++
+        phi[ir][t][0][1] = (Pp + Pm).imag() / 2.0; // PC=+-
+        phi[ir][t][1][0] = (Pp - Pm).real() / 2.0; // PC=-+
+        phi[ir][t][1][1] = (Pp - Pm).imag() / 2.0; // PC=--
       }
     }
 
-    const size_t T_ext = U.getLt(); // lattice temporal time extent
-    for (size_t i = 0; i < nl; i++) {
-      for (size_t j = 0; j <= i; j++) { // C_{ij} == C_{ji}
-
-        const std::string dir_ij = oss_dir.str() + std::to_string(i) + "_" +
-                                   std::to_string(j) + "/"; // directory path
+    for (size_t i1 = 0; i1 <= rmax-rmin; i1++) {
+      const size_t r1 = i1 + rmin;
+      for (size_t i2 = 0; i2 <= i1; i2++) { // C_{ij} == C_{ji}
+        const size_t r2 = i2 + rmin;
+        const std::string dir_ij = oss_dir.str() + std::to_string(r1) + "_" +
+                                   std::to_string(r2) + "/"; // directory path
         fsys::create_directories(fsys::absolute(dir_ij)); // creating directory
+
         const std::string path =
           dir_ij + "C_glueball" + oss_name.str(); // full path of output file
 
         std::ostringstream oss_ij;
-        oss_ij << "t C_{++}(t) C_{+-}(t) C_{-+}(t) C_{--}(t)" << std::endl; // header
+        oss_ij << "t "
+               << "C_{++}(t) phi_i_{++}(t) phi_j_{++}(t) "
+               << "C_{+-}(t) phi_i_{+-}(t) phi_j_{+-}(t) "
+               << "C_{-+}(t) phi_i_{-+}(t) phi_j_{-+}(t) "
+               << "C_{--}(t) phi_i_{--}(t) phi_j_{--}(t)" << std::endl; // header
+
         for (size_t t = 0; t < T_ext; t++) {
           oss_ij << t;
           for (size_t P = 0; P <= 1; P++) {
             for (size_t C = 0; C <= 1; C++) {
               double Ct = 0.0;
               for (size_t tau = 0; tau < T_ext; tau++) {
-                Ct += phi[i][(t + tau) % T_ext][P][C] * phi[j][tau][P][C];
+                Ct += phi[i1][(t + tau) % T_ext][P][C] * phi[i2][tau][P][C];
               }
               Ct /= double(T_ext); // average over all times
-              oss_ij << " " << std::scientific << std::setprecision(16) << Ct;
+              oss_ij << " " << std::scientific << std::setprecision(16) << Ct << " "
+                     << phi[i1][t][P][C] << " " << phi[i2][t][P][C];
             }
           }
           oss_ij << std::endl;
@@ -344,6 +327,7 @@ namespace omeasurements {
 
     return;
   }
+
 
   /**
    * measures the planar wilson loops in temporal and spacial direction

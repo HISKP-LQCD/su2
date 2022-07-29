@@ -150,11 +150,15 @@ namespace input_file_parsing {
         in.read_verb<size_t>(mgparams.nAPEsmear, {"APE_smearing", "n"});
         in.read_verb<double>(mgparams.alphaAPEsmear, {"APE_smearing", "alpha"});
       }
-      in.read_opt_verb<bool>(mgparams.lengthy_file_name, {"lenghty_file_name"});
+      in.read_opt_verb<bool>(mgparams.lengthy_file_name, {"lengthy_file_name"});
       in.read_opt_verb<bool>(mgparams.use_res_dir, {"res_dir"});
 
       in.read_opt_verb<bool>(mgparams.loops_GEVP, {"interpolators", "loops_GEVP"});
-      in.read_opt_verb<size_t>(mgparams.max_length_loops, {"max_length_loops"});
+      if (mgparams.loops_GEVP) {
+        // in.read_verb<size_t>(mgparams.max_length_loops, {"max_length_loops"});
+        in.read_verb<size_t>(mgparams.rmin_GEVP, {"interpolators", "rmin_GEVP"});
+        in.read_verb<size_t>(mgparams.rmax_GEVP, {"interpolators", "rmax_GEVP"});
+      }
 
       in.read_opt_verb<bool>(mgparams.U_ij, {"interpolators", "U_ij"});
       in.read_opt_verb<bool>(mgparams.U_munu, {"interpolators", "U_munu"});
@@ -261,8 +265,7 @@ namespace input_file_parsing {
 
           if (nd["omeas"]["glueball"]) {
             hparams.omeas.glueball.do_measure = true;
-            parse_glueball_measure(in, {"omeas", "glueball"},
-                                   hparams.omeas.glueball);
+            parse_glueball_measure(in, {"omeas", "glueball"}, hparams.omeas.glueball);
           }
 
           if (nd["omeas"]["gradient_flow"]) {
@@ -331,8 +334,7 @@ namespace input_file_parsing {
 
         if (nd["omeas"]["glueball"]) {
           mparams.glueball.do_measure = true;
-          parse_glueball_measure(in, {"omeas", "glueball"},
-                                 mparams.glueball);
+          parse_glueball_measure(in, {"omeas", "glueball"}, mparams.glueball);
         }
 
         // optional parameters for potentials
@@ -403,19 +405,19 @@ namespace input_file_parsing {
         in.read_opt_verb<bool>(mcparams.do_mcmc, {"metropolis", "do_mcmc"});
         in.read_opt_verb<size_t>(mcparams.n_meas, {"metropolis", "n_meas"});
         in.read_opt_verb<size_t>(mcparams.N_save, {"metropolis", "N_save"});
-        in.read_opt_verb<size_t>(mcparams.icounter, {"metropolis", "icounter"});
         in.read_opt_verb<size_t>(mcparams.seed, {"metropolis", "seed"});
 
         in.read_opt_verb<std::string>(mcparams.conf_dir, {"metropolis", "conf_dir"});
         in.read_opt_verb<std::string>(mcparams.conf_basename,
                                       {"metropolis", "conf_basename"});
+        in.read_opt_verb<bool>(mcparams.lenghty_conf_name,
+                               {"metropolis", "lenghty_conf_name"});
         in.read_opt_verb<size_t>(mcparams.beta_str_width,
                                  {"metropolis", "beta_str_width"});
         validate_beta_str_width(mcparams.beta_str_width);
         in.read_opt_verb<bool>(mcparams.restart, {"metropolis", "restart"});
         if (mcparams.restart) {
-          in.read_opt_verb<std::string>(mcparams.configfilename,
-                                        {"metropolis", "configfilename"});
+          in.read_verb<size_t>(mcparams.icounter, {"metropolis", "icounter"});
         } else {
           in.read_verb<double>(mcparams.heat, {"metropolis", "heat"});
         }

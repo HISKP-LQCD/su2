@@ -62,7 +62,7 @@ namespace omeasurements {
    */
   template <class Group, class sparams>
   void
-  meas_gradient_flow(const gaugeconfig<Group> &U, const size_t &i, const sparams &S) {
+  meas_gradient_flow(const gaugeconfig<Group> &U, const size_t &i, const global_parameters::physics& pparams, const sparams &S) {
     const std::string res_dir = S.res_dir;
     const double eps = S.epsilon_gradient_flow;
     const double tmax = S.tmax;
@@ -74,7 +74,7 @@ namespace omeasurements {
     os << i;
     os.width(prevw);
     os.fill(prevf);
-    flat_spacetime::gradient_flow(U, os.str(), tmax, eps);
+    flat_spacetime::gradient_flow(U, os.str(), tmax, eps, pparams.xi);
 
     return;
   }

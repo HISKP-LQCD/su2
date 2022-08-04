@@ -343,7 +343,7 @@ namespace omeasurements {
   template <class Group>
   void meas_loops_planar_pot(const gaugeconfig<Group> &U,
                              const global_parameters::physics &pparams,
-                             const size_t &sizeWloops,
+                             const double &sizeWloops,
                              const std::string &filename_coarse,
                              const std::string &filename_fine,
                              const size_t &i) {

@@ -129,21 +129,21 @@ int main(int ac, char *av[]) {
   }
 
   boost::filesystem::create_directories(boost::filesystem::absolute(mcparams.conf_dir));
-  boost::filesystem::create_directories(boost::filesystem::absolute(mcparams.res_dir));
+  boost::filesystem::create_directories(boost::filesystem::absolute(mcparams.omeas.res_dir));
   
   // filename needed for saving results from potential and potentialsmall
-  const std::string filename_fine = io::measure::get_filename_fine(pparams, mcparams);
-  const std::string filename_coarse = io::measure::get_filename_coarse(pparams, mcparams);
+  const std::string filename_fine = io::measure::get_filename_fine(pparams, mcparams.omeas);
+  const std::string filename_coarse = io::measure::get_filename_coarse(pparams, mcparams.omeas);
   const std::string filename_nonplanar =
-    io::measure::get_filename_nonplanar(pparams, mcparams);
+    io::measure::get_filename_nonplanar(pparams, mcparams.omeas);
 
   // write explanatory headers into result-files, also check if measuring routine is
   // implemented for given dimension
-  if (mcparams.potentialplanar) {
-    io::measure::set_header_planar(pparams, mcparams, filename_coarse, filename_fine);
+  if (mcparams.omeas.potentialplanar) {
+    io::measure::set_header_planar(pparams, mcparams.omeas, filename_coarse, filename_fine);
   }
-  if (mcparams.potentialnonplanar) {
-    io::measure::set_header_nonplanar(pparams, mcparams, filename_nonplanar);
+  if (mcparams.omeas.potentialnonplanar) {
+    io::measure::set_header_nonplanar(pparams, mcparams.omeas, filename_nonplanar);
   }
 
   
@@ -264,20 +264,20 @@ int main(int ac, char *av[]) {
           continue;
         }
       }
-      if (mcparams.potentialplanar || mcparams.potentialnonplanar) {
+      if (mcparams.omeas.potentialplanar || mcparams.omeas.potentialnonplanar) {
         // smear lattice
-        for (size_t smears = 0; smears < mcparams.n_apesmear; smears += 1) {
-          smearlatticeape(U, mcparams.alpha, mcparams.smear_spatial_only,
-                          mcparams.smear_temporal_only);
+        for (size_t smears = 0; smears < mcparams.omeas.n_apesmear; smears += 1) {
+          smearlatticeape(U, mcparams.omeas.alpha, mcparams.omeas.smear_spatial_only,
+                          mcparams.omeas.smear_temporal_only);
         }
         double loop;
-        if (mcparams.potentialplanar) {
-          omeasurements::meas_loops_planar_pot(U, pparams, mcparams.sizeWloops,
+        if (mcparams.omeas.potentialplanar) {
+          omeasurements::meas_loops_planar_pot(U, pparams, mcparams.omeas.sizeWloops,
                                                filename_coarse, filename_fine, i);
         }
         
-        if (mcparams.potentialnonplanar) {
-          omeasurements::meas_loops_nonplanar_pot(U, pparams, mcparams.sizeWloops,
+        if (mcparams.omeas.potentialnonplanar) {
+          omeasurements::meas_loops_nonplanar_pot(U, pparams, mcparams.omeas.sizeWloops,
                                                   filename_nonplanar, i);
         }
       }

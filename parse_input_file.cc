@@ -431,20 +431,20 @@ namespace input_file_parsing {
         // optional parameters for potentials
         if (nd["omeas"]["potential"]) {
           mcparams.do_meas=true;
-          in.read_opt_verb<bool>(mcparams.potentialplanar, {"omeas", "potential", "potentialplanar"});
-          in.read_opt_verb<bool>(mcparams.potentialnonplanar,
+          in.read_opt_verb<bool>(mcparams.omeas.potentialplanar, {"omeas", "potential", "potentialplanar"});
+          in.read_opt_verb<bool>(mcparams.omeas.potentialnonplanar,
                                  {"omeas", "potential", "potentialnonplanar"});
-          in.read_opt_verb<bool>(mcparams.append, {"omeas", "potential", "append"});
-          in.read_opt_verb<bool>(mcparams.smear_spatial_only,
+          in.read_opt_verb<bool>(mcparams.omeas.append, {"omeas", "potential", "append"});
+          in.read_opt_verb<bool>(mcparams.omeas.smear_spatial_only,
                                  {"omeas", "potential", "smear_spatial_only"});
-          in.read_opt_verb<bool>(mcparams.smear_temporal_only,
+          in.read_opt_verb<bool>(mcparams.omeas.smear_temporal_only,
                                  {"omeas", "potential", "smear_temporal_only"});
-          in.read_opt_verb<size_t>(mcparams.n_apesmear,
+          in.read_opt_verb<size_t>(mcparams.omeas.n_apesmear,
                                    {"omeas", "potential", "n_apesmear"});
-          in.read_opt_verb<double>(mcparams.alpha, {"omeas", "potential", "alpha"});
-          in.read_opt_verb<double>(mcparams.sizeWloops,
+          in.read_opt_verb<double>(mcparams.omeas.alpha, {"omeas", "potential", "alpha"});
+          in.read_opt_verb<double>(mcparams.omeas.sizeWloops,
                                    {"omeas", "potential", "sizeWloops"});
-          in.read_opt_verb<std::string>(mcparams.res_dir, {"omeas", "res_dir"});
+          in.read_opt_verb<std::string>(mcparams.omeas.res_dir, {"omeas", "res_dir"});
         }
 
         

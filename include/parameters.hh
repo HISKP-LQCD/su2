@@ -175,30 +175,8 @@ namespace global_parameters {
       1.0; // quantifies how much the prooposed new link can differ from the current link 
     bool do_mcmc = true; // are configurations generated?
     bool do_meas = false; // are measurements done?
-    bool potentialplanar =
-      false; // measure potential: the loops W(x, t, y=z=0) and W(x, y, t=z=0) are
-             // measured with a maximum size of lattice extent * sizeloops, and written to
-             // separate files. Only available for ndims=3,4
-    bool potentialnonplanar =
-      false; // The loops W(x, t, y) are measured up to x, y=min(4, lattice extent), t <=
-             // Lt * sizeloops and saved to one file. Only available for ndim=3
+    measure_u1 omeas; // struct for online measurements
     
-    bool glueball =
-      false; // Does measurements for single timeslices, which can be used to determine the glueball masses
-    bool append = false; // are measurements for potential appended to an existing file,
-                         // or should it be overwritten?
-    double sizeWloops =
-      0.5; // Wilson-Loops are measured up to this fraction of the lattice extent
-    size_t n_apesmear =
-      0; // number of APE smearings done on the lattice before measurement.
-    // APE-smearing is done before measuring the potential and small potential, it does
-    // not affect the gradient flow and Wilson-loops
-    double alpha = 1.0; // parameter alpha for APE smearings
-    bool smear_spatial_only = false; // should smearing be done only for spacial links?
-    bool smear_temporal_only = false; // should smearing be done only for temporal links?
-    std::string res_dir = "./"; // directory where results from measurements for potential,
-                               // potentialsmall are stored
-
   };
 
 } // namespace global_parameters

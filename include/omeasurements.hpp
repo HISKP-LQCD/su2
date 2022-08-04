@@ -416,7 +416,7 @@ namespace omeasurements {
   template <class Group>
   void meas_loops_nonplanar_pot(const gaugeconfig<Group> &U,
                                 const global_parameters::physics &pparams,
-                                const size_t &sizeWloops,
+                                const double &sizeWloops,
                                 const std::string &filename_nonplanar,
                                 const size_t &i) {
     double loop;

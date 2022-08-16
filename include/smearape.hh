@@ -91,6 +91,7 @@ void spatial_APEsmearing_u1(gaugeconfig<Group> &U, const double &alpha) {
     return;
   }
   const gaugeconfig<Group> Uold = U;
+  const Float beta = (1.0-alpha)/(double(d)-1.0);
 
 #ifdef _USE_OMP_
 #pragma omp parallel for
@@ -104,9 +105,9 @@ void spatial_APEsmearing_u1(gaugeconfig<Group> &U, const double &alpha) {
             // K is intialized to (0,0) even if not explicitly specified
             std::complex<Float> K = 0.0;
             get_staples_APE(K, Uold, x, i, true);
-            const Group Uprime(alpha*Uold(x, i) + K);
+            const Group Uprime(alpha*Uold(x, i) + beta*K);
             U(x, i) = Uprime;
-//            U(x, i).restoreSU();
+//            U(x, i).restoreSU(); not necessary -> see u1 constructor 
           }
         }
       }

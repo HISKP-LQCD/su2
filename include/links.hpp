@@ -1,4 +1,5 @@
 /**
+ * DEPRECATED - never really used this file
  * @file links.hpp
  * @author Simone Romiti (simone.romiti@uni-bonn.de)
  * @brief

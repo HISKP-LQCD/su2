@@ -154,7 +154,8 @@ namespace flat_spacetime {
       const double Ep = ndims_fact - P[1];
       const double Ep_ss = ndims_fact_ss - P_ss[1];
       const double Ep_ts = double(d - 1.0) - P_ts;
-      const double xi_R = sqrt((Ep_ts / Ep_ss) / (U.getndims() - 2)); // renormalized anisotropy
+      const double xi_R =
+        sqrt((Ep_ts / Ep_ss) * (U.getndims() - 2.0) / 2.0); // renormalized anisotropy
 
       const double t2Ep = tsqr * Ep;
       const double t2Ep_ss = tsqr * Ep_ss;

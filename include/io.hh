@@ -58,7 +58,7 @@ namespace io {
       }
     }
 
-    return sparams.conf_dir + ss.str();
+    return sparams.conf_dir +"/"+ ss.str();
   }
 
   namespace measure {

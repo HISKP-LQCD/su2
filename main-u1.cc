@@ -256,7 +256,7 @@ int main(int ac, char *av[]) {
       }
     }
     
-    if(mcparams.do_meas){
+    if(mcparams.do_meas && inew!=0 && (inew % mcparams.N_save) == 0){
       if(!mcparams.do_mcmc){
         std::string path_i = conf_path_basename + "." + std::to_string(i);
         int ierrU = U.load(path_i);
@@ -267,10 +267,8 @@ int main(int ac, char *av[]) {
       if (mcparams.omeas.potentialplanar || mcparams.omeas.potentialnonplanar) {
         // smear lattice
         for (size_t smears = 0; smears < mcparams.omeas.n_apesmear; smears += 1) {
-          smearlatticeape(U, mcparams.omeas.alpha, mcparams.omeas.smear_spatial_only,
-                          mcparams.omeas.smear_temporal_only);
+          APEsmearing<double, _u1>(U, mcparams.omeas.alpha, mcparams.omeas.smear_spatial_only);
         }
-        double loop;
         if (mcparams.omeas.potentialplanar) {
           omeasurements::meas_loops_planar_pot(U, pparams, mcparams.omeas.sizeWloops,
                                                filename_coarse, filename_fine, i);

@@ -79,19 +79,27 @@ template <class Group> void spatial_smearlatticeape(gaugeconfig<Group> &U, doubl
 }
 
 /**
- * @brief spatial smearing as in eq. 13 of
- * https://journals.aps.org/prd/pdf/10.1103/PhysRevD.70.014504
- * ('v2': 2nd version of this library)
+ * @brief smearing with prescription generalised from https://arxiv.org/pdf/hep-lat/0209159.pdf
+ * default: smearing onlz of spatial links with spatial staples
+ * number of staples in 'positive' direction: 
+ * d 
+ * -1 (direction of original link is not used for staple) 
+ * -1 if spatial (temporal links not taken into account)
+ * have to multiply by 2 to also account for 'negative' direction
+ * beta(spatial) = (1-alpha)/(# staples) = (1-alpha)/(2*(d-1-1)) =(1-alpha)/(2*d-4)
+ * prescription for smearing: U <- alpha*U + beta*sum(staples)
  */
 template <class Float, class Group>
-void spatial_APEsmearing_u1(gaugeconfig<Group> &U, const double &alpha) {
+void APEsmearing(gaugeconfig<Group> &U, const double &alpha, const bool spatial=true) {
   size_t d = U.getndims();
   if (d == 2) {
     std::cerr << "Spatial smearing is not possible in 2 dimensions!" << std::endl;
     return;
   }
   const gaugeconfig<Group> Uold = U;
-  const Float beta = (1.0-alpha)/(double(d)-1.0);
+  typedef typename accum_type<Group>::type accum;
+  size_t startmu = size_t(spatial); // 0 or 1, casted from bool
+  const Float beta = (1.0-alpha) / (double(2*(d-1-startmu)));
 
 #ifdef _USE_OMP_
 #pragma omp parallel for
@@ -101,10 +109,10 @@ void spatial_APEsmearing_u1(gaugeconfig<Group> &U, const double &alpha) {
       for (size_t x2 = 0; x2 < U.getLy(); x2++) {
         for (size_t x3 = 0; x3 < U.getLz(); x3++) {
           std::vector<size_t> x = {x0, x1, x2, x3};
-          for (size_t i = 1; i < d; i++) {
+          for (size_t i = startmu; i < d; i++) {
             // K is intialized to (0,0) even if not explicitly specified
-            std::complex<Float> K = 0.0;
-            get_staples_APE(K, Uold, x, i, true);
+            accum K;
+            get_staples_APE(K, Uold, x, i, spatial);
             const Group Uprime(alpha*Uold(x, i) + beta*K);
             U(x, i) = Uprime;
 //            U(x, i).restoreSU(); not necessary -> see u1 constructor 
@@ -115,3 +123,10 @@ void spatial_APEsmearing_u1(gaugeconfig<Group> &U, const double &alpha) {
   }
   return;
 }
+
+// wrapper so the name of the other function can be changed without changing any other code
+template <class Float=double, class Group=_u1>
+void spatial_APEsmearing_u1(gaugeconfig<Group> &U, const double &alpha) {
+    APEsmearing<Float, Group>(U, alpha, true);
+}
+

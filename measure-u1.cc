@@ -146,10 +146,8 @@ int main(int ac, char *av[]) {
     if (mparams.potentialplanar || mparams.potentialnonplanar) {
       // smear lattice
       for (size_t smears = 0; smears < mparams.n_apesmear; smears += 1) {
-        smearlatticeape(U, mparams.alpha, mparams.smear_spatial_only,
-                        mparams.smear_temporal_only);
+        APEsmearing<double, _u1>(U, mparams.alpha, mparams.smear_spatial_only);
       }
-      double loop;
       if (mparams.potentialplanar) {
         omeasurements::meas_loops_planar_pot(U, pparams, mparams.sizeWloops,
                                              filename_coarse, filename_fine, i);

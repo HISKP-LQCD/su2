@@ -10,8 +10,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 # add the executables
 
 # conjugate gradient algorithms
+include_directories(PUBLIC ../include/)
+
 add_executable(CG.exe CG.cpp)
 add_executable(BiCGStab.exe BiCGStab.cpp)
+add_executable(smearing.exe smearing.cpp)
 
 #yaml input file parsing
 

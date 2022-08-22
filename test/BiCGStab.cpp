@@ -2,8 +2,8 @@
 
 #include <complex>
 
-#include "../BiCGStab.hpp"
-#include "./LA.hpp"
+#include "BiCGStab.hpp"
+#include "LA.hpp"
 // #include "./cg_invert.hpp" // DEPRECATED
 
 typedef std::complex<double> Type;

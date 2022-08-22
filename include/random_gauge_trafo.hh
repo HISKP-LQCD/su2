@@ -2,6 +2,7 @@
 
 #include"su2.hh"
 #include"random_element.hh"
+#include "gaugeconfig.hh"
 
 #include<random>
 

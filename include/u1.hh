@@ -45,10 +45,10 @@ public:
   _u1 dagger() const {
     return(_u1(-a));
   }
-  double retrace() {
+  double retrace() const {
     return(std::cos(a));
   }
-  Complex det() {
+  Complex det() const {
     return(std::exp(a*Complex(0., 1.))); 
   }
   void restoreSU() {

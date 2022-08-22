@@ -50,7 +50,7 @@ int main(int argc, char const *argv[]) {
   gaugeconfig<_u1> U1 = U; // copy of the initial configuration
 
   const double alpha1 = 1.0; // no smearing
-  spatial_APEsmearing_u1<double>(U1, alpha1);
+  spatial_APEsmearing<double>(U1, alpha1);
   print_phase(U1(x, mu), "no smearing (alpha=1.0) : ");
 
   _u1 Udag_U1 = U(x, mu).dagger() * U1(x, mu);
@@ -58,7 +58,7 @@ int main(int argc, char const *argv[]) {
 
   gaugeconfig<_u1> U2 = U; // copy of the initial configuration
   const double alpha2 = 0.0; // full smearing
-  spatial_APEsmearing_u1<double>(U2, alpha2);
+  spatial_APEsmearing<double>(U2, alpha2);
   print_phase(U2(x, mu), "full smearing (alpha=0.0) : ");
   std::cout << "\n";
 

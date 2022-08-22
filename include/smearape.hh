@@ -125,8 +125,8 @@ void APEsmearing(gaugeconfig<Group> &U, const double &alpha, const bool spatial=
 }
 
 // wrapper so the name of the other function can be changed without changing any other code
-template <class Float=double, class Group=_u1>
-void spatial_APEsmearing_u1(gaugeconfig<Group> &U, const double &alpha) {
+template <class Float, class Group>
+void spatial_APEsmearing(gaugeconfig<Group> &U, const double &alpha) {
     APEsmearing<Float, Group>(U, alpha, true);
 }
 

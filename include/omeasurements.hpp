@@ -140,7 +140,7 @@ namespace omeasurements {
     gaugeconfig<Group> U = U0;
     if (S.glueball.doAPEsmear) {
       for (size_t i = 0; i < S.glueball.nAPEsmear; i++) {
-        spatial_APEsmearing_u1<double, Group>(U, S.glueball.alphaAPEsmear);
+        spatial_APEsmearing<double, Group>(U, S.glueball.alphaAPEsmear);
       }
       oss << "/smearAPEn" << S.glueball.nAPEsmear << "alpha" << S.glueball.alphaAPEsmear
           << "/";
@@ -250,7 +250,7 @@ namespace omeasurements {
     gaugeconfig<Group> U = U0;
     if (S.glueball.doAPEsmear) {
       for (size_t i = 0; i < S.glueball.nAPEsmear; i++) {
-        spatial_APEsmearing_u1<double, Group>(U, S.glueball.alphaAPEsmear);
+        spatial_APEsmearing<double, Group>(U, S.glueball.alphaAPEsmear);
       }
       if (S.glueball.lengthy_file_name) {
         oss_name << "_" << meas_details;

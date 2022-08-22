@@ -82,6 +82,8 @@ void get_staples(T &K,
 /**
  * @brief Get the staples for the APE smearing
  * see eq. (13) of https://journals.aps.org/prd/pdf/10.1103/PhysRevD.70.014504
+ * staples have to be 'daggered' / in the other direction compared to staples for action:
+ * action forms plaquette, smearing needs staples parallel to link
  */
 template <class T, class S, class Arr>
 void get_staples_APE(

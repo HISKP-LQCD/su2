@@ -16,6 +16,7 @@
 #include "flat-sweep.hh" // flat spacetime
 #include "gaugeconfig.hh"
 #include "io.hh"
+#include "omeasurements.hpp"
 #include "parse_input_file.hh"
 #include "random_gauge_trafo.hh"
 #include "rotating-energy_density.hpp" // rotating spacetime
@@ -128,6 +129,24 @@ int main(int ac, char *av[]) {
   }
 
   boost::filesystem::create_directories(boost::filesystem::absolute(mcparams.conf_dir));
+  boost::filesystem::create_directories(boost::filesystem::absolute(mcparams.omeas.res_dir));
+  
+  // filename needed for saving results from potential and potentialsmall
+  const std::string filename_fine = io::measure::get_filename_fine(pparams, mcparams.omeas);
+  const std::string filename_coarse = io::measure::get_filename_coarse(pparams, mcparams.omeas);
+  const std::string filename_nonplanar =
+    io::measure::get_filename_nonplanar(pparams, mcparams.omeas);
+
+  // write explanatory headers into result-files, also check if measuring routine is
+  // implemented for given dimension
+  if (mcparams.omeas.potentialplanar) {
+    io::measure::set_header_planar(pparams, mcparams.omeas, filename_coarse, filename_fine);
+  }
+  if (mcparams.omeas.potentialnonplanar) {
+    io::measure::set_header_nonplanar(pparams, mcparams.omeas, filename_nonplanar);
+  }
+
+  
 
 #ifdef _USE_OMP_
   /**
@@ -198,58 +217,88 @@ int main(int ac, char *av[]) {
    * */
   for (size_t i = mcparams.icounter; i < mcparams.n_meas * threads + mcparams.icounter;
        i += threads) {
-    std::vector<std::mt19937> engines(threads);
-    for (size_t engine = 0; engine < threads; engine += 1) {
-      engines[engine].seed(mcparams.seed + i + engine);
-    }
     // inew counts loops, loop-variable needed to have one RNG per thread with different
     // seeds for every measurement
     size_t inew = (i - mcparams.icounter) / threads + mcparams.icounter;
-
-    rate += here::sweep(pparams, U, engines, mcparams.delta, mcparams.N_hit, pparams.beta,
-                        pparams.xi, pparams.anisotropic);
-
-    double energy = here::gauge_energy<_u1>(pparams, U);
-
-    double E = 0., Q = 0.;
-    flat_spacetime::energy_density(U, E, Q);
-    // measuring spatial plaquettes only means only (ndims-1)/ndims of all plaquettes are
-    // measured, so need facnorm for normalization to 1
-    std::cout << inew << " " << std::scientific << std::setw(18) << std::setprecision(15)
-              << energy * normalisation * facnorm << " ";
-    os << inew << " " << std::scientific << std::setw(18) << std::setprecision(15)
-       << energy * normalisation * facnorm << " ";
-
-    energy = here::gauge_energy<_u1>(pparams, U);
-
-    std::cout << energy * normalisation << " " << Q << " ";
-    os << energy * normalisation << " " << Q << " ";
-    here::energy_density(pparams, U, E, Q, false);
-    std::cout << Q << std::endl;
-    os << Q << std::endl;
-
-
-    if (inew > 0 && (inew % mcparams.N_save) == 0) {
-      std::ostringstream oss_i;
-      oss_i << conf_path_basename << "." << inew << std::ends;
+    
+    if(mcparams.do_mcmc){
+      std::vector<std::mt19937> engines(threads);
+      for (size_t engine = 0; engine < threads; engine += 1) {
+        engines[engine].seed(mcparams.seed + i + engine);
+      }
+      
+      rate += here::sweep(pparams, U, engines, mcparams.delta, mcparams.N_hit, pparams.beta,
+                          pparams.xi, pparams.anisotropic);
+      
+      double energy = here::gauge_energy<_u1>(pparams, U);
+      
+      double E = 0., Q = 0.;
+      flat_spacetime::energy_density(U, E, Q);
+      // measuring spatial plaquettes only means only (ndims-1)/ndims of all plaquettes are
+      // measured, so need facnorm for normalization to 1
+      std::cout << inew << " " << std::scientific << std::setw(18) << std::setprecision(15)
+                << energy * normalisation * facnorm << " ";
+      os << inew << " " << std::scientific << std::setw(18) << std::setprecision(15)
+         << energy * normalisation * facnorm << " ";
+      
+      energy = here::gauge_energy<_u1>(pparams, U);
+      
+      std::cout << energy * normalisation << " " << Q << " ";
+      os << energy * normalisation << " " << Q << " ";
+      here::energy_density(pparams, U, E, Q, false);
+      std::cout << Q << std::endl;
+      os << Q << std::endl;
+      
+      if (inew > 0 && (inew % mcparams.N_save) == 0) {
+        std::ostringstream oss_i;
+        oss_i << conf_path_basename << "." << inew << std::ends;
       U.save(oss_i.str());
+      }
     }
+    
+    if(mcparams.do_meas && inew!=0 && (inew % mcparams.N_save) == 0){
+      if(!mcparams.do_mcmc){
+        std::string path_i = conf_path_basename + "." + std::to_string(i);
+        int ierrU = U.load(path_i);
+        if (ierrU == 1) { // cannot load gauge config
+          continue;
+        }
+      }
+      if (mcparams.omeas.potentialplanar || mcparams.omeas.potentialnonplanar) {
+        // smear lattice
+        for (size_t smears = 0; smears < mcparams.omeas.n_apesmear; smears += 1) {
+          APEsmearing<double, _u1>(U, mcparams.omeas.alpha, mcparams.omeas.smear_spatial_only);
+        }
+        if (mcparams.omeas.potentialplanar) {
+          omeasurements::meas_loops_planar_pot(U, pparams, mcparams.omeas.sizeWloops,
+                                               filename_coarse, filename_fine, i);
+        }
+        
+        if (mcparams.omeas.potentialnonplanar) {
+          omeasurements::meas_loops_nonplanar_pot(U, pparams, mcparams.omeas.sizeWloops,
+                                                  filename_nonplanar, i);
+        }
+      }
+    }
+    
   }
   // save acceptance rates to additional file to keep track of measurements
-  std::cout << "## Acceptance rate " << rate[0] / static_cast<double>(mcparams.n_meas)
-            << " temporal acceptance rate "
-            << rate[1] / static_cast<double>(mcparams.n_meas) << std::endl;
-  acceptancerates.open(mcparams.conf_dir + "/acceptancerates.data", std::ios::app);
-  acceptancerates << rate[0] / static_cast<double>(mcparams.n_meas) << " "
-                  << rate[1] / static_cast<double>(mcparams.n_meas) << " " << pparams.beta
-                  << " " << pparams.Lx << " " << pparams.Lt << " " << pparams.xi << " "
-                  << mcparams.delta << " " << mcparams.heat << " " << threads << " "
-                  << mcparams.N_hit << " " << mcparams.n_meas << " " << mcparams.seed
-                  << " " << std::endl;
-  acceptancerates.close();
-
-  std::ostringstream oss;
-  oss << conf_path_basename << ".final" << std::ends;
-  U.save(mcparams.conf_dir + "/" + oss.str());
+  if(mcparams.do_mcmc){
+    std::cout << "## Acceptance rate " << rate[0] / static_cast<double>(mcparams.n_meas)
+              << " temporal acceptance rate "
+              << rate[1] / static_cast<double>(mcparams.n_meas) << std::endl;
+    acceptancerates.open(mcparams.conf_dir + "/acceptancerates.data", std::ios::app);
+    acceptancerates << rate[0] / static_cast<double>(mcparams.n_meas) << " "
+                    << rate[1] / static_cast<double>(mcparams.n_meas) << " " << pparams.beta
+                    << " " << pparams.Lx << " " << pparams.Lt << " " << pparams.xi << " "
+                    << mcparams.delta << " " << mcparams.heat << " " << threads << " "
+                    << mcparams.N_hit << " " << mcparams.n_meas << " " << mcparams.seed
+                    << " " << std::endl;
+    acceptancerates.close();
+    
+    std::ostringstream oss;
+    oss << conf_path_basename << ".final" << std::ends;
+    U.save(mcparams.conf_dir + "/" + oss.str());
+  }
   return (0);
 }

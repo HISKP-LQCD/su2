@@ -11,16 +11,23 @@ geometry:
 
 monomials:
   gauge:
-    beta: 1.9
-    #xi : 1.0
-    #anisotropic : false
+    beta: 2.0
+    xi : 1.0
+    anisotropic : true
 
 metropolis:
   conf_dir: "./confs/"
   n_meas: 100
   N_save: 10
-  N_hit: 1000
+  N_hit: 10
   delta: 0.01
   heat: 1.0
   restart: false
+
+omeas:
+  res_dir: "./confs/"
+  potential:
+    potentialplanar: true
+    n_apesmear: 5
+    alpha: 1
   

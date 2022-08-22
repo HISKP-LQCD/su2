@@ -75,10 +75,10 @@ int main(int ac, char *av[]) {
 
   // write explanatory headers into result-files, also check if measuring routine is
   // implemented for given dimension
-  if (mparams.potential) {
+  if (mparams.potentialplanar) {
     io::measure::set_header_planar(pparams, mparams, filename_coarse, filename_fine);
   }
-  if (mparams.potentialsmall) {
+  if (mparams.potentialnonplanar) {
     io::measure::set_header_nonplanar(pparams, mparams, filename_nonplanar);
   }
 
@@ -143,19 +143,17 @@ int main(int ac, char *av[]) {
       }
     }
 
-    if (mparams.potential || mparams.potentialsmall) {
+    if (mparams.potentialplanar || mparams.potentialnonplanar) {
       // smear lattice
       for (size_t smears = 0; smears < mparams.n_apesmear; smears += 1) {
-        smearlatticeape(U, mparams.alpha, mparams.smear_spatial_only,
-                        mparams.smear_temporal_only);
+        APEsmearing<double, _u1>(U, mparams.alpha, mparams.smear_spatial_only);
       }
-      double loop;
-      if (mparams.potential) {
+      if (mparams.potentialplanar) {
         omeasurements::meas_loops_planar_pot(U, pparams, mparams.sizeWloops,
                                              filename_coarse, filename_fine, i);
       }
 
-      if (mparams.potentialsmall) {
+      if (mparams.potentialnonplanar) {
         omeasurements::meas_loops_nonplanar_pot(U, pparams, mparams.sizeWloops,
                                                 filename_nonplanar, i);
       }

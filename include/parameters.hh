@@ -79,11 +79,11 @@ namespace global_parameters {
     std::string res_dir = "./"; // directory where results from measurements for
                                 // potential, potentialsmall are stored
 
-    bool potential =
+    bool potentialplanar =
       false; // measure potential: the loops W(x, t, y=z=0) and W(x, y, t=z=0) are
              // measured with a maximum size of lattice extent * sizeloops, and written to
              // separate files. Only available for ndims=3,4
-    bool potentialsmall =
+    bool potentialnonplanar =
       false; // The loops W(x, t, y) are measured up to x, y=min(4, lattice extent), t <=
              // Lt * sizeloops and saved to one file. Only available for ndim=3
     bool append = false; // are measurements for potential appended to an existing file,
@@ -172,7 +172,11 @@ namespace global_parameters {
     double heat =
       1.0; // determines if thermalization starts from a hot (=1) or cold(=0) config
     double delta =
-      1.0; // quantifies how much the prooposed new link can differ from the current link
+      1.0; // quantifies how much the prooposed new link can differ from the current link 
+    bool do_mcmc = true; // are configurations generated?
+    bool do_meas = false; // are measurements done?
+    measure_u1 omeas; // struct for online measurements
+    
   };
 
 } // namespace global_parameters

@@ -212,7 +212,7 @@ namespace input_file_parsing {
         in.read_verb<size_t>(hparams.N_save, {"hmc", "n_save"});
         in.read_verb<size_t>(hparams.n_meas, {"hmc", "n_meas"});
 
-        in.read_opt_verb<bool>(hparams.do_hmc, {"hmc", "do_hmc"});
+        in.read_opt_verb<bool>(hparams.do_mcmc, {"hmc", "do_mcmc"});
 
         if (nd["hmc"]["restart"] && nd["hmc"]["heat"]) {
           std::cerr << "Error: "
@@ -247,7 +247,7 @@ namespace input_file_parsing {
         in.read_opt_verb<std::string>(hparams.integrator, {"integrator", "name"});
 
         if (nd["omeas"]) {
-          hparams.make_omeas = true;
+          hparams.do_omeas = true;
 
           hparams.omeas.res_dir = hparams.conf_dir; // default
           in.read_opt_verb<std::string>(hparams.omeas.res_dir, {"omeas", "res_dir"});
@@ -430,7 +430,7 @@ namespace input_file_parsing {
         // measure parameters for measuring during generation of configs
         // optional parameters for potentials
         if (nd["omeas"]["potential"]) {
-          mcparams.do_meas=true;
+          mcparams.do_omeas=true;
           in.read_opt_verb<bool>(mcparams.omeas.potentialplanar, {"omeas", "potential", "potentialplanar"});
           in.read_opt_verb<bool>(mcparams.omeas.potentialnonplanar,
                                  {"omeas", "potential", "potentialnonplanar"});

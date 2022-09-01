@@ -116,7 +116,7 @@ namespace global_parameters {
 
   /* Optional parameters for the hmc the in U(1) theory */
   struct hmc_u1 {
-    bool do_hmc = true; // whether to do the hmc evolution or not
+    bool do_mcmc = true; // whether to do the hmc evolution or not
 
     size_t N_save = 100; // N_save
     size_t n_meas = 10; // total number of sweeps
@@ -149,7 +149,7 @@ namespace global_parameters {
     bool lenghty_conf_name = true; // add ensemble information in configuration name
     size_t beta_str_width = g_beta_str_width; // length of the beta value config filename
 
-    bool make_omeas = false; // true/false when online measurement are ON/OFF
+    bool do_omeas = false; // true iff online measurement are ON
     measure_u1 omeas; // stuct for online measurements
   };
 
@@ -173,8 +173,8 @@ namespace global_parameters {
       1.0; // determines if thermalization starts from a hot (=1) or cold(=0) config
     double delta =
       1.0; // quantifies how much the prooposed new link can differ from the current link 
-    bool do_mcmc = true; // are configurations generated?
-    bool do_meas = false; // are measurements done?
+    bool do_mcmc = true; // true when generating configurations through the Markov chain Monte Carlo
+    bool do_omeas = false; // true when omeasurements are done
     measure_u1 omeas; // struct for online measurements
     
   };

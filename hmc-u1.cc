@@ -129,7 +129,7 @@ int main(int ac, char *av[]) {
   const std::string conf_path_basename = io::get_conf_path_basename(pparams, hparams);
 
   for (size_t i = g_icounter; i < hparams.n_meas + g_icounter; i++) {
-    if (hparams.do_hmc) {
+    if (hparams.do_mcmc) {
       mdparams.disablerevtest();
       if (i > 0 && hparams.N_rev != 0 && (i) % hparams.N_rev == 0) {
         mdparams.enablerevtest();
@@ -171,20 +171,20 @@ int main(int ac, char *av[]) {
     if (i > 0 && (i % hparams.N_save) == 0) { // saving U after each N_save trajectories
       std::string path_i = conf_path_basename + "." + std::to_string(i);
 
-      if (hparams.do_hmc) {
+      if (hparams.do_mcmc) {
         U.save(path_i);
       }
 
       // online measurements
       bool do_omeas =
-        hparams.make_omeas && i > hparams.omeas.icounter && i % hparams.omeas.nstep == 0;
-      if (hparams.do_hmc) {
+        hparams.do_omeas && i > hparams.omeas.icounter && i % hparams.omeas.nstep == 0;
+      if (hparams.do_mcmc) {
         // check also if trajectory was accepted
         do_omeas = do_omeas && mdparams.getaccept();
       }
 
       if (do_omeas) {
-        if (i == g_icounter && hparams.do_hmc) {
+        if (i == g_icounter && hparams.do_mcmc) {
           continue; // online measurements already done
         }
 
@@ -232,14 +232,14 @@ int main(int ac, char *av[]) {
         }
       }
 
-      if (hparams.do_hmc) { // storing last conf index (only after online measurements has
+      if (hparams.do_mcmc) { // storing last conf index (only after online measurements has
                             // been done)
         io::hmc::update_nconf_counter(hparams.conf_dir, g_heat, i, path_i);
       }
     }
   }
 
-  if (hparams.do_hmc) {
+  if (hparams.do_mcmc) {
     std::cout << "## Acceptance rate: " << rate / static_cast<double>(hparams.n_meas)
               << std::endl;
     std::string path_final = conf_path_basename + ".final";

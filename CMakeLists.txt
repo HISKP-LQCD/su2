@@ -86,7 +86,7 @@ if(Boost_FOUND)
 endif()
 
 add_executable(su2-metropolis main.cc)
-add_executable(u1-metropolis main-u1.cc)
+add_executable(u1-metropolis metropolis-u1.cc)
 add_executable(su2-hmc hmc.cc)
 add_executable(u1-hmc hmc-u1.cc)
 add_executable(su2-kramers kramers.cc)

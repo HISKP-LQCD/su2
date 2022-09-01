@@ -40,7 +40,6 @@
 #include <sstream>
 #include <vector>
 
-
 namespace here {
 
   namespace gp = global_parameters;
@@ -126,6 +125,69 @@ namespace parse {
 
 } // namespace parse
 
+namespace metropolis {
+  namespace gp = global_parameters;
+
+  const int get_omp_threads(gp::physics &pparams) {
+#ifdef _USE_OMP_
+    /**
+     * the parallelisation of the sweep-function first iterates over all odd points in t
+     * and then over all even points because the nearest neighbours must not change during
+     * the updates, this is not possible for an uneven number of points in T
+     * */
+    if (pparams.Lt % 2 != 0) {
+      std::cerr << "For parallel computing an even number of points in T is needed!"
+                << std::endl;
+      omp_set_num_threads(1);
+      std::cerr << "Continuing with one thread." << std::endl;
+    }
+    // set things up for parallel computing in sweep
+    int threads = omp_get_max_threads();
+#else
+    int threads = 1;
+#endif
+    // std::cout << "threads " << threads << std::endl;
+
+    return threads;
+  }
+
+} // namespace metropolis
+
+namespace gp = global_parameters;
+/**
+ * @brief structure containing the strings for filenames involved in the measurement of
+ * the static potential
+ *
+ */
+struct potential_filenames {
+  // filename needed for saving results from potential and potentialsmall
+  std::string filename_fine;
+  std::string filename_coarse;
+  std::string filename_nonplanar;
+
+  /**
+   * @brief Construct a new potential filenames object
+   * intiialize the attributes
+   * @param pparams physics parameters
+   * @param omeas omeasurements parameters
+   */
+  potential_filenames(const gp::physics &pparams, gp::measure_u1 &omeas) {
+    // filename needed for saving results from potential and potentialsmall
+    filename_fine = io::measure::get_filename_fine(pparams, omeas);
+    filename_coarse = io::measure::get_filename_coarse(pparams, omeas);
+    filename_nonplanar = io::measure::get_filename_nonplanar(pparams, omeas);
+
+    // write explanatory headers into result-files, also check if measuring routine is
+    // implemented for given dimension
+    if (omeas.potentialplanar) {
+      io::measure::set_header_planar(pparams, omeas, filename_coarse, filename_fine);
+    }
+    if (omeas.potentialnonplanar) {
+      io::measure::set_header_nonplanar(pparams, omeas, filename_nonplanar);
+    }
+  }
+};
+
 int main(int ac, char *av[]) {
   std::cout << "## Metropolis Algorithm for U(1) gauge theory" << std::endl;
   std::cout << "## GIT branch " << GIT_BRANCH << " on commit " << GIT_COMMIT_HASH
@@ -138,7 +200,7 @@ int main(int ac, char *av[]) {
 
   std::string input_file; // yaml input file path
   parse::command_line(ac, av, input_file);
-  
+
   namespace in_metropolis = input_file_parsing::u1::metropolis;
   int err = in_metropolis::parse_input_file(input_file, pparams, mcparams);
   if (err > 0) {
@@ -149,42 +211,9 @@ int main(int ac, char *av[]) {
   boost::filesystem::create_directories(
     boost::filesystem::absolute(mcparams.omeas.res_dir));
 
-  // filename needed for saving results from potential and potentialsmall
-  const std::string filename_fine =
-    io::measure::get_filename_fine(pparams, mcparams.omeas);
-  const std::string filename_coarse =
-    io::measure::get_filename_coarse(pparams, mcparams.omeas);
-  const std::string filename_nonplanar =
-    io::measure::get_filename_nonplanar(pparams, mcparams.omeas);
 
-  // write explanatory headers into result-files, also check if measuring routine is
-  // implemented for given dimension
-  if (mcparams.omeas.potentialplanar) {
-    io::measure::set_header_planar(pparams, mcparams.omeas, filename_coarse,
-                                   filename_fine);
-  }
-  if (mcparams.omeas.potentialnonplanar) {
-    io::measure::set_header_nonplanar(pparams, mcparams.omeas, filename_nonplanar);
-  }
-
-#ifdef _USE_OMP_
-  /**
-   * the parallelisation of the sweep-function first iterates over all odd points in t and
-   * then over all even points because the nearest neighbours must not change during the
-   * updates, this is not possible for an uneven number of points in T
-   * */
-  if (pparams.Lt % 2 != 0) {
-    std::cerr << "For parallel computing an even number of points in T is needed!"
-              << std::endl;
-    omp_set_num_threads(1);
-    std::cerr << "Continuing with one thread." << std::endl;
-  }
-  // set things up for parallel computing in sweep
-  int threads = omp_get_max_threads();
-#else
-  int threads = 1;
-#endif
-  // std::cout << "threads " << threads << std::endl;
+  const potential_filenames pf(pparams, mcparams.omeas);
+  const int threads = metropolis::get_omp_threads(pparams);
 
   // get basename for configs
   std::string conf_path_basename = io::get_conf_path_basename(pparams, mcparams);
@@ -291,12 +320,12 @@ int main(int ac, char *av[]) {
         }
         if (mcparams.omeas.potentialplanar) {
           omeasurements::meas_loops_planar_pot(U, pparams, mcparams.omeas.sizeWloops,
-                                               filename_coarse, filename_fine, i);
+                                               pf.filename_coarse, pf.filename_fine, i);
         }
 
         if (mcparams.omeas.potentialnonplanar) {
           omeasurements::meas_loops_nonplanar_pot(U, pparams, mcparams.omeas.sizeWloops,
-                                                  filename_nonplanar, i);
+                                                  pf.filename_nonplanar, i);
         }
       }
     }

@@ -218,13 +218,13 @@ namespace input_file_parsing {
           std::cerr << "Error: "
                     << "'restart' and 'heat' conditions are incompatible in the hmc. "
                     << "Aborting.\n";
-          abort();
+          std::abort();
         }
         if (!nd["hmc"]["restart"] && !nd["hmc"]["heat"]) {
           std::cerr << "Error: "
                     << "Please pass either 'restart' or 'heat' to the hmc. "
                     << "Aborting.\n";
-          abort();
+          std::abort();
         }
 
         in.read_opt_verb<bool>(hparams.restart, {"hmc", "restart"});

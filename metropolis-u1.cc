@@ -15,7 +15,7 @@
 
 int main(int ac, char *av[]) {
 
-  u1::metropolis m1;
+  u1::metropolis_algo m1;
   m1.run(ac, av);
 
   return (0);

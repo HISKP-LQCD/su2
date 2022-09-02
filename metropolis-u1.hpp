@@ -16,15 +16,18 @@ namespace u1 {
   // namespace po = boost::program_options;
   // namespace gp = global_parameters;
 
-  class metropolis : public program {
+  class metropolis_algo : public program<gp::metropolis_u1> {
 private:
 
     std::vector<double> rate = {0., 0.};
 
   public:
-    metropolis() {}
-    ~metropolis() {}
+    metropolis_algo() {}
+    ~metropolis_algo() {}
 
+    void print_program_info() const {
+      std::cout << "## Metropolis Algorithm for U(1) gauge theory\n";
+    }
 
     void parse_input_file() {
       namespace in_metropolis = input_file_parsing::u1::metropolis;

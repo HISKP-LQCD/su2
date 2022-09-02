@@ -43,10 +43,11 @@ namespace u1 {
   namespace po = boost::program_options;
   namespace gp = global_parameters;
 
+template<class sparam_type>
   class program {
   protected:
     gp::physics pparams; // physics parameters
-    gp::metropolis_u1 sparams; // specific parameters to the given run
+    sparam_type sparams; // specific parameters to the given run
     gp::measure_u1 omeas; // omeasurements parameters
     std::string input_file; // yaml input file path
     size_t threads;
@@ -68,9 +69,7 @@ namespace u1 {
     program() {}
     ~program() {}
 
-    void print_program_info() const {
-      std::cout << "## Metropolis Algorithm for U(1) gauge theory\n";
-    }
+    virtual void print_program_info() const = 0;
 
     void print_git_info() const {
       std::cout << "## GIT branch " << GIT_BRANCH << " on commit \n\n";
@@ -111,9 +110,9 @@ namespace u1 {
      * @brief create the necessary output directories
      */
     void create_directories() {
-      boost::filesystem::create_directories(
-        boost::filesystem::absolute(sparams.conf_dir));
-      boost::filesystem::create_directories(boost::filesystem::absolute(omeas.res_dir));
+      namespace fsys = boost::filesystem;
+      fsys::create_directories(fsys::absolute(sparams.conf_dir));
+      fsys::create_directories(fsys::absolute(omeas.res_dir));
     }
 
     void set_omp_threads() {

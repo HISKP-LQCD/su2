@@ -23,18 +23,32 @@ namespace u1 {
     std::string conf_path_basename;
 
     bool g_heat; // hot or cold starting configuration
-    size_t g_icounter; // 1st configuration(trajectory) to load from
+    size_t g_icounter = 0; // 1st configuration(trajectory) to load from
     double normalisation;
 
     double rate = 0.; // acceptance rate
 
     std::list<monomial<double, _u1> *> monomial_list;
+
+    flat_spacetime::gaugemonomial<double, _u1> *gm;
+    rotating_spacetime::gauge_monomial<double, _u1> *gm_rot;
+
+    kineticmonomial<double, _u1> *km;
+
+    staggered::detDDdag_monomial<double, _u1> *detDDdag;
+
     integrator<double, _u1> *md_integ;
     md_params mdparams; // Molecular Dynamics parameters
 
   public:
     hmc_algo() {}
-    ~hmc_algo() { free(md_integ); }
+    ~hmc_algo() {
+      free(gm);
+      free(gm_rot);
+      free(km);
+      free(detDDdag);
+      free(md_integ);
+    }
 
     void print_program_info() const {
       std::cout << "## HMC Algorithm for U(1) gauge theory\n";
@@ -45,27 +59,6 @@ namespace u1 {
       in_hmc::parse_input_file(input_file, pparams, sparams);
       conf_path_basename = io::get_conf_path_basename(pparams, sparams);
       (*this).omeas = (*this).sparams.omeas;
-    }
-
-    void set_omp_threads() {
-#ifdef _USE_OMP_
-      /**
-       * the parallelisation of the sweep-function first iterates over all odd points in t
-       * and then over all even points because the nearest neighbours must not change
-       * during the updates, this is not possible for an uneven number of points in T
-       * */
-      if (pparams.Lt % 2 != 0) {
-        std::cerr << "For parallel computing an even number of points in T is needed!"
-                  << std::endl;
-        omp_set_num_threads(1);
-        std::cerr << "Continuing with one thread." << std::endl;
-      }
-      // set things up for parallel computing in sweep
-      threads = omp_get_max_threads();
-#else
-      threads = 1;
-#endif
-      std::cout << "threads " << threads << std::endl;
     }
 
     /**
@@ -118,7 +111,8 @@ namespace u1 {
 
       if (sparams.restart) {
         std::cout << "## restart " << sparams.restart << "\n";
-        std::vector<std::string> v_ncc = io::hmc::read_nconf_counter(sparams.conf_dir);
+        const std::vector<std::string> v_ncc =
+          io::hmc::read_nconf_counter(sparams.conf_dir);
         g_heat = boost::lexical_cast<bool>(v_ncc[0]);
         g_icounter = std::stoi(v_ncc[1]);
         std::string config_path = v_ncc[2];
@@ -162,39 +156,41 @@ namespace u1 {
 
     // generate list of monomials
     void init_monomials() {
-      flat_spacetime::gaugemonomial<double, _u1> gm(0, pparams.xi);
-      rotating_spacetime::gauge_monomial<double, _u1> gm_rot(0, pparams.Omega);
+      gm = new flat_spacetime::gaugemonomial<double, _u1>(0, pparams.xi);
+      gm_rot = new rotating_spacetime::gauge_monomial<double, _u1>(0, pparams.Omega);
 
-      kineticmonomial<double, _u1> km(0);
-      km.setmdpassive();
-      monomial_list.push_back(&km);
+      km = new kineticmonomial<double, _u1>(0);
+      km->setmdpassive();
+      monomial_list.push_back(km);
 
-      staggered::detDDdag_monomial<double, _u1> detDDdag(
+      detDDdag = new staggered::detDDdag_monomial<double, _u1>(
         0, pparams.m0, sparams.solver, sparams.tolerance_cg, sparams.seed_pf,
         sparams.solver_verbosity);
 
       if (pparams.include_gauge) {
         if (pparams.rotating_frame) {
-          monomial_list.push_back(&gm_rot);
+          monomial_list.push_back(gm_rot);
         } else {
-          monomial_list.push_back(&gm);
+          monomial_list.push_back(gm);
         }
       }
 
       if (pparams.include_staggered_fermions) { // including S_F (fermionic) in the action
-        monomial_list.push_back(&detDDdag);
+        monomial_list.push_back(detDDdag);
       }
     }
 
     void do_hmc_step(const int &i) {
       if (sparams.do_mcmc) {
         mdparams.disablerevtest();
+
         if (i > 0 && sparams.N_rev != 0 && (i) % sparams.N_rev == 0) {
           mdparams.enablerevtest();
         }
         // PRNG engine
         std::mt19937 engine(sparams.seed + i);
         // perform the MD update
+
         md_update(U, engine, mdparams, monomial_list, *md_integ);
 
         const double energy = flat_spacetime::gauge_energy(U);
@@ -227,7 +223,7 @@ namespace u1 {
       }
     }
 
-    void do_omeas(const size_t &i) {
+    void do_omeas_i(const size_t &i, const bool &do_omeas) {
       if (do_omeas) {
         if (sparams.omeas.Wloop) {
           if (sparams.omeas.verbosity > 0) {
@@ -271,7 +267,6 @@ namespace u1 {
     void after_hmc_step(const size_t &i) {
       if (i > 0 && (i % sparams.N_save) == 0) { // saving U after each N_save trajectories
         std::string path_i = conf_path_basename + "." + std::to_string(i);
-
         if (sparams.do_mcmc) {
           U.save(path_i);
         }
@@ -285,7 +280,7 @@ namespace u1 {
         }
 
         if (do_omeas) {
-          if (i == g_icounter && sparams.do_mcmc) {
+          if (i == g_icounter&& sparams.do_mcmc) {
             return; // online measurements already done
           }
 
@@ -295,7 +290,7 @@ namespace u1 {
             return;
           }
         }
-        this->do_omeas(i);
+        this->do_omeas_i(i, do_omeas);
 
         if (sparams.do_mcmc) { // storing last conf index (only after online measurements
                                // has been done)
@@ -312,12 +307,9 @@ namespace u1 {
       this->parse_input_file();
 
       this->create_directories();
-      this->open_output_data();
-
-      //      this->set_omp_threads();
-      //      this->set_potential_filenames();
 
       this->init_gauge_conf();
+      this->open_output_data();
 
       // Molecular Dynamics parameters
       md_params mdparams0(sparams.n_steps, sparams.tau);
@@ -335,11 +327,7 @@ namespace u1 {
 
       const std::string conf_path_basename = io::get_conf_path_basename(pparams, sparams);
 
-      for (size_t i = g_icounter; i < sparams.n_meas + g_icounter; i++) {
-        // inew counts loops, loop-variable needed to have one RNG per thread with
-        // different seeds for every measurement
-        size_t inew = (i - sparams.icounter) / threads + sparams.icounter;
-
+      for (size_t i = g_icounter ; i < sparams.n_meas + g_icounter; i++) {
         this->do_hmc_step(i);
         this->after_hmc_step(i);
       }

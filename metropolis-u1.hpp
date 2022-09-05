@@ -216,6 +216,41 @@ private:
       return;
     }
 
+    /**
+     * @brief do the i-th omeasurement
+     *
+     * @param i index of trajectory/sweep
+     * @param inew
+     */
+    void do_omeas_i(const size_t &i, const size_t &inew) {
+      if (sparams.do_omeas && inew != 0 && (inew % sparams.N_save) == 0) {
+        if (!sparams.do_mcmc) {
+          std::string path_i = conf_path_basename + "." + std::to_string(i);
+          int ierrU = U.load(path_i);
+          if (ierrU == 1) { // cannot load gauge config
+            exit(1);
+          }
+        }
+        if (omeas.potentialplanar || omeas.potentialnonplanar) {
+          // smear lattice
+          for (size_t smears = 0; smears < omeas.n_apesmear; smears += 1) {
+            APEsmearing<double, _u1>(U, omeas.alpha, omeas.smear_spatial_only);
+          }
+          if (omeas.potentialplanar) {
+            omeasurements::meas_loops_planar_pot(U, pparams, omeas.sizeWloops,
+                                                 (*this).filename_coarse,
+                                                 (*this).filename_fine, i);
+          }
+
+          if (omeas.potentialnonplanar) {
+            omeasurements::meas_loops_nonplanar_pot(U, pparams, omeas.sizeWloops,
+                                                    (*this).filename_nonplanar, i);
+          }
+        }
+      }
+      return;
+    }
+
 
 
     void run(int ac, char *av[]) {
@@ -246,7 +281,7 @@ private:
         size_t inew = (i - sparams.icounter) / threads + sparams.icounter;
 
         this->do_sweep(i, inew);
-        this->do_omeas(i, inew);
+        this->do_omeas_i(i, inew);
       }
 
       this->save_acceptance_rates();

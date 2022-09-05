@@ -43,9 +43,11 @@ namespace u1 {
   namespace po = boost::program_options;
   namespace gp = global_parameters;
 
-template<class sparam_type>
-  class program {
+  template <class sparam_type> class program {
   protected:
+    std::string algo_name =
+      "UNNAMED_PROGRAM"; // name of the algorithm; initialized specified in child classes
+
     gp::physics pparams; // physics parameters
     sparam_type sparams; // specific parameters to the given run
     gp::measure_u1 omeas; // omeasurements parameters
@@ -59,6 +61,10 @@ template<class sparam_type>
 
     std::string conf_path_basename; // basename for configurations
     gaugeconfig<_u1> U; // gauge configuration evolved through the algorithm
+
+    bool g_heat; // hot or cold starting configuration
+    size_t g_icounter = 0; // 1st configuration(trajectory) to load from
+
     double normalisation;
     size_t facnorm;
 
@@ -184,74 +190,168 @@ template<class sparam_type>
       return;
     }
 
-    template <class Group, class URNG>
-    std::vector<double> sweep(const gp::physics &pparams,
-                              gaugeconfig<Group> &U,
-                              std::vector<URNG> engines,
-                              const double &delta,
-                              const size_t &N_hit,
-                              const double &beta,
-                              const double &xi = 1.0,
-                              const bool &anisotropic = false) {
-      if (pparams.flat_metric) {
-        return flat_spacetime::sweep(U, engines, delta, N_hit, pparams.beta, pparams.xi,
-                                     pparams.anisotropic);
-      }
-      if (pparams.rotating_frame) {
-        return rotating_spacetime::sweep(U, pparams.Omega, engines, delta, N_hit,
-                                         pparams.beta, pparams.xi, pparams.anisotropic);
-      } else {
-        spacetime_lattice::fatal_error("Invalid metric when calling: ", __func__);
-        return {};
-      }
-    }
+    void init_gauge_conf_mcmc() {
 
-    void init_gauge_conf() {
+      /**
+       * @brief measuring spatial plaquettes only means only (ndims-1)/ndims of all
+       * plaquettes are measured, so need facnorm for normalization to 1
+       *
+       */
+      facnorm = (pparams.ndims > 2) ? pparams.ndims / (pparams.ndims - 2) : 0;
+
       conf_path_basename = io::get_conf_path_basename(pparams, sparams);
 
-      // load/set initial configuration
-      const gaugeconfig<_u1> U0(pparams.Lx, pparams.Ly, pparams.Lz, pparams.Lt,
-                                pparams.ndims, pparams.beta);
+      gaugeconfig<_u1> U0(pparams.Lx, pparams.Ly, pparams.Lz, pparams.Lt, pparams.ndims,
+                          pparams.beta);
       U = U0;
 
       if (sparams.restart) {
-        std::cout << "restart " << sparams.restart << std::endl;
-        int err = U.load(conf_path_basename + "." + std::to_string(sparams.icounter));
-        if (err != 0) {
-          exit(1);
+        std::cout << "## restart " << sparams.restart << "\n";
+        const std::vector<std::string> v_ncc =
+          io::hmc::read_nconf_counter(sparams.conf_dir);
+        g_heat = boost::lexical_cast<bool>(v_ncc[0]);
+        g_icounter = std::stoi(v_ncc[1]);
+        std::string config_path = v_ncc[2];
+
+        const size_t err = U.load(config_path);
+        if (err != 0 && sparams.do_mcmc) {
+          std::cout << "Error: failed to load initial gauge configuration for "
+                       "intializing the Markov chain Monte Carlo. Aborting.\n";
+          std::abort();
         }
       } else {
-        hotstart(U, sparams.seed, sparams.heat);
+        g_heat = (sparams.heat == true) ? 1.0 : 0.0;
+        g_icounter = 0;
+        hotstart(U, sparams.seed, g_heat);
       }
 
-      // check gauge invariance, set up factors needed to normalise plaquette, spacial
-      // plaquette
-      double plaquette = this->gauge_energy<_u1>(pparams, U);
+      double plaquette = flat_spacetime::gauge_energy(U);
+      double fac = 2. / U.getndims() / (U.getndims() - 1);
+      normalisation = fac / U.getVolume() / double(U.getNc());
 
-      const double fac = 1.0 / spacetime_lattice::num_pLloops_half(U.getndims());
-      normalisation = fac / U.getVolume();
-      facnorm = (pparams.ndims > 2) ? pparams.ndims / (pparams.ndims - 2) : 0;
+      std::cout << "## Normalization factor: A = 2/(d*(d-1)*N_lat*N_c) = "
+                << std::scientific << std::setw(18) << std::setprecision(15)
+                << normalisation << "\n";
+      std::cout << "## Acceptance rate parcentage: rho = rate/(i+1)\n";
 
       std::cout << "## Initial Plaquette: " << plaquette * normalisation << std::endl;
 
       random_gauge_trafo(U, 654321);
-
-      // compute plaquette after the gauge transform
-      plaquette = this->gauge_energy<_u1>(pparams, U);
-
+      plaquette = flat_spacetime::gauge_energy(U);
       std::cout << "## Plaquette after rnd trafo: " << plaquette * normalisation
                 << std::endl;
     }
 
     void open_output_data() {
-      if (sparams.icounter == 0) {
-        os.open(sparams.conf_dir + "/output.u1-metropolis.data", std::ios::out);
-      } else {
-        os.open(sparams.conf_dir + "/output.u1-metropolis.data", std::ios::app);
+      // doing only offline measurements
+      if (!sparams.do_mcmc) {
+        return;
       }
+
+      const std::string file = sparams.conf_dir + "/output.u1-" + algo_name + ".data";
+      if (g_icounter == 0) {
+        os.open(file, std::ios::out);
+      } else {
+        os.open(file, std::ios::app);
+      }
+
+      return;
     }
 
     virtual void run(int ac, char *av[]) = 0;
+
+    /**
+     * @brief online measurements over the i-th trajectory
+     *
+     * @param i trajectory index
+     * @param barrier true when the program stops if the i-th configuration cannot be
+     * loaded
+     */
+    void do_omeas_i(const size_t &i, const bool &barrier = false) {
+      const bool flag_i =
+        sparams.do_omeas && (i > omeas.icounter) && ((i % omeas.nstep) == 0);
+
+      if (!flag_i) {
+        return;
+      }
+
+      if (!sparams.do_mcmc) { // doing only offline measurements
+        const std::string path_i = conf_path_basename + "." + std::to_string(i);
+        int ierrU = U.load(path_i);
+        if (ierrU == 1 && barrier) { // cannot load gauge config
+          exit(1);
+        }
+      }
+
+      if (omeas.potentialplanar || omeas.potentialnonplanar) {
+        // smear lattice
+        for (size_t smears = 0; smears < omeas.n_apesmear; smears += 1) {
+          APEsmearing<double, _u1>(U, omeas.alpha, omeas.smear_spatial_only);
+        }
+        if (omeas.potentialplanar) {
+          omeasurements::meas_loops_planar_pot(U, pparams, omeas.sizeWloops,
+                                               (*this).filename_coarse,
+                                               (*this).filename_fine, i);
+        }
+
+        if (omeas.potentialnonplanar) {
+          omeasurements::meas_loops_nonplanar_pot(U, pparams, omeas.sizeWloops,
+                                                  (*this).filename_nonplanar, i);
+        }
+      }
+
+      if ((*this).omeas.Wloop) {
+        if ((*this).omeas.verbosity > 0) {
+          std::cout << "## online measuring: Wilson loop\n";
+        }
+        omeasurements::meas_wilson_loop<_u1>(U, i, sparams.conf_dir);
+      }
+      if ((*this).omeas.gradient_flow) {
+        if ((*this).omeas.verbosity > 0) {
+          std::cout << "## online measuring: Gradient flow\n";
+        }
+        omeasurements::meas_gradient_flow<_u1>(U, i, pparams, (*this).omeas);
+      }
+
+      if ((*this).omeas.pion_staggered) {
+        if ((*this).omeas.verbosity > 0) {
+          std::cout << "## online measuring: Pion correlator\n";
+        }
+        omeasurements::meas_pion_correlator<_u1>(U, i, pparams.m0, (*this).omeas);
+      }
+
+      if ((*this).omeas.glueball.do_measure) {
+        if ((*this).omeas.verbosity > 0) {
+          std::cout << "## online measuring: J^{PC} glueball correlators.\n";
+        }
+        if ((*this).omeas.glueball.loops_GEVP) {
+          omeasurements::meas_glueball_correlator_GEVP<_u1>(U, i, (*this).omeas);
+        }
+        if ((*this).omeas.glueball.U_munu) {
+          omeasurements::meas_glueball_correlator_U_munu<_u1>(U, i, (*this).omeas, false);
+        }
+        if ((*this).omeas.glueball.U_ij) {
+          omeasurements::meas_glueball_correlator_U_munu<_u1>(U, i, (*this).omeas, true);
+        }
+      }
+      return;
+    }
+
+    /**
+     * @brief part of the program flow common to all programs
+     *
+     */
+    void pre_run(int ac, char *av[]) {
+      this->print_program_info();
+      this->print_git_info();
+
+      this->parse_command_line(ac, av);
+      this->parse_input_file();
+
+      this->create_directories();
+
+      this->open_output_data();
+    }
   };
 
 } // namespace u1

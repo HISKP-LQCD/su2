@@ -116,6 +116,17 @@ namespace YAML_parsing {
     void set_InnerTree(const std::vector<std::string> &pt) { (*this).InnerTree = pt; }
 
     /**
+     * @brief reads the current state (branch of the YAML node) and goes inside the nested
+     * node specified by the relative path pt1
+     *
+     */
+    void dig_deeper(const std::vector<std::string> &pt1) {
+      std::vector<std::string> pt2 = this->get_InnerTree();
+      pt2.insert(pt2.end(), pt1.begin(), pt1.end());
+      this->set_InnerTree(pt2);
+    }
+
+    /**
      * @brief saving value from YAML node
      * Saving in 'x' the value specified in the YAML node under the key string 'name'.
      * If the key doesn't exist, nothing is done
@@ -256,17 +267,17 @@ namespace input_file_parsing {
     }
 
     namespace measure {
-      int parse_input_file(const std::string &file,
-                           gp::physics &pparams,
-                           gp::measure_u1 &mparams);
+      void parse_input_file(const std::string &file,
+                            gp::physics &pparams,
+                            gp::measure_u1 &mparams);
 
     } // namespace measure
 
     namespace metropolis {
       void validate_N_hit(const size_t &n);
-      int parse_input_file(const std::string &file,
-                           gp::physics &pparams,
-                           gp::metropolis_u1 &mcparams);
+      void parse_input_file(const std::string &file,
+                            gp::physics &pparams,
+                            gp::metropolis_u1 &mcparams);
 
     } // namespace metropolis
 

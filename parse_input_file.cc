@@ -143,7 +143,8 @@ namespace input_file_parsing {
     void parse_glueball_measure(Yp::inspect_node &in,
                                 const std::vector<std::string> &inner_tree,
                                 gp::measure_glueball_u1 &mgparams) {
-      in.set_InnerTree(inner_tree); // entering the glueball node
+      const std::vector<std::string> state0 = in.get_InnerTree();
+      in.dig_deeper(inner_tree); // entering the glueball node
 
       in.read_verb<bool>(mgparams.doAPEsmear, {"do_APE_smearing"});
       if (mgparams.doAPEsmear) {
@@ -163,7 +164,65 @@ namespace input_file_parsing {
       in.read_opt_verb<bool>(mgparams.U_ij, {"interpolators", "U_ij"});
       in.read_opt_verb<bool>(mgparams.U_munu, {"interpolators", "U_munu"});
 
-      in.set_InnerTree({}); // reset to previous state
+      in.set_InnerTree(state0); // reset to previous state
+    }
+
+    /**
+     * @brief parsing the online measurement block of the YAML input file
+     *
+     * @param in inspection node (full tree)
+     * @param inner_tree path to the given branch of the tree as a std::vector of names of
+     * branches
+     * @param mparams reference to the measurements parameters
+     */
+    void parse_omeas(Yp::inspect_node &in,
+                     const std::vector<std::string> &inner_tree,
+                     gp::measure_u1 &mparams) {
+      const std::vector<std::string> state0 = in.get_InnerTree();
+      in.dig_deeper(inner_tree); // entering the glueball node
+      YAML::Node nd = in.get_outer_node();
+
+      mparams.res_dir = mparams.conf_dir; // default
+      in.read_opt_verb<std::string>(mparams.res_dir, {"res_dir"});
+
+      in.read_opt_verb<size_t>(mparams.verbosity, {"verbosity"});
+      in.read_opt_verb<size_t>(mparams.icounter, {"icounter"});
+      in.read_opt_verb<size_t>(mparams.nstep, {"nstep"});
+
+      if (nd["pion_staggered"]) {
+        mparams.pion_staggered = true;
+        in.read_verb<double>(mparams.m0, {"pion_staggered", "mass"});
+      }
+
+      in.read_opt_verb<bool>(mparams.Wloop, {"Wloop"});
+
+      // optional parameters for potentials
+      if (nd["potential"]) {
+        in.read_opt_verb<bool>(mparams.potentialplanar, {"potential", "potentialplanar"});
+        in.read_opt_verb<bool>(mparams.potentialnonplanar,
+                               {"potential", "potentialnonplanar"});
+        in.read_opt_verb<bool>(mparams.append, {"potential", "append"});
+        in.read_opt_verb<bool>(mparams.smear_spatial_only,
+                               {"potential", "smear_spatial_only"});
+        in.read_opt_verb<bool>(mparams.smear_temporal_only,
+                               {"potential", "smear_temporal_only"});
+        in.read_opt_verb<size_t>(mparams.n_apesmear, {"potential", "n_apesmear"});
+        in.read_opt_verb<double>(mparams.alpha, {"potential", "alpha"});
+        in.read_opt_verb<double>(mparams.sizeWloops, {"potential", "sizeWloops"});
+      }
+      if (nd["glueball"]) {
+        mparams.glueball.do_measure = true;
+        parse_glueball_measure(in, {"glueball"}, mparams.glueball);
+      }
+
+      if (nd["gradient_flow"]) {
+        mparams.gradient_flow = true;
+        in.read_opt_verb<double>(mparams.epsilon_gradient_flow,
+                                 {"gradient_flow", "epsilon"});
+        in.read_verb<double>(mparams.tmax, {"gradient_flow", "tmax"});
+      }
+
+      in.set_InnerTree(state0); // reset to previous state
     }
 
     namespace hmc {
@@ -248,32 +307,7 @@ namespace input_file_parsing {
 
         if (nd["omeas"]) {
           hparams.do_omeas = true;
-
-          hparams.omeas.res_dir = hparams.conf_dir; // default
-          in.read_opt_verb<std::string>(hparams.omeas.res_dir, {"omeas", "res_dir"});
-
-          in.read_opt_verb<size_t>(hparams.omeas.verbosity, {"omeas", "verbosity"});
-          in.read_opt_verb<size_t>(hparams.omeas.icounter, {"omeas", "icounter"});
-          in.read_opt_verb<size_t>(hparams.omeas.nstep, {"omeas", "nstep"});
-
-          if (nd["omeas"]["pion_staggered"]) {
-            hparams.omeas.pion_staggered = true;
-            in.read_verb<double>(hparams.omeas.m0, {"omeas", "pion_staggered", "mass"});
-          }
-
-          in.read_opt_verb<bool>(hparams.omeas.Wloop, {"omeas", "Wloop"});
-
-          if (nd["omeas"]["glueball"]) {
-            hparams.omeas.glueball.do_measure = true;
-            parse_glueball_measure(in, {"omeas", "glueball"}, hparams.omeas.glueball);
-          }
-
-          if (nd["omeas"]["gradient_flow"]) {
-            hparams.omeas.gradient_flow = true;
-            in.read_opt_verb<double>(hparams.omeas.epsilon_gradient_flow,
-                                     {"omeas", "gradient_flow", "epsilon"});
-            in.read_verb<double>(hparams.omeas.tmax, {"omeas", "gradient_flow", "tmax"});
-          }
+          parse_omeas(in, {"omeas"}, hparams.omeas);
         }
 
         in.finalize();
@@ -284,9 +318,9 @@ namespace input_file_parsing {
 
     namespace measure {
 
-      int parse_input_file(const std::string &file,
-                           gp::physics &pparams,
-                           gp::measure_u1 &mparams) {
+      void parse_input_file(const std::string &file,
+                            gp::physics &pparams,
+                            gp::measure_u1 &mparams) {
         std::cout << "## Parsing input file: " << file << "\n";
         const YAML::Node nd = YAML::LoadFile(file);
         Yp::inspect_node in(nd);
@@ -301,58 +335,8 @@ namespace input_file_parsing {
                                    {"monomials", "gauge", "anisotropic", "xi"});
         }
 
-        // measure-u1 parameters
-        in.read_opt_verb<size_t>(mparams.n_meas, {"omeas", "n_meas"});
-        in.read_opt_verb<size_t>(mparams.nstep, {"omeas", "nstep"});
-        in.read_opt_verb<bool>(mparams.lenghty_conf_name, {"omeas", "lenghty_conf_name"});
-        in.read_opt_verb<size_t>(mparams.icounter, {"omeas", "icounter"});
-        in.read_opt_verb<size_t>(mparams.seed, {"omeas", "seed"});
-        in.read_opt_verb<bool>(mparams.Wloop, {"omeas", "Wloop"});
-        // optional parameters for gradient
-        if (nd["omeas"]["gradient_flow"]) {
-          mparams.gradient_flow = true;
-          in.read_opt_verb<double>(mparams.epsilon_gradient_flow,
-                                   {"omeas", "gradient_flow", "epsilon"});
-
-          in.read_opt_verb<double>(mparams.tmax, {"omeas", "gradient_flow", "tmax"});
-        }
-        // optional parameters for pion
-        if (nd["omeas"]["pion_staggered"]) {
-          pparams.include_staggered_fermions = true;
-
-          mparams.pion_staggered = true;
-          in.read_verb<double>(pparams.m0, {"omeas", "pion_staggered", "mass"});
-
-          in.read_opt_verb<std::string>(mparams.solver,
-                                        {"omeas", "pion_staggered", "solver"});
-          in.read_opt_verb<double>(mparams.tolerance_cg,
-                                   {"omeas", "pion_staggered", "tolerance_cg"});
-          in.read_opt_verb<size_t>(mparams.solver_verbosity,
-                                   {"omeas", "pion_staggered", "solver_verbosity"});
-          in.read_opt_verb<size_t>(mparams.seed_pf,
-                                   {"omeas", "pion_staggered", "seed_pf"});
-        }
-
-        if (nd["omeas"]["glueball"]) {
-          mparams.glueball.do_measure = true;
-          parse_glueball_measure(in, {"omeas", "glueball"}, mparams.glueball);
-        }
-
-        // optional parameters for potentials
-        if (nd["omeas"]["potential"]) {
-          in.read_opt_verb<bool>(mparams.potentialplanar, {"omeas", "potential", "potentialplanar"});
-          in.read_opt_verb<bool>(mparams.potentialnonplanar,
-                                 {"omeas", "potential", "potentialnonplanar"});
-          in.read_opt_verb<bool>(mparams.append, {"omeas", "potential", "append"});
-          in.read_opt_verb<bool>(mparams.smear_spatial_only,
-                                 {"omeas", "potential", "smear_spatial_only"});
-          in.read_opt_verb<bool>(mparams.smear_temporal_only,
-                                 {"omeas", "potential", "smear_temporal_only"});
-          in.read_opt_verb<size_t>(mparams.n_apesmear,
-                                   {"omeas", "potential", "n_apesmear"});
-          in.read_opt_verb<double>(mparams.alpha, {"omeas", "potential", "alpha"});
-          in.read_opt_verb<double>(mparams.sizeWloops,
-                                   {"omeas", "potential", "sizeWloops"});
+        if (nd["omeas"]) {
+          parse_omeas(in, {"omeas"}, mparams);
         }
 
         in.read_opt_verb<std::string>(mparams.conf_dir, {"omeas", "conf_dir"});
@@ -364,9 +348,7 @@ namespace input_file_parsing {
         validate_beta_str_width(mparams.beta_str_width);
 
         in.finalize();
-
-        in.finalize();
-        return 0;
+        return;
       }
 
     } // namespace measure
@@ -385,9 +367,9 @@ namespace input_file_parsing {
         return;
       }
 
-      int parse_input_file(const std::string &file,
-                           gp::physics &pparams,
-                           gp::metropolis_u1 &mcparams) {
+      void parse_input_file(const std::string &file,
+                            gp::physics &pparams,
+                            gp::metropolis_u1 &mcparams) {
         std::cout << "## Parsing input file: " << file << "\n";
         const YAML::Node nd = YAML::LoadFile(file);
         Yp::inspect_node in(nd);
@@ -426,32 +408,15 @@ namespace input_file_parsing {
         in.read_verb<double>(mcparams.delta, {"metropolis", "delta"});
         in.read_opt_verb<size_t>(mcparams.N_hit, {"metropolis", "N_hit"});
         validate_N_hit(mcparams.N_hit);
-        
-        // measure parameters for measuring during generation of configs
-        // optional parameters for potentials
-        if (nd["omeas"]["potential"]) {
-          mcparams.do_omeas=true;
-          in.read_opt_verb<bool>(mcparams.omeas.potentialplanar, {"omeas", "potential", "potentialplanar"});
-          in.read_opt_verb<bool>(mcparams.omeas.potentialnonplanar,
-                                 {"omeas", "potential", "potentialnonplanar"});
-          in.read_opt_verb<bool>(mcparams.omeas.append, {"omeas", "potential", "append"});
-          in.read_opt_verb<bool>(mcparams.omeas.smear_spatial_only,
-                                 {"omeas", "potential", "smear_spatial_only"});
-          in.read_opt_verb<bool>(mcparams.omeas.smear_temporal_only,
-                                 {"omeas", "potential", "smear_temporal_only"});
-          in.read_opt_verb<size_t>(mcparams.omeas.n_apesmear,
-                                   {"omeas", "potential", "n_apesmear"});
-          in.read_opt_verb<double>(mcparams.omeas.alpha, {"omeas", "potential", "alpha"});
-          in.read_opt_verb<double>(mcparams.omeas.sizeWloops,
-                                   {"omeas", "potential", "sizeWloops"});
-          in.read_opt_verb<std::string>(mcparams.omeas.res_dir, {"omeas", "res_dir"});
-        }
 
-        
+        if (nd["omeas"]) {
+          mcparams.do_omeas = true;
+          parse_omeas(in, {"omeas"}, mcparams.omeas);
+        }
 
         in.finalize();
 
-        return 0;
+        return;
       }
 
     } // namespace metropolis

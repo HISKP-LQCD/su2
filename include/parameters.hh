@@ -63,6 +63,12 @@ namespace global_parameters {
 
   /* optional parameters for the measure program the in U(1) theory */
   struct measure_u1 {
+    
+    // trivial parameters: needed only to generalize function working with the other programs too
+    bool do_mcmc =  false; // offline measurements program doesn't do Markov chain Monte carlo
+    bool do_omeas = true; // offline measurements program does measuments
+    bool restart = true; // restart from previously saved config 
+
     size_t verbosity = 0; // verbosity of the output
 
     size_t n_meas = 10; // total number of sweeps

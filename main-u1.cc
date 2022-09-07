@@ -47,12 +47,12 @@ namespace here {
   namespace gp = global_parameters;
 
   template <class Group>
-  double gauge_energy(const gp::physics &pparams, const gaugeconfig<Group> &U) {
+  double gauge_energy(const gp::physics &pparams, const gaugeconfig<Group> &U, const bool spatial_only=false) {
     if (pparams.flat_metric) {
-      return flat_spacetime::gauge_energy(U);
+      return flat_spacetime::gauge_energy(U, spatial_only);
     }
     if (pparams.rotating_frame) {
-      return rotating_spacetime::gauge_energy(U, pparams.Omega);
+      return rotating_spacetime::gauge_energy(U, pparams.Omega, spatial_only);
     } else {
       spacetime_lattice::fatal_error("Invalid metric when calling: ", __func__);
       return {};
@@ -88,10 +88,10 @@ namespace here {
                       double &Q,
                       bool cloverdef = true) {
     if (pparams.flat_metric) {
-      flat_spacetime::energy_density(U, E, Q, false);
+      flat_spacetime::energy_density(U, E, Q, cloverdef);
     }
     if (pparams.rotating_frame) {
-      rotating_spacetime::energy_density(U, pparams.Omega, E, Q, false);
+      rotating_spacetime::energy_density(U, pparams.Omega, E, Q, cloverdef);
     }
     return;
   }
@@ -208,6 +208,7 @@ int main(int ac, char *av[]) {
 {    os.open(mcparams.conf_dir + "/output.u1-metropolis.data", std::ios::app);}
   std::vector<double> rate = {0., 0.};
 
+os << "## conf_no. energy_spatial energy_all density_clover density_no_clover" << std::endl;
 
   /**
    * do measurements:
@@ -230,10 +231,11 @@ int main(int ac, char *av[]) {
       rate += here::sweep(pparams, U, engines, mcparams.delta, mcparams.N_hit, pparams.beta,
                           pparams.xi, pparams.anisotropic);
       
-      double energy = here::gauge_energy<_u1>(pparams, U);
+      double energy = here::gauge_energy<_u1>(pparams, U, /*spatial_only=*/true);
       
       double E = 0., Q = 0.;
-      flat_spacetime::energy_density(U, E, Q);
+      flat_spacetime::energy_density(U, E, Q, /*cloverdef=*/true);
+      
       // measuring spatial plaquettes only means only (ndims-1)/ndims of all plaquettes are
       // measured, so need facnorm for normalization to 1
       std::cout << inew << " " << std::scientific << std::setw(18) << std::setprecision(15)
@@ -241,11 +243,11 @@ int main(int ac, char *av[]) {
       os << inew << " " << std::scientific << std::setw(18) << std::setprecision(15)
          << energy * normalisation * facnorm << " ";
       
-      energy = here::gauge_energy<_u1>(pparams, U);
+      energy = here::gauge_energy<_u1>(pparams, U, /*spatial_only=*/false);
       
       std::cout << energy * normalisation << " " << Q << " ";
       os << energy * normalisation << " " << Q << " ";
-      here::energy_density(pparams, U, E, Q, false);
+      here::energy_density(pparams, U, E, Q, /*cloverdef=*/false);
       std::cout << Q << std::endl;
       os << Q << std::endl;
       

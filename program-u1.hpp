@@ -163,12 +163,14 @@ namespace u1 {
     }
 
     template <class Group>
-    double gauge_energy(const gp::physics &pparams, const gaugeconfig<Group> &U) {
+    double gauge_energy(const gp::physics &pparams,
+                        const gaugeconfig<Group> &U,
+                        const bool spatial_only = false) {
       if (pparams.flat_metric) {
-        return flat_spacetime::gauge_energy(U);
+        return flat_spacetime::gauge_energy(U, spatial_only);
       }
       if (pparams.rotating_frame) {
-        return rotating_spacetime::gauge_energy(U, pparams.Omega);
+        return rotating_spacetime::gauge_energy(U, pparams.Omega, spatial_only);
       } else {
         spacetime_lattice::fatal_error("Invalid metric when calling: ", __func__);
         return {};
@@ -191,7 +193,6 @@ namespace u1 {
     }
 
     void init_gauge_conf_mcmc() {
-
       /**
        * @brief measuring spatial plaquettes only means only (ndims-1)/ndims of all
        * plaquettes are measured, so need facnorm for normalization to 1

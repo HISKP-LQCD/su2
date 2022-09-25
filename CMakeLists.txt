@@ -1,12 +1,11 @@
-# Copyright © 2017 Martin Ueding <dev@martin-ueding.de>
-#             2017 Carsten Urbach <urbach@hiskp.uni-bonn.de>
+# Copyright © 2022 Carsten Urbach <urbach@hiskp.uni-bonn.de>
+#             2022 Simone Romiti <simone.romiti@uni-bonn.de>
 # Licensed under the GNU Public License version 3
 
-cmake_minimum_required(VERSION 2.8.11)
+cmake_minimum_required(VERSION 3.22.1)
 project(su2 C CXX)
-project(su2hmc C CXX)
 
-add_definitions(--std=c++11)
+set (CMAKE_CXX_STANDARD 11) # c++ standard
 
 ## here we generate version.hh
 ## to track the git version of the executables
@@ -24,10 +23,10 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/.git")
     OUTPUT_VARIABLE GIT_COMMIT_HASH
     OUTPUT_STRIP_TRAILING_WHITESPACE
   )
-else(EXISTS "${CMAKE_SOURCE_DIR}/.git")
+else()
   set(GIT_BRANCH "")
   set(GIT_COMMIT_HASH "")
-endif(EXISTS "${CMAKE_SOURCE_DIR}/.git")
+endif()
 
 message(STATUS "Git current branch: ${GIT_BRANCH}")
 message(STATUS "Git commit hash: ${GIT_COMMIT_HASH}")
@@ -39,32 +38,20 @@ configure_file(
 )
 
 include_directories(${CMAKE_SOURCE_DIR}/)
+include_directories(${CMAKE_SOURCE_DIR}/include/)
 include_directories(${CMAKE_BINARY_DIR}/generated/)
 
+
+# openMP threads parallelization
 find_package(OpenMP)
+
 
 # setting C and CXX compilation flags
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS} -D_USE_OMP_")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS} -D_USE_OMP_")
 
-# adding support for math operations when using GPU offloading
-# set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -foffload=-lm -fcf-protection=none -fstack-protector")
-# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -foffload=-lm -fcf-protection=none -fstack-protector")
+include_directories(${YAML_SRC_DIR}/include/ ${YAML_SRC_DIR}/include/yaml-cpp/)
 
-# Input files are parsed using the yaml-cpp library
-set(yaml_src_dir ${YAML_SRC})
-set(
-    inc_dir  
-    ${yaml_src_dir}/include/
-    ${yaml_src_dir}/include/yaml-cpp/
-    )
-include_directories(${inc_dir})
-
-
-
-# There is one header file which is in a subdirectory. This add the `-i` to the
-# compiler.
-include_directories("include/")
 
 # We could just have two `add_executable` blocks listing almost all source
 # files. However, CMake would then compile the source files twice, once for
@@ -72,7 +59,7 @@ include_directories("include/")
 # different executables. Here we want to re-use this. One can either track the
 # generated objects files or create a simple static library. The latter is done
 # here.
-add_library(su2
+add_library(${PROJECT_NAME}
     exp_gauge.cc
     print_program_options.cc
     parse_commandline.cc
@@ -96,13 +83,9 @@ add_executable(test-groups test.cc)
 add_executable(scaling scaling.cc)
 add_executable(try tryreduce.cc)
 
-set(
-    link_dir  
-    ${yaml_src_dir}/build/
-    ${yaml_src_dir}/build/lib/
-)
+set(link_dir  ${YAML_BINARY_DIR})
 
-target_link_directories(su2 PUBLIC ${link_dir})
+target_link_directories(${CMAKE_PROJECT_NAME} PUBLIC ${link_dir})
 
 foreach(target su2-hmc u1-hmc su2-metropolis u1-metropolis su2-kramers su2-measure u1-measure test-groups scaling try)
   target_link_libraries(${target} su2 libyaml-cpp.a)

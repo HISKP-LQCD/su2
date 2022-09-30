@@ -127,27 +127,19 @@ namespace YAML_parsing {
     }
 
     /**
-     * @brief saving value from YAML node
-     * Saving in 'x' the value specified in the YAML node under the key string 'name'.
-     * If the key doesn't exist, nothing is done
-     * @tparam T cast type of the parameter
-     * @param x address of the value
+     * @brief reading a nested YAML node
      * @param outer_tree vector of strings determining the path to the input value
      */
-    template <class T> void read(T &x, const std::vector<std::string> &outer_tree) {
+    YAML::Node read_node(const std::vector<std::string> &outer_tree) {
       std::vector<std::string> tree = (*this).InnerTree;
       tree.insert(tree.end(), outer_tree.begin(), outer_tree.end());
       const YAML::Node node_i = YAML::Clone(this->get_outer_node(tree));
       const std::string g_str = this->get_node_str(tree);
 
-      try {
-        x = node_i.as<T>();
-      } catch (...) {
-        std::cerr << "Error: check \"" << g_str << "\" in your YAML input file. ";
-        std::cerr << boost::typeindex::type_id<T>() << " type was expected. \n";
-        std::abort();
-      }
-
+      if(node_i.IsNull())
+{   std::cerr << "Error: \"" << g_str << "\" not found in your YAML. ";
+std::abort();
+}
       // adding the node string identifiers to the std::set (*this).U
       std::vector<std::string> t1 = {};
       const size_t n = tree.size();
@@ -156,8 +148,36 @@ namespace YAML_parsing {
         U.insert(this->get_node_str(t1));
       }
 
-      return;
+
+      return node_i;
     }
+
+       /**
+     * @brief saving value from YAML node
+     * Saving in 'x' the value specified in the YAML node under the key string 'name'.
+     * If the key doesn't exist, nothing is done
+     * @tparam T cast type of the parameter
+     * @param x address of the value
+     * @param outer_tree vector of strings determining the path to the input value
+     */
+    template <class T> void read(T &x, const std::vector<std::string> &outer_tree) {
+    YAML::Node node_i = YAML::Clone(this->read_node(outer_tree));
+      
+      std::vector<std::string> tree = (*this).InnerTree;
+      tree.insert(tree.end(), outer_tree.begin(), outer_tree.end());
+      const std::string g_str = this->get_node_str(tree);
+      
+         try {
+        x = node_i.as<T>();
+      } catch (...) {
+     std::cerr << "Error: check \"" << g_str << "\" in your YAML input file. ";
+        std::cerr << boost::typeindex::type_id<T>() << " type was expected. \n";
+        std::abort();
+      }
+
+ 
+    }
+
 
     std::vector<std::string> get_full_tree(const std::vector<std::string> &tree) {
       std::vector<std::string> full_tree = (*this).InnerTree;
@@ -170,6 +190,30 @@ namespace YAML_parsing {
       this->read<T>(x, tree);
       std::vector<std::string> tree2 = this->get_full_tree(tree);
       std::cout << "## " << this->get_node_str(tree2) << "=" << x << "\n";
+      return;
+    }
+
+    // read() and output on std::cout each component of the list (passed in yaml format)
+    template <class T>
+    void read_list_verb(std::vector<T> &x, const std::vector<std::string> &tree) {
+      YAML::Node node =  YAML::Clone(this->read_node(tree));
+      std::vector<size_t> x0(0);
+       
+       const size_t N = node.size();
+       for (size_t i = 0; i < N; i++)
+       {
+        x0.push_back(node[i].as<T>());
+       }
+
+       x=x0;
+
+      
+      std::vector<std::string> tree2 = this->get_full_tree(tree);
+      std::cout << "## " << this->get_node_str(tree2) << "= [";
+      for (T xi : x) {
+        std::cout << xi << ", ";
+      }
+      std::cout << "]\n";
       return;
     }
 

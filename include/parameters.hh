@@ -49,7 +49,7 @@ namespace global_parameters {
 
     bool do_measure = false; // measure the glueball correlator
     bool doAPEsmear = false; // apply APE smearing to the links
-    size_t nAPEsmear; // number of APE smearing iterations
+    std::vector<size_t> vec_nAPEsmear; // list of number of APE smearing iterations
     double alphaAPEsmear; // alpha parameter for the smearing. alpha=1 -> no smearing.
 
     bool loops_GEVP = false; // 'true' when computing C_ij for the various loops

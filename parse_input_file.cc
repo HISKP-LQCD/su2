@@ -148,7 +148,7 @@ namespace input_file_parsing {
 
       in.read_verb<bool>(mgparams.doAPEsmear, {"do_APE_smearing"});
       if (mgparams.doAPEsmear) {
-        in.read_verb<size_t>(mgparams.nAPEsmear, {"APE_smearing", "n"});
+        in.read_list_verb<size_t>(mgparams.vec_nAPEsmear, {"APE_smearing", "n"});
         in.read_verb<double>(mgparams.alphaAPEsmear, {"APE_smearing", "alpha"});
       }
       in.read_opt_verb<bool>(mgparams.lengthy_file_name, {"lengthy_file_name"});
@@ -184,6 +184,11 @@ namespace input_file_parsing {
 
       mparams.res_dir = mparams.conf_dir; // default
       in.read_opt_verb<std::string>(mparams.res_dir, {"res_dir"});
+
+      in.read_opt_verb<std::string>(mparams.conf_dir, {"conf_dir"});
+      in.read_opt_verb<std::string>(mparams.conf_basename, {"conf_basename"});
+      in.read_opt_verb<size_t>(mparams.beta_str_width, {"beta_str_width"});
+      validate_beta_str_width(mparams.beta_str_width);
 
       in.read_opt_verb<size_t>(mparams.verbosity, {"verbosity"});
       in.read_opt_verb<size_t>(mparams.icounter, {"icounter"});
@@ -225,15 +230,85 @@ namespace input_file_parsing {
       in.set_InnerTree(state0); // reset to previous state
     }
 
-    namespace hmc {
-      void parse_input_file(const std::string &file,
-                            gp::physics &pparams,
-                            gp::hmc_u1 &hparams) {
-        std::cout << "## Parsing input file: " << file << "\n";
-        const YAML::Node nd = YAML::LoadFile(file);
-        Yp::inspect_node in(nd);
+    /**
+     * @brief parsing the hmc block of the YAML input file
+     *
+     * @param in inspection node (full tree)
+     * @param inner_tree path to the given branch of the tree as a std::vector of names of
+     * branches
+     * @param hparams reference to the hmc parameters
+     */
+    void parse_hmc(Yp::inspect_node &in,
+                     const std::vector<std::string> &inner_tree,
+                     gp::hmc_u1 &hparams) {
+      const std::vector<std::string> state0 = in.get_InnerTree();
+      in.dig_deeper(inner_tree); // entering the glueball node
+      YAML::Node nd = in.get_outer_node();
 
-        parse_geometry(in, pparams);
+        in.read_verb<size_t>(hparams.N_save, {"n_save"});
+        in.read_verb<size_t>(hparams.n_meas, {"n_meas"});
+
+        in.read_opt_verb<bool>(hparams.do_mcmc, {"do_mcmc"});
+
+        if (nd["restart"] && nd["heat"]) {
+          std::cerr << "Error: "
+                    << "'restart' and 'heat' conditions are incompatible in the hmc. "
+                    << "Aborting.\n";
+          std::abort();
+        }
+        if (!nd["restart"] && !nd["heat"]) {
+          std::cerr << "Error: "
+                    << "Please pass either 'restart' or 'heat' to the hmc. "
+                    << "Aborting.\n";
+          std::abort();
+        }
+
+        in.read_opt_verb<bool>(hparams.restart, {"restart"});
+        in.read_opt_verb<bool>(hparams.heat, {"heat"});
+
+        in.read_opt_verb<size_t>(hparams.seed, {"seed"});
+        in.read_opt_verb<std::string>(hparams.configfilename, {"configname"});
+        in.read_opt_verb<std::string>(hparams.conf_dir, {"conf_dir"});
+        in.read_opt_verb<std::string>(hparams.conf_basename, {"conf_basename"});
+        in.read_opt_verb<bool>(hparams.lenghty_conf_name, {"lenghty_conf_name"});
+
+        in.read_opt_verb<size_t>(hparams.beta_str_width, {"beta_str_width"});
+        validate_beta_str_width(hparams.beta_str_width);
+
+
+      in.set_InnerTree(state0); // reset to previous state
+    }
+
+    void parse_integrator(Yp::inspect_node &in,
+                     const std::vector<std::string> &inner_tree,
+                     gp::hmc_u1 &hparams) {
+      const std::vector<std::string> state0 = in.get_InnerTree();
+      in.dig_deeper(inner_tree); // entering the glueball node
+      YAML::Node nd = in.get_outer_node();
+
+        in.read_opt_verb<size_t>(hparams.N_rev, {"N_rev"});
+        in.read_opt_verb<size_t>(hparams.n_steps, {"n_steps"});
+        in.read_opt_verb<double>(hparams.tau, {"tau"});
+        in.read_opt_verb<size_t>(hparams.exponent, {"exponent"});
+        in.read_opt_verb<std::string>(hparams.integrator, {"name"});
+
+      in.set_InnerTree(state0); // reset to previous state
+    }
+
+    /**
+     * @brief parse monomials and operators
+     * 
+     * @param in 
+     * @param inner_tree 
+     * @param pparams reference to the physics parameters
+     * @param hparams reference to the physics parameters
+     */
+    void parse_action(Yp::inspect_node &in,
+                     const std::vector<std::string> &inner_tree,
+                     gp::physics& pparams, gp::hmc_u1 &hparams) {
+      const std::vector<std::string> state0 = in.get_InnerTree();
+      in.dig_deeper(inner_tree); // entering the glueball node
+      YAML::Node nd = in.get_outer_node();
 
         if (nd["monomials"]) {
           if (nd["monomials"]["gauge"]) {
@@ -267,43 +342,29 @@ namespace input_file_parsing {
           }
         }
 
-        // hmc-u1 parameters
-        in.read_verb<size_t>(hparams.N_save, {"hmc", "n_save"});
-        in.read_verb<size_t>(hparams.n_meas, {"hmc", "n_meas"});
 
-        in.read_opt_verb<bool>(hparams.do_mcmc, {"hmc", "do_mcmc"});
 
-        if (nd["hmc"]["restart"] && nd["hmc"]["heat"]) {
-          std::cerr << "Error: "
-                    << "'restart' and 'heat' conditions are incompatible in the hmc. "
-                    << "Aborting.\n";
-          std::abort();
-        }
-        if (!nd["hmc"]["restart"] && !nd["hmc"]["heat"]) {
-          std::cerr << "Error: "
-                    << "Please pass either 'restart' or 'heat' to the hmc. "
-                    << "Aborting.\n";
-          std::abort();
-        }
+      in.set_InnerTree(state0); // reset to previous state
+    }
 
-        in.read_opt_verb<bool>(hparams.restart, {"hmc", "restart"});
-        in.read_opt_verb<bool>(hparams.heat, {"hmc", "heat"});
+    namespace hmc {
+      void parse_input_file(const std::string &file,
+                            gp::physics &pparams,
+                            gp::hmc_u1 &hparams) {
+        std::cout << "ciao\n";
+        std::cout << "## Parsing input file: " << file << "\n";
+        const YAML::Node nd = YAML::LoadFile(file);
+        Yp::inspect_node in(nd);
 
-        in.read_opt_verb<size_t>(hparams.seed, {"hmc", "seed"});
-        in.read_opt_verb<std::string>(hparams.configfilename, {"hmc", "configname"});
-        in.read_opt_verb<std::string>(hparams.conf_dir, {"hmc", "conf_dir"});
-        in.read_opt_verb<std::string>(hparams.conf_basename, {"hmc", "conf_basename"});
-        in.read_opt_verb<bool>(hparams.lenghty_conf_name, {"hmc", "lenghty_conf_name"});
+        parse_geometry(in, pparams);
 
-        in.read_opt_verb<size_t>(hparams.beta_str_width, {"hmc", "beta_str_width"});
-        validate_beta_str_width(hparams.beta_str_width);
+
+        parse_action(in, {}, pparams, hparams); 
+        
+        parse_hmc(in, {"hmc"}, hparams); // hmc-u1 parameters
 
         // integrator parameters
-        in.read_opt_verb<size_t>(hparams.N_rev, {"integrator", "N_rev"});
-        in.read_opt_verb<size_t>(hparams.n_steps, {"integrator", "n_steps"});
-        in.read_opt_verb<double>(hparams.tau, {"integrator", "tau"});
-        in.read_opt_verb<size_t>(hparams.exponent, {"integrator", "exponent"});
-        in.read_opt_verb<std::string>(hparams.integrator, {"integrator", "name"});
+        parse_integrator(in, {"integrator"}, hparams);
 
         if (nd["omeas"]) {
           hparams.do_omeas = true;
@@ -338,14 +399,6 @@ namespace input_file_parsing {
         if (nd["omeas"]) {
           parse_omeas(in, {"omeas"}, mparams);
         }
-
-        in.read_opt_verb<std::string>(mparams.conf_dir, {"omeas", "conf_dir"});
-        in.read_opt_verb<std::string>(mparams.res_dir, {"omeas", "res_dir"});
-
-        in.read_opt_verb<std::string>(mparams.conf_basename, {"omeas", "conf_basename"});
-
-        in.read_opt_verb<size_t>(mparams.beta_str_width, {"omeas", "beta_str_width"});
-        validate_beta_str_width(mparams.beta_str_width);
 
         in.finalize();
         return;

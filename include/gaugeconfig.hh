@@ -147,13 +147,13 @@ private:
                   const size_t x,
                   const size_t y,
                   const size_t z,
-                  const size_t mu) const {
+                  const size_t _mu) const {
     size_t y0 = (t + Lt) % Lt;
     size_t y1 = (x + Lx) % Lx;
     size_t y2 = (y + Ly) % Ly;
     size_t y3 = (z + Lz) % Lz;
-    size_t _mu = (mu + ndims) % ndims;
-    return ((((y0 * Lx + y1) * Ly + y2) * Lz + y3) * ndims + _mu);
+    size_t _mu = (_mu + ndims) % ndims;
+    return ((((y0 * Lx + y1) * Ly + y2) * Lz + y3) * ndims + mu);
   }
 };
 

@@ -49,13 +49,16 @@ namespace global_parameters {
 
     bool do_measure = false; // measure the glueball correlator
     bool doAPEsmear = false; // apply APE smearing to the links
-    size_t nAPEsmear; // number of APE smearing iterations
+    std::vector<size_t> vec_nAPEsmear; // list of number of APE smearing iterations
     double alphaAPEsmear; // alpha parameter for the smearing. alpha=1 -> no smearing.
 
     bool loops_GEVP = false; // 'true' when computing C_ij for the various loops
-//    size_t max_length_loops = 4; // maximum length of loops interpolating the glueballs
-    size_t rmin_GEVP = 0; // minimum length of square loop interpolating glueball wavefunction
-    size_t rmax_GEVP = 0; // maximum length of square loop interpolating glueball wavefunction
+    //    size_t max_length_loops = 4; // maximum length of loops interpolating the
+    //    glueballs
+    size_t rmin_GEVP =
+      0; // minimum length of square loop interpolating glueball wavefunction
+    size_t rmax_GEVP =
+      0; // maximum length of square loop interpolating glueball wavefunction
 
     bool U_ij = false; // interpolating with the average spatial plaquette U_ij
     bool U_munu = false; // interpolating with the average plaquette U_munu
@@ -63,11 +66,12 @@ namespace global_parameters {
 
   /* optional parameters for the measure program the in U(1) theory */
   struct measure_u1 {
-    
-    // trivial parameters: needed only to generalize function working with the other programs too
-    bool do_mcmc =  false; // offline measurements program doesn't do Markov chain Monte carlo
+    // trivial parameters: needed only to generalize function working with the other
+    // programs too
+    bool do_mcmc =
+      false; // offline measurements program doesn't do Markov chain Monte carlo
     bool do_omeas = true; // offline measurements program does measuments
-    bool restart = true; // restart from previously saved config 
+    bool restart = true; // restart from previously saved config
 
     size_t verbosity = 0; // verbosity of the output
 
@@ -108,16 +112,14 @@ namespace global_parameters {
     bool lenghty_conf_name = true; // add ensemble information in configuration name
     size_t beta_str_width = g_beta_str_width; // length of the beta value config filename
 
-    bool pion_staggered =
-      false; // whether to measure the staggered pion correlator or not
+    bool pion_staggered = false; // true when measuring the staggered pion correlator
     double m0; // bare quark mass
     std::string solver = "CG"; // Type of solver: CG, BiCGStab
     double tolerance_cg = 1e-10; // Tolerance for the solver for the dirac operator
     size_t solver_verbosity = 0; // Verbosity for the solver for the dirac operator
     size_t seed_pf = 97234719; // Seed for the evaluation of the fermion determinant
 
-    measure_glueball_u1
-      glueball; // structure for the measure of the glueball
+    measure_glueball_u1 glueball; // struct for the measure of the glueball
   };
 
   /* Optional parameters for the hmc the in U(1) theory */
@@ -157,6 +159,14 @@ namespace global_parameters {
 
     bool do_omeas = false; // true iff online measurement are ON
     measure_u1 omeas; // stuct for online measurements
+
+    /**
+     * @brief constructor. Setting default arguments for substructures (e.g. `omeas`)
+     *
+     * @return hmc_u1
+     */
+    hmc_u1() { omeas.conf_dir = conf_dir; }
+    ~hmc_u1() {}
   };
 
   /* optional parameters for the MCMC the in U(1) theory */
@@ -177,12 +187,12 @@ namespace global_parameters {
     size_t N_hit = 10; // N_hit updates are performed on each link during one sweep
     double heat =
       1.0; // determines if thermalization starts from a hot (=1) or cold(=0) config
-    double delta =
-      1.0; // quantifies how much the prooposed new link can differ from the current link 
-    bool do_mcmc = true; // true when generating configurations through the Markov chain Monte Carlo
+    double delta = 1.0; // quantifies how much the prooposed new link can differ from
+                        // the current link
+    bool do_mcmc =
+      true; // true when generating configurations through the Markov chain Monte Carlo
     bool do_omeas = false; // true when omeasurements are done
     measure_u1 omeas; // struct for online measurements
-    
   };
 
 } // namespace global_parameters

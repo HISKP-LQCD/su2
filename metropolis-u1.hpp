@@ -154,8 +154,8 @@ namespace u1 {
       return;
     }
 
-    void run(int ac, char *av[]) {
-      this->pre_run(ac, av);
+    void run(const std::string& path) {
+      this->pre_run(path);
       this->init_gauge_conf_mcmc();
       this->set_omp_threads();
 

@@ -233,6 +233,17 @@ namespace YAML_parsing {
       return;
     }
 
+    // read_verb() with `optional` as a parameter
+    template <class T>
+    void read_verb(const bool &optional, T &x, const std::vector<std::string> &tree) {
+      if (optional) {
+        this->read_opt_verb<T>(x, tree);
+
+      } else {
+        this->read_verb<T>(x, tree);
+      }
+    }
+
     /**
      * @brief finalize the parsing
      * Check if after all the read functions calls the std::set G and U are the same

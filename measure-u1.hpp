@@ -42,8 +42,8 @@ namespace u1 {
       U = U0;
     }
 
-    void run(int ac, char *av[]) {
-      this->pre_run(ac, av);
+    void run(const std::string& path) {
+      this->pre_run(path);
 
       const size_t istart =
         omeas.icounter == 0 ? omeas.icounter + omeas.nstep : omeas.icounter;

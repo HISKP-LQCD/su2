@@ -9,6 +9,8 @@
  *
  */
 
+#pragma once
+
 #include "flat-energy_density.hh"
 #include "flat-gauge_energy.hpp"
 #include "flat-sweep.hh" // flat spacetime
@@ -41,6 +43,101 @@
 namespace u1 {
 
   namespace po = boost::program_options;
+
+  /**
+   * @brief parsing the command line for the main program.
+   * Parameters available: "help" and "file"
+   * see implementation for details
+   * @param ac argc from the standard main() function
+   * @param av argv from the standard main() function
+   */
+  void parse_command_line(int ac, char *av[], std::string &input_file) {
+    po::options_description desc("Allowed options");
+    desc.add_options()("help,h", "produce this help message")(
+      "file,f", po::value<std::string>(&input_file)->default_value("NONE"),
+      "yaml input file");
+
+    po::variables_map vm;
+    po::store(po::parse_command_line(ac, av, desc), vm);
+    po::notify(vm);
+
+    if (vm.count("help")) {
+      std::cout << desc << "\n";
+      exit(0);
+    }
+    return;
+  }
+
+  /**
+   * @brief struct of boolean flags
+   * each flag is true when the corresponding program is running.
+   * NOTE: Only one flat at the time can be true
+   */
+  struct running_program {
+    bool do_hmc = false; // Hybrid Monte Carlo algorithm
+    bool do_metropolis = false; // Metropolis algorithm
+    bool do_omeas = false; // only measuring observables
+  };
+
+  /**
+   * @brief node without conflicting nodes
+   * In the input file one may have specified multiple MC algorithms or none (only offline
+   * measurements). This function takes the path to theinput file as input and returns a
+   * YAML node cleaned and ready to be used.
+   *
+   * @param rp running program
+   * @param input_file path to the input file
+   */
+  YAML::Node get_cleaned_input_file(running_program &rp, const std::string &input_file) {
+    YAML::Node nd = YAML::LoadFile(input_file);
+
+    bool &do_hmc = rp.do_hmc;
+    bool &do_metropolis = rp.do_metropolis;
+    bool &do_omeas = rp.do_omeas;
+
+    if (nd["hmc"]) {
+      do_hmc = nd["hmc"]["do_mcmc"].as<bool>();
+      if (!do_hmc) {
+        nd.remove("integrator");
+        nd.remove("hmc");
+      }
+    }
+
+    do_metropolis = false;
+    if (nd["metropolis"]) {
+      do_metropolis = nd["metropolis"]["do_mcmc"].as<bool>();
+      if (!do_metropolis) {
+        nd.remove("metropolis");
+      }
+    }
+
+    do_omeas = bool(nd["omeas"]);
+    return nd;
+  }
+
+  /**
+   * @brief export YAML node on file appending .<current-date> to the path
+   *
+   */
+  std::string get_exported_node_timestamp(const YAML::Node &nd, const std::string& input_file) {
+    YAML::Emitter emitter;
+    emitter << nd;
+    std::stringstream ss;
+    ss << emitter.c_str();
+    const std::string cyn = ss.str(); // cleaned yaml node
+
+    auto t = std::time(nullptr);
+    auto tm = *std::localtime(&t);
+    std::stringstream ss_time;
+    ss_time << std::put_time(&tm, "%Y-%m-%d_%H:%M:%S");
+    std::string tif = input_file + "." + ss_time.str();
+
+    std::ofstream out(tif);
+    out << cyn;
+    out.close();
+    return tif;
+  }
+
   namespace gp = global_parameters;
 
   template <class sparam_type> class program {
@@ -77,6 +174,8 @@ namespace u1 {
 
     virtual void print_program_info() const = 0;
 
+    std::string get_input_file() const { return input_file; }
+
     void print_git_info() const {
       std::cout << "## GIT branch " << GIT_BRANCH << " on commit \n\n";
     }
@@ -88,26 +187,10 @@ namespace u1 {
 
     /**
      * @brief parsing the command line for the main program.
-     * Parameters available: "help" and "file"
      * see implementation for details
-     * @param ac argc from the standard main() function
-     * @param av argv from the standard main() function
      */
     void parse_command_line(int ac, char *av[]) {
-      po::options_description desc("Allowed options");
-      desc.add_options()("help,h", "produce this help message")(
-        "file,f", po::value<std::string>(&input_file)->default_value("NONE"),
-        "yaml input file");
-
-      po::variables_map vm;
-      po::store(po::parse_command_line(ac, av, desc), vm);
-      po::notify(vm);
-
-      if (vm.count("help")) {
-        std::cout << desc << "\n";
-        exit(0);
-      }
-      return;
+      u1::parse_command_line(ac, av, (*this).input_file);
     }
 
     virtual void parse_input_file() = 0;
@@ -259,7 +342,12 @@ namespace u1 {
       return;
     }
 
-    virtual void run(int ac, char *av[]) = 0;
+    /**
+     * @brief run the (generic) program
+     *
+     * @param path path to the input file
+     */
+    virtual void run(const std::string &path) = 0;
 
     /**
      * @brief online measurements over the i-th trajectory
@@ -341,12 +429,13 @@ namespace u1 {
     /**
      * @brief part of the program flow common to all programs
      *
+     * @param path path to the input file
      */
-    void pre_run(int ac, char *av[]) {
+    void pre_run(const std::string &path) {
       this->print_program_info();
       this->print_git_info();
 
-      this->parse_command_line(ac, av);
+      (*this).input_file = path;
       this->parse_input_file();
 
       this->create_directories();

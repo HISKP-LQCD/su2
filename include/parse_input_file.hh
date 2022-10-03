@@ -194,7 +194,7 @@ namespace YAML_parsing {
     // read() and output on std::cout each component of the list (passed in yaml format)
     template <class T>
     void read_sequence_verb(std::vector<T> &x, const std::vector<std::string> &tree) {
-      YAML::Node node = YAML::Clone(this->read_node(tree));
+      const YAML::Node node = YAML::Clone(this->read_node(tree));
       std::string s1 = node.as<std::string>(); // = "n1, n2, ..."
       boost::replace_all(s1, " ", ""); // "n1,n2,n3,..." : no spaces
       std::vector<std::string> vs;

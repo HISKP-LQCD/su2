@@ -27,7 +27,7 @@ int main(int argc, char *argv[]) {
 
   u1::running_program rp; // running program
   YAML::Node nd = YAML::Clone(u1::get_cleaned_input_file(rp, input_file));
-  std::string tif = u1::get_exported_node_timestamp(nd, input_file); // timestaped input file
+  std::string tif = u1::get_exported_node_timestamp(nd, input_file); // timestamped input file
 
   bool &do_hmc = rp.do_hmc;
   bool &do_metropolis = rp.do_metropolis;

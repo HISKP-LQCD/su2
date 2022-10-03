@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <boost/algorithm/string.hpp>
+#include <boost/lexical_cast.hpp>
 #include <boost/program_options.hpp>
 #include <boost/type_index.hpp>
 #include <set>
@@ -136,10 +138,10 @@ namespace YAML_parsing {
       const YAML::Node node_i = YAML::Clone(this->get_outer_node(tree));
       const std::string g_str = this->get_node_str(tree);
 
-      if(node_i.IsNull())
-{   std::cerr << "Error: \"" << g_str << "\" not found in your YAML. ";
-std::abort();
-}
+      if (node_i.IsNull()) {
+        std::cerr << "Error: \"" << g_str << "\" not found in your YAML. ";
+        std::abort();
+      }
       // adding the node string identifiers to the std::set (*this).U
       std::vector<std::string> t1 = {};
       const size_t n = tree.size();
@@ -148,11 +150,10 @@ std::abort();
         U.insert(this->get_node_str(t1));
       }
 
-
       return node_i;
     }
 
-       /**
+    /**
      * @brief saving value from YAML node
      * Saving in 'x' the value specified in the YAML node under the key string 'name'.
      * If the key doesn't exist, nothing is done
@@ -161,23 +162,20 @@ std::abort();
      * @param outer_tree vector of strings determining the path to the input value
      */
     template <class T> void read(T &x, const std::vector<std::string> &outer_tree) {
-    YAML::Node node_i = YAML::Clone(this->read_node(outer_tree));
-      
+      YAML::Node node_i = YAML::Clone(this->read_node(outer_tree));
+
       std::vector<std::string> tree = (*this).InnerTree;
       tree.insert(tree.end(), outer_tree.begin(), outer_tree.end());
       const std::string g_str = this->get_node_str(tree);
-      
-         try {
+
+      try {
         x = node_i.as<T>();
       } catch (...) {
-     std::cerr << "Error: check \"" << g_str << "\" in your YAML input file. ";
+        std::cerr << "Error: check \"" << g_str << "\" in your YAML input file. ";
         std::cerr << boost::typeindex::type_id<T>() << " type was expected. \n";
         std::abort();
       }
-
- 
     }
-
 
     std::vector<std::string> get_full_tree(const std::vector<std::string> &tree) {
       std::vector<std::string> full_tree = (*this).InnerTree;
@@ -195,25 +193,27 @@ std::abort();
 
     // read() and output on std::cout each component of the list (passed in yaml format)
     template <class T>
-    void read_list_verb(std::vector<T> &x, const std::vector<std::string> &tree) {
-      YAML::Node node =  YAML::Clone(this->read_node(tree));
-      std::vector<size_t> x0(0);
-       
-       const size_t N = node.size();
-       for (size_t i = 0; i < N; i++)
-       {
-        x0.push_back(node[i].as<T>());
-       }
+    void read_sequence_verb(std::vector<T> &x, const std::vector<std::string> &tree) {
+      YAML::Node node = YAML::Clone(this->read_node(tree));
+      std::string s1 = node.as<std::string>(); // = "n1, n2, ..."
+      boost::replace_all(s1, " ", ""); // "n1,n2,n3,..." : no spaces
+      std::vector<std::string> vs;
+      boost::split(vs, s1, boost::is_any_of(",")); // vs = {"n1", "n2", ...}
 
-       x=x0;
+      const size_t N = vs.size(); // number of elements in the sequence
+      x.resize(N); // resizing the container
 
-      
       std::vector<std::string> tree2 = this->get_full_tree(tree);
-      std::cout << "## " << this->get_node_str(tree2) << "= [";
-      for (T xi : x) {
-        std::cout << xi << ", ";
+      std::cout << "## " << this->get_node_str(tree2) << "={";
+      for (size_t i = 0; i < N; i++) {
+        if (i > 0) {
+          std::cout << ", ";
+        }
+        x[i] = boost::lexical_cast<T>(vs[i]);
+        std::cout << x[i];
       }
-      std::cout << "]\n";
+      std::cout << "}\n";
+
       return;
     }
 
@@ -222,12 +222,13 @@ std::abort();
     done This function should be used with parameters that have a default argument.
     */
     template <class T> void read_opt_verb(T &x, const std::vector<std::string> &tree) {
-      std::vector<std::string> tree2 = this->get_full_tree(tree);
+      std::vector<std::string> tree1 = this->get_full_tree(tree);
+      std::vector<std::string> tree2 = tree1;
       tree2.pop_back();
       if (this->get_outer_node(tree2)[tree.back()]) {
         this->read_verb<T>(x, tree);
       } else {
-        std::cout << "## " << this->get_node_str(tree2) << "=" << x << " (default)\n";
+        std::cout << "## " << this->get_node_str(tree1) << "=" << x << " (default)\n";
       }
       return;
     }

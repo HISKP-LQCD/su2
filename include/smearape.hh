@@ -115,7 +115,7 @@ void APEsmearing(gaugeconfig<Group> &U, const double &alpha, const bool spatial=
             get_staples_APE(K, Uold, x, i, spatial);
             const Group Uprime(alpha*Uold(x, i) + beta*K);
             U(x, i) = Uprime;
-//            U(x, i).restoreSU(); not necessary -> see u1 constructor 
+            U(x, i).restoreSU(); //only necessary for su2
           }
         }
       }

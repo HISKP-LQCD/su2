@@ -144,7 +144,6 @@ int main(int ac, char* av[]) {
     //inew counts loops, loop-variable needed to have one RNG per thread with different seeds for every measurement
       size_t inew = (i-gparams.icounter)/thread+gparams.icounter;
       
-      rate += flat_spacetime::sweep(U, engines, delta, N_hit, gparams.beta, gparams.xi, gparams.anisotropic);
       double energy = flat_spacetime::gauge_energy(U, true);
 
       double E = 0., Q = 0.;

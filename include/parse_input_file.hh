@@ -317,13 +317,13 @@ namespace input_file_parsing {
     void parse_geometry(const YAML::Node &nd, gp::physics &pparams);
 
     namespace hmc {
-      void parse_input_file(const std::string &file,
+      void parse_input_file(const YAML::Node &nd,
                             gp::physics &pparams,
                             gp::hmc_u1 &hmc_params);
     }
 
     namespace measure {
-      void parse_input_file(const std::string &file,
+      void parse_input_file(const YAML::Node &nd,
                             gp::physics &pparams,
                             gp::measure_u1 &mparams);
 
@@ -331,7 +331,7 @@ namespace input_file_parsing {
 
     namespace metropolis {
       void validate_N_hit(const size_t &n);
-      void parse_input_file(const std::string &file,
+      void parse_input_file(const YAML::Node &nd,
                             gp::physics &pparams,
                             gp::metropolis_u1 &mcparams);
 

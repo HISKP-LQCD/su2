@@ -48,10 +48,11 @@ namespace u1 {
       std::cout << "## HMC Algorithm for U(1) gauge theory\n";
     }
 
-    void parse_input_file() {
+    void parse_input_file(const YAML::Node &nd) {
       namespace in_hmc = input_file_parsing::u1::hmc;
-      in_hmc::parse_input_file(input_file, pparams, sparams);
+      in_hmc::parse_input_file(nd, pparams, sparams);
       (*this).omeas = (*this).sparams.omeas;
+      conf_path_basename = io::get_conf_path_basename(pparams, sparams);
     }
 
     // generate list of monomials
@@ -127,6 +128,7 @@ namespace u1 {
       if (i > 0 && (i % sparams.N_save) == 0) { // saving U after each N_save trajectories
         std::string path_i = conf_path_basename + "." + std::to_string(i);
         if (sparams.do_mcmc) {
+          std::cout << "saving " << U.getLt() << "\n";
           U.save(path_i);
         }
 
@@ -147,8 +149,8 @@ namespace u1 {
       }
     }
 
-    void run(const std::string& path) {
-      this->pre_run(path);
+    void run(const YAML::Node &nd) {
+      this->pre_run(nd);
       this->init_gauge_conf_mcmc();
 
       if (g_icounter == 0) {
@@ -159,8 +161,8 @@ namespace u1 {
       }
 
       // Molecular Dynamics parameters
-      md_params mdparams0(sparams.n_steps, sparams.tau);
-      mdparams = mdparams0;
+      md_params md_p0(sparams.n_steps, sparams.tau);
+      mdparams = md_p0;
 
       this->init_monomials();
 

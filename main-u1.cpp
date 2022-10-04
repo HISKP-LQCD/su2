@@ -24,10 +24,10 @@
 int main(int argc, char *argv[]) {
   std::string input_file;
   u1::parse_command_line(argc, argv, input_file);
+  std::cout << "## Parsing input file: " << input_file << "\n";
 
   u1::running_program rp; // running program
   YAML::Node nd = YAML::Clone(u1::get_cleaned_input_file(rp, input_file));
-  std::string tif = u1::get_exported_node_timestamp(nd, input_file); // timestamped input file
 
   bool &do_hmc = rp.do_hmc;
   bool &do_metropolis = rp.do_metropolis;
@@ -39,14 +39,14 @@ int main(int argc, char *argv[]) {
   } else if (do_hmc ^ do_metropolis) { // one of the 2 algorithms
     if (do_hmc) {
       u1::hmc_algo h;
-      h.run(tif);
+      h.run(nd);
     } else if (do_metropolis) {
       u1::metropolis_algo mpl;
-      mpl.run(tif);
+      mpl.run(nd);
     }
   } else if (do_omeas) { // offline measurements
     u1::measure_algo ms;
-    ms.run(tif);
+    ms.run(nd);
   } else { // program does nothing
     std::cerr << "ERROR: Program ineffective.\n";
     return 1;

@@ -72,9 +72,6 @@ if(Boost_FOUND)
   include_directories(${Boost_INCLUDE_DIRS})
 endif()
 
-# add_executable(u1-metropolis metropolis-u1.cc)
-# add_executable(u1-measure measure-u1.cc)
-# add_executable(u1-hmc hmc-u1.cc)
 add_executable(u1-main main-u1.cpp)
 
 add_executable(su2-hmc hmc.cc)
@@ -89,7 +86,6 @@ set(link_dir  ${YAML_BINARY_DIR})
 
 target_link_directories(${CMAKE_PROJECT_NAME} PUBLIC ${link_dir})
 
-#foreach(target u1-main su2-hmc u1-hmc su2-metropolis u1-metropolis su2-kramers su2-measure u1-measure test-groups scaling try)
 foreach(target u1-main su2-hmc su2-metropolis su2-kramers su2-measure test-groups scaling try)
   target_link_libraries(${target} su2 libyaml-cpp.a)
   target_link_directories(${target} PUBLIC ${link_dir})

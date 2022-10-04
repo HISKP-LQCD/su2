@@ -112,30 +112,8 @@ namespace u1 {
     }
 
     do_omeas = bool(nd["omeas"]);
+
     return nd;
-  }
-
-  /**
-   * @brief export YAML node on file appending .<current-date> to the path
-   *
-   */
-  std::string get_exported_node_timestamp(const YAML::Node &nd, const std::string& input_file) {
-    YAML::Emitter emitter;
-    emitter << nd;
-    std::stringstream ss;
-    ss << emitter.c_str();
-    const std::string cyn = ss.str(); // cleaned yaml node
-
-    auto t = std::time(nullptr);
-    auto tm = *std::localtime(&t);
-    std::stringstream ss_time;
-    ss_time << std::put_time(&tm, "%Y-%m-%d_%H:%M:%S");
-    std::string tif = input_file + "." + ss_time.str();
-
-    std::ofstream out(tif);
-    out << cyn;
-    out.close();
-    return tif;
   }
 
   namespace gp = global_parameters;
@@ -148,7 +126,8 @@ namespace u1 {
     gp::physics pparams; // physics parameters
     sparam_type sparams; // specific parameters to the given run
     gp::measure_u1 omeas; // omeasurements parameters
-    std::string input_file; // yaml input file path
+    //    YAML::Node nd; // yaml node
+
     size_t threads;
 
     // filename needed for saving results from potential and potentialsmall
@@ -174,10 +153,9 @@ namespace u1 {
 
     virtual void print_program_info() const = 0;
 
-    std::string get_input_file() const { return input_file; }
-
     void print_git_info() const {
-      std::cout << "## GIT branch " << GIT_BRANCH << " on commit \n\n";
+      std::cout << "## GIT branch " << GIT_BRANCH;
+      std::cout << " on commit " << GIT_COMMIT_HASH << "\n";
     }
 
     void print_info() const {
@@ -185,15 +163,7 @@ namespace u1 {
       this->print_git_info();
     }
 
-    /**
-     * @brief parsing the command line for the main program.
-     * see implementation for details
-     */
-    void parse_command_line(int ac, char *av[]) {
-      u1::parse_command_line(ac, av, (*this).input_file);
-    }
-
-    virtual void parse_input_file() = 0;
+    virtual void parse_input_file(const YAML::Node &nd) = 0;
 
     /**
      * @brief create the necessary output directories
@@ -275,6 +245,18 @@ namespace u1 {
       return;
     }
 
+    /**
+     * @brief create gauge configuration with correct geometry
+     */
+    void create_gauge_conf() {
+      gaugeconfig<_u1> U0(pparams.Lx, pparams.Ly, pparams.Lz, pparams.Lt, pparams.ndims,
+                          pparams.beta);
+      U = U0;
+    }
+
+    /**
+     * @brief initialize the gauge configuration for the Markov chain Monte Carlo programs
+     */
     void init_gauge_conf_mcmc() {
       /**
        * @brief measuring spatial plaquettes only means only (ndims-1)/ndims of all
@@ -282,12 +264,6 @@ namespace u1 {
        *
        */
       facnorm = (pparams.ndims > 2) ? pparams.ndims / (pparams.ndims - 2) : 0;
-
-      conf_path_basename = io::get_conf_path_basename(pparams, sparams);
-
-      gaugeconfig<_u1> U0(pparams.Lx, pparams.Ly, pparams.Lz, pparams.Lt, pparams.ndims,
-                          pparams.beta);
-      U = U0;
 
       if (sparams.restart) {
         std::cout << "## restart " << sparams.restart << "\n";
@@ -347,16 +323,14 @@ namespace u1 {
      *
      * @param path path to the input file
      */
-    virtual void run(const std::string &path) = 0;
+    virtual void run(const YAML::Node &nd) = 0;
 
     /**
      * @brief online measurements over the i-th trajectory
      *
      * @param i trajectory index
-     * @param barrier true when the program stops if the i-th configuration cannot be
-     * loaded
      */
-    void do_omeas_i(const size_t &i, const bool &barrier = false) {
+    void do_omeas_i(const size_t &i) {
       const bool flag_i =
         sparams.do_omeas && (i > omeas.icounter) && ((i % omeas.nstep) == 0);
 
@@ -367,8 +341,9 @@ namespace u1 {
       if (!sparams.do_mcmc) { // doing only offline measurements
         const std::string path_i = conf_path_basename + "." + std::to_string(i);
         int ierrU = U.load(path_i);
-        if (ierrU == 1 && barrier) { // cannot load gauge config
-          exit(1);
+
+        if (ierrU == 1) { // cannot load gauge config
+          return; // simply ignore configuration
         }
       }
 
@@ -428,15 +403,13 @@ namespace u1 {
 
     /**
      * @brief part of the program flow common to all programs
-     *
-     * @param path path to the input file
      */
-    void pre_run(const std::string &path) {
+    void pre_run(const YAML::Node &nd) {
       this->print_program_info();
       this->print_git_info();
 
-      (*this).input_file = path;
-      this->parse_input_file();
+      this->parse_input_file(nd);
+      this->create_gauge_conf();
 
       this->create_directories();
 

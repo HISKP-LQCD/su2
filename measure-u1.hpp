@@ -16,11 +16,6 @@
 namespace u1 {
 
   class measure_algo : public program<gp::measure_u1> {
-  private:
-    std::string conf_path_basename;
-
-    size_t g_icounter = 0; // 1st configuration(trajectory) to load from
-    double normalisation;
 
   public:
     measure_algo() {}
@@ -30,25 +25,21 @@ namespace u1 {
       std::cout << "## Measuring Tool for U(1) gauge theory" << std::endl;
     }
 
-    void parse_input_file() {
+    void parse_input_file(const YAML::Node &nd) {
       namespace in_meas = input_file_parsing::u1::measure;
-      in_meas::parse_input_file(input_file, pparams, sparams);
+      in_meas::parse_input_file(nd, pparams, sparams);
       (*this).omeas = (*this).sparams;
+      conf_path_basename = io::get_conf_path_basename(pparams, sparams);
     }
 
-    void init_gauge_conf() {
-      gaugeconfig<_u1> U0(pparams.Lx, pparams.Ly, pparams.Lz, pparams.Lt, pparams.ndims,
-                          pparams.beta);
-      U = U0;
-    }
 
-    void run(const std::string& path) {
-      this->pre_run(path);
+    void run(const YAML::Node &nd) {
+      this->pre_run(nd);
 
       const size_t istart =
         omeas.icounter == 0 ? omeas.icounter + omeas.nstep : omeas.icounter;
-      for (size_t i = istart; i < omeas.n_meas * omeas.nstep + omeas.icounter;
-           i += omeas.nstep) {
+      const size_t nmax = omeas.n_meas * omeas.nstep + omeas.icounter;
+      for (size_t i = istart; i < nmax; i += omeas.nstep) {
         this->do_omeas_i(i);
       }
 

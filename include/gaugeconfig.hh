@@ -217,6 +217,15 @@ template <class T> void gaugeconfig<T>::save(std::string const &path) const {
   return;
 }
 
+/**
+ * @brief loading gauge configuration from binary file
+ * ACHTUNG: The new gauge configuration must be initialized with the correct size!
+ * The geometrical size of the lattices of the configuration stored in the file and the
+ * one in which the former is loaded to must be the same!
+ * @tparam T gauge group of the configuration
+ * @param path location of the previously generated configuration
+ * @return int 0=success and 1=failure to load
+ */
 template <class T> int gaugeconfig<T>::load(std::string const &path) {
   std::cout << "## Reading config from file " << path << std::endl;
   std::ifstream ifs(path, std::ios::in | std::ios::binary);

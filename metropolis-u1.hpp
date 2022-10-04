@@ -13,9 +13,6 @@
 
 namespace u1 {
 
-  // namespace po = boost::program_options;
-  // namespace gp = global_parameters;
-
   class metropolis_algo : public program<gp::metropolis_u1> {
   private:
     std::vector<double> rate = {0., 0.};
@@ -28,10 +25,11 @@ namespace u1 {
       std::cout << "## Metropolis Algorithm for U(1) gauge theory\n";
     }
 
-    void parse_input_file() {
+    void parse_input_file(const YAML::Node &nd) {
       namespace in_metropolis = input_file_parsing::u1::metropolis;
-      in_metropolis::parse_input_file(input_file, pparams, sparams);
+      in_metropolis::parse_input_file(nd, pparams, sparams);
       (*this).omeas = (*this).sparams.omeas;
+      conf_path_basename = io::get_conf_path_basename(pparams, sparams);
     }
 
     void set_omp_threads() {
@@ -77,7 +75,6 @@ namespace u1 {
       }
     }
 
-
     void open_output_data() {
       if (sparams.icounter == 0) {
         os.open(sparams.conf_dir + "/output.u1-metropolis.data", std::ios::out);
@@ -93,7 +90,6 @@ namespace u1 {
      * @param inew
      */
     void do_sweep(const size_t &i, const size_t &inew) {
-
       if (sparams.do_mcmc) {
         std::vector<std::mt19937> engines(threads);
         for (size_t engine = 0; engine < threads; engine += 1) {
@@ -132,8 +128,8 @@ namespace u1 {
       return;
     }
 
+    // save acceptance rates to additional file to keep track of measurements
     void save_acceptance_rates() {
-      // save acceptance rates to additional file to keep track of measurements
       if (sparams.do_mcmc) {
         std::cout << "## Acceptance rate " << rate[0] / double(sparams.n_meas)
                   << " temporal acceptance rate " << rate[1] / double(sparams.n_meas)
@@ -154,8 +150,8 @@ namespace u1 {
       return;
     }
 
-    void run(const std::string& path) {
-      this->pre_run(path);
+    void run(const YAML::Node &nd) {
+      this->pre_run(nd);
       this->init_gauge_conf_mcmc();
       this->set_omp_threads();
 

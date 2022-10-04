@@ -179,29 +179,20 @@ namespace input_file_parsing {
      */
     void parse_omeas(Yp::inspect_node &in,
                      const std::vector<std::string> &inner_tree,
-                     gp::measure_u1 &mparams,
-                     const std::string &type) {
-      bool online = true;
-      if (type == "online") {
-        online = true;
-      } else if (type == "offline") {
-        online = false;
-      } else {
-        spacetime_lattice::fatal_error(
-          "Error: Only 'online' and 'offline' are valid types for the omeasurement.",
-          __func__);
-      }
-
+                     gp::measure_u1 &mparams) {
       const std::vector<std::string> state0 = in.get_InnerTree();
       in.dig_deeper(inner_tree); // entering the glueball node
       YAML::Node nd = in.get_outer_node();
 
-      if (!online) {
-        in.read_opt_verb<std::string>(mparams.conf_dir, {"conf_dir"});
+      mparams.do_mcmc = !bool(nd["offline"]); // true if doing offline measurements
+      if (!mparams.do_mcmc) { // if offline, need these parameters
+        in.read_verb<std::string>(mparams.conf_dir, {"offline", "conf_dir"});
+        in.read_opt_verb<bool>(mparams.lenghty_conf_name, {"offline", "lenghty_conf_name"});
+        in.read_opt_verb<size_t>(mparams.beta_str_width, {"offline", "beta_str_width"});
       }
+
       mparams.res_dir = mparams.conf_dir; // default
       in.read_opt_verb<std::string>(mparams.res_dir, {"res_dir"});
-
 
       in.read_opt_verb<std::string>(mparams.conf_basename, {"conf_basename"});
       in.read_opt_verb<size_t>(mparams.beta_str_width, {"beta_str_width"});
@@ -362,11 +353,10 @@ namespace input_file_parsing {
     }
 
     namespace hmc {
-      void parse_input_file(const std::string &file,
-                            gp::physics &pparams,
-                            gp::hmc_u1 &hparams) {
-        std::cout << "## Parsing input file: " << file << "\n";
-        const YAML::Node nd = YAML::LoadFile(file);
+      void
+      parse_input_file(const YAML::Node &nd, gp::physics &pparams, gp::hmc_u1 &hparams) {
+        // std::cout << "## Parsing input file: " << file << "\n";
+        // const YAML::Node nd = YAML::LoadFile(file);
         Yp::inspect_node in(nd);
 
         parse_geometry(in, pparams);
@@ -379,7 +369,7 @@ namespace input_file_parsing {
         if (nd["omeas"]) {
           hparams.do_omeas = true;
           hparams.omeas.conf_dir = hparams.conf_dir;
-          parse_omeas(in, {"omeas"}, hparams.omeas, "online");
+          parse_omeas(in, {"omeas"}, hparams.omeas);
         }
 
         in.finalize();
@@ -390,11 +380,9 @@ namespace input_file_parsing {
 
     namespace measure {
 
-      void parse_input_file(const std::string &file,
+      void parse_input_file(const YAML::Node &nd,
                             gp::physics &pparams,
                             gp::measure_u1 &mparams) {
-        std::cout << "## Parsing input file: " << file << "\n";
-        const YAML::Node nd = YAML::LoadFile(file);
         Yp::inspect_node in(nd);
 
         parse_geometry(in, pparams);
@@ -408,7 +396,7 @@ namespace input_file_parsing {
         }
 
         if (nd["omeas"]) {
-          parse_omeas(in, {"omeas"}, mparams, "offline");
+          parse_omeas(in, {"omeas"}, mparams);
         }
 
         in.finalize();
@@ -431,11 +419,11 @@ namespace input_file_parsing {
         return;
       }
 
-      void parse_input_file(const std::string &file,
+      void parse_input_file(const YAML::Node &nd,
                             gp::physics &pparams,
                             gp::metropolis_u1 &mcparams) {
-        std::cout << "## Parsing input file: " << file << "\n";
-        const YAML::Node nd = YAML::LoadFile(file);
+        // std::cout << "## Parsing input file: " << file << "\n";
+        // const YAML::Node nd = YAML::LoadFile(file);
         Yp::inspect_node in(nd);
 
         parse_geometry(in, pparams);
@@ -475,7 +463,7 @@ namespace input_file_parsing {
 
         if (nd["omeas"]) {
           mcparams.do_omeas = true;
-          parse_omeas(in, {"omeas"}, mcparams.omeas, "online");
+          parse_omeas(in, {"omeas"}, mcparams.omeas);
         }
 
         in.finalize();

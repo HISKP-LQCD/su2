@@ -201,6 +201,7 @@ namespace input_file_parsing {
       in.read_opt_verb<size_t>(mparams.verbosity, {"verbosity"});
       in.read_opt_verb<size_t>(mparams.icounter, {"icounter"});
       in.read_opt_verb<size_t>(mparams.nstep, {"nstep"});
+      in.read_opt_verb<size_t>(mparams.n_meas, {"n_meas"});
 
       if (nd["pion_staggered"]) {
         mparams.pion_staggered = true;

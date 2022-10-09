@@ -90,13 +90,15 @@ namespace u1 {
    */
   YAML::Node get_cleaned_input_file(running_program &rp, const std::string &input_file) {
     YAML::Node nd = YAML::LoadFile(input_file);
+    YAML_parsing::inspect_node in(nd);
 
     bool &do_hmc = rp.do_hmc;
     bool &do_metropolis = rp.do_metropolis;
     bool &do_omeas = rp.do_omeas;
 
+
     if (nd["hmc"]) {
-      do_hmc = nd["hmc"]["do_mcmc"].as<bool>();
+      in.read_verb<bool>(do_hmc, {"hmc", "do_mcmc"});
       if (!do_hmc) {
         nd.remove("integrator");
         nd.remove("hmc");
@@ -105,13 +107,18 @@ namespace u1 {
 
     do_metropolis = false;
     if (nd["metropolis"]) {
-      do_metropolis = nd["metropolis"]["do_mcmc"].as<bool>();
+      in.read_verb<bool>(do_metropolis, {"metropolis", "do_mcmc"});
       if (!do_metropolis) {
         nd.remove("metropolis");
       }
     }
 
     do_omeas = bool(nd["omeas"]);
+    if(!do_hmc && !do_metropolis && !nd["omeas"]["offline"]){
+      std::cerr << "Error: Specify the offline measurements block when not doing MCMC algorithm.\n";
+      std::cerr << "Aborting.\n";
+      std::abort();
+    }
 
     return nd;
   }

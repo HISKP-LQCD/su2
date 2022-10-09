@@ -356,8 +356,6 @@ namespace input_file_parsing {
     namespace hmc {
       void
       parse_input_file(const YAML::Node &nd, gp::physics &pparams, gp::hmc_u1 &hparams) {
-        // std::cout << "## Parsing input file: " << file << "\n";
-        // const YAML::Node nd = YAML::LoadFile(file);
         Yp::inspect_node in(nd);
 
         parse_geometry(in, pparams);

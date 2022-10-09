@@ -128,7 +128,6 @@ namespace u1 {
       if (i > 0 && (i % sparams.N_save) == 0) { // saving U after each N_save trajectories
         std::string path_i = conf_path_basename + "." + std::to_string(i);
         if (sparams.do_mcmc) {
-          std::cout << "saving " << U.getLt() << "\n";
           U.save(path_i);
         }
 
@@ -139,7 +138,7 @@ namespace u1 {
           // check also if trajectory was accepted
           do_omeas = do_omeas && mdparams.getaccept();
         }
-
+        
         this->do_omeas_i(i);
 
         if (sparams.do_mcmc) { // storing last conf index (only after online measurements

@@ -132,14 +132,17 @@ namespace u1 {
         }
 
         // online measurements
-        bool do_omeas =
-          sparams.do_omeas && i > sparams.omeas.icounter && i % sparams.omeas.nstep == 0;
+        bool do_omeas = sparams.do_omeas && (i > sparams.omeas.icounter) &&
+                        ((i - sparams.omeas.icounter) <= sparams.omeas.n_meas) &&
+                        (i % sparams.omeas.nstep == 0);
         if (sparams.do_mcmc) {
           // check also if trajectory was accepted
           do_omeas = do_omeas && mdparams.getaccept();
         }
-        
-        this->do_omeas_i(i);
+
+        if (do_omeas) {
+          this->do_omeas_i(i);
+        }
 
         if (sparams.do_mcmc) { // storing last conf index (only after online measurements
                                // has been done)

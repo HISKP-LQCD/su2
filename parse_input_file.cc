@@ -187,11 +187,10 @@ namespace input_file_parsing {
       mparams.do_mcmc = !bool(nd["offline"]); // true if doing offline measurements
       if (!mparams.do_mcmc) { // if offline, need these parameters
         in.read_verb<std::string>(mparams.conf_dir, {"offline", "conf_dir"});
-        in.read_opt_verb<bool>(mparams.lenghty_conf_name,
-                               {"offline", "lenghty_conf_name"});
-        in.read_opt_verb<size_t>(mparams.beta_str_width, {"offline", "beta_str_width"});
         in.read_opt_verb<std::string>(mparams.conf_basename,
                                       {"offline", "conf_basename"});
+        in.read_opt_verb<bool>(mparams.lenghty_conf_name,
+                               {"offline", "lenghty_conf_name"});
         in.read_opt_verb<size_t>(mparams.beta_str_width, {"offline", "beta_str_width"});
         validate_beta_str_width(mparams.beta_str_width);
       }
@@ -200,6 +199,7 @@ namespace input_file_parsing {
       in.read_opt_verb<std::string>(mparams.res_dir, {"res_dir"});
 
       in.read_opt_verb<size_t>(mparams.verbosity, {"verbosity"});
+
       in.read_opt_verb<size_t>(mparams.icounter, {"icounter"});
       in.read_opt_verb<size_t>(mparams.nstep, {"nstep"});
       in.read_opt_verb<size_t>(mparams.n_meas, {"n_meas"});

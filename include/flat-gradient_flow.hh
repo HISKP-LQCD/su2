@@ -96,8 +96,7 @@ namespace flat_spacetime {
     }
 
     const double den_common = U.getVolume() * double(U.getNc());
-    // const double den = den_common * ndims_fact;
-    // const double den_ss = den_common * ndims_fact_ss;
+
     P[2] = flat_spacetime::gauge_energy(U) / den_common;
     P_ss[2] = flat_spacetime::gauge_energy(U, true) / den_common;
     flat_spacetime::energy_density(U, density, topQ);
@@ -113,11 +112,11 @@ namespace flat_spacetime {
     gaugemonomial<double, Group> SW(0, xi); // Wilson (pure) gauge action
 
     oss << "t "; // flow time
-    oss << "P P_ss P_ts "; // plaquette
-    oss << "Ep Ep_ss Ep_ts "; // energy from regular plaquette
-    oss << "xi "; // t^2 * E_plaquette(t)
-    oss << "Ec Ec_ss Ec_ts "; // energy from clover-leaf plaquette
-    oss << "Q Q_ss Q_ts" << std::endl;
+    oss << "xi "; // e_ts(t)/e_ss(t)
+    oss << "P P_ss "; // plaquette
+    oss << "Ep Ep_ss "; // energy from regular plaquette
+    oss << "Ec Ec_ss "; // energy from clover-leaf plaquette
+    oss << "Q" << std::endl;
 
     // evolution of t[1] until tmax
     //(note: eps=0.01 and tmax>0 --> the loop ends at some point)
@@ -131,7 +130,6 @@ namespace flat_spacetime {
       Q[0] = Q[2];
       P_ss[0] = P_ss[2];
       E_ss[0] = E_ss[2];
-      Q_ss[0] = Q_ss[2];
 
       for (unsigned int x0 = 1; x0 < 3; x0++) {
         t[x0] = t[x0 - 1] + eps;
@@ -143,19 +141,20 @@ namespace flat_spacetime {
         Q[x0] = topQ;
         flat_spacetime::energy_density(Vt, density_ss, topQ_ss, true, true);
         E_ss[x0] = density_ss;
-        Q_ss[x0] = topQ_ss;
       }
-
-      const double P_ts = P[1] - P_ss[1];
-      const double Q_ts = Q[1] - Q_ss[1];
 
       const double tsqr = t[1] * t[1];
 
       const double Ep = ndims_fact - P[1];
       const double Ep_ss = ndims_fact_ss - P_ss[1];
-      const double Ep_ts = double(d - 1.0) - P_ts;
-      const double xi_R =
-        sqrt((Ep_ts / Ep_ss) * (U.getndims() - 2.0) / 2.0); // renormalized anisotropy
+
+      const double Ep_ts = Ep - Ep_ss;
+
+      const double Ep_ts_bar = Ep_ts / (d - 1);
+      const double Ep_ss_bar = Ep_ss / ndims_fact_ss;
+
+      const double xi2_R = Ep_ts_bar / Ep_ss_bar;
+      const double xi_R = sqrt(xi2_R);
 
       const double t2Ep = tsqr * Ep;
       const double t2Ep_ss = tsqr * Ep_ss;
@@ -167,16 +166,15 @@ namespace flat_spacetime {
 
       const double t2Ec = tsqr * Ec;
       const double t2Ec_ss = tsqr * Ec_ss;
-      const double t2Ec_ts = tsqr * Ec_ts;
 
       oss << std::scientific; // using scientific notation
       oss.precision(16);
       oss << t[1] << " ";
-      oss << P[1] << " " << P_ss[1] << " " << P_ts << " ";
-      oss << Ep << " " << Ep_ss << " " << Ep_ts << " ";
       oss << xi_R << " ";
-      oss << Ec << " " << Ec_ss << " " << Ec_ts << " ";
-      oss << Q[1] << " " << Q_ss[1] << " " << Q_ts << "\n";
+      oss << P[1] << " " << P_ss[1] << " ";
+      oss << Ep << " " << Ep_ss << " ";
+      oss << Ec << " " << Ec_ss << " ";
+      oss << Q[1] << "\n";
     }
 
     std::ofstream ofs(path, std::ios::out);

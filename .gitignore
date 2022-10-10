@@ -33,8 +33,6 @@
 core
 su2
 su2hmc
-build/
-external/
 
 # non-text files from the documentation
 *.Rhistory

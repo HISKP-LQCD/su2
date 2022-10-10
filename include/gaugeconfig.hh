@@ -1,3 +1,15 @@
+/**
+ * @file gaugeconfig.hh
+ * @author Carsten Urbach (urbach@hiskp.uni-bonn.de)
+ * @author Simone Romiti (simone.romiti@uni-bonn.de)
+ * @brief class for U(1) or SU(2) gauge configuration
+ * @version 0.1
+ * @date 2022-10-03
+ *
+ * @copyright Copyright (c) 2022
+ *
+ */
+
 #pragma once
 
 #include "geometry.hh"
@@ -55,17 +67,39 @@ public:
     }
   }
 
-  size_t storage_size() const { return data.size() * sizeof(value_type); };
-  size_t getLx() const { return (Lx); }
-  size_t getLy() const { return (Ly); }
-  size_t getLz() const { return (Lz); }
-  size_t getLt() const { return (Lt); }
-  size_t getndims() const { return (ndims); }
-  size_t getVolume() const { return (volume); }
-  size_t getSize() const { return (volume * ndims); }
-  double getBeta() const { return beta; }
-  void setBeta(const double _beta) { beta = _beta; }
-  int getNc() const { return (data[0].N_c); }
+  size_t storage_size() const {
+    return data.size() * sizeof(value_type);
+  };
+  size_t getLx() const {
+    return (Lx);
+  }
+  size_t getLy() const {
+    return (Ly);
+  }
+  size_t getLz() const {
+    return (Lz);
+  }
+  size_t getLt() const {
+    return (Lt);
+  }
+  size_t getndims() const {
+    return (ndims);
+  }
+  size_t getVolume() const {
+    return (volume);
+  }
+  size_t getSize() const {
+    return (volume * ndims);
+  }
+  double getBeta() const {
+    return beta;
+  }
+  void setBeta(const double _beta) {
+    beta = _beta;
+  }
+  int getNc() const {
+    return (data[0].N_c);
+  }
   void restoreSU() {
 #pragma omp parallel for
     for (size_t i = 0; i < getSize(); i++) {
@@ -130,9 +164,28 @@ public:
     //    return ((double) bs) * Ux_mu + (1 - ((double)bs)) * Udagx_mu;
   }
 
-  value_type &operator[](size_t const index) { return data[index]; }
+  value_type &operator[](size_t const index) {
+    return data[index];
+  }
 
-  value_type operator[](size_t const index) const { return data[index]; }
+  value_type operator[](size_t const index) const {
+    return data[index];
+  }
+
+  bool operator==(const gaugeconfig &U) const {
+    typedef typename accum_type<T>::type accum;
+
+    const size_t N = this->getSize();
+    bool ret = true;
+#pragma omp parallel for
+    for (size_t i = 0; i < N; i++) {
+      const bool ci = (accum(data[i]) == accum(U[i]));
+      if (!ci) {
+        ret = false;
+      }
+    }
+    return ret;
+  }
 
   void save(std::string const &path) const;
   int load(std::string const &path);
@@ -147,13 +200,13 @@ private:
                   const size_t x,
                   const size_t y,
                   const size_t z,
-                  const size_t mu) const {
+                  const size_t _mu) const {
     size_t y0 = (t + Lt) % Lt;
     size_t y1 = (x + Lx) % Lx;
     size_t y2 = (y + Ly) % Ly;
     size_t y3 = (z + Lz) % Lz;
-    size_t _mu = (mu + ndims) % ndims;
-    return ((((y0 * Lx + y1) * Ly + y2) * Lz + y3) * ndims + _mu);
+    size_t mu = (_mu + ndims) % ndims;
+    return ((((y0 * Lx + y1) * Ly + y2) * Lz + y3) * ndims + mu);
   }
 };
 
@@ -164,6 +217,15 @@ template <class T> void gaugeconfig<T>::save(std::string const &path) const {
   return;
 }
 
+/**
+ * @brief loading gauge configuration from binary file
+ * ACHTUNG: The new gauge configuration must be initialized with the correct size!
+ * The geometrical size of the lattices of the configuration stored in the file and the
+ * one in which the former is loaded to must be the same!
+ * @tparam T gauge group of the configuration
+ * @param path location of the previously generated configuration
+ * @return int 0=success and 1=failure to load
+ */
 template <class T> int gaugeconfig<T>::load(std::string const &path) {
   std::cout << "## Reading config from file " << path << std::endl;
   std::ifstream ifs(path, std::ios::in | std::ios::binary);
@@ -193,8 +255,9 @@ template <class T> void coldstart(gaugeconfig<_u1> &config) {
 
 /**
  * @brief Initialize the gauge configuration to either hot or cold start.
- * Each value of the configuration array is set equal to a random number distributed as specified by `random_element()`.
- * @tparam T 
+ * Each value of the configuration array is set equal to a random number distributed as
+ * specified by `random_element()`.
+ * @tparam T
  * @param config gauge configuration to be initialized
  * @param seed seed of the random number generator
  * @param _delta parameter of the random distribution
@@ -218,8 +281,8 @@ void hotstart(gaugeconfig<T> &config, const int seed, const double _delta) {
  * @param hot : _delta = (double) hot
  */
 template <class T>
-void hotstart(gaugeconfig<T> &config, const int seed, const bool& hot) {
-  const double delta = (double) hot;
+void hotstart(gaugeconfig<T> &config, const int seed, const bool &hot) {
+  const double delta = (double)hot;
   std::mt19937 engine(seed);
   for (size_t i = 0; i < config.getSize(); i++) {
     random_element(config[i], engine, delta);

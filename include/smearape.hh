@@ -92,6 +92,7 @@ template <class Group> void spatial_smearlatticeape(gaugeconfig<Group> &U, doubl
 template <class Float, class Group>
 void APEsmearing(gaugeconfig<Group> &U, const double &alpha, const bool spatial=true) {
   size_t d = U.getndims();
+
   if (d == 2) {
     std::cerr << "Spatial smearing is not possible in 2 dimensions!" << std::endl;
     return;

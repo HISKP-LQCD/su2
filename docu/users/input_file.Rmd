@@ -34,9 +34,9 @@ This program can be used to perform the HMC evolution of a gauge configuration w
 - is "cold" (identity operator in the group)
 
 It can be used in 3 ways:
-  - hmc evolution (`hmc:do_hmc:true in the input file)
+  - hmc evolution (`hmc:do_mcmc:true in the input file)
   - hmc evolution with online measurements (`omeas` node in the input file)
-  - online measurements without hmc evolution (`hmc:do_hmc:false but `omeas` node in the input file).
+  - online measurements without hmc evolution (`hmc:do_mcmc:false but `omeas` node in the input file).
 
 ### References
 

@@ -9,7 +9,7 @@ geometry:
 
 # hmc parameters
 hmc:
-  do_hmc: false
+  do_mcmc: false
   seed: 93746
   n_save: 10
   n_meas: 100

@@ -3,6 +3,10 @@
 class md_params {
 
 public:
+
+  md_params(){}
+  ~md_params(){}
+
   md_params(size_t _nsteps, double _tau, size_t n = 1000000000) : 
     nsteps(_nsteps), n_prec(n), kmax(5), exponent(16), tau(_tau), H(0.),
     deltaH(0.), deltadeltaH(0.), deltadeltaU(0.),

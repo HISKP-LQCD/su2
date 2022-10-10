@@ -37,9 +37,9 @@ namespace omeasurements {
   template <class Group>
   void meas_wilson_loop(const gaugeconfig<Group> &U,
                         const size_t &i,
-                        const std::string &conf_dir) {
+                        const std::string &res_dir) {
     std::ostringstream os;
-    os << conf_dir + "/wilsonloop.";
+    os << res_dir + "/wilsonloop.";
     auto prevw = os.width(6);
     auto prevf = os.fill('0');
     os << i;
@@ -61,8 +61,10 @@ namespace omeasurements {
    * @param conf_dir
    */
   template <class Group, class sparams>
-  void
-  meas_gradient_flow(const gaugeconfig<Group> &U, const size_t &i, const global_parameters::physics& pparams, const sparams &S) {
+  void meas_gradient_flow(const gaugeconfig<Group> &U,
+                          const size_t &i,
+                          const global_parameters::physics &pparams,
+                          const sparams &S) {
     const std::string res_dir = S.res_dir;
     const double eps = S.epsilon_gradient_flow;
     const double tmax = S.tmax;
@@ -116,10 +118,218 @@ namespace omeasurements {
     return;
   }
 
+  namespace from_smeared_field {
+
+    /**
+     * @brief measure the glueball 0^{PC} correlators
+     * the interpolators are average plaquettes: sum_{\nu<\mu} U_{\mu \nu}
+     * measure the glueball correlators 0^{++}, 0^{+-}, 0^{-+}, 0^{--}
+     * @tparam Group
+     * @tparam sparams struct containing info on computation and output
+     * @param U gauge configuration
+     * @param i trajectory index
+     * @param S specific parameters
+     */
+    template <class Group, class sparams>
+    void meas_glueball_correlator_U_munu(const gaugeconfig<Group> &U,
+                                         const size_t &i,
+                                         const size_t &nAPEsmear,
+                                         const sparams &S,
+                                         const bool &spatial_only) {
+      typedef typename accum_type<Group>::type accum;
+
+      std::ostringstream oss;
+      oss << S.res_dir + "/";
+
+      // apply smearing
+      if (S.glueball.doAPEsmear) {
+        oss << "/smearAPEn" << nAPEsmear << "alpha" << S.glueball.alphaAPEsmear << "/";
+      }
+
+      // interpolator folder
+      std::string subdir = "U_munu/";
+      if (spatial_only) {
+        subdir = "U_ij/";
+      }
+      oss << subdir;
+      fsys::create_directories(fsys::absolute(oss.str()));
+
+      oss << "C_glueball_";
+      auto prevw = oss.width(8);
+      auto prevf = oss.fill('0');
+      oss << i;
+      oss.width(prevw);
+      oss.fill(prevf);
+
+      const std::string path = oss.str();
+      std::ofstream ofs(path, std::ios::out);
+
+      std::vector<double> sinks[4]; // sink at 't'
+      for (size_t i_PC = 0; i_PC < 4; i_PC++) {
+        sinks[i_PC].resize(U.getLt());
+      }
+
+      for (size_t t = 0; t < U.getLt(); t++) {
+        const accum Uij =
+          operators::get_rest_tr_sum_U_munu<accum, Group>(U, t, spatial_only, false);
+        const accum PUij =
+          operators::get_rest_tr_sum_U_munu<accum, Group>(U, t, spatial_only, true);
+
+        size_t i_PC = 0;
+        for (int sP = 1; sP >= -1; sP -= 2) {
+          for (int iC = 1; iC >= 0; iC--) {
+            const bool C = bool(iC);
+            std::complex<double> comb_snk = Uij + double(sP) * PUij;
+            comb_snk /= 2.0;
+
+            double snk;
+            if (C) {
+              snk = std::real(comb_snk);
+            } else {
+              snk = std::imag(comb_snk);
+            }
+            sinks[i_PC][t] = snk;
+
+            ++i_PC;
+          }
+        }
+      }
+
+      ofs << "t C_{++}(t) phi_{++}(t) C_{+-}(t) phi_{+-}(t) C_{-+}(t) phi_{-+}(t) "
+             "C_{--}(t) phi_{--}(t)"
+          << std::endl; // header
+      const size_t T_ext = U.getLt(); // lattice temporal time extent
+      for (size_t t = 0; t < T_ext; t++) {
+        ofs << t;
+        for (size_t i_PC = 0; i_PC < 4; i_PC++) {
+          double Ct = 0.0;
+          for (size_t tau = 0; tau < T_ext; tau++) {
+            Ct += sinks[i_PC][(t + tau) % T_ext] * sinks[i_PC][tau];
+          }
+          Ct /= double(T_ext); // average over all times
+          ofs << " " << std::scientific << std::setprecision(16) << Ct << " "
+              << sinks[i_PC][t];
+        }
+        ofs << std::endl;
+      }
+
+      ofs.close();
+
+      return;
+    }
+
+    /**
+     * @brief measure the glueball 0^{PC} correlators for the GEVP from a smeared gauge
+     * configuration measure the glueball correlators ij for the 0^{++}, 0^{+-}, 0^{-+},
+     * 0^{--} glueballs. The correlators are built as eq (1) of
+     * https://arxiv.org/pdf/hep-lat/0603016.pdf
+     * @tparam Group
+     * @tparam sparams struct containing info on computation and output
+     * @param U gauge configuration
+     * @param i trajectory index
+     * @param S specific parameters
+     */
+    template <class Group, class sparams>
+    void meas_glueball_correlator_GEVP(const gaugeconfig<Group> &U,
+                                       const size_t &i,
+                                       const size_t &nAPEsmear,
+                                       const sparams &S) {
+      typedef typename accum_type<Group>::type accum;
+
+      std::ostringstream oss_dir, oss_name;
+      oss_dir << S.res_dir + "/";
+
+      std::ostringstream oss_details;
+      oss_details << "smearAPEn" << nAPEsmear << "alpha" << S.glueball.alphaAPEsmear;
+      std::string meas_details = oss_details.str();
+
+      if (S.glueball.doAPEsmear) {
+        oss_dir << meas_details + "/";
+      }
+      fsys::create_directories(fsys::absolute(oss_dir.str()));
+
+      if (S.glueball.doAPEsmear) {
+        if (S.glueball.lengthy_file_name) {
+          oss_name << "_" << meas_details;
+        }
+      }
+      oss_name << "_";
+      auto prevw = oss_name.width(8);
+      auto prevf = oss_name.fill('0');
+      oss_name << i;
+      oss_name.width(prevw);
+      oss_name.fill(prevf);
+
+      const size_t T_ext = U.getLt(); // lattice temporal time extent
+      const size_t rmin = S.glueball.rmin_GEVP, rmax = S.glueball.rmax_GEVP;
+      const size_t N_ops = rmax; // number of GEVP interpolatoing operators
+
+      // phi_i(t)^{PC}
+      std::vector<std::vector<std::array<std::array<double, 2>, 2>>> phi(rmax - rmin + 1);
+
+      for (size_t ir = 0; ir <= rmax - rmin; ir++) {
+        const size_t r = ir + rmin;
+        phi[ir].resize(T_ext);
+        for (size_t t = 0; t < T_ext; t++) {
+          const std::complex<double> Pp =
+            glueballs::rest_trace_wloop_munu<double, Group>(t, U, r, r, 1, 2, false);
+          const std::complex<double> Pm =
+            glueballs::rest_trace_wloop_munu<double, Group>(t, U, r, r, 1, 2, true);
+          phi[ir][t][0][0] = (Pp + Pm).real() / 2.0; // PC=++
+          phi[ir][t][0][1] = (Pp + Pm).imag() / 2.0; // PC=+-
+          phi[ir][t][1][0] = (Pp - Pm).real() / 2.0; // PC=-+
+          phi[ir][t][1][1] = (Pp - Pm).imag() / 2.0; // PC=--
+        }
+      }
+
+      for (size_t i1 = 0; i1 <= rmax - rmin; i1++) {
+        const size_t r1 = i1 + rmin;
+        for (size_t i2 = 0; i2 <= i1; i2++) { // C_{ij} == C_{ji}
+          const size_t r2 = i2 + rmin;
+          const std::string dir_ij = oss_dir.str() + std::to_string(r1) + "_" +
+                                     std::to_string(r2) + "/"; // directory path
+          fsys::create_directories(fsys::absolute(dir_ij)); // creating directory
+
+          const std::string path =
+            dir_ij + "C_glueball" + oss_name.str(); // full path of output file
+
+          std::ostringstream oss_ij;
+          oss_ij << "t "
+                 << "C_{++}(t) phi_i_{++}(t) phi_j_{++}(t) "
+                 << "C_{+-}(t) phi_i_{+-}(t) phi_j_{+-}(t) "
+                 << "C_{-+}(t) phi_i_{-+}(t) phi_j_{-+}(t) "
+                 << "C_{--}(t) phi_i_{--}(t) phi_j_{--}(t)" << std::endl; // header
+
+          for (size_t t = 0; t < T_ext; t++) {
+            oss_ij << t;
+            for (size_t P = 0; P <= 1; P++) {
+              for (size_t C = 0; C <= 1; C++) {
+                double Ct = 0.0;
+                for (size_t tau = 0; tau < T_ext; tau++) {
+                  Ct += phi[i1][(t + tau) % T_ext][P][C] * phi[i2][tau][P][C];
+                }
+                Ct /= double(T_ext); // average over all times
+                oss_ij << " " << std::scientific << std::setprecision(16) << Ct << " "
+                       << phi[i1][t][P][C] << " " << phi[i2][t][P][C];
+              }
+            }
+            oss_ij << std::endl;
+          }
+
+          std::ofstream ofs(path, std::ios::out);
+          ofs << oss_ij.str();
+          ofs.close();
+        }
+      }
+
+      return;
+    }
+
+  } // namespace from_smeared_field
+
   /**
-   * @brief measure the glueball 0^{PC} correlators
-   * the interpolators are average plaquettes: sum_{\nu<\mu} U_{\mu \nu}
-   * measure the glueball correlators 0^{++}, 0^{+-}, 0^{-+}, 0^{--}
+   * @brief measure the glueball 0^{PC} correlators for all numbers of smearing steps
+   *
    * @tparam Group
    * @tparam sparams struct containing info on computation and output
    * @param U gauge configuration
@@ -131,100 +341,28 @@ namespace omeasurements {
                                        const size_t &i,
                                        const sparams &S,
                                        const bool &spatial_only) {
-    typedef typename accum_type<Group>::type accum;
+    const std::vector<size_t> &v_ns =
+      S.glueball.vec_nAPEsmear; // vector of number of smearing steps
+    const size_t ns = v_ns.size();
 
-    std::ostringstream oss;
-    oss << S.res_dir + "/";
-
-    // apply smearing
-    gaugeconfig<Group> U = U0;
-    if (S.glueball.doAPEsmear) {
-      for (size_t i = 0; i < S.glueball.nAPEsmear; i++) {
+    gaugeconfig<Group> U = U0; // copy of the initial gauge configuration
+    for (size_t is = 0; is < ns; is++) {
+      const size_t nsteps = (is == 0) ? v_ns[is] : v_ns[is] - v_ns[is - 1];
+      for (size_t i = 0; i < nsteps; i++) {
+        // other nsteps so that we reach the value of v_ns[is]
         spatial_APEsmearing<double, Group>(U, S.glueball.alphaAPEsmear);
       }
-      oss << "/smearAPEn" << S.glueball.nAPEsmear << "alpha" << S.glueball.alphaAPEsmear
-          << "/";
+      from_smeared_field::meas_glueball_correlator_U_munu(U, i, v_ns[is], S,
+                                                          spatial_only);
     }
-
-    // interpolator folder
-    std::string subdir = "U_munu/";
-    if (spatial_only) {
-      subdir = "U_ij/";
-    }
-    oss << subdir;
-    fsys::create_directories(fsys::absolute(oss.str()));
-
-    oss << "C_glueball_";
-    auto prevw = oss.width(8);
-    auto prevf = oss.fill('0');
-    oss << i;
-    oss.width(prevw);
-    oss.fill(prevf);
-
-    const std::string path = oss.str();
-    std::ofstream ofs(path, std::ios::out);
-
-    std::vector<double> sinks[4]; // sink at 't'
-    for (size_t i_PC = 0; i_PC < 4; i_PC++) {
-      sinks[i_PC].resize(U.getLt());
-    }
-
-    for (size_t t = 0; t < U.getLt(); t++) {
-      const accum Uij =
-        operators::get_rest_tr_sum_U_munu<accum, Group>(U, t, spatial_only, false);
-      const accum PUij =
-        operators::get_rest_tr_sum_U_munu<accum, Group>(U, t, spatial_only, true);
-
-      size_t i_PC = 0;
-      for (int sP = 1; sP >= -1; sP -= 2) {
-        for (int iC = 1; iC >= 0; iC--) {
-          const bool C = bool(iC);
-          std::complex<double> comb_snk = Uij + double(sP) * PUij;
-          comb_snk /= 2.0;
-
-          double snk;
-          if (C) {
-            snk = std::real(comb_snk);
-          } else {
-            snk = std::imag(comb_snk);
-          }
-          sinks[i_PC][t] = snk;
-
-          ++i_PC;
-        }
-      }
-    }
-
-    ofs << "t C_{++}(t) phi_{++}(t) C_{+-}(t) phi_{+-}(t) C_{-+}(t) phi_{-+}(t) "
-           "C_{--}(t) phi_{--}(t)"
-        << std::endl; // header
-    const size_t T_ext = U.getLt(); // lattice temporal time extent
-    for (size_t t = 0; t < T_ext; t++) {
-      ofs << t;
-      for (size_t i_PC = 0; i_PC < 4; i_PC++) {
-        double Ct = 0.0;
-        for (size_t tau = 0; tau < T_ext; tau++) {
-          Ct += sinks[i_PC][(t + tau) % T_ext] * sinks[i_PC][tau];
-        }
-        Ct /= double(T_ext); // average over all times
-        ofs << " " << std::scientific << std::setprecision(16) << Ct << " "
-            << sinks[i_PC][t];
-      }
-      ofs << std::endl;
-    }
-
-    ofs.close();
-
-    return;
   }
 
   /**
-   * @brief measure the glueball 0^{PC} correlators for the GEVP
-   * measure the glueball correlators ij for the 0^{++}, 0^{+-}, 0^{-+}, 0^{--} glueballs.
-   * The correlators are built as eq (1) of https://arxiv.org/pdf/hep-lat/0603016.pdf
+   * @brief measure of the glueball correlators for all numbers of smearing steps
+   *
    * @tparam Group
-   * @tparam sparams struct containing info on computation and output
-   * @param U gauge configuration
+   * @tparam sparams
+   * @param U0 initial gauge configuration
    * @param i trajectory index
    * @param S specific parameters
    */
@@ -232,106 +370,24 @@ namespace omeasurements {
   void meas_glueball_correlator_GEVP(const gaugeconfig<Group> &U0,
                                      const size_t &i,
                                      const sparams &S) {
-    typedef typename accum_type<Group>::type accum;
+    const std::vector<size_t> &v_ns =
+      S.glueball.vec_nAPEsmear; // vector of number of smearing steps
+    const size_t ns = v_ns.size();
 
-    std::ostringstream oss_dir, oss_name;
-    oss_dir << S.res_dir + "/";
-
-    std::ostringstream oss_details;
-    oss_details << "smearAPEn" << S.glueball.nAPEsmear << "alpha"
-                << S.glueball.alphaAPEsmear;
-    std::string meas_details = oss_details.str();
-
-    if (S.glueball.doAPEsmear) {
-      oss_dir << meas_details + "/";
-    }
-    fsys::create_directories(fsys::absolute(oss_dir.str()));
-
-    gaugeconfig<Group> U = U0;
-    if (S.glueball.doAPEsmear) {
-      for (size_t i = 0; i < S.glueball.nAPEsmear; i++) {
+    gaugeconfig<Group> U = U0; // copy of the initial gauge configuration
+    for (size_t is = 0; is < ns; is++) {
+      const size_t nsteps = (is == 0) ? v_ns[is] : v_ns[is] - v_ns[is - 1];
+      for (size_t i = 0; i < nsteps; i++) {
+        // other nsteps so that we reach the value of v_ns[is]
         spatial_APEsmearing<double, Group>(U, S.glueball.alphaAPEsmear);
       }
-      if (S.glueball.lengthy_file_name) {
-        oss_name << "_" << meas_details;
-      }
+      from_smeared_field::meas_glueball_correlator_GEVP(U, i, v_ns[is], S);
     }
-    oss_name << "_";
-    auto prevw = oss_name.width(8);
-    auto prevf = oss_name.fill('0');
-    oss_name << i;
-    oss_name.width(prevw);
-    oss_name.fill(prevf);
-
-    const size_t T_ext = U.getLt(); // lattice temporal time extent
-    const size_t rmin = S.glueball.rmin_GEVP, rmax = S.glueball.rmax_GEVP;
-    const size_t N_ops = rmax; // number of GEVP interpolatoing operators
-
-    // phi_i(t)^{PC}
-    std::vector<std::vector<std::array<std::array<double, 2>, 2>>> phi(rmax-rmin+1);
-
-    for (size_t ir = 0; ir <= rmax-rmin; ir++) {
-      const size_t r = ir + rmin;
-      phi[ir].resize(T_ext);
-      for (size_t t = 0; t < T_ext; t++) {
-        const std::complex<double> Pp =
-          glueballs::rest_trace_wloop_munu<double, Group>(t, U, r, r, 1, 2, false);
-        const std::complex<double> Pm =
-          glueballs::rest_trace_wloop_munu<double, Group>(t, U, r, r, 1, 2, true);
-        phi[ir][t][0][0] = (Pp + Pm).real() / 2.0; // PC=++
-        phi[ir][t][0][1] = (Pp + Pm).imag() / 2.0; // PC=+-
-        phi[ir][t][1][0] = (Pp - Pm).real() / 2.0; // PC=-+
-        phi[ir][t][1][1] = (Pp - Pm).imag() / 2.0; // PC=--
-      }
-    }
-
-    for (size_t i1 = 0; i1 <= rmax-rmin; i1++) {
-      const size_t r1 = i1 + rmin;
-      for (size_t i2 = 0; i2 <= i1; i2++) { // C_{ij} == C_{ji}
-        const size_t r2 = i2 + rmin;
-        const std::string dir_ij = oss_dir.str() + std::to_string(r1) + "_" +
-                                   std::to_string(r2) + "/"; // directory path
-        fsys::create_directories(fsys::absolute(dir_ij)); // creating directory
-
-        const std::string path =
-          dir_ij + "C_glueball" + oss_name.str(); // full path of output file
-
-        std::ostringstream oss_ij;
-        oss_ij << "t "
-               << "C_{++}(t) phi_i_{++}(t) phi_j_{++}(t) "
-               << "C_{+-}(t) phi_i_{+-}(t) phi_j_{+-}(t) "
-               << "C_{-+}(t) phi_i_{-+}(t) phi_j_{-+}(t) "
-               << "C_{--}(t) phi_i_{--}(t) phi_j_{--}(t)" << std::endl; // header
-
-        for (size_t t = 0; t < T_ext; t++) {
-          oss_ij << t;
-          for (size_t P = 0; P <= 1; P++) {
-            for (size_t C = 0; C <= 1; C++) {
-              double Ct = 0.0;
-              for (size_t tau = 0; tau < T_ext; tau++) {
-                Ct += phi[i1][(t + tau) % T_ext][P][C] * phi[i2][tau][P][C];
-              }
-              Ct /= double(T_ext); // average over all times
-              oss_ij << " " << std::scientific << std::setprecision(16) << Ct << " "
-                     << phi[i1][t][P][C] << " " << phi[i2][t][P][C];
-            }
-          }
-          oss_ij << std::endl;
-        }
-
-        std::ofstream ofs(path, std::ios::out);
-        ofs << oss_ij.str();
-        ofs.close();
-      }
-    }
-
-    return;
   }
 
-
   /**
-   * measures the planar wilson loops in temporal and spacial direction
-   * -(0,1) loops for temporal, (1,2) and (1,3) loops for spacial
+   * measures the planar wilson loops in temporal and spatial direction
+   * -(0,1) loops for temporal, (1,2) and (1,3) loops for spatial
    * writes one line per configuration into the resultfiles.
    * At the moment, measurements are implemented for dim=3,4.
    * @param U holds the gauge-configuration whose loops are measured
@@ -403,7 +459,7 @@ namespace omeasurements {
   }
 
   /**
-   * measures the nonplanar wilson loops in temporal and spacial direction
+   * measures the nonplanar wilson loops in temporal and spatial direction
    * writes one line per configuration into the resultfiles.
    * At the moment, measurements are implemented for dim=3.
    * all possible loops (t,x,y) with x,y <=min(4, Lx), t<Lt*sizeWloops are measured.

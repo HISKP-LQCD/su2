@@ -375,7 +375,7 @@ namespace u1 {
         if ((*this).omeas.verbosity > 0) {
           std::cout << "## online measuring: Wilson loop\n";
         }
-        omeasurements::meas_wilson_loop<_u1>(U, i, sparams.conf_dir);
+        omeasurements::meas_wilson_loop<_u1>(U, i, omeas.res_dir);
       }
       if ((*this).omeas.gradient_flow) {
         if ((*this).omeas.verbosity > 0) {

@@ -37,9 +37,9 @@ namespace omeasurements {
   template <class Group>
   void meas_wilson_loop(const gaugeconfig<Group> &U,
                         const size_t &i,
-                        const std::string &conf_dir) {
+                        const std::string &res_dir) {
     std::ostringstream os;
-    os << conf_dir + "/wilsonloop.";
+    os << res_dir + "/wilsonloop.";
     auto prevw = os.width(6);
     auto prevf = os.fill('0');
     os << i;

@@ -99,24 +99,16 @@ namespace u1 {
         rate += this->sweep(pparams, U, engines, sparams.delta, sparams.N_hit,
                             pparams.beta, pparams.xi, pparams.anisotropic);
 
-        double energy = this->gauge_energy<_u1>(pparams, U);
-
         double E = 0., Q = 0.;
-        flat_spacetime::energy_density(U, E, Q);
-        // measuring spatial plaquettes only means only (ndims-1)/ndims of all plaquettes
-        // are measured, so need facnorm for normalization to 1
-        std::cout << inew << " " << std::scientific << std::setw(18)
-                  << std::setprecision(15) << energy * normalisation * facnorm << " ";
-        os << inew << " " << std::scientific << std::setw(18) << std::setprecision(15)
-           << energy * normalisation * facnorm << " ";
-
-        energy = this->gauge_energy<_u1>(pparams, U);
-
-        std::cout << energy * normalisation << " " << Q << " ";
-        os << energy * normalisation << " " << Q << " ";
-        this->energy_density(pparams, U, E, Q, false);
-        std::cout << Q << std::endl;
-        os << Q << std::endl;
+        std::cout << inew;
+        os << inew;
+        for (bool ss : {false, true}) {
+          this->energy_density(pparams, U, E, Q, false, ss);
+          std::cout << " " << std::scientific << std::setprecision(15) << E << " " << Q;
+          os << " " << std::scientific << std::setprecision(15) << E << " " << Q;
+        }
+        std::cout << "\n";
+        os << "\n";
 
         if (inew > 0 && (inew % sparams.N_save) == 0) {
           std::ostringstream oss_i;
@@ -155,6 +147,7 @@ namespace u1 {
       this->init_gauge_conf_mcmc();
       this->set_omp_threads();
 
+      os << "i E Q E_ss Q_ss\n";
       /**
        * do measurements:
        * sweep: do N_hit Metropolis-Updates of every link in the lattice

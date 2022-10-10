@@ -96,7 +96,6 @@ namespace u1 {
     bool &do_metropolis = rp.do_metropolis;
     bool &do_omeas = rp.do_omeas;
 
-
     if (nd["hmc"]) {
       in.read_verb<bool>(do_hmc, {"hmc", "do_mcmc"});
       if (!do_hmc) {
@@ -114,8 +113,9 @@ namespace u1 {
     }
 
     do_omeas = bool(nd["omeas"]);
-    if(!do_hmc && !do_metropolis && !nd["omeas"]["offline"]){
-      std::cerr << "Error: Specify the offline measurements block when not doing MCMC algorithm.\n";
+    if (!do_hmc && !do_metropolis && !nd["omeas"]["offline"]) {
+      std::cerr << "Error: Specify the offline measurements block when not doing MCMC "
+                   "algorithm.\n";
       std::cerr << "Aborting.\n";
       std::abort();
     }
@@ -242,12 +242,13 @@ namespace u1 {
                         const gaugeconfig<T> &U,
                         double &E,
                         double &Q,
-                        bool cloverdef = true) {
+                        const bool &cloverdef = true,
+                        const bool &ss = false) {
       if (pparams.flat_metric) {
-        flat_spacetime::energy_density(U, E, Q, false);
+        flat_spacetime::energy_density(U, E, Q, cloverdef, ss);
       }
       if (pparams.rotating_frame) {
-        rotating_spacetime::energy_density(U, pparams.Omega, E, Q, false);
+        rotating_spacetime::energy_density(U, pparams.Omega, E, Q, cloverdef);
       }
       return;
     }

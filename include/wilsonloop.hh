@@ -186,7 +186,7 @@ void compute_all_loops(const gaugeconfig<Group> &U, std::string const &path) {
     oss << t;
     for (size_t r = 1; r < Lx; r++) {
       double loop = wilsonloop(U, r, t);
-      oss << " " << std::scientific << std::setw(15) << loop;
+      oss << " " << std::scientific << std::setprecision(15) << loop;
     }
     oss << std::endl;
   }

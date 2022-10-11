@@ -10,7 +10,7 @@
 namespace flat_spacetime {
 
   /**
-   * @brief symmetric definition of the energy densitY using the clover leaf
+   * @brief symmetric definition of the energy density using the clover leaf
    *
    *
    *  <--   <--
@@ -60,7 +60,7 @@ namespace flat_spacetime {
                       double &Q,
                       bool cloverdef = true,
                       const bool &ss = false) {
-    const size_t mu_start = ss ? 1 : 0;
+    const size_t mu_start = bool(ss);
 
     res = 0.;
     Q = 0.;
@@ -153,8 +153,9 @@ namespace flat_spacetime {
     // averaged mu < nu
     res = -res / U.getVolume();
     // averaged over four plaquette Wilson loops 1./4./4.
-    if (cloverdef)
+    if (cloverdef) {
       res /= 16.;
+    }
     // factor 4 from summing only mu < nu and rho < sigma
     Q = -4. * Q / (32.0 * M_PI * M_PI);
     // factor 1/16 from G_\mu\nu with clover definition

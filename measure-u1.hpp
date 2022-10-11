@@ -15,8 +15,7 @@
 
 namespace u1 {
 
-  class measure_algo : public program<gp::measure_u1> {
-
+  template <class Group> class measure_algo : public program<Group, gp::measure_u1> {
   public:
     measure_algo() {}
     ~measure_algo() {}
@@ -27,19 +26,21 @@ namespace u1 {
 
     void parse_input_file(const YAML::Node &nd) {
       namespace in_meas = input_file_parsing::u1::measure;
-      in_meas::parse_input_file(nd, pparams, sparams);
+      in_meas::parse_input_file(nd, (*this).pparams, (*this).sparams);
       (*this).omeas = (*this).sparams;
-      conf_path_basename = io::get_conf_path_basename(pparams, sparams);
+      (*this).conf_path_basename =
+        io::get_conf_path_basename((*this).pparams, (*this).sparams);
     }
-
 
     void run(const YAML::Node &nd) {
       this->pre_run(nd);
 
-      const size_t istart =
-        omeas.icounter == 0 ? omeas.icounter + omeas.nstep : omeas.icounter;
-      const size_t nmax = omeas.n_meas * omeas.nstep + omeas.icounter;
-      for (size_t i = istart; i < nmax; i += omeas.nstep) {
+      const size_t istart = (*this).omeas.icounter == 0
+                              ? (*this).omeas.icounter + (*this).omeas.nstep
+                              : (*this).omeas.icounter;
+      const size_t nmax =
+        (*this).omeas.n_meas * (*this).omeas.nstep + (*this).omeas.icounter;
+      for (size_t i = istart; i < nmax; i += (*this).omeas.nstep) {
         this->do_omeas_i(i);
       }
 

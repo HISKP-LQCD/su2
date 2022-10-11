@@ -21,6 +21,8 @@
 #include "measure-u1.hpp"
 #include "metropolis-u1.hpp"
 
+typedef _u1 Group;
+
 int main(int argc, char *argv[]) {
   std::string input_file;
   u1::parse_command_line(argc, argv, input_file);
@@ -38,14 +40,14 @@ int main(int argc, char *argv[]) {
     std::cerr << "Check your input file: " << input_file << "\n";
   } else if (do_hmc ^ do_metropolis) { // one of the 2 algorithms
     if (do_hmc) {
-      u1::hmc_algo h;
+      u1::hmc_algo<Group> h;
       h.run(nd);
     } else if (do_metropolis) {
-      u1::metropolis_algo mpl;
+      u1::metropolis_algo<Group> mpl;
       mpl.run(nd);
     }
   } else if (do_omeas) { // offline measurements
-    u1::measure_algo ms;
+    u1::measure_algo<Group> ms;
     ms.run(nd);
   } else { // program does nothing
     std::cerr << "ERROR: Program ineffective.\n";

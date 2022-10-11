@@ -125,7 +125,7 @@ namespace u1 {
 
   namespace gp = global_parameters;
 
-  template <class sparam_type> class program {
+  template <class Group, class sparam_type> class program {
   protected:
     std::string algo_name =
       "UNNAMED_PROGRAM"; // name of the algorithm; initialized specified in child classes
@@ -143,7 +143,7 @@ namespace u1 {
     std::string filename_nonplanar;
 
     std::string conf_path_basename; // basename for configurations
-    gaugeconfig<_u1> U; // gauge configuration evolved through the algorithm
+    gaugeconfig<Group> U; // gauge configuration evolved through the algorithm
 
     bool g_heat; // hot or cold starting configuration
     size_t g_icounter = 0; // 1st configuration(trajectory) to load from
@@ -222,7 +222,6 @@ namespace u1 {
       return;
     }
 
-    template <class Group>
     double gauge_energy(const gp::physics &pparams,
                         const gaugeconfig<Group> &U,
                         const bool spatial_only = false) {
@@ -257,8 +256,8 @@ namespace u1 {
      * @brief create gauge configuration with correct geometry
      */
     void create_gauge_conf() {
-      gaugeconfig<_u1> U0(pparams.Lx, pparams.Ly, pparams.Lz, pparams.Lt, pparams.ndims,
-                          pparams.beta);
+      gaugeconfig<Group> U0(pparams.Lx, pparams.Ly, pparams.Lz, pparams.Lt, pparams.ndims,
+                            pparams.beta);
       U = U0;
     }
 
@@ -358,7 +357,7 @@ namespace u1 {
       if (omeas.potentialplanar || omeas.potentialnonplanar) {
         // smear lattice
         for (size_t smears = 0; smears < omeas.n_apesmear; smears += 1) {
-          APEsmearing<double, _u1>(U, omeas.alpha, omeas.smear_spatial_only);
+          APEsmearing<double, Group>(U, omeas.alpha, omeas.smear_spatial_only);
         }
         if (omeas.potentialplanar) {
           omeasurements::meas_loops_planar_pot(U, pparams, omeas.sizeWloops,
@@ -376,20 +375,20 @@ namespace u1 {
         if ((*this).omeas.verbosity > 0) {
           std::cout << "## online measuring: Wilson loop\n";
         }
-        omeasurements::meas_wilson_loop<_u1>(U, i, omeas.res_dir);
+        omeasurements::meas_wilson_loop<Group>(U, i, omeas.res_dir);
       }
       if ((*this).omeas.gradient_flow) {
         if ((*this).omeas.verbosity > 0) {
           std::cout << "## online measuring: Gradient flow\n";
         }
-        omeasurements::meas_gradient_flow<_u1>(U, i, pparams, (*this).omeas);
+        omeasurements::meas_gradient_flow<Group>(U, i, pparams, (*this).omeas);
       }
 
       if ((*this).omeas.pion_staggered) {
         if ((*this).omeas.verbosity > 0) {
           std::cout << "## online measuring: Pion correlator\n";
         }
-        omeasurements::meas_pion_correlator<_u1>(U, i, pparams.m0, (*this).omeas);
+        omeasurements::meas_pion_correlator<Group>(U, i, pparams.m0, (*this).omeas);
       }
 
       if ((*this).omeas.glueball.do_measure) {
@@ -397,13 +396,15 @@ namespace u1 {
           std::cout << "## online measuring: J^{PC} glueball correlators.\n";
         }
         if ((*this).omeas.glueball.loops_GEVP) {
-          omeasurements::meas_glueball_correlator_GEVP<_u1>(U, i, (*this).omeas);
+          omeasurements::meas_glueball_correlator_GEVP<Group>(U, i, (*this).omeas);
         }
         if ((*this).omeas.glueball.U_munu) {
-          omeasurements::meas_glueball_correlator_U_munu<_u1>(U, i, (*this).omeas, false);
+          omeasurements::meas_glueball_correlator_U_munu<Group>(U, i, (*this).omeas,
+                                                                false);
         }
         if ((*this).omeas.glueball.U_ij) {
-          omeasurements::meas_glueball_correlator_U_munu<_u1>(U, i, (*this).omeas, true);
+          omeasurements::meas_glueball_correlator_U_munu<Group>(U, i, (*this).omeas,
+                                                                true);
         }
       }
       return;

@@ -2,23 +2,20 @@
 
 # file paths and variables
 STAGG = ./staggered_fermions.Rmd
-INPUT_FILE = ./input_file.Rmd
+u1 = ./u1.Rmd
 
 define generate_html
 	Rscript -e 'library(rmarkdown); rmarkdown::render("$(1)", "html_document")'
 endef
 
-all: staggered input_file
+all: staggered u1
 	make clean
 
-
-input_file: $(INPUT_FILE)
-	$(call generate_html,$(INPUT_FILE))
+u1: $(u1)
+	$(call generate_html,$(u1))
 
 staggered: $(STAGG)
 	$(call generate_html,$(STAGG))
-
-#Rscript -e 'library(rmarkdown); rmarkdown::render("$(STAGG)", "html_document")'
 
 
 clean:

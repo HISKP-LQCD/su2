@@ -148,6 +148,21 @@ namespace input_file_parsing {
       in.dig_deeper(inner_tree); // entering the glueball node
       YAML::Node nd = in.get_outer_node();
 
+      mgparams.interpolator = bool(nd["interpolator"]);
+      if(mgparams.interpolator){
+        in.read_verb<std::string>(mgparams.interpolator_type, {"interpolator", "type"});
+        in.read_verb<bool>(mgparams.spatial_loops, {"interpolator", "spatial"});
+        in.read_verb<size_t>(mgparams.rmin, {"interpolator", "rmin"});
+        in.read_verb<size_t>(mgparams.rmax, {"interpolator", "rmax"});
+        in.read_verb<bool>(mgparams.correlator, {"correlator"});
+      }
+      else{
+        std::cerr << "Error: No 'glueball:interpolator' node found in the input file.\n";
+        std::cerr << "Aborting.\n";
+        std::abort();
+      }
+
+      mgparams.do_measure = true;
       in.read_verb<bool>(mgparams.doAPEsmear, {"do_APE_smearing"});
       if (mgparams.doAPEsmear) {
         in.read_sequence_verb<size_t>(mgparams.vec_nAPEsmear, {"APE_smearing", "n"});
@@ -156,21 +171,20 @@ namespace input_file_parsing {
       in.read_opt_verb<bool>(mgparams.lengthy_file_name, {"lengthy_file_name"});
       in.read_opt_verb<bool>(mgparams.use_res_dir, {"res_dir"});
 
-      if (!nd["interpolators"]) {
-        std::cerr << "Error: No 'glueball:interpolators' node found in the input file";
-        std::cerr << "Aborting.\n";
-        std::abort();
-      }
+      // in.read_opt_verb<bool>(mgparams.loops_GEVP, {"interpolators", "loops_GEVP"});
+      // if (mgparams.loops_GEVP) {
+      //   in.read_verb<size_t>(mgparams.rmin_GEVP, {"interpolators", "rmin_GEVP"});
+      //   in.read_verb<size_t>(mgparams.rmax_GEVP, {"interpolators", "rmax_GEVP"});
+      // }
 
-      in.read_opt_verb<bool>(mgparams.loops_GEVP, {"interpolators", "loops_GEVP"});
-      if (mgparams.loops_GEVP) {
-        // in.read_verb<size_t>(mgparams.max_length_loops, {"max_length_loops"});
-        in.read_verb<size_t>(mgparams.rmin_GEVP, {"interpolators", "rmin_GEVP"});
-        in.read_verb<size_t>(mgparams.rmax_GEVP, {"interpolators", "rmax_GEVP"});
-      }
+      // mgparams.rectangular_interpolators = bool(nd["interpolators"]["r1r2"]);
+      // if (mgparams.rectangular_interpolators) {
+      //   in.read_verb<size_t>(mgparams.rmin_rect, {"interpolators", "r1r2", "rmin"});
+      //   in.read_verb<size_t>(mgparams.rmax_rect, {"interpolators", "r1r2", "rmax"});
+      // }
 
-      in.read_opt_verb<bool>(mgparams.U_ij, {"interpolators", "U_ij"});
-      in.read_opt_verb<bool>(mgparams.U_munu, {"interpolators", "U_munu"});
+      // in.read_opt_verb<bool>(mgparams.U_ij, {"interpolators", "U_ij"});
+      // in.read_opt_verb<bool>(mgparams.U_munu, {"interpolators", "U_munu"});
 
       in.set_InnerTree(state0); // reset to previous state
     }
@@ -233,7 +247,6 @@ namespace input_file_parsing {
         in.read_opt_verb<double>(mparams.sizeWloops, {"potential", "sizeWloops"});
       }
       if (nd["glueball"]) {
-        mparams.glueball.do_measure = true;
         parse_glueball_measure(in, {"glueball"}, mparams.glueball);
       }
 

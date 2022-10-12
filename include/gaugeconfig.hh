@@ -70,6 +70,9 @@ public:
   size_t storage_size() const {
     return data.size() * sizeof(value_type);
   };
+  std::vector<value_type> get_data() const {
+    return data;
+  }
   size_t getLx() const {
     return (Lx);
   }

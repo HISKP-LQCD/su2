@@ -52,16 +52,23 @@ namespace global_parameters {
     std::vector<size_t> vec_nAPEsmear; // list of number of APE smearing iterations
     double alphaAPEsmear; // alpha parameter for the smearing. alpha=1 -> no smearing.
 
-    bool loops_GEVP = false; // 'true' when computing C_ij for the various loops
-    //    size_t max_length_loops = 4; // maximum length of loops interpolating the
-    //    glueballs
-    size_t rmin_GEVP =
-      0; // minimum length of square loop interpolating glueball wavefunction
-    size_t rmax_GEVP =
-      0; // maximum length of square loop interpolating glueball wavefunction
+    // glueball interpolators are all loops of links of a certain size and shape
+    bool interpolator=false; // true when measuring the glueball interpolators
+    std::string interpolator_type="NONE"; // interpolator type: squares, rectangles, L, etc.
+    bool spatial_loops=true; // true when using only spatial loops
+    size_t rmin = 0, rmax=0; // minum and maximum sizes of the interpolating loops
+    bool correlator=false; // whether to measure also the correlator
 
-    bool U_ij = false; // interpolating with the average spatial plaquette U_ij
-    bool U_munu = false; // interpolating with the average plaquette U_munu
+    // bool loops_GEVP = false; // 'true' when computing C_ij for the various loops
+    // size_t rmin_GEVP = 0; // minimum length of square loop
+    // size_t rmax_GEVP = 0; // maximum length of square loop
+
+    // bool rectangular_interpolators; // true when measuring the rectangular interpolators
+    // size_t rmin_rect = 0; // minimum side length of the rectangle
+    // size_t rmax_rect = 0; // maximum side length of the rectangle
+
+    // bool U_ij = false; // interpolating with the average spatial plaquette U_ij
+    // bool U_munu = false; // interpolating with the average plaquette U_munu
   };
 
   /* optional parameters for the measure program the in U(1) theory */

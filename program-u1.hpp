@@ -395,17 +395,20 @@ namespace u1 {
         if ((*this).omeas.verbosity > 0) {
           std::cout << "## online measuring: J^{PC} glueball correlators.\n";
         }
-        if ((*this).omeas.glueball.loops_GEVP) {
-          omeasurements::meas_glueball_correlator_GEVP<Group>(U, i, (*this).omeas);
+        // if ((*this).omeas.glueball.loops_GEVP) {
+        //   omeasurements::meas_glueball_correlator_GEVP<Group>(U, i, (*this).omeas);
+        // }
+        if ((*this).omeas.glueball.interpolator) {
+          omeasurements::meas_glueball_interpolators<Group>(omeas.glueball.interpolator_type, U, i, (*this).omeas);
         }
-        if ((*this).omeas.glueball.U_munu) {
-          omeasurements::meas_glueball_correlator_U_munu<Group>(U, i, (*this).omeas,
-                                                                false);
-        }
-        if ((*this).omeas.glueball.U_ij) {
-          omeasurements::meas_glueball_correlator_U_munu<Group>(U, i, (*this).omeas,
-                                                                true);
-        }
+        // if ((*this).omeas.glueball.U_munu) {
+        //   omeasurements::meas_glueball_correlator_U_munu<Group>(U, i, (*this).omeas,
+        //                                                         false);
+        // }
+        // if ((*this).omeas.glueball.U_ij) {
+        //   omeasurements::meas_glueball_correlator_U_munu<Group>(U, i, (*this).omeas,
+        //                                                         true);
+        // }
       }
       return;
     }

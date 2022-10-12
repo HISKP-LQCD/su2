@@ -13,11 +13,12 @@ for btype in debug release; do
   mkdir -p $d1
   
   cmake  \
+  -D CMAKE_BUILD_TYPE=${btype} \
   -S /path/to/source/code/ \
   -B ${d1} \
-  -D YAML_SRC_DIR=/path/to/yaml-cpp/source/directory/ \
-  -D YAML_BINARY_DIR=/path/to/yaml-cpp/installation/directory/  \
-  -D CMAKE_BUILD_TYPE=${btype}
+  -D CMAKE_PREFIX_PATH="/path/to/yaml-cpp/installation/directory/" \
+  -D CMAKE_PREFIX_PATH="/path/to/xtensor/installation/directory/" 
+
   
   cd ${bdir}
 done

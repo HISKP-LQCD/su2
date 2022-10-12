@@ -5,7 +5,7 @@
 cmake_minimum_required(VERSION 3.16.3)
 project(su2 C CXX)
 
-set (CMAKE_CXX_STANDARD 11) # c++ standard
+set (CMAKE_CXX_STANDARD 17) # c++ standard
 
 ## here we generate version.hh
 ## to track the git version of the executables
@@ -35,23 +35,28 @@ message(STATUS "Generating version.hh")
 configure_file(
   ${CMAKE_SOURCE_DIR}/version.hh.in
   ${CMAKE_BINARY_DIR}/generated/version.hh
-)
-
-include_directories(${CMAKE_SOURCE_DIR}/)
-include_directories(${CMAKE_SOURCE_DIR}/include/)
-include_directories(${CMAKE_BINARY_DIR}/generated/)
-
-
-# openMP threads parallelization
-find_package(OpenMP)
-
-
-# setting C and CXX compilation flags
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS} -D_USE_OMP_")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS} -D_USE_OMP_")
-
-include_directories(${YAML_SRC_DIR}/include/ ${YAML_SRC_DIR}/include/yaml-cpp/)
-
+  )
+  
+  include_directories(${CMAKE_SOURCE_DIR}/)
+  include_directories(${CMAKE_SOURCE_DIR}/include/)
+  include_directories(${CMAKE_BINARY_DIR}/generated/)
+  
+  
+  # openMP threads parallelization
+  find_package(OpenMP)
+  
+  
+  # setting C and CXX compilation flags
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS} -D_USE_OMP_")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS} -D_USE_OMP_")
+  
+  find_package(yaml-cpp)
+  
+  include_directories(${YAML_CPP_INCLUDE_DIR} ${YAML_CPP_INCLUDE_DIR}/yaml-cpp/)
+  
+  find_package(xtensor)
+  include_directories(${xtensor_INCLUDE_DIRS} ${xtensor_INCLUDE_DIRS}/xtensor/)
+  message(${xtensor_INCLUDE_DIRS})
 
 # We could just have two `add_executable` blocks listing almost all source
 # files. However, CMake would then compile the source files twice, once for
@@ -72,6 +77,8 @@ if(Boost_FOUND)
   include_directories(${Boost_INCLUDE_DIRS})
 endif()
 
+
+
 add_executable(u1-main main-u1.cpp)
 
 add_executable(su2-hmc hmc.cc)
@@ -82,9 +89,7 @@ add_executable(test-groups test.cc)
 add_executable(scaling scaling.cc)
 add_executable(try tryreduce.cc)
 
-set(link_dir  ${YAML_BINARY_DIR})
-
-target_link_directories(${CMAKE_PROJECT_NAME} PUBLIC ${link_dir})
+target_link_directories(${CMAKE_PROJECT_NAME} PUBLIC ${YAML_CPP_LIBRARY_DIR})
 
 foreach(target u1-main su2-hmc su2-metropolis su2-kramers su2-measure test-groups scaling try)
   target_link_libraries(${target} su2 libyaml-cpp.a)

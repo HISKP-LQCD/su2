@@ -44,8 +44,10 @@ omeas:
     APE_smearing:
       n: 5
       alpha: 1.0
-    interpolators:
-      loops_GEVP: true
-      rmin_GEVP: 2
-      rmax_GEVP: 3
+    interpolator:
+      type: L
+      spatial: true
+      rmin: 1
+      rmax: 8
+    correlator: false
   Wloop: true

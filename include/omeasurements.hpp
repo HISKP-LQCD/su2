@@ -21,6 +21,8 @@
 #include "smearape.hh"
 #include "wilsonloop.hh"
 #include <boost/filesystem.hpp>
+#include <xtensor/xarray.hpp>
+#include <xtensor/xcsv.hpp>
 
 namespace omeasurements {
 
@@ -388,30 +390,24 @@ namespace omeasurements {
           const std::string path =
             dir_ij + "phi" + oss_name.str(); // full path of output file
 
-          std::ostringstream oss_ij;
-          oss_ij << "t pp pm mp mm" << std::endl; // header
+          xt::xarray<double> phi;
+          phi.resize({T_ext, 5}); // t, ++, +-, -+, --
 
           for (size_t t = 0; t < T_ext; t++) {
-            oss_ij << t;
+            phi(t, 0) = t;
             const std::complex<double> Pp = glueballs::get_rest_trace_loop<double, Group>(
               type, t, U, r1, r2, false, S.glueball.spatial_loops);
             const std::complex<double> Pm = glueballs::get_rest_trace_loop<double, Group>(
               type, t, U, r1, r2, true, S.glueball.spatial_loops);
-            double phi[2][2];
-            phi[0][0] = (Pp + Pm).real() / 2.0; // PC=++
-            phi[0][1] = (Pp + Pm).imag() / 2.0; // PC=+-
-            phi[1][0] = (Pp - Pm).real() / 2.0; // PC=-+
-            phi[1][1] = (Pp - Pm).imag() / 2.0; // PC=--
-            for (size_t P = 0; P <= 1; P++) {
-              for (size_t C = 0; C <= 1; C++) {
-                oss_ij << " " << std::scientific << std::setprecision(16) << phi[P][C];
-              }
-            }
-            oss_ij << std::endl;
+            phi(t, 1) = (Pp + Pm).real() / 2.0; // PC=++
+            phi(t, 2) = (Pp + Pm).imag() / 2.0; // PC=+-
+            phi(t, 3) = (Pp - Pm).real() / 2.0; // PC=-+
+            phi(t, 4) = (Pp - Pm).imag() / 2.0; // PC=--
           }
 
           std::ofstream ofs(path, std::ios::out);
-          ofs << oss_ij.str();
+          ofs << std::scientific << std::setprecision(16);
+          xt::dump_csv(ofs, phi, " ", "t pp pm mp mm");
           ofs.close();
         }
       }
@@ -419,9 +415,10 @@ namespace omeasurements {
       return;
     }
 
-
     // /**
-    //  * @brief measure the glueball 0^{PC} correlators for the GEVP from a smeared gauge configuration measure the glueball correlators ij for the 0^{++}, 0^{+-}, 0^{-+}, 0^{--} glueballs. The correlators are built as eq (1) of
+    //  * @brief measure the glueball 0^{PC} correlators for the GEVP from a smeared gauge
+    //  configuration measure the glueball correlators ij for the 0^{++}, 0^{+-}, 0^{-+},
+    //  0^{--} glueballs. The correlators are built as eq (1) of
     //  * https://arxiv.org/pdf/hep-lat/0603016.pdf
     //  * @tparam Group
     //  * @tparam sparams struct containing info on computation and output
@@ -524,7 +521,6 @@ namespace omeasurements {
     //   return;
     // }
 
-
   } // namespace from_smeared_field
 
   // /**
@@ -616,35 +612,34 @@ namespace omeasurements {
     }
   }
 
-  /**
-   * @brief measure of the glueball correlator
-   *
-   * @tparam Group
-   * @tparam sparams
-   * @param type type of interpolator used
-   * @param U0 initial gauge configuration
-   * @param i trajectory index
-   * @param S specific parameters
-   */
-  template <class Group, class sparams>
-  void meas_glueball_correlator(const std::string&  type,const gaugeconfig<Group> &U0,
-                                     const size_t &i,
-                                     const sparams &S) {
-    const std::vector<size_t> &v_ns =
-      S.glueball.vec_nAPEsmear; // vector of number of smearing steps
-    const size_t ns = v_ns.size();
+  // /**
+  //  * @brief measure of the glueball correlator
+  //  *
+  //  * @tparam Group
+  //  * @tparam sparams
+  //  * @param type type of interpolator used
+  //  * @param U0 initial gauge configuration
+  //  * @param i trajectory index
+  //  * @param S specific parameters
+  //  */
+  // template <class Group, class sparams>
+  // void meas_glueball_correlator(const std::string&  type,const gaugeconfig<Group> &U0,
+  //                                    const size_t &i,
+  //                                    const sparams &S) {
+  //   const std::vector<size_t> &v_ns =
+  //     S.glueball.vec_nAPEsmear; // vector of number of smearing steps
+  //   const size_t ns = v_ns.size();
 
-    gaugeconfig<Group> U = U0; // copy of the initial gauge configuration
-    for (size_t is = 0; is < ns; is++) {
-      const size_t nsteps = (is == 0) ? v_ns[is] : v_ns[is] - v_ns[is - 1];
-      for (size_t i = 0; i < nsteps; i++) {
-        // other nsteps so that we reach the value of v_ns[is]
-        spatial_APEsmearing<double, Group>(U, S.glueball.alphaAPEsmear);
-      }
-      from_smeared_field::meas_glueball_correlator(type, U, i, v_ns[is], S);
-    }
-  }
-
+  //   gaugeconfig<Group> U = U0; // copy of the initial gauge configuration
+  //   for (size_t is = 0; is < ns; is++) {
+  //     const size_t nsteps = (is == 0) ? v_ns[is] : v_ns[is] - v_ns[is - 1];
+  //     for (size_t i = 0; i < nsteps; i++) {
+  //       // other nsteps so that we reach the value of v_ns[is]
+  //       spatial_APEsmearing<double, Group>(U, S.glueball.alphaAPEsmear);
+  //     }
+  //     from_smeared_field::meas_glueball_correlator(type, U, i, v_ns[is], S);
+  //   }
+  // }
 
   /**
    * measures the planar wilson loops in temporal and spatial direction

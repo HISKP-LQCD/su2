@@ -114,8 +114,8 @@ namespace u1 {
 
     do_omeas = bool(nd["omeas"]);
     if (!do_hmc && !do_metropolis && !nd["omeas"]["offline"]) {
-      std::cerr << "Error: Specify the offline measurements block when not doing MCMC "
-                   "algorithm.\n";
+      std::cerr << "Error: You must write the 'offline' measurements node inside 'omeas' "
+                << "because you're not running any MCMC algorithm.\n";
       std::cerr << "Aborting.\n";
       std::abort();
     }

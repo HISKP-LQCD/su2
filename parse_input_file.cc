@@ -146,6 +146,7 @@ namespace input_file_parsing {
                                 gp::measure_glueball_u1 &mgparams) {
       const std::vector<std::string> state0 = in.get_InnerTree();
       in.dig_deeper(inner_tree); // entering the glueball node
+      YAML::Node nd = in.get_outer_node();
 
       in.read_verb<bool>(mgparams.doAPEsmear, {"do_APE_smearing"});
       if (mgparams.doAPEsmear) {
@@ -154,6 +155,12 @@ namespace input_file_parsing {
       }
       in.read_opt_verb<bool>(mgparams.lengthy_file_name, {"lengthy_file_name"});
       in.read_opt_verb<bool>(mgparams.use_res_dir, {"res_dir"});
+
+      if (!nd["interpolators"]) {
+        std::cerr << "Error: No 'glueball:interpolators' node found in the input file";
+        std::cerr << "Aborting.\n";
+        std::abort();
+      }
 
       in.read_opt_verb<bool>(mgparams.loops_GEVP, {"interpolators", "loops_GEVP"});
       if (mgparams.loops_GEVP) {

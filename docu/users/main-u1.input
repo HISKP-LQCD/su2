@@ -1,4 +1,4 @@
-# Input file example for the u1-hmc program
+# Input file example for the u1 runs
 
 geometry:
   L : 8
@@ -51,4 +51,3 @@ omeas:
       rmax: 8
       save: true
     correlator: true
-  Wloop: true

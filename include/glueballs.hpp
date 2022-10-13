@@ -171,7 +171,7 @@ namespace glueballs {
     for (size_t ir = 1; ir <= r; ir++) {
       for (size_t mu = ss; mu < d; mu++) {
         for (size_t nu = mu + 1; nu < d; nu++) {
-          loop += rest_trace_wloop_munu<Float, Group>(t, U, ir, r - ir, mu, nu, Px);
+          loop += rest_trace_wloop_munu<Float, Group>(t, U, ir, r + 1 - ir, mu, nu, Px);
         }
       }
     }

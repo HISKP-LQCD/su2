@@ -6,6 +6,9 @@ bash ./clean.sh # clean old cmake configuration
 
 bdir=$(pwd -P) # build directory
 
+yaml_cpp="/path/to/yaml-cpp/installation/directory/"
+xtensor="/path/to/xtensor/installation/directory/"
+
 for btype in debug release; do
   echo "Build type: ${btype}"
   
@@ -16,9 +19,7 @@ for btype in debug release; do
   -D CMAKE_BUILD_TYPE=${btype} \
   -S /path/to/source/code/ \
   -B ${d1} \
-  -D CMAKE_PREFIX_PATH="/path/to/yaml-cpp/installation/directory/" \
-  -D CMAKE_PREFIX_PATH="/path/to/xtensor/installation/directory/" 
-
+  -D CMAKE_PREFIX_PATH="$yaml_cpp;$xtensor"
   
   cd ${bdir}
 done

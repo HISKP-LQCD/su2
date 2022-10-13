@@ -355,18 +355,19 @@ namespace u1 {
       }
 
       if (omeas.potentialplanar || omeas.potentialnonplanar) {
+        gaugeconfig<Group> U1 = U;
         // smear lattice
         for (size_t smears = 0; smears < omeas.n_apesmear; smears += 1) {
-          APEsmearing<double, Group>(U, omeas.alpha, omeas.smear_spatial_only);
+          APEsmearing<double, Group>(U1, omeas.alpha, omeas.smear_spatial_only);
         }
         if (omeas.potentialplanar) {
-          omeasurements::meas_loops_planar_pot(U, pparams, omeas.sizeWloops,
+          omeasurements::meas_loops_planar_pot(U1, pparams, omeas.sizeWloops,
                                                (*this).filename_coarse,
                                                (*this).filename_fine, i);
         }
 
         if (omeas.potentialnonplanar) {
-          omeasurements::meas_loops_nonplanar_pot(U, pparams, omeas.sizeWloops,
+          omeasurements::meas_loops_nonplanar_pot(U1, pparams, omeas.sizeWloops,
                                                   (*this).filename_nonplanar, i);
         }
       }

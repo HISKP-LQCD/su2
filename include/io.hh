@@ -11,6 +11,7 @@
  */
 #pragma once
 
+#include "parameters.hh"
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 #include <fstream>
@@ -19,8 +20,7 @@
 #include <random>
 #include <sstream>
 #include <string>
-
-#include "parameters.hh"
+#include <xtensor/xcsv.hpp>
 
 namespace io {
   namespace gp = global_parameters;
@@ -58,16 +58,54 @@ namespace io {
       }
     }
 
-    return sparams.conf_dir +"/"+ ss.str();
+    return sparams.conf_dir + "/" + ss.str();
+  }
+
+  /**
+   * @brief print the content of an xtensor expression to file
+   * This functions is needed because the current (October 2022) master branch of xtensor
+   * doesn't support a custom delimiter (and neither a header) for dumping to file
+   * @tparam E expression type
+   */
+  template <class E>
+  void xtensor_to_stream(std::ofstream &stream,
+                         const xt::xexpression<E> &e,
+                         const std::string &sep = " ",
+                         const std::string &h = "") {
+    using size_type = typename E::size_type;
+    const E &ex = e.derived_cast();
+    if (ex.dimension() != 2) {
+      XTENSOR_THROW(std::runtime_error, "Only 2-D expressions can be serialized to CSV");
+    }
+    if (h != "") {
+      stream << h << std::endl;
+    }
+    size_type nbrows = ex.shape()[0], nbcols = ex.shape()[1];
+    auto st = ex.stepper_begin(ex.shape());
+    for (size_type r = 0; r != nbrows; ++r) {
+      for (size_type c = 0; c != nbcols; ++c) {
+        stream << *st;
+        if (c != nbcols - 1) {
+          st.step(1);
+          stream << sep;
+        } else {
+          st.reset(1);
+          st.step(0);
+          stream << std::endl;
+        }
+      }
+    }
+    return;
   }
 
   namespace measure {
 
     /**
-     * gets filename with several physical characteristics that are contained in pparams and S, which should be either metropolis_u1 or measure_u1
+     * gets filename with several physical characteristics that are contained in pparams
+     * and S, which should be either metropolis_u1 or measure_u1
      * **/
-    template <class S> std::string get_filename_fine(const gp::physics &pparams,
-                                  const S &mparams) {
+    template <class S>
+    std::string get_filename_fine(const gp::physics &pparams, const S &mparams) {
       std::ostringstream filename_fine;
 
       filename_fine << mparams.res_dir << "/"
@@ -82,10 +120,11 @@ namespace io {
     }
 
     /**
-     * gets filename with several physical characteristics that are contained in pparams and S, which should be either metropolis_u1 or measure_u1
+     * gets filename with several physical characteristics that are contained in pparams
+     * and S, which should be either metropolis_u1 or measure_u1
      * **/
-    template <class S> std::string get_filename_coarse(const gp::physics &pparams,
-                                    const S &mparams) {
+    template <class S>
+    std::string get_filename_coarse(const gp::physics &pparams, const S &mparams) {
       std::ostringstream f;
 
       f << mparams.res_dir << "/"
@@ -98,12 +137,13 @@ namespace io {
 
       return f.str();
     }
-    
+
     /**
-     * gets filename with several physical characteristics that are contained in pparams and S, which should be either metropolis_u1 or measure_u1
+     * gets filename with several physical characteristics that are contained in pparams
+     * and S, which should be either metropolis_u1 or measure_u1
      * **/
-    template <class S> std::string get_filename_nonplanar(const gp::physics &pparams,
-                                       const S &mparams) {
+    template <class S>
+    std::string get_filename_nonplanar(const gp::physics &pparams, const S &mparams) {
       std::ostringstream f;
 
       f << mparams.res_dir << "/"
@@ -126,7 +166,8 @@ namespace io {
      * dimension is given, so cannot be const. S is metropolis_u1 or measure_u1.
      * @param filenamecoarse, filenamefine: names of the files where results are stored.
      * **/
-    template <class S> void set_header_planar(const gp::physics &pparams,
+    template <class S>
+    void set_header_planar(const gp::physics &pparams,
                            S &mparams,
                            const std::string &filename_coarse,
                            const std::string &filename_fine) {
@@ -173,7 +214,8 @@ namespace io {
      * dimension is given, so cannot be const. S is metropolis_u1 or measure_u1.
      * @param filenamenonplanar: name of the files where results are stored.
      * **/
-    template <class S> void set_header_nonplanar(const gp::physics &pparams,
+    template <class S>
+    void set_header_nonplanar(const gp::physics &pparams,
                               S &mparams,
                               const std::string &filename_nonplanar) {
       //~ open file for saving results
@@ -229,7 +271,7 @@ namespace io {
       if (!boost::filesystem::exists(input_file)) {
         std::cerr << "Error from " << __func__ << "\n";
         std::cerr << input_file << ": no such file or directory. Aborting.\n";
-       std::abort();
+        std::abort();
       }
 
       std::ifstream nconf_counter(input_file);

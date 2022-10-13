@@ -14,6 +14,7 @@
 
 #include "flat-gradient_flow.hh"
 #include "glueballs.hpp"
+#include "io.hh"
 #include "links.hpp"
 #include "operators.hpp"
 #include "parameters.hh"
@@ -22,7 +23,6 @@
 #include "wilsonloop.hh"
 #include <boost/filesystem.hpp>
 #include <xtensor/xarray.hpp>
-#include <xtensor/xcsv.hpp>
 
 namespace omeasurements {
 
@@ -407,7 +407,7 @@ namespace omeasurements {
 
           std::ofstream ofs(path, std::ios::out);
           ofs << std::scientific << std::setprecision(16);
-          xt::dump_csv(ofs, phi, " ", "t pp pm mp mm");
+          io::xtensor_to_stream(ofs, phi, " ", "t pp pm mp mm");
           ofs.close();
         }
       }

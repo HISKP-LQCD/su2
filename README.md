@@ -13,7 +13,7 @@ The library supports also the measurements of several observables, e.g.:
 
 * [Boost](https://www.boost.org/)
 * [yaml-cpp](https://github.com/jbeder/yaml-cpp)
-* [xtensor csv_features fork](https://github.com/simone-romiti/xtensor-csv_features). [Pull request](https://github.com/xtensor-stack/xtensor/pull/2580#issue-1406505028) to [master](https://github.com/xtensor-stack/xtensor) still pending.
+* [xtensor](https://github.com/xtensor-stack/xtensor)
 
 ## Installation instrucitons
 

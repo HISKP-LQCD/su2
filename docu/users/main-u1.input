@@ -42,8 +42,8 @@ omeas:
   glueball:
     do_APE_smearing: true
     APE_smearing:
-      n: 5
-      alpha: 1.0
+      n: 10
+      alpha: 0.7
     interpolator:
       type: fatL
       spatial: true

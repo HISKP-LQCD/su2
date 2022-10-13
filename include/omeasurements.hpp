@@ -173,45 +173,44 @@ namespace omeasurements {
 
       // phi_i(t)^{PC}
       const size_t nr = (rmax - rmin + 1);
-      const size_t n_phi = (nr * (nr + 1)) / 2; // number of interpolators
-      std::vector<xt::xarray<double>> phi(n_phi); // vector of all interpolators
+      //      const size_t n_phi = (nr * (nr + 1)) / 2; // number of interpolators
+      std::vector<xt::xarray<double>> phi(nr); // vector of all interpolators
       size_t ii = 0; // interpolator index
 
-      for (size_t i1 = 0; i1 <= rmax - rmin; i1++) {
+      for (size_t i1 = 0; i1 < nr; i1++) {
         const size_t r1 = i1 + rmin;
-        for (size_t i2 = 0; i2 <= i1; i2++) { // phi_{ij} == phi_{ji}
-          const size_t r2 = i2 + rmin;
+        // for (size_t i2 = 0; i2 <= i1; i2++) { // phi_{ij} == phi_{ji}
+        //   const size_t r2 = i2 + rmin;
 
-          // directory path
-          const std::string dir_ij =
-            oss_dir.str() + std::to_string(r1) + "_" + std::to_string(r2) + "/";
-          fsys::create_directories(fsys::absolute(dir_ij)); // creating directory
+        // directory path
+        const std::string dir_ij =
+          oss_dir.str() + std::to_string(r1) + "/"; // "_" + std::to_string(r2) + "/";
+        fsys::create_directories(fsys::absolute(dir_ij)); // creating directory
 
-          const std::string path =
-            dir_ij + "phi" + oss_name.str(); // full path of output file
+        const std::string path =
+          dir_ij + "phi" + oss_name.str(); // full path of output file
 
-          phi[ii].resize({T_ext, 5}); // t, ++, +-, -+, --
+        phi[ii].resize({T_ext, 5}); // t, ++, +-, -+, --
 
-          for (size_t t = 0; t < T_ext; t++) {
-            phi[ii](t, 0) = t;
-            const std::complex<double> Pp = glueballs::get_rest_trace_loop<double, Group>(
-              type, t, U, r1, r2, false, S.glueball.spatial_loops);
-            const std::complex<double> Pm = glueballs::get_rest_trace_loop<double, Group>(
-              type, t, U, r1, r2, true, S.glueball.spatial_loops);
-            phi[ii](t, 1) = (Pp + Pm).real() / 2.0; // PC=++
-            phi[ii](t, 2) = (Pp + Pm).imag() / 2.0; // PC=+-
-            phi[ii](t, 3) = (Pp - Pm).real() / 2.0; // PC=-+
-            phi[ii](t, 4) = (Pp - Pm).imag() / 2.0; // PC=--
-          }
-
-          if (save_interpolator) {
-            std::ofstream ofs(path, std::ios::out);
-            ofs << std::scientific << std::setprecision(16);
-            io::xtensor_to_stream(ofs, phi[ii], " ", "t pp pm mp mm");
-            ofs.close();
-          }
-          ++ii;
+        for (size_t t = 0; t < T_ext; t++) {
+          phi[ii](t, 0) = t;
+          const std::complex<double> Pp = glueballs::get_rest_trace_loop<double, Group>(
+            type, t, U, r1, false, S.glueball.spatial_loops);
+          const std::complex<double> Pm = glueballs::get_rest_trace_loop<double, Group>(
+            type, t, U, r1, true, S.glueball.spatial_loops);
+          phi[ii](t, 1) = (Pp + Pm).real() / 2.0; // PC=++
+          phi[ii](t, 2) = (Pp + Pm).imag() / 2.0; // PC=+-
+          phi[ii](t, 3) = (Pp - Pm).real() / 2.0; // PC=-+
+          phi[ii](t, 4) = (Pp - Pm).imag() / 2.0; // PC=--
         }
+
+        if (save_interpolator) {
+          std::ofstream ofs(path, std::ios::out);
+          ofs << std::scientific << std::setprecision(16);
+          io::xtensor_to_stream(ofs, phi[ii], " ", "t pp pm mp mm");
+          ofs.close();
+        }
+        ++ii;
       }
 
       return phi;
@@ -234,7 +233,7 @@ namespace omeasurements {
                                   const size_t &nAPEsmear,
                                   const sparams &S) {
       std::ostringstream oss_dir, oss_name;
-      oss_dir << S.res_dir + "/glueball/correlator/"+type+"/";
+      oss_dir << S.res_dir + "/glueball/correlator/" + type + "/";
 
       std::ostringstream oss_details;
       oss_details << "smearAPEn" << nAPEsmear << "alpha" << S.glueball.alphaAPEsmear;
@@ -262,8 +261,8 @@ namespace omeasurements {
       const size_t N_ops = rmax; // number of interpolatoing operators
 
       // phi_i(t)^{PC}
-      std::vector<xt::xarray<double>> phi =
-        meas_glueball_interpolators(type, U, i, nAPEsmear, S.glueball.save_interpolator, S);
+      std::vector<xt::xarray<double>> phi = meas_glueball_interpolators(
+        type, U, i, nAPEsmear, S.glueball.save_interpolator, S);
 
       const size_t n_phi = phi.size();
 

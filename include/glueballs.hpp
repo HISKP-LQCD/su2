@@ -61,18 +61,18 @@ namespace glueballs {
    */
   template <class Float, class Group>
   std::complex<Float> trace_fatL_loop_munu(const gaugeconfig<Group> &U,
-                                          nd_max_arr<int> x,
-                                          const size_t &a,
-                                          const size_t &b,
-                                          const size_t &mu,
-                                          const size_t &nu,
-                                          const bool &Px) {
+                                           nd_max_arr<int> x,
+                                           const size_t &a,
+                                           const size_t &b,
+                                           const size_t &mu,
+                                           const size_t &nu,
+                                           const bool &Px) {
     typedef typename accum_type<Group>::type accum;
 
     accum L(1.0);
     // start at x
     // go to x + (a+1)*\hat{mu}
-    for (size_t s = 0; s < (a+1); s++) {
+    for (size_t s = 0; s < (a + 1); s++) {
       L *= operators::parity(Px, 0, U, x, mu);
       x[mu]++;
     }
@@ -97,7 +97,7 @@ namespace glueballs {
       L *= operators::parity(Px, 0, U, x, mu).dagger();
     }
     // go to x
-    for (size_t _t = 0; _t < (b+1); _t++) {
+    for (size_t _t = 0; _t < (b + 1); _t++) {
       x[nu] -= 1;
       L *= operators::parity(Px, 0, U, x, nu).dagger();
     }
@@ -135,12 +135,12 @@ namespace glueballs {
    */
   template <class Float, class Group>
   std::complex<Float> rest_trace_fatL_loop_munu(size_t &t,
-                                               const gaugeconfig<Group> &U,
-                                               const size_t &a,
-                                               const size_t &b,
-                                               const size_t &mu,
-                                               const size_t &nu,
-                                               const bool &Px) {
+                                                const gaugeconfig<Group> &U,
+                                                const size_t &a,
+                                                const size_t &b,
+                                                const size_t &mu,
+                                                const size_t &nu,
+                                                const bool &Px) {
     nd_max_arr<int> x = {int(t), 0, 0, 0};
     std::complex<Float> loop = 0.0;
     for (x[1] = 0; x[1] < U.getLx(); x[1]++) {
@@ -162,16 +162,17 @@ namespace glueballs {
   template <class Float, class Group>
   std::complex<Float> rest_trace_wloop(size_t &t,
                                        const gaugeconfig<Group> &U,
-                                       const size_t &a,
-                                       const size_t &b,
+                                       const size_t &r,
                                        const bool &Px,
                                        const bool &spatial = false) {
     const size_t ss = size_t(spatial);
     const size_t d = U.getndims();
     std::complex<Float> loop = 0.0;
-    for (size_t mu = ss; mu < d; mu++) {
-      for (size_t nu = mu + 1; nu < d; nu++) {
-        loop += rest_trace_wloop_munu<Float, Group>(t, U, a, b, mu, nu, Px);
+    for (size_t ir = 1; ir <= r; ir++) {
+      for (size_t mu = ss; mu < d; mu++) {
+        for (size_t nu = mu + 1; nu < d; nu++) {
+          loop += rest_trace_wloop_munu<Float, Group>(t, U, ir, r - ir, mu, nu, Px);
+        }
       }
     }
     const double norm_fact = spacetime_lattice::num_pLloops_half(d - ss);
@@ -185,17 +186,18 @@ namespace glueballs {
    */
   template <class Float, class Group>
   std::complex<Float> rest_trace_fatL_loop(size_t &t,
-                                          const gaugeconfig<Group> &U,
-                                          const size_t &a,
-                                          const size_t &b,
-                                          const bool &Px,
-                                          const bool &spatial = false) {
+                                           const gaugeconfig<Group> &U,
+                                           const size_t &r,
+                                           const bool &Px,
+                                           const bool &spatial = false) {
     const size_t ss = size_t(spatial);
     const size_t d = U.getndims();
     std::complex<Float> loop = 0.0;
-    for (size_t mu = ss; mu < d; mu++) {
-      for (size_t nu = mu + 1; nu < d; nu++) {
-        loop += rest_trace_fatL_loop_munu<Float, Group>(t, U, a, b, mu, nu, Px);
+    for (size_t ir = 1; ir <= r; ir++) {
+      for (size_t mu = ss; mu < d; mu++) {
+        for (size_t nu = mu + 1; nu < d; nu++) {
+          loop += rest_trace_fatL_loop_munu<Float, Group>(t, U, ir, r - ir, mu, nu, Px);
+        }
       }
     }
     const double norm_fact = spacetime_lattice::num_pLloops_half(d - ss);
@@ -206,16 +208,16 @@ namespace glueballs {
   std::complex<Float> get_rest_trace_loop(const std::string type,
                                           size_t &t,
                                           const gaugeconfig<Group> &U,
-                                          const size_t &a,
-                                          const size_t &b,
+                                          const size_t &r,
                                           const bool &Px,
                                           const bool &spatial = false) {
     if (type == "rectangle") {
-      return rest_trace_wloop<Float, Group>(t, U, a, b, Px, spatial);
+      return rest_trace_wloop<Float, Group>(t, U, r, Px, spatial);
     } else if (type == "fatL") {
-      return rest_trace_fatL_loop_munu<Float, Group>(t, U, a, b, 1, 2, Px);
+      return rest_trace_fatL_loop<Float, Group>(t, U, r, Px, spatial);
     } else {
-      std::cerr << "Error: Invalid loop type '" << type << "'.\nAborting.\n";
+      std::cerr << "Error: Invalid loop type '" << type << "'.\n";
+      std::cerr << "Aborting.\n";
       std::abort();
     }
   }

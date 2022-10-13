@@ -149,14 +149,14 @@ namespace input_file_parsing {
       YAML::Node nd = in.get_outer_node();
 
       mgparams.interpolator = bool(nd["interpolator"]);
-      if(mgparams.interpolator){
+      if (mgparams.interpolator) {
         in.read_verb<std::string>(mgparams.interpolator_type, {"interpolator", "type"});
         in.read_verb<bool>(mgparams.spatial_loops, {"interpolator", "spatial"});
         in.read_verb<size_t>(mgparams.rmin, {"interpolator", "rmin"});
         in.read_verb<size_t>(mgparams.rmax, {"interpolator", "rmax"});
+        in.read_verb<bool>(mgparams.save_interpolator, {"interpolator", "save"});
         in.read_verb<bool>(mgparams.correlator, {"correlator"});
-      }
-      else{
+      } else {
         std::cerr << "Error: No 'glueball:interpolator' node found in the input file.\n";
         std::cerr << "Aborting.\n";
         std::abort();

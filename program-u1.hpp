@@ -399,8 +399,8 @@ namespace u1 {
         // if ((*this).omeas.glueball.loops_GEVP) {
         //   omeasurements::meas_glueball_correlator_GEVP<Group>(U, i, (*this).omeas);
         // }
-        if ((*this).omeas.glueball.interpolator) {
-          omeasurements::meas_glueball_interpolators<Group>(omeas.glueball.interpolator_type, U, i, (*this).omeas);
+        if ((*this).omeas.glueball.correlator) {
+          omeasurements::meas_glueball_correlator<Group>(omeas.glueball.interpolator_type, U, i, (*this).omeas);
         }
         // if ((*this).omeas.glueball.U_munu) {
         //   omeasurements::meas_glueball_correlator_U_munu<Group>(U, i, (*this).omeas,

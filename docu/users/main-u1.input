@@ -45,9 +45,10 @@ omeas:
       n: 5
       alpha: 1.0
     interpolator:
-      type: L
+      type: rectangle
       spatial: true
       rmin: 1
       rmax: 8
-    correlator: false
+      save: true
+    correlator: true
   Wloop: true

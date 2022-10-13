@@ -53,10 +53,12 @@ configure_file(
   find_package(yaml-cpp)
   
   include_directories(${YAML_CPP_INCLUDE_DIR} ${YAML_CPP_INCLUDE_DIR}/yaml-cpp/)
-  
+
+  find_package(xtl)
+  include_directories(${xtl_INCLUDE_DIRS} ${xtl_INCLUDE_DIRS}/xtl/)
+
   find_package(xtensor)
   include_directories(${xtensor_INCLUDE_DIRS} ${xtensor_INCLUDE_DIRS}/xtensor/)
-  message(${xtensor_INCLUDE_DIRS})
 
 # We could just have two `add_executable` blocks listing almost all source
 # files. However, CMake would then compile the source files twice, once for

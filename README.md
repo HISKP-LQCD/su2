@@ -13,6 +13,7 @@ The library supports also the measurements of several observables, e.g.:
 
 * [Boost](https://www.boost.org/)
 * [yaml-cpp](https://github.com/jbeder/yaml-cpp)
+* [xtl](https://github.com/xtensor-stack/xtl)
 * [xtensor](https://github.com/xtensor-stack/xtensor)
 
 ## Installation instrucitons

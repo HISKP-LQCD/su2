@@ -55,8 +55,8 @@ namespace glueballs {
   /**
    * @brief fatL-shaped Wilson loop of size (a,b) in the (mu,nu) directions
    *
-   * @param a shortest size on the mu direction
-   * @param b shortest size on the nu direction
+   * @param a longest size on the mu direction (shoud be >= 2 )
+   * @param b longest size on the nu direction (should be  >= 2)
    * @param Px : boolean flag for the application of the parity operator
    */
   template <class Float, class Group>
@@ -181,7 +181,7 @@ namespace glueballs {
 
   /**
    * @brief average over dimensions of trace_fatL_loop at \vec{p}=\vec{0}
-   * average of L-shaped wilson loops of size a \times b over all dimensions.
+   * average of L-shaped wilson loops of length 'r' (long corner). 'r' should be >=4
    * @param statial true when the sum is done only on the i,j loops
    */
   template <class Float, class Group>
@@ -193,7 +193,7 @@ namespace glueballs {
     const size_t ss = size_t(spatial);
     const size_t d = U.getndims();
     std::complex<Float> loop = 0.0;
-    for (size_t ir = 1; ir <= r; ir++) {
+    for (size_t ir = 2; ir <= r; ir++) {
       for (size_t mu = ss; mu < d; mu++) {
         for (size_t nu = mu + 1; nu < d; nu++) {
           loop += rest_trace_fatL_loop_munu<Float, Group>(t, U, ir, r - ir, mu, nu, Px);

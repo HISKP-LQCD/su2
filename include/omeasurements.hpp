@@ -270,7 +270,7 @@ namespace omeasurements {
         for (size_t j = 0; j <= i; j++) {
           // directory path
           const std::string dir_ij =
-            oss_dir.str() + std::to_string(i) + "_" + std::to_string(j) + "/";
+            oss_dir.str() + std::to_string(i+S.glueball.rmin) + "_" + std::to_string(j+S.glueball.rmin) + "/";
           fsys::create_directories(fsys::absolute(dir_ij)); // creating directory
 
           // full path of output file

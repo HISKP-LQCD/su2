@@ -1,8 +1,8 @@
 # Input file example for the u1-hmc program
 
 geometry:
-  L : 4
-  T : 8
+  L : 8
+  T : 16
   ndims : 3
 
 # hmc parameters
@@ -10,7 +10,7 @@ hmc:
   do_mcmc: true
   seed: 93746
   n_save: 10
-  n_meas: 100
+  n_meas: 20
 #  restart: true
   heat: true
   configname: ""
@@ -45,9 +45,9 @@ omeas:
       n: 5
       alpha: 1.0
     interpolator:
-      type: rectangle
+      type: fatL
       spatial: true
-      rmin: 1
+      rmin: 2
       rmax: 8
       save: true
     correlator: true

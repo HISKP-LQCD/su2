@@ -40,3 +40,5 @@ su2hmc
 *.pdf
 .vscode/*
 
+# build directories
+build*

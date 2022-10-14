@@ -1,7 +1,7 @@
 /**
- * @file main-u1.hpp
+ * @file main-su2.hpp
  * @author Simone Romiti (simone.romiti@uni-bonn.de)
- * @brief main programm running any simulation of this library for the U(1) theory
+ * @brief main programm running any simulation of this library for the SU(2) theory
  * @version 0.1
  * @date 2022-10-03
  *
@@ -21,7 +21,7 @@
 #include "measure.hpp"
 #include "metropolis.hpp"
 
-typedef _u1 Group;
+typedef _su2 Group;
 
 int main(int argc, char *argv[]) {
   std::string input_file;

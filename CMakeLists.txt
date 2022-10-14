@@ -79,23 +79,18 @@ if(Boost_FOUND)
   include_directories(${Boost_INCLUDE_DIRS})
 endif()
 
-
-
 add_executable(u1-main main-u1.cpp)
+add_executable(su2-main main-su2.cpp)
 
-add_executable(su2-hmc hmc.cc)
-add_executable(su2-metropolis main.cc)
 add_executable(su2-kramers kramers.cc)
-add_executable(su2-measure measure.cc)
 add_executable(test-groups test.cc)
 add_executable(scaling scaling.cc)
 add_executable(try tryreduce.cc)
 
 target_link_directories(${CMAKE_PROJECT_NAME} PUBLIC ${YAML_CPP_LIBRARY_DIR})
 
-foreach(target u1-main su2-hmc su2-metropolis su2-kramers su2-measure test-groups scaling try)
-  target_link_libraries(${target} su2 libyaml-cpp.a)
-  target_link_directories(${target} PUBLIC ${link_dir})
+foreach(target u1-main su2-main su2-kramers test-groups scaling try)
+  target_link_libraries(${target} su2 ${YAML_CPP_LIBRARIES})
 
   if(Boost_FOUND)
     target_link_libraries(${target} su2 ${Boost_LIBRARIES})

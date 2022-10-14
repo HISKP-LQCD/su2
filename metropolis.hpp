@@ -24,7 +24,7 @@ public:
   }
 
   void parse_input_file(const YAML::Node &nd) {
-    namespace in_metropolis = input_file_parsing::u1::metropolis;
+    namespace in_metropolis = input_file_parsing::metropolis;
     in_metropolis::parse_input_file(nd, (*this).pparams, (*this).sparams);
     (*this).omeas = (*this).sparams.omeas;
     (*this).conf_path_basename =

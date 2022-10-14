@@ -23,7 +23,7 @@ public:
   }
 
   void parse_input_file(const YAML::Node &nd) {
-    namespace in_meas = input_file_parsing::u1::measure;
+    namespace in_meas = input_file_parsing::measure;
     in_meas::parse_input_file(nd, (*this).pparams, (*this).sparams);
     (*this).omeas = (*this).sparams;
     (*this).conf_path_basename =

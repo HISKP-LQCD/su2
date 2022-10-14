@@ -47,7 +47,7 @@ public:
   }
 
   void parse_input_file(const YAML::Node &nd) {
-    namespace in_hmc = input_file_parsing::u1::hmc;
+    namespace in_hmc = input_file_parsing::hmc;
     in_hmc::parse_input_file(nd, (*this).pparams, (*this).sparams);
     (*this).omeas = (*this).sparams.omeas;
     (*this).conf_path_basename =

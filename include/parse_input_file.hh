@@ -304,39 +304,33 @@ namespace input_file_parsing {
   int validate_geometry(gp::physics &pparams);
   void validate_beta_str_width(const size_t &n);
 
-  namespace u1 {
+  /**
+   * @brief parsing geometrical parameters
+   * Parsing the spacetime lattice extensions and number of dimensions from the input
+   * file. If invalid, the program aborts.
+   *
+   * The provided node shoud be already the one named "geometry" in the input file
+   * @param pparams physics parameter structure
+   */
+  void parse_geometry(const YAML::Node &nd, gp::physics &pparams);
 
-    /**
-     * @brief parsing geometrical parameters
-     * Parsing the spacetime lattice extensions and number of dimensions from the input
-     * file. If invalid, the program aborts.
-     *
-     * The provided node shoud be already the one named "geometry" in the input file
-     * @param pparams physics parameter structure
-     */
-    void parse_geometry(const YAML::Node &nd, gp::physics &pparams);
+  namespace hmc {
+    void
+    parse_input_file(const YAML::Node &nd, gp::physics &pparams, gp::hmc_u1 &hmc_params);
+  }
 
-    namespace hmc {
-      void parse_input_file(const YAML::Node &nd,
-                            gp::physics &pparams,
-                            gp::hmc_u1 &hmc_params);
-    }
+  namespace measure {
+    void
+    parse_input_file(const YAML::Node &nd, gp::physics &pparams, gp::measure_u1 &mparams);
 
-    namespace measure {
-      void parse_input_file(const YAML::Node &nd,
-                            gp::physics &pparams,
-                            gp::measure_u1 &mparams);
+  } // namespace measure
 
-    } // namespace measure
+  namespace metropolis {
+    void validate_N_hit(const size_t &n);
+    void parse_input_file(const YAML::Node &nd,
+                          gp::physics &pparams,
+                          gp::metropolis_u1 &mcparams);
 
-    namespace metropolis {
-      void validate_N_hit(const size_t &n);
-      void parse_input_file(const YAML::Node &nd,
-                            gp::physics &pparams,
-                            gp::metropolis_u1 &mcparams);
-
-    } // namespace metropolis
-
-  } // namespace u1
+  } // namespace metropolis
 
 } // namespace input_file_parsing

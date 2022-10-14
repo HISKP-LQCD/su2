@@ -21,8 +21,6 @@
 #include "measure-u1.hpp"
 #include "metropolis-u1.hpp"
 
-typedef _u1 Group;
-
 int main(int argc, char *argv[]) {
   std::string input_file;
   u1::parse_command_line(argc, argv, input_file);
@@ -31,14 +29,23 @@ int main(int argc, char *argv[]) {
   u1::running_program rp; // running program
   YAML::Node nd = YAML::Clone(u1::get_cleaned_input_file(rp, input_file));
 
+  typedef _u1 Group;
+  std::cout << rp.gg << "-ciaoooo\n";
+  if (rp.gg == "u1") {
+    typedef _u1 Group;
+  }
+  else if (rp.gg == "su2") {
+    typedef _su2 Group;
+  } else {
+    spacetime_lattice::fatal_error(
+      "Invalid gauge group specified in the input file: " + rp.gg, __func__);
+  }
+
   bool &do_hmc = rp.do_hmc;
   bool &do_metropolis = rp.do_metropolis;
   bool &do_omeas = rp.do_omeas;
 
-  if (do_hmc && do_metropolis) { // both options are incompatible
-    std::cerr << "ERROR: Can't run simultaneously hmc and metropolis algorithms.\n";
-    std::cerr << "Check your input file: " << input_file << "\n";
-  } else if (do_hmc ^ do_metropolis) { // one of the 2 algorithms
+if (do_hmc ^ do_metropolis) { // one of the 2 algorithms
     if (do_hmc) {
       u1::hmc_algo<Group> h;
       h.run(nd);

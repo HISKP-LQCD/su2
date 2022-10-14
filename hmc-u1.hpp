@@ -12,7 +12,7 @@
 #include "md_update.hh"
 #include "program-u1.hpp"
 
-#include "rotating-gaugemonomial.hpp"
+//#include "rotating-gaugemonomial.hpp"
 
 #include "detDDdag_monomial.hh"
 
@@ -25,8 +25,8 @@ namespace u1 {
     std::list<monomial<double, Group> *> monomial_list; // list of monomials in the action
 
     flat_spacetime::gaugemonomial<double, Group> *gm; // gauge monomial
-    rotating_spacetime::gauge_monomial<double, Group>
-      *gm_rot; // gauge monomial with space rotation
+    // rotating_spacetime::gauge_monomial<double, Group>
+    //   *gm_rot; // gauge monomial with space rotation
     kineticmonomial<double, Group> *km; // kinetic momomial (momenta)
     staggered::detDDdag_monomial<double, Group> *detDDdag; // staggered fermions monomial
 
@@ -38,7 +38,7 @@ namespace u1 {
     hmc_algo() { (*this).algo_name = "hmc"; }
     ~hmc_algo() {
       free(gm);
-      free(gm_rot);
+      // free(gm_rot);
       free(km);
       free(detDDdag);
       free(md_integ);
@@ -58,29 +58,29 @@ namespace u1 {
 
     // generate list of monomials
     void init_monomials() {
-      (*this).gm =
-        new flat_spacetime::gaugemonomial<double, Group>(0, (*this).pparams.xi);
-      (*this).gm_rot =
-        new rotating_spacetime::gauge_monomial<double, Group>(0, (*this).pparams.Omega);
-
       (*this).km = new kineticmonomial<double, Group>(0);
       (*this).km->setmdpassive();
       (*this).monomial_list.push_back(km);
 
-      (*this).detDDdag = new staggered::detDDdag_monomial<double, Group>(
-        0, (*this).pparams.m0, (*this).sparams.solver, (*this).sparams.tolerance_cg,
-        (*this).sparams.seed_pf, (*this).sparams.solver_verbosity);
-
       if ((*this).pparams.include_gauge) {
         if ((*this).pparams.rotating_frame) {
-          (*this).monomial_list.push_back(gm_rot);
+          spacetime_lattice::fatal_error("Rotating metric not supported yet.", __func__);
+          // (*this).gm_rot =
+          //   new rotating_spacetime::gauge_monomial<double, Group>(0,
+          //   (*this).pparams.Omega);
+          // (*this).monomial_list.push_back(gm_rot);
         } else {
+          (*this).gm =
+            new flat_spacetime::gaugemonomial<double, Group>(0, (*this).pparams.xi);
           (*this).monomial_list.push_back(gm);
         }
       }
 
       if ((*this).pparams.include_staggered_fermions) { // including S_F (fermionic) in
                                                         // the action
+        (*this).detDDdag = new staggered::detDDdag_monomial<double, Group>(
+          0, (*this).pparams.m0, (*this).sparams.solver, (*this).sparams.tolerance_cg,
+          (*this).sparams.seed_pf, (*this).sparams.solver_verbosity);
         (*this).monomial_list.push_back(detDDdag);
       }
     }

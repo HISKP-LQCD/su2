@@ -69,10 +69,13 @@ namespace u1 {
                                      pparams.anisotropic);
       }
       if (pparams.rotating_frame) {
-        return rotating_spacetime::sweep(U, pparams.Omega, engines, delta, N_hit,
-                                         pparams.beta, pparams.xi, pparams.anisotropic);
+        spacetime_lattice::fatal_error("Rotating metric not supported yet.", __func__);
+        return {};
+        // return rotating_spacetime::sweep(U, pparams.Omega, engines, delta, N_hit,
+        //                                  pparams.beta, pparams.xi,
+        //                                  pparams.anisotropic);
       } else {
-        spacetime_lattice::fatal_error("Invalid metric when calling: ", __func__);
+        spacetime_lattice::fatal_error("Invalid metric.", __func__);
         return {};
       }
     }

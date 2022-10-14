@@ -26,7 +26,9 @@ namespace spacetime_lattice {
    * @param d number of dimensions
    * @return double value of the sum
    */
-  inline double num_pLloops(const size_t &d) { return d * (d - 1); }
+  inline double num_pLloops(const size_t &d) {
+    return d * (d - 1);
+  }
 
   /**
    * @brief num_pLloops(d)/2
@@ -34,11 +36,14 @@ namespace spacetime_lattice {
    * @param d
    * @return double
    */
-  inline double num_pLloops_half(const int &d) { return num_pLloops(d) / 2.0; }
+  inline double num_pLloops_half(const int &d) {
+    return num_pLloops(d) / 2.0;
+  }
 
   inline void fatal_error(const std::string msg, char const *function_name) {
-    std::cerr << "# FATAL ERROR.  " << function_name << "(): "<< msg <<  "\nAborting.";
-   std::abort();
+    std::cerr << "# FATAL ERROR.  " << function_name << "(): " << msg << "\nAborting.";
+    std::cerr << "# Aborting\n";
+    std::abort();
     return;
   }
 

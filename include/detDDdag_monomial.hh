@@ -69,14 +69,14 @@ namespace staggered {
       const nd_max_arr<size_t> dims = {Lt, Lx, Ly, Lz}; // vactor of spacetime dimensions
 
       // generating the gaussian R
-      
+
       const staggered::spinor_lat<Float, Complex> R =
         staggered::gaussian_spinor<Float, Complex>(
           dims, 0.0, 1.0 / sqrt(2), SEED + n_traj); // e^{-x^2} has sigma=1/sqrt(2)
 
       n_traj += 1;
 
-      (*this).phi = staggered::apply_D<Float, Complex, Group>(*h.U, (*this).m0, R);
+      (*this).phi = staggered::apply_D<Float, Complex>(*h.U, (*this).m0, R);
 
       monomial<Float, Group>::Hold = R.norm_squared(); // R^{\dagger}*R is real
       return;
@@ -92,22 +92,13 @@ namespace staggered {
      */
     void accept(const hamiltonian_field<Float, Group> &h) override {
       // Operator D*D^{\dagger} . Hermitian and invertible -> can apply the CG inversion
-      const staggered::DDdag_matrix_lat<Float, Complex, Group> DDdag(*h.U, (*this).m0);
+      const staggered::DDdag_matrix_lat<Float, Complex, _u1> DDdag(*h.U, (*this).m0);
 
       // applying (D*Ddag)^{-1} to \phi
       const staggered::spinor_lat<Float, Complex> chi =
         DDdag.inv((*this).phi, SOLVER, TOLERANCE, VERBOSITY, SEED);
 
-
       monomial<Float, Group>::Hnew = complex_dot_product(phi, chi).real();
-
-      // const staggered::spinor_lat<Float, Complex> R =
-      //   staggered::apply_Ddag(h.U, (*this).m0, chi);
-      // std::cout << "check 2 " << complex_dot_product(phi, chi).real() -
-      // R.norm_squared()
-      //           << "\n";
-
-      // monomial<Float, Group>::Hnew = R.norm_squared(); // R^{\dagger}*R is real
       return;
     }
 
@@ -147,22 +138,21 @@ namespace staggered {
               const nd_max_arr<int> x = {x0, x1, x2, x3};
               nd_max_arr<int> xm = x, xp = x;
               for (size_t mu = 0; mu < nd; mu++) {
+                accum derSF;
                 xm[mu]--; // x - mu
                 xp[mu]++; // x + mu
 
                 const Float eta_x_mu = staggered::eta(x, mu);
                 const Float eta_xp_mu = staggered::eta(xp, mu);
 
-                const Complex v_xp =
-                  (1.0 / 2.0) * eta_x_mu * (+i) * (*h.U)(x, mu) * chi1(xp);
-                const Complex v_x =
+                auto v_xp = (1.0 / 2.0) * eta_x_mu * (+i) * (*h.U)(x, mu) * chi1(xp);
+                auto v_x =
                   -(1.0 / 2.0) * eta_xp_mu * (-i) * (*h.U)(x, mu).dagger() * chi1(x);
 
                 // derivative of S_F with respect to U_{\mu}(x)
-                accum derSF = conj(chi(x)) * v_xp + conj(chi(xp)) * v_x;
-                derSF *= -2.0;
-
-                derSF *= i; // get_deriv gives the imaginary part: Re(z) = Im(i*z)
+                derSF = conj(chi(x)) * v_xp + conj(chi(xp)) * v_x;
+                derSF =
+                  -2.0 * i * derSF; // get_deriv gives the imaginary part: Re(z) = Im(i*z)
                 // std::cout << "derSF : " << derSF << "\n";
                 deriv(x, mu) += get_deriv<Float>(derSF);
 
@@ -173,6 +163,30 @@ namespace staggered {
           }
         }
       }
+      return;
+    }
+  };
+
+  template <typename Float>
+  class detDDdag_monomial<Float, _su2> : public monomial<Float, _su2> {
+  public:
+    detDDdag_monomial(unsigned int _timescale,
+                      const Float &m0_val,
+                      const std::string &solver,
+                      const Float &tolerance,
+                      const size_t &seed,
+                      const size_t &verb)
+      : monomial<Float, _su2>::monomial(_timescale) {
+      spacetime_lattice::fatal_error("SU(2) not supported yet.", __func__);
+    }
+
+    void heatbath(const hamiltonian_field<Float, _su2> &h) override { return; }
+
+    void accept(const hamiltonian_field<Float, _su2> &h) override { return; }
+
+    void derivative(adjointfield<Float, _su2> &deriv,
+                    const hamiltonian_field<Float, _su2> &h,
+                    const Float fac = 1.) const override {
       return;
     }
   };

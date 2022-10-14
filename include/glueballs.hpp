@@ -69,7 +69,7 @@ namespace glueballs {
                                            const bool &Px) {
     typedef typename accum_type<Group>::type accum;
 
-    accum L(1.0);
+    accum L = U(x, mu) * (U(x, mu).dagger()); // "1", independently of the group
     // start at x
     // go to x + (a+1)*\hat{mu}
     for (size_t s = 0; s < (a + 1); s++) {
@@ -220,6 +220,17 @@ namespace glueballs {
       std::cerr << "Aborting.\n";
       std::abort();
     }
+  }
+
+  template <class Float>
+  std::complex<Float> get_rest_trace_loop(const std::string type,
+                                          size_t &t,
+                                          const gaugeconfig<_su2> &U,
+                                          const size_t &r,
+                                          const bool &Px,
+                                          const bool &spatial = false) {
+    spacetime_lattice::fatal_error("SU(2) not supported yet.", __func__);
+    return std::complex<Float>(0.0);
   }
 
 } // namespace glueballs

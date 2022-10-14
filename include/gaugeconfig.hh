@@ -26,6 +26,15 @@
 #include <random>
 #include <vector>
 
+// test function to see if the template has been specified correctly
+template <class T> std::string gauge_group_name();
+template <> std::string gauge_group_name<_u1>() {
+  return "u1";
+}
+template <> std::string gauge_group_name<_su2>() {
+  return "su2";
+}
+
 using std::vector;
 
 template <class T> class gaugeconfig {

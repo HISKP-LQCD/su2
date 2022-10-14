@@ -18,9 +18,9 @@
 #include "adjointfield.hh"
 #include "flat-gauge_energy.hpp"
 #include "gaugeconfig.hh"
+#include "geometry.hh"
 #include "get_staples.hh"
 #include "hamiltonian_field.hh"
-#include "geometry.hh"
 #include "monomial.hh"
 #include "su2.hh"
 #include "u1.hh"
@@ -48,7 +48,7 @@ namespace staggered {
   }
 
   // index of the lattice point given the dimensions
-// #pragma omp declare target
+  // #pragma omp declare target
   size_t txyz_to_index(const size_t &t,
                        const size_t &x,
                        const size_t &y,
@@ -60,14 +60,14 @@ namespace staggered {
     const geometry g(Lx, Ly, Lz, Lt); // note the order
     return g.getIndex(t, x, y, z);
   }
-// #pragma omp end declare target
+  // #pragma omp end declare target
 
   // overload : x={x0,x1,x2,x3}, dims={Lt,Lx,Ly,Lz}
-// #pragma omp declare target
+  // #pragma omp declare target
   size_t txyz_to_index(const nd_max_arr<int> &x, const nd_max_arr<size_t> &dims) {
     return txyz_to_index(x[0], x[1], x[2], x[3], dims[0], dims[1], dims[2], dims[3]);
   }
-// #pragma omp end declare target
+  // #pragma omp end declare target
 
   /**
    * @brief vector of staggered "spinors" (no Dirac structure) for all the points of the
@@ -116,10 +116,9 @@ namespace staggered {
     nd_max_arr<size_t> get_dims() const { return dims; }
 
     size_t size() const { return Psi.size(); }
-    // void resize(const size_t &n, const Type &val = (Type)0.0) { Psi.resize(n, val); }
 
     spinor_lat<Float, Type> operator/(const Type &lambda) {
-      const int N = (*this).size();
+      const int N = this->size();
       spinor_lat<Float, Type> phi(this->get_dims());
       for (size_t i = 0; i < N; i++) {
         phi[i] = Psi[i] / lambda;
@@ -269,7 +268,7 @@ namespace staggered {
         staggered::gaussian_spinor<Float, Complex>(psi.get_dims(), 0.0, 10.0, seed);
 
       if (verb > 1) {
-        std::cout << "Calling the "<< solver << " solver.\n";
+        std::cout << "Calling the " << solver << " solver.\n";
       }
 
       SVR.solve(phi0, tol, verb);
@@ -303,8 +302,8 @@ namespace staggered {
   }
 
   // returns the result of D*psi, where D is the Dirac operator
-  template <class Float, class Type, class Group>
-  spinor_lat<Float, Type> apply_D(const gaugeconfig<Group> &U,
+  template <class Float, class Type, class _u1>
+  spinor_lat<Float, Type> apply_D(const gaugeconfig<_u1> &U,
                                   const Float &m,
                                   const spinor_lat<Float, Type> &psi) {
     const size_t Lt = U.getLt(), Lx = U.getLx(), Ly = U.getLy(), Lz = U.getLz();
@@ -341,9 +340,18 @@ namespace staggered {
     return phi;
   }
 
+  template <class Float, class Type>
+  spinor_lat<Float, Type> apply_D(const gaugeconfig<_su2> &U,
+                                  const Float &m,
+                                  const spinor_lat<Float, Type> &psi) {
+    spacetime_lattice::fatal_error("Staggered fermions not supported for SU(2)",
+                                   __func__);
+    return psi;
+  }
+
   // returns the reslut of D^{\dagger}*psi, where D is the Dirac operator
-  template <class Float, class Type, class Group>
-  spinor_lat<Float, Type> apply_Ddag(const gaugeconfig<Group> &U,
+  template <class Float, class Type, class _u1>
+  spinor_lat<Float, Type> apply_Ddag(const gaugeconfig<_u1> &U,
                                      const Float &m,
                                      const spinor_lat<Float, Type> &psi) {
     const size_t Lt = U.getLt(), Lx = U.getLx(), Ly = U.getLy(), Lz = U.getLz();
@@ -380,5 +388,13 @@ namespace staggered {
     return phi;
   }
 
+  template <class Float, class Type>
+  spinor_lat<Float, Type> apply_Ddag(const gaugeconfig<_su2> &U,
+                                     const Float &m,
+                                     const spinor_lat<Float, Type> &psi) {
+    spacetime_lattice::fatal_error("Staggered fermions not supported for SU(2)",
+                                   __func__);
+    return psi;
+  }
 
 } // namespace staggered

@@ -19,9 +19,9 @@
 #include "omeasurements.hpp"
 #include "parse_input_file.hh"
 #include "random_gauge_trafo.hh"
-#include "rotating-energy_density.hpp" // rotating spacetime
-#include "rotating-gauge_energy.hpp" // rotating spacetime
-#include "rotating-sweep.hpp" // rotating spacetime
+// #include "rotating-energy_density.hpp" // rotating spacetime
+// #include "rotating-gauge_energy.hpp" // rotating spacetime
+//#include "rotating-sweep.hpp" // rotating spacetime
 #include "su2.hh"
 #include "u1.hh"
 #include "vectorfunctions.hh"
@@ -74,6 +74,7 @@ namespace u1 {
    * NOTE: Only one flat at the time can be true
    */
   struct running_program {
+    std::string gg; // gauge group: "u1" for U(1) or and "su2" forI SU(2)
     bool do_hmc = false; // Hybrid Monte Carlo algorithm
     bool do_metropolis = false; // Metropolis algorithm
     bool do_omeas = false; // only measuring observables
@@ -91,6 +92,9 @@ namespace u1 {
   YAML::Node get_cleaned_input_file(running_program &rp, const std::string &input_file) {
     YAML::Node nd = YAML::LoadFile(input_file);
     YAML_parsing::inspect_node in(nd);
+
+    in.read_verb<std::string>(rp.gg, {"gauge_group"});
+    nd.remove("gauge_group");
 
     bool &do_hmc = rp.do_hmc;
     bool &do_metropolis = rp.do_metropolis;
@@ -113,9 +117,18 @@ namespace u1 {
     }
 
     do_omeas = bool(nd["omeas"]);
-    if (!do_hmc && !do_metropolis && !nd["omeas"]["offline"]) {
-      std::cerr << "Error: You must write the 'offline' measurements node inside 'omeas' "
-                << "because you're not running any MCMC algorithm.\n";
+    std::string err = ""; // error message
+    try {
+      if (do_hmc && do_metropolis) { // both options are incompatible
+        err = "ERROR: Can't run simultaneously hmc and metropolis algorithms.\n";
+        throw err;
+      } else if (!do_hmc && !do_metropolis && !nd["omeas"]["offline"]) {
+        err = "Error: You must write the 'offline' measurements node inside 'omeas' "
+              "because you're not running any MCMC algorithm.\n";
+        throw err;
+      }
+    } catch (...) {
+      std::cerr << err << "Check your input file: " << input_file << "\n";
       std::cerr << "Aborting.\n";
       std::abort();
     }
@@ -229,7 +242,8 @@ namespace u1 {
         return flat_spacetime::gauge_energy(U, spatial_only);
       }
       if (pparams.rotating_frame) {
-        return rotating_spacetime::gauge_energy(U, pparams.Omega, spatial_only);
+        spacetime_lattice::fatal_error("Rotating metric not supported yet.", __func__);
+        // return rotating_spacetime::gauge_energy(U, pparams.Omega, spatial_only);
       } else {
         spacetime_lattice::fatal_error("Invalid metric when calling: ", __func__);
         return {};
@@ -247,7 +261,8 @@ namespace u1 {
         flat_spacetime::energy_density(U, E, Q, cloverdef, ss);
       }
       if (pparams.rotating_frame) {
-        rotating_spacetime::energy_density(U, pparams.Omega, E, Q, cloverdef);
+        spacetime_lattice::fatal_error("Rotating metric not supported yet.", __func__);
+        // rotating_spacetime::energy_density(U, pparams.Omega, E, Q, cloverdef);
       }
       return;
     }
@@ -400,7 +415,8 @@ namespace u1 {
         //   omeasurements::meas_glueball_correlator_GEVP<Group>(U, i, (*this).omeas);
         // }
         if ((*this).omeas.glueball.correlator) {
-          omeasurements::meas_glueball_correlator<Group>(omeas.glueball.interpolator_type, U, i, (*this).omeas);
+          omeasurements::meas_glueball_correlator<Group>(omeas.glueball.interpolator_type,
+                                                         U, i, (*this).omeas);
         }
         // if ((*this).omeas.glueball.U_munu) {
         //   omeasurements::meas_glueball_correlator_U_munu<Group>(U, i, (*this).omeas,

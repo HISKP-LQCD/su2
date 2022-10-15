@@ -66,6 +66,7 @@ configure_file(
 # different executables. Here we want to re-use this. One can either track the
 # generated objects files or create a simple static library. The latter is done
 # here.
+set(${CMAKE_INSTALL_LIBDIR} ${CMAKE_INSTALL_PREFIX}/lib/)
 add_library(${PROJECT_NAME}
     exp_gauge.cc
     print_program_options.cc
@@ -79,6 +80,8 @@ if(Boost_FOUND)
   include_directories(${Boost_INCLUDE_DIRS})
 endif()
 
+# executables only in the installation directory
+set(${CMAKE_BINARY_DIR} ${CMAKE_INSTALL_PREFIX}/bin/)
 add_executable(u1-main main-u1.cpp)
 add_executable(su2-main main-su2.cpp)
 
@@ -98,4 +101,13 @@ foreach(target u1-main su2-main su2-kramers test-groups scaling try)
     target_link_libraries(${target} su2 "-lboost_program_options -lboost_filesystem -lboost_system")
   endif()
 endforeach(target)
+
+# installing 
+
+install(TARGETS ${PROJECT_NAME}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
+install(TARGETS u1-main su2-main)
+install(TARGETS su2-kramers test-groups scaling try)
+
 

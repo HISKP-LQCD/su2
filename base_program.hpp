@@ -342,7 +342,7 @@ public:
 
     // printing the yaml main node -> reproducibility of the run
     std::cout << "## Cleaned yaml node:\n";
-    std::cout << nd;
+    std::cout << nd << "\n";
 
     this->parse_input_file(nd);
     this->create_gauge_conf();

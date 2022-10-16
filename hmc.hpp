@@ -10,13 +10,13 @@
  */
 
 #include "md_update.hh"
-#include "program.hpp"
+#include "base_program.hpp"
 
 //#include "rotating-gaugemonomial.hpp"
 
 #include "detDDdag_monomial.hh"
 
-template <class Group> class hmc_algo : public program<Group, gp::hmc_u1> {
+template <class Group> class hmc_algo : public base_program<Group, gp::hmc_u1> {
 private:
   double rate = 0.; // acceptance rate
 
@@ -128,36 +128,35 @@ public:
     }
   }
 
-  void after_hmc_step(const size_t &i) {
-    if (i > 0 && (i % (*this).sparams.N_save) ==
-                   0) { // saving (*this).U after each N_save trajectories
-      std::string path_i = (*this).conf_path_basename + "." + std::to_string(i);
-      if ((*this).sparams.do_mcmc) {
-        (*this).U.save(path_i);
-      }
+  // void after_hmc_step(const size_t &i) {
+  //   if (i > 0 && (i % (*this).sparams.N_save) ==
+  //                  0) { // saving (*this).U after each N_save trajectories
+  //     std::string path_i = (*this).conf_path_basename + "." + std::to_string(i);
+  //     if ((*this).sparams.do_mcmc) {
+  //       (*this).U.save(path_i);
+  //     }
 
-      // online measurements
-      bool do_omeas =
-        (*this).sparams.do_omeas && (i > (*this).sparams.omeas.icounter) &&
-        ((i - (*this).sparams.omeas.icounter) <= (*this).sparams.omeas.n_meas) &&
-        (i % (*this).sparams.omeas.nstep == 0);
-      if ((*this).sparams.do_mcmc) {
-        // check also if trajectory was accepted
-        do_omeas = do_omeas && mdparams.getaccept();
-      }
+  //     // online measurements
+  //     bool do_omeas =
+  //       (*this).sparams.do_omeas && (i > (*this).sparams.omeas.icounter) &&
+  //       ((i - (*this).sparams.omeas.icounter) <= (*this).sparams.omeas.n_meas) &&
+  //       (i % (*this).sparams.omeas.nstep == 0);
+  //     if ((*this).sparams.do_mcmc) {
+  //       // check also if trajectory was accepted
+  //       do_omeas = do_omeas && mdparams.getaccept();
+  //     }
 
-      if (do_omeas) {
-        this->do_omeas_i(i);
-      }
+  //     if (do_omeas) {
+  //       this->do_omeas_i(i);
+  //     }
 
-      if ((*this).sparams.do_mcmc) { // storing last conf index (only after online
-                                     // measurements
-        // has been done)
-        io::hmc::update_nconf_counter((*this).sparams.conf_dir, (*this).g_heat, i,
-                                      path_i);
-      }
-    }
-  }
+  //     if ((*this).sparams.do_mcmc) {
+  //       // storing last conf index (only after online measurements has been done)
+  //       io::update_nconf_counter((*this).sparams.conf_dir, (*this).g_heat, i,
+  //                                     path_i);
+  //     }
+  //   }
+  // }
 
   void run(const YAML::Node &nd) {
     this->pre_run(nd);
@@ -165,7 +164,7 @@ public:
 
     if ((*this).g_icounter == 0) {
       // header: column names in the output
-      std::string head_str = io::hmc::get_header(" ");
+      std::string head_str = io::get_header(" ");
       std::cout << head_str;
       (*this).os << head_str;
     }
@@ -183,7 +182,16 @@ public:
     for (size_t i = (*this).g_icounter; i < (*this).sparams.n_meas + (*this).g_icounter;
          i++) {
       this->do_hmc_step(i);
-      this->after_hmc_step(i);
+            // online measurements
+      bool do_omeas =
+        (*this).sparams.do_omeas && (i > (*this).sparams.omeas.icounter) &&
+        ((i - (*this).sparams.omeas.icounter) <= (*this).sparams.omeas.n_meas) &&
+        (i % (*this).sparams.omeas.nstep == 0);
+      if ((*this).sparams.do_mcmc) {
+        // check also if trajectory was accepted
+        do_omeas = do_omeas && mdparams.getaccept();
+      }
+      this->after_MCMC_step(i, do_omeas);
     }
 
     if ((*this).sparams.do_mcmc) {

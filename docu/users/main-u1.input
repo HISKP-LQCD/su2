@@ -5,9 +5,19 @@ geometry:
   T : 16
   ndims : 3
 
-# hmc parameters
-hmc:
+metropolis:
   do_mcmc: true
+  conf_dir: "./confs/"
+  n_meas: 1000000
+  N_save: 5
+  N_hit: 250
+  delta: 0.01
+  heat: true
+#  restart: true
+  lenghty_conf_name: false  
+
+hmc:
+  do_mcmc: false
   seed: 93746
   n_save: 10
   n_meas: 20

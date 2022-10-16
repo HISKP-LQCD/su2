@@ -145,16 +145,19 @@ namespace global_parameters {
     // leapfrog, lp_leapfrog, omf4, lp_omf4, Euler, RUTH, omf2
     std::string integrator = "leapfrog";
 
+    // fermions stuff (operators)
     std::string solver = "CG"; // Type of solver: CG, BiCGStab
     double tolerance_cg = 1e-10; // Tolerance for the solver for the dirac operator
     size_t solver_verbosity = 0; // Verbosity for the solver for the dirac operator
     size_t seed_pf = 97234719; // Seed for the evaluation of the fermion determinant
-    std::string conf_dir = "."; // Output directory
 
+    // configurations filenames
+    std::string conf_dir = "."; // Output directory
     std::string conf_basename = "u1_conf"; // root of the output files names
     bool lenghty_conf_name = true; // add ensemble information in configuration name
     size_t beta_str_width = g_beta_str_width; // length of the beta value config filename
 
+    // online measurements
     bool do_omeas = false; // true iff online measurement are ON
     measure_u1 omeas; // stuct for online measurements
 
@@ -183,12 +186,18 @@ namespace global_parameters {
     size_t beta_str_width = g_beta_str_width; // length of the beta value config filename
 
     size_t N_hit = 10; // N_hit updates are performed on each link during one sweep
-    double heat =
-      1.0; // determines if thermalization starts from a hot (=1) or cold(=0) config
+    bool heat = true; // randomness of the initial config, true: hot, false: cold
     double delta = 1.0; // quantifies how much the prooposed new link can differ from
                         // the current link
     bool do_mcmc =
       true; // true when generating configurations through the Markov chain Monte Carlo
+
+    // fermions stuff (operators)
+    std::string solver = "CG"; // Type of solver: CG, BiCGStab
+    double tolerance_cg = 1e-10; // Tolerance for the solver for the dirac operator
+    size_t solver_verbosity = 0; // Verbosity for the solver for the dirac operator
+    size_t seed_pf = 97234719; // Seed for the evaluation of the fermion determinant
+
     bool do_omeas = false; // true when omeasurements are done
     measure_u1 omeas; // struct for online measurements
   };

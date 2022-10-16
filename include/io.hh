@@ -247,7 +247,6 @@ namespace io {
     }
   } // namespace measure
 
-  namespace hmc {
 
     std::string g_nconf_counter = "nconf_counter.txt"; // global variable: name of file
 
@@ -304,6 +303,5 @@ namespace io {
       nconf_counter.close();
     }
 
-  } // namespace hmc
 
 } // namespace io

@@ -1,5 +1,5 @@
 /**
- * @file program-u1.hpp
+ * @file base_program.hpp
  * @author Simone Romiti (simone.romiti@uni-bonn.de)
  * @brief mother class for all the classes that handle the programs runs
  * @version 0.1
@@ -132,7 +132,7 @@ YAML::Node get_cleaned_input_file(running_program &rp, const std::string &input_
 
 namespace gp = global_parameters;
 
-template <class Group, class sparam_type> class program {
+template <class Group, class sparam_type> class base_program {
 protected:
   std::string algo_name =
     "UNNAMED_PROGRAM"; // name of the algorithm; initialized specified in child classes
@@ -162,8 +162,8 @@ protected:
   std::ofstream acceptancerates;
 
 public:
-  program() {}
-  ~program() {}
+  base_program() {}
+  ~base_program() {}
 
   virtual void print_program_info() const = 0;
 
@@ -283,8 +283,7 @@ public:
 
     if (sparams.restart) {
       std::cout << "## restart " << sparams.restart << "\n";
-      const std::vector<std::string> v_ncc =
-        io::hmc::read_nconf_counter(sparams.conf_dir);
+      const std::vector<std::string> v_ncc = io::read_nconf_counter(sparams.conf_dir);
       g_heat = boost::lexical_cast<bool>(v_ncc[0]);
       g_icounter = std::stoi(v_ncc[1]);
       std::string config_path = v_ncc[2];
@@ -332,6 +331,25 @@ public:
     }
 
     return;
+  }
+
+  /**
+   * @brief part of the program flow common to all programs
+   */
+  void pre_run(const YAML::Node &nd) {
+    this->print_program_info();
+    this->print_git_info();
+
+    // printing the yaml main node -> reproducibility of the run
+    std::cout << "## Cleaned yaml node:\n";
+    std::cout << nd;
+
+    this->parse_input_file(nd);
+    this->create_gauge_conf();
+
+    this->create_directories();
+
+    this->open_output_data();
   }
 
   /**
@@ -414,17 +432,26 @@ public:
   }
 
   /**
-   * @brief part of the program flow common to all programs
+   * @brief operations to be done after the i-th step of the MCMC
+   *
+   * @param i configuration index
    */
-  void pre_run(const YAML::Node &nd) {
-    this->print_program_info();
-    this->print_git_info();
+  void after_MCMC_step(const size_t &i, const bool &do_omeas) {
+    if (i > 0 && (i % (*this).sparams.N_save) ==
+                   0) { // saving (*this).U after each N_save trajectories
+      std::string path_i = (*this).conf_path_basename + "." + std::to_string(i);
+      if ((*this).sparams.do_mcmc) {
+        (*this).U.save(path_i);
+      }
 
-    this->parse_input_file(nd);
-    this->create_gauge_conf();
+      if (do_omeas) {
+        this->do_omeas_i(i);
+      }
 
-    this->create_directories();
-
-    this->open_output_data();
+      if ((*this).sparams.do_mcmc) {
+        // storing last conf index (only after online measurements has been done)
+        io::update_nconf_counter((*this).sparams.conf_dir, (*this).g_heat, i, path_i);
+      }
+    }
   }
 };

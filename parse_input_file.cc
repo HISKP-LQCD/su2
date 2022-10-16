@@ -83,6 +83,19 @@ namespace input_file_parsing {
     return;
   }
 
+  /**
+   * @brief check if N_hit >= 1, otherwise it aborts
+   * @param n N_hit (number of times an update per link is attempted)
+   */
+  void validate_N_hit(const size_t &n) {
+    if (n < 1) {
+      std::cerr << "Error: N_hit should be at least 1, otherwise nothing will happen";
+      std::cerr << "Aborting.\n";
+      std::abort();
+    }
+    return;
+  }
+
   namespace Yp = YAML_parsing;
 
   void parse_geometry(Yp::inspect_node &in, gp::physics &pparams) {
@@ -133,6 +146,33 @@ namespace input_file_parsing {
     }
 
     return;
+  }
+
+  /**
+   * @brief checks that `heat` and `restart` are not both present at the same time
+   *
+   */
+  void heat_restart_incompatible(const YAML::Node &nd) {
+    if (nd["restart"]) {
+      if (!(nd["restart"].as<bool>()) && !nd["heat"]) {
+        std::cerr << "Error: Your gave 'restart==false' but didn't specify the 'heat' "
+                     "parameter.\n";
+        std::cerr << "Aborting.\n";
+        std::abort();
+      }
+      if (nd["restart"] && nd["heat"]) {
+        std::cerr << "Error: "
+                  << "'restart' and 'heat' conditions are incompatible in the hmc. "
+                  << "Aborting.\n";
+        std::abort();
+      }
+    }
+    if (!nd["restart"] && !nd["heat"]) {
+      std::cerr << "Error: "
+                << "Please pass either 'restart' or 'heat' to the hmc. "
+                << "Aborting.\n";
+      std::abort();
+    }
   }
 
   /**
@@ -243,6 +283,44 @@ namespace input_file_parsing {
   }
 
   /**
+   * @brief parsing the `metropolis` block of the YAML input file
+   *
+   * @param in inspection node (full tree)
+   * @param inner_tree path to the given branch of the tree
+   * @param mcparams reference to the hmc parameters
+   */
+  void parse_metropolis(Yp::inspect_node &in,
+                        const std::vector<std::string> &inner_tree,
+                        gp::metropolis_u1 &mcparams) {
+    const std::vector<std::string> state0 = in.get_InnerTree();
+    in.dig_deeper(inner_tree); // entering the glueball node
+    YAML::Node nd = in.get_outer_node();
+
+    in.read_opt_verb<bool>(mcparams.do_mcmc, {"do_mcmc"});
+    in.read_opt_verb<size_t>(mcparams.n_meas, {"n_meas"});
+    in.read_opt_verb<size_t>(mcparams.N_save, {"N_save"});
+    in.read_opt_verb<size_t>(mcparams.seed, {"seed"});
+
+    in.read_opt_verb<std::string>(mcparams.conf_dir, {"conf_dir"});
+    in.read_opt_verb<std::string>(mcparams.conf_basename, {"conf_basename"});
+    in.read_opt_verb<bool>(mcparams.lenghty_conf_name, {"lenghty_conf_name"});
+    in.read_opt_verb<size_t>(mcparams.beta_str_width, {"beta_str_width"});
+    validate_beta_str_width(mcparams.beta_str_width);
+
+    heat_restart_incompatible(nd);
+
+    in.read_opt_verb<bool>(mcparams.restart, {"restart"});
+    in.read_opt_verb<bool>(mcparams.heat, {"heat"});
+
+    in.read_verb<double>(mcparams.delta, {"delta"});
+    in.read_opt_verb<size_t>(mcparams.N_hit, {"N_hit"});
+    validate_N_hit(mcparams.N_hit);
+
+    in.set_InnerTree(state0); // reset to previous state
+    return;
+  }
+
+  /**
    * @brief parsing the hmc block of the YAML input file
    *
    * @param in inspection node (full tree)
@@ -262,18 +340,7 @@ namespace input_file_parsing {
 
     in.read_opt_verb<bool>(hparams.do_mcmc, {"do_mcmc"});
 
-    if (nd["restart"] && nd["heat"]) {
-      std::cerr << "Error: "
-                << "'restart' and 'heat' conditions are incompatible in the hmc. "
-                << "Aborting.\n";
-      std::abort();
-    }
-    if (!nd["restart"] && !nd["heat"]) {
-      std::cerr << "Error: "
-                << "Please pass either 'restart' or 'heat' to the hmc. "
-                << "Aborting.\n";
-      std::abort();
-    }
+    heat_restart_incompatible(nd);
 
     in.read_opt_verb<bool>(hparams.restart, {"restart"});
     in.read_opt_verb<bool>(hparams.heat, {"heat"});
@@ -288,6 +355,7 @@ namespace input_file_parsing {
     validate_beta_str_width(hparams.beta_str_width);
 
     in.set_InnerTree(state0); // reset to previous state
+    return;
   }
 
   void parse_integrator(Yp::inspect_node &in,
@@ -312,12 +380,13 @@ namespace input_file_parsing {
    * @param in
    * @param inner_tree
    * @param pparams reference to the physics parameters
-   * @param hparams reference to the physics parameters
+   * @param sparams reference to the parameters specific to the program
    */
+  template <class S>
   void parse_action(Yp::inspect_node &in,
                     const std::vector<std::string> &inner_tree,
                     gp::physics &pparams,
-                    gp::hmc_u1 &hparams) {
+                    S &sparams) {
     const std::vector<std::string> state0 = in.get_InnerTree();
     in.dig_deeper(inner_tree); // entering the glueball node
     YAML::Node nd = in.get_outer_node();
@@ -340,14 +409,14 @@ namespace input_file_parsing {
 
           in.read_verb<double>(pparams.m0, {"operators", "staggered", "mass"});
 
-          in.read_opt_verb<std::string>(hparams.solver,
+          in.read_opt_verb<std::string>(sparams.solver,
                                         {"monomials", "staggered_det_DDdag", "solver"});
-          in.read_opt_verb<double>(hparams.tolerance_cg,
+          in.read_opt_verb<double>(sparams.tolerance_cg,
                                    {"monomials", "staggered_det_DDdag", "tolerance_cg"});
           in.read_opt_verb<size_t>(
-            hparams.solver_verbosity,
+            sparams.solver_verbosity,
             {"monomials", "staggered_det_DDdag", "solver_verbosity"});
-          in.read_opt_verb<size_t>(hparams.seed_pf,
+          in.read_opt_verb<size_t>(sparams.seed_pf,
                                    {"monomials", "staggered_det_DDdag", "seed_pf"});
         }
       }
@@ -362,7 +431,7 @@ namespace input_file_parsing {
       Yp::inspect_node in(nd);
 
       parse_geometry(in, pparams);
-      parse_action(in, {}, pparams, hparams);
+      parse_action<gp::hmc_u1>(in, {}, pparams, hparams);
 
       parse_hmc(in, {"hmc"}, hparams); // hmc-u1 parameters
       parse_integrator(in, {"integrator"}, hparams); // integrator parameters
@@ -407,61 +476,19 @@ namespace input_file_parsing {
   } // namespace measure
 
   namespace metropolis {
-    /**
-     * @brief check if N_hit >= 1, otherwise it aborts
-     * @param n N_hit (number of times an update per link is attempted)
-     */
-    void validate_N_hit(const size_t &n) {
-      if (n < 1) {
-        std::cerr << "Error: N_hit should be at least 1, otherwise nothing will happen";
-        std::cerr << "Aborting.\n";
-        std::abort();
-      }
-      return;
-    }
 
     void parse_input_file(const YAML::Node &nd,
                           gp::physics &pparams,
                           gp::metropolis_u1 &mcparams) {
-      // std::cout << "## Parsing input file: " << file << "\n";
-      // const YAML::Node nd = YAML::LoadFile(file);
       Yp::inspect_node in(nd);
 
       parse_geometry(in, pparams);
-
-      // beta, xi value from the gauge action
-      in.read_verb<double>(pparams.beta, {"monomials", "gauge", "beta"});
-      in.read_opt_verb<bool>(pparams.anisotropic, {"monomials", "gauge", "anisotropic"});
-      if (pparams.anisotropic) {
-        in.read_opt_verb<double>(pparams.xi, {"monomials", "gauge", "xi"});
-      }
-
-      // metropolis-u1 parameters
-      in.read_opt_verb<bool>(mcparams.do_mcmc, {"metropolis", "do_mcmc"});
-      in.read_opt_verb<size_t>(mcparams.n_meas, {"metropolis", "n_meas"});
-      in.read_opt_verb<size_t>(mcparams.N_save, {"metropolis", "N_save"});
-      in.read_opt_verb<size_t>(mcparams.seed, {"metropolis", "seed"});
-
-      in.read_opt_verb<std::string>(mcparams.conf_dir, {"metropolis", "conf_dir"});
-      in.read_opt_verb<std::string>(mcparams.conf_basename,
-                                    {"metropolis", "conf_basename"});
-      in.read_opt_verb<bool>(mcparams.lenghty_conf_name,
-                             {"metropolis", "lenghty_conf_name"});
-      in.read_opt_verb<size_t>(mcparams.beta_str_width, {"metropolis", "beta_str_width"});
-      validate_beta_str_width(mcparams.beta_str_width);
-      in.read_opt_verb<bool>(mcparams.restart, {"metropolis", "restart"});
-      if (mcparams.restart) {
-        in.read_verb<size_t>(mcparams.icounter, {"metropolis", "icounter"});
-      } else {
-        in.read_verb<double>(mcparams.heat, {"metropolis", "heat"});
-      }
-
-      in.read_verb<double>(mcparams.delta, {"metropolis", "delta"});
-      in.read_opt_verb<size_t>(mcparams.N_hit, {"metropolis", "N_hit"});
-      validate_N_hit(mcparams.N_hit);
+      parse_action<gp::metropolis_u1>(in, {}, pparams, mcparams);
+      parse_metropolis(in, {"metropolis"}, mcparams);
 
       if (nd["omeas"]) {
         mcparams.do_omeas = true;
+        mcparams.omeas.conf_dir = mcparams.conf_dir;
         parse_omeas(in, {"omeas"}, mcparams.omeas);
       }
 

@@ -9,9 +9,9 @@
  *
  */
 
-#include "program.hpp"
+#include "base_program.hpp"
 
-template <class Group> class metropolis_algo : public program<Group, gp::metropolis_u1> {
+template <class Group> class metropolis_algo : public base_program<Group, gp::metropolis_u1> {
 private:
   std::vector<double> rate = {0., 0.};
 
@@ -78,7 +78,7 @@ public:
   }
 
   void open_output_data() {
-    if ((*this).sparams.icounter == 0) {
+    if ((*this).g_icounter == 0) {
       (*this).os.open((*this).sparams.conf_dir + "/output.u1-metropolis.data",
                       std::ios::out);
     } else {
@@ -156,24 +156,24 @@ public:
     this->set_omp_threads();
 
     (*this).os << "i E Q E_ss Q_ss\n";
+    size_t i_min = (*this).g_icounter;
+    size_t i_max = (*this).sparams.n_meas * ((*this).threads) + (*this).g_icounter;
+    size_t i_step = (*this).threads;
     /**
      * do measurements:
      * sweep: do N_hit Metropolis-Updates of every link in the lattice
      * calculate plaquette, spacial plaquette, energy density with and without cloverdef
      * and write to stdout and output-file save every nave configuration
      * */
-    for (size_t i = (*this).sparams.icounter;
-         i < (*this).sparams.n_meas * (*this).threads + (*this).sparams.icounter;
-         i += (*this).threads) {
+    for (size_t i = i_min; i < i_max; i += i_step) {
       // inew counts loops, loop-variable needed to have one RNG per thread with
       // different seeds for every measurement
-      size_t inew =
-        (i - (*this).sparams.icounter) / (*this).threads + (*this).sparams.icounter;
+      size_t inew = (i - (*this).g_icounter) / (*this).threads + (*this).g_icounter;
 
       this->do_sweep(i, inew);
-      if ((*this).sparams.do_omeas && inew != 0 && (inew % (*this).sparams.N_save) == 0) {
-        this->do_omeas_i(i);
-      }
+      bool do_omeas =
+        ((*this).sparams.do_omeas && inew != 0 && (inew % (*this).sparams.N_save) == 0);
+      this->after_MCMC_step(inew, do_omeas);
     }
 
     this->save_acceptance_rates();

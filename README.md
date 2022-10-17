@@ -31,8 +31,4 @@ In the following we assume that the source code is placed in `${HOME}/code/`.
    bash do_make.sh
    ```
 
-Done. You'll find the **debug** and executables in:
-
--  **debug** : `${HOME}/build/su2/debug`
--  **release** : `${HOME}/build/su2/release`
-
+Done. You'll find the **debug** and executables in the `debug/bin/` and `release/bin/` subdirectories of the installation directory. 

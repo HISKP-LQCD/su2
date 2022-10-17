@@ -10,7 +10,7 @@ for btype in debug release; do
   d1=${bdir}/${btype}
   cd $d1
   
-  make -j$1
+  make -j$1 install
   
   cd ${bdir}
 done

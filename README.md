@@ -24,7 +24,7 @@ In the following we assume that the source code is placed in `${HOME}/code/`.
 
 1. Create a build directory in a custom location, e.g.: `${HOME}/build/su2/`
 2. Copy the content of the directory `doc/installation_scripts/` in that directory.
-3. Remove the `.example` extensions and change the fields of `do_cmake.sh` such that they match your choice.
+3. Change the fields of `do_cmake.sh` such that they match your choice.
 4. Run 
    ``` bash 
    bash do_cmake.sh

@@ -29,9 +29,16 @@
 *~
 # others
 *.dat
+*.json
 core
 su2
 su2hmc
-build/
 
-docu/*.pdf
+# non-text files from the documentation
+*.Rhistory
+*.html
+*.pdf
+.vscode/*
+
+# build directories
+build*

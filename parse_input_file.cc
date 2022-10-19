@@ -182,7 +182,7 @@ namespace input_file_parsing {
    */
   void parse_glueball_measure(Yp::inspect_node &in,
                               const std::vector<std::string> &inner_tree,
-                              gp::measure_glueball_u1 &mgparams) {
+                              gp::measure_glueball &mgparams) {
     const std::vector<std::string> state0 = in.get_InnerTree();
     in.dig_deeper(inner_tree); // entering the glueball node
     YAML::Node nd = in.get_outer_node();
@@ -214,6 +214,27 @@ namespace input_file_parsing {
   }
 
   /**
+   * @brief parsing parameters from node of gradient flow
+   * @param in input file parser
+   * @param mgparams measure_gradient_flow structure
+   */
+  void parse_gradient_flow_measure(Yp::inspect_node &in,
+                                   const std::vector<std::string> &inner_tree,
+                                   gp::measure_gradient_flow &mgfparams) {
+    const std::vector<std::string> state0 = in.get_InnerTree();
+    in.dig_deeper(inner_tree); // entering the glueball node
+    YAML::Node nd = in.get_outer_node();
+
+    mgfparams.measure_it = true;
+    in.read_verb<double>(mgfparams.epsilon, {"epsilon"});
+    in.read_verb<double>(mgfparams.tmax, {"tmax"});
+    in.read_opt_verb<double>(mgfparams.tstart, {"tstart"});
+    in.read_verb<bool>(mgfparams.save_conf, {"save_conf"});
+
+    in.set_InnerTree(state0); // reset to previous state
+  }
+
+  /**
    * @brief parsing the online measurement block of the YAML input file
    *
    * @param in inspection node (full tree)
@@ -224,7 +245,7 @@ namespace input_file_parsing {
    */
   void parse_omeas(Yp::inspect_node &in,
                    const std::vector<std::string> &inner_tree,
-                   gp::measure_u1 &mparams) {
+                   gp::measure &mparams) {
     const std::vector<std::string> state0 = in.get_InnerTree();
     in.dig_deeper(inner_tree); // entering the glueball node
     YAML::Node nd = in.get_outer_node();
@@ -273,10 +294,7 @@ namespace input_file_parsing {
     }
 
     if (nd["gradient_flow"]) {
-      mparams.gradient_flow = true;
-      in.read_opt_verb<double>(mparams.epsilon_gradient_flow,
-                               {"gradient_flow", "epsilon"});
-      in.read_verb<double>(mparams.tmax, {"gradient_flow", "tmax"});
+      parse_gradient_flow_measure(in, {"gradient_flow"}, mparams.gradient_flow);
     }
 
     in.set_InnerTree(state0); // reset to previous state
@@ -291,7 +309,7 @@ namespace input_file_parsing {
    */
   void parse_metropolis(Yp::inspect_node &in,
                         const std::vector<std::string> &inner_tree,
-                        gp::metropolis_u1 &mcparams) {
+                        gp::metropolis &mcparams) {
     const std::vector<std::string> state0 = in.get_InnerTree();
     in.dig_deeper(inner_tree); // entering the glueball node
     YAML::Node nd = in.get_outer_node();
@@ -330,7 +348,7 @@ namespace input_file_parsing {
    */
   void parse_hmc(Yp::inspect_node &in,
                  const std::vector<std::string> &inner_tree,
-                 gp::hmc_u1 &hparams) {
+                 gp::hmc &hparams) {
     const std::vector<std::string> state0 = in.get_InnerTree();
     in.dig_deeper(inner_tree); // entering the glueball node
     YAML::Node nd = in.get_outer_node();
@@ -360,7 +378,7 @@ namespace input_file_parsing {
 
   void parse_integrator(Yp::inspect_node &in,
                         const std::vector<std::string> &inner_tree,
-                        gp::hmc_u1 &hparams) {
+                        gp::hmc &hparams) {
     const std::vector<std::string> state0 = in.get_InnerTree();
     in.dig_deeper(inner_tree); // entering the glueball node
     YAML::Node nd = in.get_outer_node();
@@ -426,12 +444,11 @@ namespace input_file_parsing {
   }
 
   namespace hmc {
-    void
-    parse_input_file(const YAML::Node &nd, gp::physics &pparams, gp::hmc_u1 &hparams) {
+    void parse_input_file(const YAML::Node &nd, gp::physics &pparams, gp::hmc &hparams) {
       Yp::inspect_node in(nd);
 
       parse_geometry(in, pparams);
-      parse_action<gp::hmc_u1>(in, {}, pparams, hparams);
+      parse_action<gp::hmc>(in, {}, pparams, hparams);
 
       parse_hmc(in, {"hmc"}, hparams); // hmc-u1 parameters
       parse_integrator(in, {"integrator"}, hparams); // integrator parameters
@@ -451,9 +468,8 @@ namespace input_file_parsing {
 
   namespace measure {
 
-    void parse_input_file(const YAML::Node &nd,
-                          gp::physics &pparams,
-                          gp::measure_u1 &mparams) {
+    void
+    parse_input_file(const YAML::Node &nd, gp::physics &pparams, gp::measure &mparams) {
       Yp::inspect_node in(nd);
 
       parse_geometry(in, pparams);
@@ -479,11 +495,11 @@ namespace input_file_parsing {
 
     void parse_input_file(const YAML::Node &nd,
                           gp::physics &pparams,
-                          gp::metropolis_u1 &mcparams) {
+                          gp::metropolis &mcparams) {
       Yp::inspect_node in(nd);
 
       parse_geometry(in, pparams);
-      parse_action<gp::metropolis_u1>(in, {}, pparams, mcparams);
+      parse_action<gp::metropolis>(in, {}, pparams, mcparams);
       parse_metropolis(in, {"metropolis"}, mcparams);
 
       if (nd["omeas"]) {

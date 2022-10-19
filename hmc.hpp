@@ -16,7 +16,7 @@
 
 #include "detDDdag_monomial.hh"
 
-template <class Group> class hmc_algo : public base_program<Group, gp::hmc_u1> {
+template <class Group> class hmc_algo : public base_program<Group, gp::hmc> {
 private:
   double rate = 0.; // acceptance rate
 

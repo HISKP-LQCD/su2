@@ -139,7 +139,7 @@ protected:
 
   gp::physics pparams; // physics parameters
   sparam_type sparams; // specific parameters to the given run
-  gp::measure_u1 omeas; // omeasurements parameters
+  gp::measure omeas; // omeasurements parameters
   //    YAML::Node nd; // yaml node
 
   size_t threads;
@@ -405,7 +405,7 @@ public:
       }
       omeasurements::meas_wilson_loop<Group>(U, i, omeas.res_dir);
     }
-    if ((*this).omeas.gradient_flow) {
+    if ((*this).omeas.gradient_flow.measure_it) {
       if ((*this).omeas.verbosity > 0) {
         std::cout << "## online measuring: Gradient flow\n";
       }

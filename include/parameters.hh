@@ -43,7 +43,7 @@ namespace global_parameters {
     bool anisotropic = false; // use anisotropic lattice
   };
 
-  struct measure_glueball_u1 {
+  struct measure_glueball {
     bool use_res_dir = true; // path of the correlators, relative to the measurements
     bool lengthy_file_name = false; // add measure information in correlator filename
 
@@ -59,11 +59,18 @@ namespace global_parameters {
     bool spatial_loops = true; // true if using only spatial loops
     size_t rmin = 0, rmax = 0; // minum and maximum sizes of the interpolating loops
     bool correlator = false; // whether to measure also the correlator
+  };
 
+  struct measure_gradient_flow {
+    bool measure_it = false; // whether to measure the gradient flow or not
+    double epsilon = 0.01; // integration step of the flow equations
+    double tmax = 1.0; // tmax for gradient flow
+    double tstart = 0.0; // 1st value of the flow time
+    bool save_conf = true; // save configuration at the end of the evolution
   };
 
   /* optional parameters for the measure program the in U(1) theory */
-  struct measure_u1 {
+  struct measure {
     // trivial parameters: needed only to generalize function working with the other
     // programs too
     bool do_mcmc =
@@ -79,10 +86,7 @@ namespace global_parameters {
 
     size_t nstep = 1; // measure each nstep config
     bool Wloop = false; // whether to measure the Wilson loops or not
-    bool gradient_flow = false; // whether to measure the gradient flow or not
-    double epsilon_gradient_flow =
-      0.01; // step size in the integration of the gradient flow equations
-    double tmax = 1.0; // tmax for gradient flow
+
     std::string conf_dir = "./"; // directory where gauge configurations are stored
     std::string res_dir = "./"; // directory where results from measurements for
                                 // potential, potentialsmall are stored
@@ -117,11 +121,12 @@ namespace global_parameters {
     size_t solver_verbosity = 0; // Verbosity for the solver for the dirac operator
     size_t seed_pf = 97234719; // Seed for the evaluation of the fermion determinant
 
-    measure_glueball_u1 glueball; // struct for the measure of the glueball
+    measure_glueball glueball; // struct for the measure of the glueball
+    measure_gradient_flow gradient_flow; // struct for the measure of the gradient flow
   };
 
   /* Optional parameters for the hmc the in U(1) theory */
-  struct hmc_u1 {
+  struct hmc {
     bool do_mcmc = true; // whether to do the hmc evolution or not
 
     size_t N_save = 100; // N_save
@@ -159,19 +164,19 @@ namespace global_parameters {
 
     // online measurements
     bool do_omeas = false; // true iff online measurement are ON
-    measure_u1 omeas; // stuct for online measurements
+    measure omeas; // stuct for online measurements
 
     /**
      * @brief constructor. Setting default arguments for substructures (e.g. `omeas`)
      *
-     * @return hmc_u1
+     * @return hmc
      */
-    hmc_u1() { omeas.conf_dir = conf_dir; }
-    ~hmc_u1() {}
+    hmc() { omeas.conf_dir = conf_dir; }
+    ~hmc() {}
   };
 
   /* optional parameters for the MCMC the in U(1) theory */
-  struct metropolis_u1 {
+  struct metropolis {
     size_t n_meas = 10; // total number of sweeps
     size_t icounter = 0; // initial counter for updates
     size_t seed = 13526463; // PRNG seed
@@ -199,7 +204,7 @@ namespace global_parameters {
     size_t seed_pf = 97234719; // Seed for the evaluation of the fermion determinant
 
     bool do_omeas = false; // true when omeasurements are done
-    measure_u1 omeas; // struct for online measurements
+    measure omeas; // struct for online measurements
   };
 
 } // namespace global_parameters

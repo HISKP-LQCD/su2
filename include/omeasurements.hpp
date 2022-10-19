@@ -68,8 +68,10 @@ namespace omeasurements {
                           const global_parameters::physics &pparams,
                           const sparams &S) {
     const std::string res_dir = S.res_dir;
-    const double eps = S.epsilon_gradient_flow;
-    const double tmax = S.tmax;
+    const double eps = S.gradient_flow.epsilon;
+    const double tmax = S.gradient_flow.tmax;
+    double tstart = S.gradient_flow.tstart;
+    const bool save_conf = S.gradient_flow.save_conf;
 
     std::ostringstream os;
     os << res_dir + "/gradient_flow.";
@@ -78,7 +80,13 @@ namespace omeasurements {
     os << i;
     os.width(prevw);
     os.fill(prevf);
-    flat_spacetime::gradient_flow(U, os.str(), tmax, eps, pparams.xi);
+
+    gaugeconfig<Group> V = U;
+    if (tstart > 2*eps) {
+      V.load(os.str() + "_t" + std::to_string(tstart) + ".conf");
+//      tstart += 2*eps; // time label consistency
+    }
+    flat_spacetime::gradient_flow(V, os.str(), tmax-eps, eps, pparams.xi, tstart, save_conf);
 
     return;
   }
@@ -269,8 +277,8 @@ namespace omeasurements {
       for (size_t i = 0; i < n_phi; i++) {
         for (size_t j = 0; j <= i; j++) {
           // directory path
-          const std::string dir_ij =
-            oss_dir.str() + std::to_string(i+S.glueball.rmin) + "_" + std::to_string(j+S.glueball.rmin) + "/";
+          const std::string dir_ij = oss_dir.str() + std::to_string(i + S.glueball.rmin) +
+                                     "_" + std::to_string(j + S.glueball.rmin) + "/";
           fsys::create_directories(fsys::absolute(dir_ij)); // creating directory
 
           // full path of output file

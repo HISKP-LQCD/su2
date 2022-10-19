@@ -47,8 +47,10 @@ omeas:
   icounter: 0
   nstep: 1
   gradient_flow:
-    epsilon: 0.01
+    epsilon: 0.1
     tmax: 2.0
+    tstart: 0.0
+    save_conf: true
   glueball:
     do_APE_smearing: true
     APE_smearing:

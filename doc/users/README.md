@@ -13,13 +13,9 @@ In order to produce the `html` and `pdf` output run `make all` from the present 
 
 The library contains code for both $SU(2)$ and $U(1)$ in $d=2,3,4$ dimensions.
 
-### $U(1)$ theory
-
-#### Hybrid Monte Carlo
-
-- Program: `hmc-u1.cc`
+- Programs: `main-u1.cpp` and `main-su2.cpp`
 - Parameters parsing: `yaml` input file
-- Input file example: see [./hmc-u1.input](hmc-u1.input)
+- Input file example: see [./main.input](main.input)
   Notes:
   - Each run produces/updates a file named `nconf_counter.txt` in the directory storing the gauge configurations. This file contains a header line and the values below. At the moment an example:
   ```
@@ -28,28 +24,7 @@ The library contains code for both $SU(2)$ and $U(1)$ in $d=2,3,4$ dimensions.
   ```
   - `restart` and `heat` cannot be passed simultaneously
   - If `restart: true` is passed, the last configuration id and path are read from the `nconf_counter.txt` file.
-
-
-
-
-#### Offline measurements
-
-- Program: `measure-u1.cc`
-- Parameters parsing: `yaml` input file
-- Input file example: see [./measure-u1.input](measure-u1.input)
-- Measurable observables: 
-  * Planar Wilson Loop
-  * Gradient Flow 
-  * Planar Wilson Loops seperated by temporal and spatial direction
-  * Nonplanar Wilson Loops up to an extent of 4
-  
-#### Metropolis-Hastings MCMC
-
-- Program: `main-u1.cc`
-- Parameters parsing: `yaml` input file
-- Input file example: see [./metropolis-u1.input](metropolis-u1.input) 
- 
----
+  - The program can do online and offline measurements
 
 ## tests
 

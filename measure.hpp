@@ -13,7 +13,7 @@
 
 #include "detDDdag_monomial.hh"
 
-template <class Group> class measure_algo : public base_program<Group, gp::measure_u1> {
+template <class Group> class measure_algo : public base_program<Group, gp::measure> {
 public:
   measure_algo() {}
   ~measure_algo() {}

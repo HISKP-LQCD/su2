@@ -11,7 +11,7 @@
 
 #include "base_program.hpp"
 
-template <class Group> class metropolis_algo : public base_program<Group, gp::metropolis_u1> {
+template <class Group> class metropolis_algo : public base_program<Group, gp::metropolis> {
 private:
   std::vector<double> rate = {0., 0.};
 

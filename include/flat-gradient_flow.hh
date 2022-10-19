@@ -54,9 +54,8 @@ namespace flat_spacetime {
   /**
    * @brief Printing Wilson gradient flow evolution on 'path'
    * Prints a dataframe for the Wilson flow evolution of
-   * flowtime, Plaquette(full, spatial-spatial, temporal-spatial), Energy_plaquette(...),
-   * Energy_clover[improved formula](...), etc.
-   * Notes:
+   * flowtime, Plaquette(full, spatial-spatial, temporaVt-save(path+".conf"); ial),
+   * Energy_plaquette(...), Energy_clover[improved formula](...), etc. Notes:
    * - Each type of plaquette has limit 1 --> different normalization factors for P_ss and
    * P_ts.
    * - E_i = 1 - P_i, i="","ss","ts"
@@ -64,6 +63,7 @@ namespace flat_spacetime {
    * @tparam Group
    * @param U
    * @param path
+   * @param tstart 1st value of flow time (when loading flowed gauge configuration)
    * @param tmax
    * @param eps
    */
@@ -72,7 +72,9 @@ namespace flat_spacetime {
                      std::string const &path,
                      const double &tmax,
                      const double &eps,
-                     const double &xi = 1.0) {
+                     const double &xi,
+                     const double &tstart,
+                     const bool &save_config) {
     const size_t d = U.getndims();
     const double ndims_fact = spacetime_lattice::num_pLloops_half(d);
     const double ndims_fact_ss = spacetime_lattice::num_pLloops_half(d - 1);
@@ -86,7 +88,7 @@ namespace flat_spacetime {
     double density = 0., topQ = 0.; // dummy variables
     double density_ss = 0., topQ_ss = 0.; // dummy variables
     for (unsigned int i = 0; i < 3; i++) {
-      t[i] = 0.;
+      t[i] = tstart;
       P[i] = 0.;
       E[i] = 0.;
       Q[i] = 0.;
@@ -121,6 +123,8 @@ namespace flat_spacetime {
     // evolution of t[1] until tmax
     //(note: eps=0.01 and tmax>0 --> the loop ends at some point)
     // at each step we consider a triplet of values for t,P,E,Q
+
+    std::cout << "tstart " << tstart << "\n";
 
     while (t[1] < tmax) {
       // splicing the results at t[2] to the new 0-th temporal time slice
@@ -179,6 +183,9 @@ namespace flat_spacetime {
 
     std::ofstream ofs(path, std::ios::out);
     ofs << oss.str();
+    if (save_config) {
+      Vt.save(path + "_t" + std::to_string(tmax) + ".conf");
+    }
 
     return;
   }

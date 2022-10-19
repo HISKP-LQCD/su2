@@ -82,11 +82,10 @@ namespace omeasurements {
     os.fill(prevf);
 
     gaugeconfig<Group> V = U;
-    if (tstart > 2*eps) {
+    if (tstart > eps) {
       V.load(os.str() + "_t" + std::to_string(tstart) + ".conf");
-//      tstart += 2*eps; // time label consistency
     }
-    flat_spacetime::gradient_flow(V, os.str(), tmax-eps, eps, pparams.xi, tstart, save_conf);
+    flat_spacetime::gradient_flow(V, os.str(), tmax, eps, pparams.xi, tstart, save_conf);
 
     return;
   }

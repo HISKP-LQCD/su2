@@ -113,20 +113,20 @@ namespace flat_spacetime {
     hamiltonian_field<double, Group> h(deriv, Vt);
     gaugemonomial<double, Group> SW(0, xi); // Wilson (pure) gauge action
 
-    oss << "t "; // flow time
-    oss << "xi "; // e_ts(t)/e_ss(t)
-    oss << "P P_ss "; // plaquette
-    oss << "Ep Ep_ss "; // energy from regular plaquette
-    oss << "Ec Ec_ss "; // energy from clover-leaf plaquette
-    oss << "Q" << std::endl;
+    if (tstart == 0.0) {
+      oss << "t "; // flow time
+      oss << "xi "; // e_ts(t)/e_ss(t)
+      oss << "P P_ss "; // plaquette
+      oss << "Ep Ep_ss "; // energy from regular plaquette
+      oss << "Ec Ec_ss "; // energy from clover-leaf plaquette
+      oss << "Q" << std::endl;
+    }
 
     // evolution of t[1] until tmax
     //(note: eps=0.01 and tmax>0 --> the loop ends at some point)
     // at each step we consider a triplet of values for t,P,E,Q
 
-    std::cout << "tstart " << tstart << "\n";
-
-    while (t[1] < tmax) {
+    while (t[1] < tmax - eps) {
       // splicing the results at t[2] to the new 0-th temporal time slice
       t[0] = t[2];
       P[0] = P[2];
@@ -181,7 +181,13 @@ namespace flat_spacetime {
       oss << Q[1] << "\n";
     }
 
-    std::ofstream ofs(path, std::ios::out);
+    std::ofstream ofs;
+    if (tstart == 0.0) {
+      ofs.open(path, std::ios::out);
+    } else {
+      ofs.open(path, std::ios::app);
+    }
+
     ofs << oss.str();
     if (save_config) {
       Vt.save(path + "_t" + std::to_string(tmax) + ".conf");

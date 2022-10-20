@@ -110,7 +110,7 @@ namespace global_parameters {
     bool smear_spatial_only = false; // should smearing be done only for spacial links?
     bool smear_temporal_only = false; // should smearing be done only for temporal links?
 
-    std::string conf_basename = "u1_conf"; // root of the output files names
+    std::string conf_basename = "conf"; // root of the output files names
     bool lenghty_conf_name = true; // add ensemble information in configuration name
     size_t beta_str_width = g_beta_str_width; // length of the beta value config filename
 
@@ -158,7 +158,7 @@ namespace global_parameters {
 
     // configurations filenames
     std::string conf_dir = "."; // Output directory
-    std::string conf_basename = "u1_conf"; // root of the output files names
+    std::string conf_basename = "conf"; // root of the output files names
     bool lenghty_conf_name = true; // add ensemble information in configuration name
     size_t beta_str_width = g_beta_str_width; // length of the beta value config filename
 
@@ -186,7 +186,7 @@ namespace global_parameters {
     bool restart = false; // restart from an existing configuration
     std::string configfilename = ""; // configuration filename used in case of restart
     std::string conf_dir = "./"; // directory where gauge configurations are stored
-    std::string conf_basename = "u1_conf"; // root of the output files names
+    std::string conf_basename = "conf"; // root of the output files names
     bool lenghty_conf_name = true; // add ensemble information in configuration name
     size_t beta_str_width = g_beta_str_width; // length of the beta value config filename
 

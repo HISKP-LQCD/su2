@@ -91,17 +91,24 @@ add_executable(test-groups test.cc)
 add_executable(scaling scaling.cc)
 add_executable(try tryreduce.cc)
 
-set(test_progs "h5" "links" "smearing" "yaml")
+set(test_progs "h5-gen" "h5-dump" "links" "smearing" "yaml")
+set(test_progs_fullname "")
 foreach(target ${test_progs})
   add_executable(test-${target}.exe test/${target}.cpp)
+  list(APPEND test_progs_fullname test-${target}.exe) # now FOO="a;b"
 endforeach(target)
 
+
 target_link_libraries(test-yaml.exe ${YAML_CPP_LIBRARIES})
-target_link_libraries(test-h5.exe HighFive)
+
+foreach(target ${test_progs_fullname})
+  target_link_libraries(${target} HighFive)
+endforeach(target)
+
 
 target_link_directories(${CMAKE_PROJECT_NAME} PUBLIC ${YAML_CPP_LIBRARY_DIR})
 
-foreach(target u1-main su2-main su2-kramers test-groups scaling try)
+foreach(target u1-main su2-main su2-kramers test-groups scaling try ${test_progs_fullname})
   target_link_libraries(${target} su2 ${YAML_CPP_LIBRARIES})
 
   if(Boost_FOUND)

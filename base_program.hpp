@@ -21,7 +21,7 @@
 #include "random_gauge_trafo.hh"
 // #include "rotating-energy_density.hpp" // rotating spacetime
 // #include "rotating-gauge_energy.hpp" // rotating spacetime
-//#include "rotating-sweep.hpp" // rotating spacetime
+// #include "rotating-sweep.hpp" // rotating spacetime
 #include "su2.hh"
 #include "u1.hh"
 #include "vectorfunctions.hh"
@@ -423,10 +423,9 @@ public:
       if ((*this).omeas.verbosity > 0) {
         std::cout << "## online measuring: J^{PC} glueball correlators.\n";
       }
-      if ((*this).omeas.glueball.correlator) {
-        omeasurements::meas_glueball_correlator<Group>(omeas.glueball.interpolator_type,
-                                                       U, i, (*this).omeas);
-      }
+
+      const std::string glb_interp = omeas.glueball.interpolator_type;
+      omeasurements::meas_glueball_correlator<Group>(glb_interp, U, i, (*this).omeas);
     }
     return;
   }

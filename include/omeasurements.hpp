@@ -203,7 +203,7 @@ namespace omeasurements {
           const std::complex<double> Pm = glueballs::get_rest_trace_loop<double, Group>(
             type, t, U, r1, true, S.glueball.spatial_loops);
           phi[ii](t, 1) = (Pp + Pm).real() / 2.0; // PC=++
-          phi[ii](t, 2) = (Pp + Pm).imag() / 2.0; // PC=--
+          phi[ii](t, 2) = (Pp - Pm).imag() / 2.0; // PC=--
         }
 
         if (save_interpolator) {

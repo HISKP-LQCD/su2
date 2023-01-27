@@ -1,5 +1,5 @@
 #pragma once
-//#include"gradient_flow.hh"
+// #include"gradient_flow.hh"
 #include "adjointfield.hh"
 #include "flat-energy_density.hh"
 #include "flat-gauge_energy.hpp"
@@ -33,16 +33,11 @@ void runge_kutta(hamiltonian_field<Float, Group> &h,
   zeroadjointfield(*(h.momenta));
 
   for (int f = 0; f < 3; f++) {
-    // add to *(h.momenta)
+    // evolution of eq. C.2 of https://arxiv.org/pdf/1006.4518.pdf
     // we have to cancel beta/N_c from the derivative
-    // a factor two to obtain the correct normalisation of
-    // the Wilson plaquette action
-    // S_W = 1./g_0^2 \sum_x \sum_{p} Re Tr(1 - U(p))
-    // where we sum over all oriented plaquettes
-    // we sum over unoriented plaquettes, so we have to multiply by 2
-    // which is usually in beta
-    SW.derivative(*(h.momenta), h, 2. * h.U->getNc() * zfac[f] / h.U->getBeta());
-    // The '-' comes from the action to be tr(1-U(p))
+
+    // updating the momenta *(h.momenta)
+    SW.derivative(*(h.momenta), h, h.U->getNc() * zfac[f] / h.U->getBeta());
     // update the flowed gauge field Vt
     update_gauge(h, -eps * expfac[f]);
   }

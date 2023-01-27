@@ -63,6 +63,7 @@ def hadronize(operator, name_obj, name_ij):
     # new matrices for a each J^{PC}
     # dict({"pp": pd.DataFrame(), "pm": pd.DataFrame(), "mp": pd.DataFrame(), "mm":pd.DataFrame()})
     df_new = dict()
+    print("Reading old data if present")
     for j_pc in ["pp", "pm", "mp", "mm"]:
         # loop over all J^{PC} quantum numbers
         df_new[j_pc] = pd.DataFrame(np.zeros(shape=(1, T+1)), columns=["i"]+[
@@ -80,9 +81,10 @@ def hadronize(operator, name_obj, name_ij):
             # print(df_new[j_pc])
         ####
     ####
-    # loop over new and updated files
+    print("loop over new and updated files")
     for i_f in range(len(file_index)):
         path_i = file_names[i_f]
+        print(i_f, path_i)
         idx_i = file_index[i_f]
         df_i = pd.read_csv(path_i, sep=" ")
         for j_pc in ["pp", "pm", "mp", "mm"]:
@@ -100,7 +102,7 @@ def hadronize(operator, name_obj, name_ij):
             ####
         ####
     ####
-    # cleaning up the dataframe format before exporting
+    print("Cleaning up the dataframe format before exporting")
     save_iconf = True 
     for j_pc in ["pp", "pm", "mp", "mm"]:
         df_new[j_pc] = df_new[j_pc].drop("remove")
@@ -111,12 +113,12 @@ def hadronize(operator, name_obj, name_ij):
             df_new[j_pc] = df_new[j_pc].sort_values(by=['i'])
             df_new[j_pc].to_csv(d2 + "/"+j_pc+".dat", sep=" ", index=False)
     ####
-    # save the new iconf file
+    print("Saving the new iconf file")
     if save_iconf:
         pd.DataFrame(sorted(file_index)).to_csv(
             d2+"iconfs.dat", header=False, sep=" ", index=False)
     ####
-    # removing data in the old format
+    print("Removing data in the old format")
     for p in file_names:
         print("removing:", p)
         os.remove(p)
@@ -126,6 +128,6 @@ def hadronize(operator, name_obj, name_ij):
 
 for i in range(rmin, rmax+1):
     hadronize("interpolator", "phi", str(i))
-    for j in range(rmin, i):
+    for j in range(rmin, i+1):
         hadronize("correlator", "C_glueball", str(i)+"_"+str(j))
 

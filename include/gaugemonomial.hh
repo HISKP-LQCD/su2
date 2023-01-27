@@ -12,7 +12,7 @@
 
 #pragma once
 #include "adjointfield.hh"
-#include "flat-gauge_energy.hpp"
+#include "gauge_energy.hpp"
 #include "gaugeconfig.hh"
 #include "geometry.hh"
 #include "get_staples.hh"
@@ -127,8 +127,7 @@ namespace flat_spacetime {
                 get_staples(S, *h.U, x, mu, (*this).xi, (*this).anisotropic);
                 S = (*h.U)(x, mu) * S; // U*A in eq. 8.40 in Gattringer&Lang
 
-                const double num_fact_i = fac * h.U->getBeta() / double(h.U->getNc()) *
-                                          h.Fact_Nc_force * h.Fact_get_deriv;
+                const double num_fact_i = fac * h.U->getBeta() / double(h.U->getNc());
                 deriv(x, mu) += num_fact_i * get_deriv<double>(S);
               }
             }

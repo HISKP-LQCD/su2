@@ -13,7 +13,7 @@
 #include <sstream>
 #include <vector>
 
-#include "flat-gradient_flow.hh"
+#include "gradient_flow.hh"
 #include "glueballs.hpp"
 #include "io.hh"
 #include "links.hpp"

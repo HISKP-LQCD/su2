@@ -12,7 +12,7 @@
 #pragma once
 
 #include "flat-energy_density.hh"
-#include "flat-gauge_energy.hpp"
+#include "gauge_energy.hh"
 #include "flat-sweep.hh" // flat spacetime
 #include "gaugeconfig.hh"
 #include "io.hh"

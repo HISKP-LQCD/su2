@@ -2,8 +2,8 @@
 // #include"gradient_flow.hh"
 #include "adjointfield.hh"
 #include "flat-energy_density.hh"
-#include "flat-gauge_energy.hpp"
-#include "flat-gaugemonomial.hh"
+#include "gaugemonomial.hh"
+#include "gauge_energy.hpp"
 #include "gaugeconfig.hh"
 #include "hamiltonian_field.hh"
 #include "monomial.hh"
@@ -32,12 +32,13 @@ void runge_kutta(hamiltonian_field<Float, Group> &h,
   // before the three steps zero the derivative field
   zeroadjointfield(*(h.momenta));
 
+  const double fact_f = h.Fact_Nc_force_Luscher * h.U->getNc() / h.U->getBeta();
   for (int f = 0; f < 3; f++) {
     // evolution of eq. C.2 of https://arxiv.org/pdf/1006.4518.pdf
     // we have to cancel beta/N_c from the derivative
 
     // updating the momenta *(h.momenta)
-    SW.derivative(*(h.momenta), h, h.U->getNc() * zfac[f] / h.U->getBeta());
+    SW.derivative(*(h.momenta), h, fact_f * zfac[f]);
     // update the flowed gauge field Vt
     update_gauge(h, -eps * expfac[f]);
   }

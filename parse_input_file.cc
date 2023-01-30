@@ -130,6 +130,7 @@ namespace input_file_parsing {
 
     in.read_verb<size_t>(pparams.Lt, {"geometry", "T"});
     in.read_verb<size_t>(pparams.ndims, {"geometry", "ndims"});
+    in.read_opt_verb<bool>(pparams.obc, {"geometry", "obc"});
 
     int gerr = validate_geometry(pparams);
     if (gerr > 0) {

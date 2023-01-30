@@ -9,10 +9,12 @@
  *
  */
 
-#include "md_update.hh"
 #include "base_program.hpp"
+#include "md_update.hh"
 
-//#include "rotating-gaugemonomial.hpp"
+#include "obc_gaugemonomial.hh"
+
+// #include "rotating-gaugemonomial.hpp"
 
 #include "detDDdag_monomial.hh"
 
@@ -23,6 +25,8 @@ private:
   std::list<monomial<double, Group> *> monomial_list; // list of monomials in the action
 
   flat_spacetime::gaugemonomial<double, Group> *gm; // gauge monomial
+  obc::gaugemonomial<double, Group>
+    *obc_gm; // gauge monomial with open boundary conditions
   // rotating_spacetime::gauge_monomial<double, Group>
   //   *gm_rot; // gauge monomial with space rotation
   kineticmonomial<double, Group> *km; // kinetic momomial (momenta)
@@ -68,9 +72,17 @@ public:
         //   (*this).pparams.Omega);
         // (*this).monomial_list.push_back(gm_rot);
       } else {
-        (*this).gm =
-          new flat_spacetime::gaugemonomial<double, Group>(0, (*this).pparams.xi);
-        (*this).monomial_list.push_back(gm);
+        if ((*this).pparams.obc) {
+          obc::weights w((*this).pparams.Lx, (*this).pparams.Ly, (*this).pparams.Lz,
+                         (*this).pparams.Lt, (*this).pparams.ndims);
+          (*this).obc_gm =
+            new obc::gaugemonomial<double, Group>(0, w, (*this).pparams.xi);
+          (*this).monomial_list.push_back(obc_gm);
+        } else {
+          (*this).gm =
+            new flat_spacetime::gaugemonomial<double, Group>(0, (*this).pparams.xi);
+          (*this).monomial_list.push_back(gm);
+        }
       }
     }
 
@@ -132,13 +144,6 @@ public:
     this->pre_run(nd);
     this->init_gauge_conf_mcmc();
 
-    if ((*this).g_icounter == 0) {
-      // header: column names in the output
-      std::string head_str = io::get_header(" ");
-      std::cout << head_str;
-      (*this).os << head_str;
-    }
-
     // Molecular Dynamics parameters
     md_params md_p0((*this).sparams.n_steps, (*this).sparams.tau);
     mdparams = md_p0;
@@ -149,10 +154,17 @@ public:
     md_integ =
       set_integrator<double, Group>((*this).sparams.integrator, (*this).sparams.exponent);
 
+    if ((*this).g_icounter == 0) {
+      // header: column names in the output
+      std::string head_str = io::get_header(" ");
+      std::cout << head_str;
+      (*this).os << head_str;
+    }
+
     for (size_t i = (*this).g_icounter; i < (*this).sparams.n_meas + (*this).g_icounter;
          i++) {
       this->do_hmc_step(i);
-            // online measurements
+      // online measurements
       bool do_omeas =
         (*this).sparams.do_omeas && (i > (*this).sparams.omeas.icounter) &&
         ((i - (*this).sparams.omeas.icounter) <= (*this).sparams.omeas.n_meas) &&

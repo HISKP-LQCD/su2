@@ -128,36 +128,6 @@ public:
     }
   }
 
-  // void after_hmc_step(const size_t &i) {
-  //   if (i > 0 && (i % (*this).sparams.N_save) ==
-  //                  0) { // saving (*this).U after each N_save trajectories
-  //     std::string path_i = (*this).conf_path_basename + "." + std::to_string(i);
-  //     if ((*this).sparams.do_mcmc) {
-  //       (*this).U.save(path_i);
-  //     }
-
-  //     // online measurements
-  //     bool do_omeas =
-  //       (*this).sparams.do_omeas && (i > (*this).sparams.omeas.icounter) &&
-  //       ((i - (*this).sparams.omeas.icounter) <= (*this).sparams.omeas.n_meas) &&
-  //       (i % (*this).sparams.omeas.nstep == 0);
-  //     if ((*this).sparams.do_mcmc) {
-  //       // check also if trajectory was accepted
-  //       do_omeas = do_omeas && mdparams.getaccept();
-  //     }
-
-  //     if (do_omeas) {
-  //       this->do_omeas_i(i);
-  //     }
-
-  //     if ((*this).sparams.do_mcmc) {
-  //       // storing last conf index (only after online measurements has been done)
-  //       io::update_nconf_counter((*this).sparams.conf_dir, (*this).g_heat, i,
-  //                                     path_i);
-  //     }
-  //   }
-  // }
-
   void run(const YAML::Node &nd) {
     this->pre_run(nd);
     this->init_gauge_conf_mcmc();

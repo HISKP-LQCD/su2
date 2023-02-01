@@ -124,7 +124,7 @@ namespace flat_spacetime {
               std::vector<size_t> x = {x0, x1, x2, x3};
               for (size_t mu = 0; mu < h.U->getndims(); mu++) {
                 accum S;
-                get_staples(S, *h.U, x, mu, (*this).xi, (*this).anisotropic);
+                get_staples_MCMC_step(S, *h.U, x, mu, (*this).xi, (*this).anisotropic);
                 S = (*h.U)(x, mu) * S; // U*A in eq. 8.40 in Gattringer&Lang
 
                 const double num_fact_i = fac * h.U->getBeta() / double(h.U->getNc());

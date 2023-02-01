@@ -201,20 +201,40 @@ namespace obc { // open boundary conditions
                     hamiltonian_field<Float, Group> const &h,
                     const Float fac = 1.) const override {
       typedef typename accum_type<Group>::type accum;
+      const double num_fact_i = fac * h.U->getBeta() / double(h.U->getNc());
 #pragma omp parallel for
       for (size_t x0 = 0; x0 < h.U->getLt(); x0++) {
         for (size_t x1 = 0; x1 < h.U->getLx(); x1++) {
           for (size_t x2 = 0; x2 < h.U->getLy(); x2++) {
             for (size_t x3 = 0; x3 < h.U->getLz(); x3++) {
-              std::vector<size_t> x = {x0, x1, x2, x3};
-              const double wx = (*this).w(x);
+              const std::vector<size_t> x = {x0, x1, x2, x3};
+              const double w_x = (*this).w(x);
+              std::vector<size_t> xpmu = x, xpnu = x, xmnu = x;
               for (size_t mu = 0; mu < h.U->getndims(); mu++) {
-                accum S;
-                get_staples(S, *h.U, x, mu, (*this).xi, (*this).anisotropic);
-                S = (*h.U)(x, mu) * S; // U*A in eq. 8.40 in Gattringer&Lang
+                xpmu[mu]++; // x + mu
 
-                const double num_fact_i = fac * h.U->getBeta() / double(h.U->getNc());
-                deriv(x, mu) += wx * num_fact_i * get_deriv<double>(S);
+                accum S;
+                for (size_t nu = 0; nu < h.U->getndims(); nu++) {
+                  if (mu == nu) {
+                    continue;
+                  }
+                  xpnu[nu]++; // x + nu
+                  xmnu[nu]--; // x - nu
+                  const double w_xmnu = (*this).w(xmnu);
+
+                  S += w_x * get_staple_up<accum>(*h.U, mu, nu, xpmu, xpnu, x);
+
+                  xpmu[nu]--; // x + mu -nu
+                  S += w_xmnu * get_staple_down<accum>(*h.U, mu, nu, xpmu, xmnu);
+                  xpmu[nu]++; // x + mu
+
+                  xpnu[nu]--; // x
+                  xmnu[nu]++; // x
+                }
+                S = (*h.U)(x, mu) * S; // U*A in eq. 8.40 in Gattringer&Lang
+                deriv(x, mu) += num_fact_i * get_deriv<double>(S);
+
+                xpmu[mu]--; // x
               }
             }
           }

@@ -60,7 +60,7 @@ void smearlatticeape(gaugeconfig<Group> &U,
           for (size_t mu = startmu; mu < endmu; mu++) {
             // K is intialized to (0,0) even if not explicitly specified
             accum K(0.0, 0.0);
-            get_staples(K, Uold, x, mu, 1.0, false, spatial_only);
+            get_staples_MCMC_step(K, Uold, x, mu, 1.0, false, spatial_only);
             Group Uprime(Uold(x, mu) * alpha + K * (1 - alpha) / double(norm));
             U(x, mu) = Uprime;
             U(x, mu).restoreSU();

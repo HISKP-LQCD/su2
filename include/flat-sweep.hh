@@ -102,7 +102,7 @@ namespace flat_spacetime {
               std::vector<size_t> x = {x0, x1, x2, x3};
               for (size_t mu = 0; mu < U.getndims(); mu++) {
                 accum K;
-                get_staples(K, U, x, mu, xi, anisotropic);
+                get_staples_MCMC_step(K, U, x, mu, xi, anisotropic);
                 for (size_t n = 0; n < N_hit; n++) {
                   random_element(R, engine[thread_num], delta);
                   double deltaS = beta / static_cast<double>(U.getNc()) *
@@ -133,7 +133,7 @@ namespace flat_spacetime {
               std::vector<size_t> x = {x0, x1, x2, x3};
               for (size_t mu = 0; mu < U.getndims(); mu++) {
                 accum K;
-                get_staples(K, U, x, mu, xi, anisotropic);
+                get_staples_MCMC_step(K, U, x, mu, xi, anisotropic);
                 for (size_t n = 0; n < N_hit; n++) {
                   random_element(R, engine[thread_num], delta);
                   double deltaS = beta / static_cast<double>(U.getNc()) *
@@ -197,7 +197,7 @@ namespace flat_spacetime {
               std::vector<size_t> x = {x0, x1, x2, x3};
               for (size_t mu = 0; mu < U.getndims(); mu++) {
                 accum K;
-                get_staples(K, U, x, mu, xi, anisotropic);
+                get_staples_MCMC_step(K, U, x, mu, xi, anisotropic);
                 for (size_t n = 0; n < N_hit; n++) {
                   random_element(R, engine, delta);
                   double deltaS = beta / static_cast<double>(U.getNc()) *
@@ -228,7 +228,7 @@ namespace flat_spacetime {
               std::vector<size_t> x = {x0, x1, x2, x3};
               for (size_t mu = 0; mu < U.getndims(); mu++) {
                 accum K;
-                get_staples(K, U, x, mu, xi, anisotropic);
+                get_staples_MCMC_step(K, U, x, mu, xi, anisotropic);
                 for (size_t n = 0; n < N_hit; n++) {
                   random_element(R, engine, delta);
                   double deltaS = beta / static_cast<double>(U.getNc()) *

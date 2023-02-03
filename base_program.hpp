@@ -309,7 +309,7 @@ public:
               << normalisation << "\n";
     std::cout << "## Acceptance rate parcentage: rho = rate/(i+1)\n";
 
-    std::cout << "## Initial Plaquette: " << plaquette * normalisation << std::endl;
+    std::cout << "## Initial Plaquette E*A: " << plaquette * normalisation << std::endl;
 
     random_gauge_trafo(U, 654321);
     plaquette = flat_spacetime::gauge_energy(U);

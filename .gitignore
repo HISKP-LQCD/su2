@@ -27,6 +27,7 @@
 *.app
 # emacs
 *~
+*#*#
 # others
 *.dat
 *.json

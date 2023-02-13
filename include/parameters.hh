@@ -28,7 +28,10 @@ namespace global_parameters {
     size_t Lz; // spatial  lattice size Z > 0
     size_t Lt; // temporal lattice size T > 0
     size_t ndims = 4; // number of dimensions, 2 <= ndims <= 4
-    bool obc = false; // apply the open boundary conditions (default = periodic)
+    
+    // boundary conditions (default = periodic)
+    // supported types: "periodic", "spatial_open"
+    std::string bc = "periodic"; 
 
     bool flat_metric = true; // false when considering spacetime curvature
     bool rotating_frame = false; // true when we consider a rotating lattice

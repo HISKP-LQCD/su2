@@ -24,27 +24,32 @@ private:
 
   std::list<monomial<double, Group> *> monomial_list; // list of monomials in the action
 
-  flat_spacetime::gaugemonomial<double, Group> *gm; // gauge monomial
-  obc::gaugemonomial<double, Group>
-    *obc_gm; // gauge monomial with open boundary conditions
+  flat_spacetime::gaugemonomial<double, Group> *gm = nullptr; // gauge monomial
+
+  // gauge monomial with other (i.e. not periodic)
+  // boundary conditions, e.g. "spatial_open"
+  obc::gaugemonomial<double, Group> *obc_gm = nullptr;
+
   // rotating_spacetime::gauge_monomial<double, Group>
-  //   *gm_rot; // gauge monomial with space rotation
-  kineticmonomial<double, Group> *km; // kinetic momomial (momenta)
-  staggered::detDDdag_monomial<double, Group> *detDDdag; // staggered fermions monomial
+  //   *gm_rot = nullptr; // gauge monomial with space rotation
+
+  kineticmonomial<double, Group> *km = nullptr; // kinetic momomial (momenta)
+  staggered::detDDdag_monomial<double, Group> *detDDdag =
+    nullptr; // staggered fermions monomial
 
   // Molecular Dynamics (MD)
-  integrator<double, Group> *md_integ; // MD integrator
+  integrator<double, Group> *md_integ = nullptr; // MD integrator
   md_params mdparams; // MD parameters
 
 public:
   hmc_algo() { (*this).algo_name = "hmc"; }
   ~hmc_algo() {
-    free(gm);
-    free(obc_gm);
-    // free(gm_rot);
-    free(km);
-    free(detDDdag);
-    free(md_integ);
+    delete gm;
+    delete obc_gm;
+    // delete gm_rot;
+    delete km;
+    delete detDDdag;
+    delete md_integ;
   }
 
   void print_program_info() const {
@@ -60,6 +65,10 @@ public:
   }
 
   // generate list of monomials
+  /**
+   * @brief initializing monomials and adding them to the list
+   *
+   */
   void init_monomials() {
     (*this).km = new kineticmonomial<double, Group>(0);
     (*this).km->setmdpassive();
@@ -73,9 +82,9 @@ public:
         //   (*this).pparams.Omega);
         // (*this).monomial_list.push_back(gm_rot);
       } else {
-        if ((*this).pparams.obc) {
-          obc::weights w((*this).pparams.Lx, (*this).pparams.Ly, (*this).pparams.Lz,
-                         (*this).pparams.Lt, (*this).pparams.ndims);
+        if ((*this).pparams.bc != "periodic") {
+          obc::weights w((*this).pparams.bc, (*this).pparams.Lx, (*this).pparams.Ly,
+                         (*this).pparams.Lz, (*this).pparams.Lt, (*this).pparams.ndims);
           (*this).obc_gm =
             new obc::gaugemonomial<double, Group>(0, w, (*this).pparams.xi);
           (*this).monomial_list.push_back(obc_gm);

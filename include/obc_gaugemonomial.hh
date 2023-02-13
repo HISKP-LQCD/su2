@@ -137,8 +137,8 @@ namespace obc { // open boundary conditions
                     const obc::weights &w,
                     const double &xi = 1.0,
                     const bool &anisotropic = false) {
-    const Float res =
-      -U.getBeta() * obc::retr_sum_Wplaquettes(U, w, xi, anisotropic) / double(U.getNc());
+    const double fact = U.getBeta() / double(U.getNc());
+    const Float res = -fact * obc::retr_sum_Wplaquettes(U, w, xi, anisotropic);
     return res;
   }
 
@@ -232,14 +232,17 @@ namespace obc { // open boundary conditions
                   xmnu[nu]--; // x - nu
 
                   const double w_xpnu = (*this).w(xpnu);
-                  S += w_x * w_xpmu * w_xpnu *
-                       get_staple_up<accum>(*h.U, mu, nu, xpmu, xpnu, x);
+                  const accum S1 = w_x * w_xpmu * w_xpnu *
+                                   get_staple_up<accum>(*h.U, mu, nu, xpmu, xpnu, x);
+                  S += S1;
 
                   xpmu[nu]--; // x + mu - nu
                   const double w_xmnu = (*this).w(xmnu);
-                  const double w_xpmumnu = (*this).w(xpmu); // Here: xpmu == x + mu - nu !!!
-                  S += w_x * w_xmnu *
-                       w_xpmumnu * get_staple_down<accum>(*h.U, mu, nu, xpmu, xmnu);
+                  const double w_xpmumnu =
+                    (*this).w(xpmu); // Here: xpmu == x + mu - nu !!!
+                  const accum S2 = w_x * w_xmnu * w_xpmumnu *
+                                   get_staple_down<accum>(*h.U, mu, nu, xpmu, xmnu);
+                  S += S2;
                   xpmu[nu]++; // x + mu
 
                   xpnu[nu]--; // x

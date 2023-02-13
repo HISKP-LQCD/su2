@@ -31,7 +31,8 @@ namespace obc {
     weights() {}
     ~weights() {}
 
-    weights(const size_t Lx,
+    weights(const std::string &bc_type,
+            const size_t Lx,
             const size_t Ly,
             const size_t Lz,
             const size_t Lt,
@@ -40,7 +41,13 @@ namespace obc {
       data.resize(volume, 1.0); // default weight is 1 (no obc)
       const geometry geom1(Lx, Ly, Lz, Lt);
       Geom = geom1;
-      this->apply_spatial_obc();
+      if (bc_type == "spatial_open") {
+        this->apply_spatial_obc();
+      } else {
+        std::cerr << "Error, unsupported open boundary condition of type: " << bc_type << "\n";
+        std::cerr << "Aborting\n";
+        std::abort();
+      }
     }
 
     std::vector<double> get_data() const { return data; }

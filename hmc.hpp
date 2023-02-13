@@ -12,7 +12,7 @@
 #include "base_program.hpp"
 #include "md_update.hh"
 
-#include "obc_gaugemonomial.hh"
+#include "gaugemonomial.hh"
 
 // #include "rotating-gaugemonomial.hpp"
 
@@ -25,8 +25,6 @@ private:
   std::list<monomial<double, Group> *> monomial_list; // list of monomials in the action
 
   flat_spacetime::gaugemonomial<double, Group> *gm; // gauge monomial
-  obc::gaugemonomial<double, Group>
-    *obc_gm; // gauge monomial with open boundary conditions
   // rotating_spacetime::gauge_monomial<double, Group>
   //   *gm_rot; // gauge monomial with space rotation
   kineticmonomial<double, Group> *km; // kinetic momomial (momenta)
@@ -72,17 +70,9 @@ public:
         //   (*this).pparams.Omega);
         // (*this).monomial_list.push_back(gm_rot);
       } else {
-        if ((*this).pparams.obc) {
-          obc::weights w((*this).pparams.Lx, (*this).pparams.Ly, (*this).pparams.Lz,
-                         (*this).pparams.Lt, (*this).pparams.ndims);
-          (*this).obc_gm =
-            new obc::gaugemonomial<double, Group>(0, w, (*this).pparams.xi);
-          (*this).monomial_list.push_back(obc_gm);
-        } else {
-          (*this).gm =
-            new flat_spacetime::gaugemonomial<double, Group>(0, (*this).pparams.xi);
-          (*this).monomial_list.push_back(gm);
-        }
+        (*this).gm =
+          new flat_spacetime::gaugemonomial<double, Group>(0, (*this).pparams.xi);
+        (*this).monomial_list.push_back(gm);
       }
     }
 

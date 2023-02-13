@@ -49,6 +49,10 @@ namespace spacetime_lattice {
 
 } // namespace spacetime_lattice
 
+/**
+ * @brief standardized element access for a position-dependent quantity
+ * 
+ */
 class geometry {
 public:
 
@@ -74,5 +78,43 @@ public:
 
 private:
   size_t Lx, Ly, Lz, Lt;
+};
+
+/**
+ * @brief standardized element access for a quantity like U_\mu(x)
+ * 
+ */
+class geometry_link {
+public:
+
+  geometry_link(){}
+  ~geometry_link(){}
+
+  explicit geometry_link(const size_t _Lx,
+                    const size_t _Ly,
+                    const size_t _Lz,
+                    const size_t _Lt,
+                    const size_t _ndims)
+    : Lx(_Lx), Ly(_Ly), Lz(_Lz), Lt(_Lt), ndims(_ndims) {}
+  size_t getLx() const { return Lx; }
+  size_t getLy() const { return Ly; }
+  size_t getLz() const { return Lz; }
+  size_t getLt() const { return Lt; }
+  size_t getndims() const { return ndims; }
+  size_t getIndex(const size_t t,
+                  const size_t x,
+                  const size_t y,
+                  const size_t z,
+                  const size_t _mu) const {
+    size_t y0 = (t + Lt) % Lt;
+    size_t y1 = (x + Lx) % Lx;
+    size_t y2 = (y + Ly) % Ly;
+    size_t y3 = (z + Lz) % Lz;
+    size_t mu = (_mu + ndims) % ndims;
+    return ((((y0 * Lx + y1) * Ly + y2) * Lz + y3) * ndims + mu);
+  }
+
+private:
+  size_t Lx, Ly, Lz, Lt, ndims;
 };
 

@@ -116,6 +116,7 @@ namespace flat_spacetime {
                     hamiltonian_field<Float, Group> const &h,
                     const Float fac = 1.) const override {
       typedef typename accum_type<Group>::type accum;
+      const double num_fact_i = fac * h.U->getBeta() / double(h.U->getNc());
 #pragma omp parallel for
       for (size_t x0 = 0; x0 < h.U->getLt(); x0++) {
         for (size_t x1 = 0; x1 < h.U->getLx(); x1++) {
@@ -127,7 +128,6 @@ namespace flat_spacetime {
                 get_staples_MCMC_step(S, *h.U, x, mu, (*this).xi, (*this).anisotropic);
                 S = (*h.U)(x, mu) * S; // U*A in eq. 8.40 in Gattringer&Lang
 
-                const double num_fact_i = fac * h.U->getBeta() / double(h.U->getNc());
                 deriv(x, mu) += num_fact_i * get_deriv<double>(S);
               }
             }

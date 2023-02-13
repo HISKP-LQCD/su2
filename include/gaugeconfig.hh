@@ -48,6 +48,8 @@ public:
       volume(Lx * Ly * Lz * Lt),
       beta(beta),
       ndims(ndims) {
+    geometry_link _geom(Lx, Ly, Lz, Lt, ndims);
+    (*this).geom = _geom;
     data.resize(volume * ndims);
   }
 
@@ -168,6 +170,7 @@ public:
 
 private:
   size_t Lx, Ly, Lz, Lt, volume, ndims;
+  geometry_link geom; // access indices from position and direction
   double beta;
 
   std::vector<value_type> data;
@@ -176,17 +179,12 @@ private:
                   const size_t x,
                   const size_t y,
                   const size_t z,
-                  const size_t _mu) const {
-    size_t y0 = (t + Lt) % Lt;
-    size_t y1 = (x + Lx) % Lx;
-    size_t y2 = (y + Ly) % Ly;
-    size_t y3 = (z + Lz) % Lz;
-    size_t mu = (_mu + ndims) % ndims;
-    return ((((y0 * Lx + y1) * Ly + y2) * Lz + y3) * ndims + mu);
+                  const size_t mu) const {
+   return (*this).geom.getIndex(t, x, y, z, mu);
   }
 };
 
-template <class T> void gaugeconfig<T>::save(std::string const &path) const {
+template <class Group> void gaugeconfig<Group>::save(std::string const &path) const {
   std::ofstream ofs(path, std::ios::out | std::ios::binary);
   ofs.write(reinterpret_cast<char const *>(data.data()), storage_size());
   ofs.close();

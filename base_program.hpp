@@ -12,10 +12,11 @@
 #pragma once
 
 #include "flat-energy_density.hh"
-#include "gauge_energy.hh"
 #include "flat-sweep.hh" // flat spacetime
+#include "gauge_energy.hh"
 #include "gaugeconfig.hh"
 #include "io.hh"
+#include "obc.hh"
 #include "omeasurements.hpp"
 #include "parse_input_file.hh"
 #include "random_gauge_trafo.hh"
@@ -298,6 +299,10 @@ public:
       g_heat = (sparams.heat == true) ? 1.0 : 0.0;
       g_icounter = 0;
       hotstart(U, sparams.seed, g_heat);
+    }
+
+    if (pparams.obc) {
+      obc::apply_spatial_obc(U); // impose spatial open boundary conditions
     }
 
     double plaquette = flat_spacetime::gauge_energy(U);

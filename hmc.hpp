@@ -40,6 +40,7 @@ public:
   hmc_algo() { (*this).algo_name = "hmc"; }
   ~hmc_algo() {
     free(gm);
+    free(obc_gm);
     // free(gm_rot);
     free(km);
     free(detDDdag);

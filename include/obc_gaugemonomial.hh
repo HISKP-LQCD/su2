@@ -60,8 +60,13 @@ namespace obc { // open boundary conditions
                 for (size_t nu = mu + 1; nu < U.getndims(); nu++) {
                   xplusmu[mu] += 1;
                   xplusnu[nu] += 1;
-                  res += wx * retrace(U(x, mu) * U(xplusmu, nu) *
-                                      U(xplusnu, mu).dagger() * U(x, nu).dagger());
+
+                  const double wxplusmu = w(xplusmu);
+                  const double wxplusnu = w(xplusnu);
+                  res += wx * wxplusmu * wxplusnu *
+                         retrace(U(x, mu) * U(xplusmu, nu) * U(xplusnu, mu).dagger() *
+                                 U(x, nu).dagger());
+
                   xplusmu[mu] -= 1;
                   xplusnu[nu] -= 1;
                 }
@@ -86,14 +91,18 @@ namespace obc { // open boundary conditions
                 for (size_t nu = mu + 1; nu < U.getndims(); nu++) {
                   xplusmu[mu] += 1;
                   xplusnu[nu] += 1;
+
                   double eta = xi;
                   if ((mu == 0) ^ (nu == 0)) {
                     // at least one direction is temporal (but not both)
                     eta = 1.0 / xi;
                   }
-                  res += wx * eta *
+                  const double wxplusmu = w(xplusmu);
+                  const double wxplusnu = w(xplusnu);
+                  res += eta * wx * wxplusmu * wxplusnu *
                          retrace(U(x, mu) * U(xplusmu, nu) * U(xplusnu, mu).dagger() *
                                  U(x, nu).dagger());
+
                   xplusmu[mu] -= 1;
                   xplusnu[nu] -= 1;
                 }
@@ -213,6 +222,7 @@ namespace obc { // open boundary conditions
               for (size_t mu = 0; mu < h.U->getndims(); mu++) {
                 xpmu[mu]++; // x + mu
 
+                const double w_xpmu = (*this).w(xpmu);
                 accum S;
                 for (size_t nu = 0; nu < h.U->getndims(); nu++) {
                   if (mu == nu) {
@@ -220,12 +230,16 @@ namespace obc { // open boundary conditions
                   }
                   xpnu[nu]++; // x + nu
                   xmnu[nu]--; // x - nu
+
+                  const double w_xpnu = (*this).w(xpnu);
+                  S += w_x * w_xpmu * w_xpnu *
+                       get_staple_up<accum>(*h.U, mu, nu, xpmu, xpnu, x);
+
+                  xpmu[nu]--; // x + mu - nu
                   const double w_xmnu = (*this).w(xmnu);
-
-                  S += w_x * get_staple_up<accum>(*h.U, mu, nu, xpmu, xpnu, x);
-
-                  xpmu[nu]--; // x + mu -nu
-                  S += w_xmnu * get_staple_down<accum>(*h.U, mu, nu, xpmu, xmnu);
+                  const double w_xpmumnu = (*this).w(xpmu); // Here: xpmu == x + mu - nu !!!
+                  S += w_x * w_xmnu *
+                       w_xpmumnu * get_staple_down<accum>(*h.U, mu, nu, xpmu, xmnu);
                   xpmu[nu]++; // x + mu
 
                   xpnu[nu]--; // x

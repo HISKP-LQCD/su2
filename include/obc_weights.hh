@@ -75,7 +75,7 @@ namespace obc {
               const bool b2 = (x2 == 0 && ndims > 2);
               const bool b3 = (x3 == 0 && ndims > 3);
               if (b1 || b2 || b3) {
-                (*this)(x) = 0.5;
+                (*this)(x) = 0.0;
               }
             }
           }

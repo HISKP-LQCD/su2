@@ -44,7 +44,7 @@ namespace obc { // open boundary conditions
                               const bool &anisotropic = false,
                               const bool &spatial_only = false) {
     double res = 0.;
-    size_t startmu = spatial_only; // 0 if spatial_only==false, 1 if spatial_only==true
+    const size_t startmu = spatial_only; // 0 if spatial_only==false, 1 if spatial_only==true
 
     if (!anisotropic) {
 #pragma omp parallel for reduction(+ : res)

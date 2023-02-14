@@ -12,8 +12,8 @@
 #pragma once
 
 #include "flat-energy_density.hh"
-#include "gauge_energy.hh"
 #include "flat-sweep.hh" // flat spacetime
+#include "gauge_energy.hh"
 #include "gaugeconfig.hh"
 #include "io.hh"
 #include "omeasurements.hpp"
@@ -275,7 +275,7 @@ public:
    */
   void init_gauge_conf_mcmc() {
     /**
-     * @brief measuring spatial plaquettes only means only (ndims-1)/ndims of all
+     * @brief measuring spatial plaquettes means only (ndims-1)/ndims of all
      * plaquettes are measured, so need facnorm for normalization to 1
      *
      */
@@ -300,7 +300,9 @@ public:
       hotstart(U, sparams.seed, g_heat);
     }
 
-    double plaquette = flat_spacetime::gauge_energy(U);
+    // double plaquette = flat_spacetime::gauge_energy(U);
+    double plaquette =
+      omeasurements::get_retr_plaquette_density((*this).U, (*this).pparams.bc);
     double fac = 2. / U.getndims() / (U.getndims() - 1);
     normalisation = fac / U.getVolume() / double(U.getNc());
 
@@ -309,12 +311,12 @@ public:
               << normalisation << "\n";
     std::cout << "## Acceptance rate parcentage: rho = rate/(i+1)\n";
 
-    std::cout << "## Initial Plaquette E*A: " << plaquette * normalisation << std::endl;
+    std::cout << "## Initial Plaquette P: " << plaquette << std::endl;
 
     random_gauge_trafo(U, 654321);
-    plaquette = flat_spacetime::gauge_energy(U);
-    std::cout << "## Plaquette after rnd trafo: " << plaquette * normalisation
-              << std::endl;
+    // plaquette = flat_spacetime::gauge_energy(U);
+    plaquette = omeasurements::get_retr_plaquette_density((*this).U, (*this).pparams.bc);
+    std::cout << "## Plaquette after rnd trafo: " << plaquette << std::endl;
   }
 
   void open_output_data() {
@@ -381,8 +383,11 @@ public:
       }
     }
 
-    if(omeas.plaquette.measure_it){
-        omeasurements::meas_plaquette(U, i, pparams, omeas);
+    if (omeas.plaquette.measure_it) {
+      if ((*this).omeas.verbosity > 0) {
+        std::cout << "## online measuring: Plaquette\n";
+      }
+      omeasurements::meas_plaquette(U, i, pparams, omeas);
     }
 
     if (omeas.potentialplanar || omeas.potentialnonplanar) {

@@ -199,9 +199,12 @@ namespace input_file_parsing {
     YAML::Node nd = in.get_outer_node();
 
     mpparams.measure_it = true;
-    in.read_verb<std::string>(mpparams.bc, {"bc"});
-    check_bc(mpparams.bc);
-
+    in.read_opt_verb<std::string>(mpparams.subdir, {"subdir"});
+    in.read_opt_verb<std::string>(mpparams.bc, {"bc"});
+    if (nd["bc"]) {
+      check_bc(mpparams.bc);
+    }
+    
     in.set_InnerTree(state0); // reset to previous state
   }
 

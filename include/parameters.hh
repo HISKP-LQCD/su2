@@ -49,7 +49,9 @@ namespace global_parameters {
 
   struct measure_plaquette {
     bool measure_it = false; // whether to measure the plaquette or not
-    
+
+    std::string subdir = ""; // subdirectory of the online measurements directory
+
     // boundary condition type (note: can be different from the MCMC)
     std::string bc = "periodic";
   };

@@ -34,13 +34,55 @@ namespace omeasurements {
 
   namespace fsys = boost::filesystem;
 
+  /**
+   * @brief Get the retr plaquette density object
+   *
+   * @param bc
+   * @return double
+   */
+  template <class Group>
+  double get_retr_plaquette_density(const gaugeconfig<Group> &U, const std::string &bc) {
+    const double ndims_fact = spacetime_lattice::num_pLloops_half(U.getndims());
+    double P = 0.0; // plaquette density value
+    double den = ndims_fact * double(U.getNc());
+
+    if (bc == "periodic") {
+      using flat_spacetime::retr_sum_Wplaquettes;
+      P = retr_sum_Wplaquettes(U); // xi=1.0, anisotropic=false, spatial_only=false
+      den *= U.getVolume();
+    } else if (bc == "spatial_open") {
+      const size_t ndims = U.getndims();
+      obc::weights w(bc, U.getLx(), U.getLy(), U.getLz(), U.getLt(), ndims);
+
+      P = obc::retr_sum_Wplaquettes(U, w); // xi = 1.0, anisotropic = false
+      if (ndims > 0) {
+        den *= U.getLt();
+        if (ndims > 1) {
+          den *= (U.getLx() - 1);
+          if (ndims > 2) {
+            den *= (U.getLy() - 1);
+            if (ndims > 3) {
+              den *= (U.getLz() - 1);
+            }
+          }
+        }
+      }
+    }
+
+    P /= den; // normalizing
+    return P;
+  }
+
   template <class Group, class sparams>
   void meas_plaquette(const gaugeconfig<Group> &U,
                       const size_t &i,
                       const global_parameters::physics &pparams,
                       const sparams &S) {
     std::ostringstream oss;
-    oss << S.res_dir + "/plaquette.";
+    oss << S.res_dir + "/" + S.plaquette.subdir << "/";
+    fsys::create_directories(fsys::absolute(oss.str())); // creating directory
+
+    oss << "plaquette_";
     auto prevw = oss.width(8);
     auto prevf = oss.fill('0');
     oss << i;
@@ -52,23 +94,8 @@ namespace omeasurements {
 
     const double ndims_fact = spacetime_lattice::num_pLloops_half(U.getndims());
 
-    double P = 0.0; // plaquette density value
-    double den = 1.0; // normalization denominator
     ofs << "i P\n";
-    if (S.plaquette.bc == "periodic") {
-      using flat_spacetime::retr_sum_Wplaquettes;
-      P = retr_sum_Wplaquettes(U); // xi=1.0, anisotropic=false, spatial_only=false
-      den = U.getVolume();
-    } else if (S.plaquette.bc == "spatial_open") {
-      obc::weights w(pparams.bc, pparams.Lx, pparams.Ly, pparams.Lz, pparams.Lt,
-                     pparams.ndims);
-
-      P = obc::retr_sum_Wplaquettes(U, w); // xi = 1.0, anisotropic = false
-      den = U.getLt() * (U.getLx() - 1) * (U.getLy() - 1) * (U.getLz() - 1) * ndims_fact;
-    }
-
-    P /= den; // normalizing
-
+    double P = get_retr_plaquette_density(U, S.plaquette.bc); // plaquette density value
     ofs << i << std::scientific << std::setprecision(16) << " " << P << "\n";
     ofs.close();
 

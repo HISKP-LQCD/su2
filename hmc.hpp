@@ -114,19 +114,22 @@ public:
       }
       // PRNG engine
       std::mt19937 engine((*this).sparams.seed + i);
-      // perform the MD update
 
+      // do the MD update
       md_update((*this).U, engine, mdparams, monomial_list, *md_integ);
 
-      const double energy = flat_spacetime::gauge_energy((*this).U);
+      // const double energy = flat_spacetime::gauge_energy((*this).U);
+      const double energy =
+        omeasurements::get_retr_plaquette_density((*this).U, (*this).pparams.bc);
+
       double E = 0., Q = 0.;
       flat_spacetime::energy_density((*this).U, E, Q);
+
       rate += mdparams.getaccept();
 
       std::cout << i << " " << (*this).mdparams.getaccept() << " " << std::scientific
-                << std::setw(18) << std::setprecision(15)
-                << energy * (*this).normalisation << " " << std::setw(15)
-                << (*this).mdparams.getdeltaH() << " " << std::setw(15)
+                << std::setw(18) << std::setprecision(15) << energy << " "
+                << std::setw(15) << (*this).mdparams.getdeltaH() << " " << std::setw(15)
                 << rate / static_cast<double>(i + 1) << " ";
 
       if ((*this).mdparams.getrevtest()) {
@@ -137,9 +140,8 @@ public:
       std::cout << " " << Q << std::endl;
 
       (*this).os << i << " " << (*this).mdparams.getaccept() << " " << std::scientific
-                 << std::setw(18) << std::setprecision(15)
-                 << energy * (*this).normalisation << " " << std::setw(15)
-                 << (*this).mdparams.getdeltaH() << " " << std::setw(15)
+                 << std::setw(18) << std::setprecision(15) << energy << " "
+                 << std::setw(15) << (*this).mdparams.getdeltaH() << " " << std::setw(15)
                  << rate / static_cast<double>(i + 1) << " ";
       if ((*this).mdparams.getrevtest()) {
         (*this).os << (*this).mdparams.getdeltadeltaH();
@@ -147,6 +149,9 @@ public:
         (*this).os << "NA";
       }
       (*this).os << " " << Q << std::endl;
+
+
+
     }
   }
 

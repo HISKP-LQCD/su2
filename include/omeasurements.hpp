@@ -13,15 +13,17 @@
 #include <sstream>
 #include <vector>
 
-#include "gradient_flow.hh"
 #include "glueballs.hpp"
+#include "gradient_flow.hh"
 #include "io.hh"
 #include "links.hpp"
+#include "obc_gaugemonomial.hh"
 #include "operators.hpp"
 #include "parameters.hh"
 #include "propagator.hpp"
 #include "smearape.hh"
 #include "wilsonloop.hh"
+
 #include <boost/filesystem.hpp>
 
 #include <xtensor/xarray.hpp>
@@ -31,6 +33,47 @@
 namespace omeasurements {
 
   namespace fsys = boost::filesystem;
+
+  template <class Group, class sparams>
+  void meas_plaquette(const gaugeconfig<Group> &U,
+                      const size_t &i,
+                      const global_parameters::physics &pparams,
+                      const sparams &S) {
+    std::ostringstream oss;
+    oss << S.res_dir + "/plaquette.";
+    auto prevw = oss.width(8);
+    auto prevf = oss.fill('0');
+    oss << i;
+    oss.width(prevw);
+    oss.fill(prevf);
+
+    const std::string path = oss.str();
+    std::ofstream ofs(path, std::ios::out);
+
+    const double ndims_fact = spacetime_lattice::num_pLloops_half(U.getndims());
+
+    double P = 0.0; // plaquette density value
+    double den = 1.0; // normalization denominator
+    ofs << "i P\n";
+    if (S.plaquette.bc == "periodic") {
+      using flat_spacetime::retr_sum_Wplaquettes;
+      P = retr_sum_Wplaquettes(U); // xi=1.0, anisotropic=false, spatial_only=false
+      den = U.getVolume();
+    } else if (S.plaquette.bc == "spatial_open") {
+      obc::weights w(pparams.bc, pparams.Lx, pparams.Ly, pparams.Lz, pparams.Lt,
+                     pparams.ndims);
+
+      P = obc::retr_sum_Wplaquettes(U, w); // xi = 1.0, anisotropic = false
+      den = U.getLt() * (U.getLx() - 1) * (U.getLy() - 1) * (U.getLz() - 1) * ndims_fact;
+    }
+
+    P /= den; // normalizing
+
+    ofs << i << std::scientific << std::setprecision(16) << " " << P << "\n";
+    ofs.close();
+
+    return;
+  }
 
   /**
    * @brief compute and print the wilson loop of a given configuration

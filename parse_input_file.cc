@@ -45,6 +45,16 @@ namespace input_file_parsing {
     return;
   }
 
+  void check_bc(const std::string &bc) {
+    const bool b1 = (bc == "periodic" || bc == "spatial_open");
+    if (!b1) {
+      std::cerr << "Error. Unsupported periodic boundary condition: " << bc << "\n";
+      std::cerr << "Aborting.\n";
+      std::abort();
+    }
+    return;
+  }
+
   int validate_geometry(gp::physics &pparams) {
     if (pparams.ndims > 4 || pparams.ndims < 2) {
       std::cerr << "2 <= ndims <= 4!" << std::endl;
@@ -146,6 +156,11 @@ namespace input_file_parsing {
       in.read_verb<double>(pparams.Omega, {"geometry", "rotating_frame", "Omega"});
     }
 
+    if (R["geometry"]["bc"]) {
+      in.read_verb<std::string>(pparams.bc, {"geometry", "bc"});
+      check_bc(pparams.bc);
+    }
+
     return;
   }
 
@@ -174,6 +189,20 @@ namespace input_file_parsing {
                 << "Aborting.\n";
       std::abort();
     }
+  }
+
+  void parse_plaquette_measure(Yp::inspect_node &in,
+                               const std::vector<std::string> &inner_tree,
+                               gp::measure_plaquette &mpparams) {
+    const std::vector<std::string> state0 = in.get_InnerTree();
+    in.dig_deeper(inner_tree); // entering the glueball node
+    YAML::Node nd = in.get_outer_node();
+
+    mpparams.measure_it = true;
+    in.read_verb<std::string>(mpparams.bc, {"bc"});
+    check_bc(mpparams.bc);
+
+    in.set_InnerTree(state0); // reset to previous state
   }
 
   /**
@@ -270,6 +299,10 @@ namespace input_file_parsing {
     in.read_opt_verb<size_t>(mparams.icounter, {"icounter"});
     in.read_opt_verb<size_t>(mparams.nstep, {"nstep"});
     in.read_opt_verb<size_t>(mparams.n_meas, {"n_meas"});
+
+    if (nd["plaquette"]) {
+      parse_plaquette_measure(in, {"plaquette"}, mparams.plaquette);
+    }
 
     if (nd["pion_staggered"]) {
       mparams.pion_staggered = true;

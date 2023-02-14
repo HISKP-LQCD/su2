@@ -28,10 +28,10 @@ namespace global_parameters {
     size_t Lz; // spatial  lattice size Z > 0
     size_t Lt; // temporal lattice size T > 0
     size_t ndims = 4; // number of dimensions, 2 <= ndims <= 4
-    
+
     // boundary conditions (default = periodic)
     // supported types: "periodic", "spatial_open"
-    std::string bc = "periodic"; 
+    std::string bc = "periodic";
 
     bool flat_metric = true; // false when considering spacetime curvature
     bool rotating_frame = false; // true when we consider a rotating lattice
@@ -45,6 +45,13 @@ namespace global_parameters {
     double m0; // bare quark mass
     double xi = 1.0; // anisotropy parameter
     bool anisotropic = false; // use anisotropic lattice
+  };
+
+  struct measure_plaquette {
+    bool measure_it = false; // whether to measure the plaquette or not
+    
+    // boundary condition type (note: can be different from the MCMC)
+    std::string bc = "periodic";
   };
 
   struct measure_glueball {
@@ -89,11 +96,12 @@ namespace global_parameters {
     size_t seed = 13526463; // PRNG seed
 
     size_t nstep = 1; // measure each nstep config
-    bool Wloop = false; // whether to measure the Wilson loops or not
 
     std::string conf_dir = "./"; // directory where gauge configurations are stored
     std::string res_dir = "./"; // directory where results from measurements for
                                 // potential, potentialsmall are stored
+
+    bool Wloop = false; // whether to measure the Wilson loops or not
 
     bool potentialplanar =
       false; // measure potential: the loops W(x, t, y=z=0) and W(x, y, t=z=0) are
@@ -125,6 +133,7 @@ namespace global_parameters {
     size_t solver_verbosity = 0; // Verbosity for the solver for the dirac operator
     size_t seed_pf = 97234719; // Seed for the evaluation of the fermion determinant
 
+    measure_plaquette plaquette; // struct for the measure of the plaquette
     measure_glueball glueball; // struct for the measure of the glueball
     measure_gradient_flow gradient_flow; // struct for the measure of the gradient flow
   };

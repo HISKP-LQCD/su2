@@ -43,10 +43,6 @@ namespace obc {
       Geom = geom1;
       if (bc_type == "spatial_open") {
         this->apply_spatial_obc();
-      } else {
-        std::cerr << "Error, unsupported open boundary condition of type: " << bc_type << "\n";
-        std::cerr << "Aborting\n";
-        std::abort();
       }
     }
 

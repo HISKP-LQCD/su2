@@ -381,6 +381,10 @@ public:
       }
     }
 
+    if(omeas.plaquette.measure_it){
+        omeasurements::meas_plaquette(U, i, pparams, omeas);
+    }
+
     if (omeas.potentialplanar || omeas.potentialnonplanar) {
       gaugeconfig<Group> U1 = U;
       // smear lattice

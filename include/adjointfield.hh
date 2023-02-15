@@ -1,88 +1,21 @@
 #pragma once
 
 #include "geometry.hh"
-#include "su2.hh"
-#include "u1.hh"
+#include <array>
 #include <cassert>
 #include <cmath>
 #include <random>
 #include <vector>
-#include <array>
 
-template <typename Float> class adjointsu2 {
-public:
-  adjointsu2(Float _a, Float _b, Float _c) : a(_a), b(_b), c(_c) {}
-  adjointsu2() : a(0.), b(0.), c(0.) {}
-  void flipsign() {
-    a = -a;
-    b = -b;
-    c = -c;
-  }
-  Float geta() const { return a; }
-  Float getb() const { return b; }
-  Float getc() const { return c; }
-  void seta(Float _a) { a = _a; }
-  void setb(Float _a) { b = _a; }
-  void setc(Float _a) { c = _a; }
-  void setzero() { a = b = c = 0.; }
-  adjointsu2<Float> round(size_t n) const {
-    Float dn = n;
-    return adjointsu2(std::round(a * dn) / dn, std::round(b * dn) / dn,
-                      std::round(c * dn) / dn);
-  }
-  void operator=(const adjointsu2 &A) {
-    a = A.geta();
-    b = A.getb();
-    c = A.getc();
-  }
-  void operator+=(const adjointsu2 &A) {
-    a += A.geta();
-    b += A.getb();
-    c += A.getc();
-  }
-  void operator-=(const adjointsu2 &A) {
-    a -= A.geta();
-    b -= A.getb();
-    c -= A.getc();
-  }
-
-private:
-  Float a, b, c;
-};
-
-template <typename Float = double> inline adjointsu2<Float> get_deriv(su2 &A) {
-  const Complex a = A.geta(), b = A.getb();
-  return adjointsu2<Float>(2. * std::imag(b), 2. * std::real(b), 2. * std::imag(a));
-}
-
-template <typename Float> class adjointu1 {
-public:
-  adjointu1(Float _a) : a(_a) {}
-  adjointu1() : a(0.) {}
-  void flipsign() { a = -a; }
-  Float geta() const { return a; }
-  void seta(Float _a) { a = _a; }
-  void setzero() { a = 0.; }
-
-  adjointu1<Float> round(size_t n) const {
-    Float dn = n;
-    return adjointu1(std::round(a * dn) / dn);
-  }
-  void operator=(const adjointu1 &A) { a = A.geta(); }
-  void operator+=(const adjointu1 &A) { a += A.geta(); }
-  void operator-=(const adjointu1 &A) { a -= A.geta(); }
-
-private:
-  Float a;
-};
-
-template <typename Float = double> inline adjointu1<Float> get_deriv(Complex &A) {
-  return adjointu1<Float>(std::imag(A));
-}
+#include "adjoint_su2.hh"
+#include "adjoint_su3.hh"
+#include "adjoint_u1.hh"
 
 // The following class will be used to deliver the
 // adjoint type depending on the gauge group
-template <typename Float, class Group> struct adjoint_type { typedef Group type; };
+template <typename Float, class Group> struct adjoint_type {
+  typedef Group type;
+};
 
 template <typename Float> struct adjoint_type<Float, su2> {
   typedef adjointsu2<Float> type;
@@ -92,11 +25,16 @@ template <typename Float> struct adjoint_type<Float, _u1> {
   typedef adjointu1<Float> type;
 };
 
+/**
+ * @brief field of adjoint matrices
+ *
+ * @tparam Float
+ * @tparam Group
+ */
 template <typename Float, class Group> class adjointfield {
 public:
   using value_type = typename adjoint_type<Float, Group>::type;
-  template<class T>
-  using nd_max_arr = typename spacetime_lattice::nd_max_arr<T>;
+  template <class T> using nd_max_arr = typename spacetime_lattice::nd_max_arr<T>;
 
   adjointfield(const size_t Lx,
                const size_t Ly,
@@ -164,13 +102,13 @@ public:
     return data[getIndex(coords[0], coords[1], coords[2], coords[3], mu)];
   }
 
-  template<class Type>
-  value_type &operator()(const nd_max_arr<Type> &x, const size_t& mu) {
+  template <class Type>
+  value_type &operator()(const nd_max_arr<Type> &x, const size_t &mu) {
     return data[getIndex(x[0], x[1], x[2], x[3], mu)];
   }
 
-  template<class Type>
-  const value_type &operator()(const nd_max_arr<Type> &x, const size_t& mu) const {
+  template <class Type>
+  const value_type &operator()(const nd_max_arr<Type> &x, const size_t &mu) const {
     return data[getIndex(x[0], x[1], x[2], x[3], mu)];
   }
 

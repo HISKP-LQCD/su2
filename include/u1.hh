@@ -105,3 +105,5 @@ inline void operator+=(Complex &U1, const _u1 &U2) {
 inline void operator*=(Complex &U1, const _u1 &U2) {
   U1 *= std::exp(U2.geta() * Complex(0., 1.));
 }
+
+using u1 = _u1;

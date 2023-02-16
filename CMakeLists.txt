@@ -88,6 +88,7 @@ endif()
 set(${CMAKE_BINARY_DIR} ${CMAKE_INSTALL_PREFIX}/bin/)
 add_executable(u1-main main-u1.cpp)
 add_executable(su2-main main-su2.cpp)
+add_executable(su3-main main-su3.cpp)
 
 add_executable(su2-kramers kramers.cc)
 add_executable(test-groups test.cc)
@@ -118,7 +119,8 @@ endforeach(target)
 
 target_link_directories(${CMAKE_PROJECT_NAME} PUBLIC ${YAML_CPP_LIBRARY_DIR})
 
-foreach(target u1-main su2-main su2-kramers test-groups scaling try ${test_progs_fullname})
+foreach(target u1-main su2-main su3-main su2-kramers test-groups scaling try ${test_progs_fullname})
+  target_link_libraries(${target} su2 ${YAML_CPP_LIBRARIES})
   target_link_libraries(${target} su2 ${YAML_CPP_LIBRARIES})
 
   if(Boost_FOUND)
@@ -133,7 +135,7 @@ endforeach(target)
 install(TARGETS ${PROJECT_NAME}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
-install(TARGETS u1-main su2-main)
+install(TARGETS u1-main su2-main su3-main)
 install(TARGETS su2-kramers test-groups scaling try)
 
 # tests

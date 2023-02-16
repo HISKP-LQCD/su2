@@ -23,6 +23,7 @@
 #include "hamiltonian_field.hh"
 #include "monomial.hh"
 #include "su2.hh"
+#include "su3.hh"
 #include "u1.hh"
 
 #include "solver_type.hh" // generic type of solver
@@ -281,7 +282,7 @@ namespace staggered {
    *
    * @tparam Float : double
    * @tparam Type : std::complex<double>
-   * @tparam Group : su1 or su2
+   * @tparam Group : u1 or su2
    * @param M : wrapper for D*D^{\dagger} matrix.
    *  Contains the information only about the configuration U and the quark mass
    * @param psi : spinor to which we apply D*D^{\dagger}
@@ -303,9 +304,8 @@ namespace staggered {
 
   // returns the result of D*psi, where D is the Dirac operator
   template <class Float, class Type, class _u1>
-  spinor_lat<Float, Type> apply_D(const gaugeconfig<_u1> &U,
-                                  const Float &m,
-                                  const spinor_lat<Float, Type> &psi) {
+  spinor_lat<Float, Type>
+  apply_D(const gaugeconfig<_u1> &U, const Float &m, const spinor_lat<Float, Type> &psi) {
     const size_t Lt = U.getLt(), Lx = U.getLx(), Ly = U.getLy(), Lz = U.getLz();
     const size_t nd = U.getndims();
     const nd_max_arr<size_t> dims = psi.get_dims(); // vector of dimensions
@@ -313,7 +313,7 @@ namespace staggered {
     const int N = psi.size();
     spinor_lat<Float, Type> phi(dims);
 
-//#pragma omp target teams distribute parallel for //collapse(4)
+// #pragma omp target teams distribute parallel for //collapse(4)
 #pragma omp parallel for
     for (int x0 = 0; x0 < Lt; x0++) {
       for (int x1 = 0; x1 < Lx; x1++) {
@@ -345,6 +345,15 @@ namespace staggered {
                                   const Float &m,
                                   const spinor_lat<Float, Type> &psi) {
     spacetime_lattice::fatal_error("Staggered fermions not supported for SU(2)",
+                                   __func__);
+    return psi;
+  }
+
+  template <class Float, class Type>
+  spinor_lat<Float, Type> apply_D(const gaugeconfig<_su3> &U,
+                                  const Float &m,
+                                  const spinor_lat<Float, Type> &psi) {
+    spacetime_lattice::fatal_error("Staggered fermions not supported for SU(3)",
                                    __func__);
     return psi;
   }
@@ -393,6 +402,15 @@ namespace staggered {
                                      const Float &m,
                                      const spinor_lat<Float, Type> &psi) {
     spacetime_lattice::fatal_error("Staggered fermions not supported for SU(2)",
+                                   __func__);
+    return psi;
+  }
+
+  template <class Float, class Type>
+  spinor_lat<Float, Type> apply_Ddag(const gaugeconfig<_su3> &U,
+                                     const Float &m,
+                                     const spinor_lat<Float, Type> &psi) {
+    spacetime_lattice::fatal_error("Staggered fermions not supported for SU(3)",
                                    __func__);
     return psi;
   }

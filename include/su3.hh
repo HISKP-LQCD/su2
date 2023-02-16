@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include <array>
 #include <complex>
 #include <iostream>
 
@@ -202,18 +203,32 @@ inline _su3 operator-(const _su3 &U1, const _su3 &U2) {
   return U;
 }
 
-inline _su3 operator*(const Complex &z, const _su3 &U2) {
-  const size_t N_c = U2.N_c;
+inline _su3 operator*(const double &z, const _su3 &U) {
+  const size_t N_c = U.N_c;
   std::array<Complex, 3> u, v;
   for (size_t i = 0; i < N_c; i++) {
-    u[i] *= z;
-    v[i] *= z;
+    u[i] *= double(z);
+    v[i] *= double(z);
   }
   return _su3(u, v);
 }
 
-inline _su3 operator*(const _su3 &U1, const Complex &z) {
-  return z * U1;
+inline _su3 operator*(const _su3 &U, const double &z) {
+  return z * U;
+}
+
+inline _su3 operator*(const Complex &z, const _su3 &U) {
+  const size_t N_c = U.N_c;
+  std::array<Complex, 3> u, v;
+  for (size_t i = 0; i < N_c; i++) {
+    u[i] *= Complex(z);
+    v[i] *= Complex(z);
+  }
+  return _su3(u, v);
+}
+
+inline _su3 operator*(const _su3 &U, const Complex &z) {
+  return z * U;
 }
 
 template <> inline _su3 traceless_antiherm(const _su3 &x0) {

@@ -17,12 +17,16 @@ template <typename Float, class Group> struct adjoint_type {
   typedef Group type;
 };
 
+template <typename Float> struct adjoint_type<Float, u1> {
+  typedef adjointu1<Float> type;
+};
+
 template <typename Float> struct adjoint_type<Float, su2> {
   typedef adjointsu2<Float> type;
 };
 
-template <typename Float> struct adjoint_type<Float, _u1> {
-  typedef adjointu1<Float> type;
+template <typename Float> struct adjoint_type<Float, su3> {
+  typedef adjointsu3<Float> type;
 };
 
 /**
@@ -176,6 +180,15 @@ Float operator*(const adjointfield<Float, _u1> &A, const adjointfield<Float, _u1
 }
 
 template <class URNG, typename Float>
+void initnormal(URNG &engine, adjointfield<Float, _u1> &A) {
+  std::normal_distribution<double> normal(0., 1.);
+  for (size_t i = 0; i < A.getSize(); i++) {
+    A[i].seta(Float(normal(engine)));
+  }
+  return;
+}
+
+template <class URNG, typename Float>
 void initnormal(URNG &engine, adjointfield<Float, su2> &A) {
   std::normal_distribution<double> normal(0., 1.);
   for (size_t i = 0; i < A.getSize(); i++) {
@@ -187,10 +200,14 @@ void initnormal(URNG &engine, adjointfield<Float, su2> &A) {
 }
 
 template <class URNG, typename Float>
-void initnormal(URNG &engine, adjointfield<Float, _u1> &A) {
+void initnormal(URNG &engine, adjointfield<Float, su3> &A) {
   std::normal_distribution<double> normal(0., 1.);
   for (size_t i = 0; i < A.getSize(); i++) {
-    A[i].seta(Float(normal(engine)));
+    std::array<Float, 8> arr;
+    for (size_t i = 0; i < 8; i++) {
+      arr[i] = Float(normal(engine));
+    }
+    A[i].set_arr(arr);
   }
   return;
 }

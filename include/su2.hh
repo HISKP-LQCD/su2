@@ -81,8 +81,8 @@ inline Complex trace(_su2 const &U) {
 template <> inline _su2 dagger(const _su2 &u) {
   const Complex a = u.geta();
   const Complex b = u.getb();
-  _su2 ud(std::conj(a), -b);
-  return ud;
+  _su2 udag(std::conj(a), -b);
+  return udag;
 }
 
 template <> inline _su2 traceless_antiherm(const _su2 &x) {

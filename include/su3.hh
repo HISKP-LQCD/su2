@@ -104,6 +104,10 @@ public:
     u = _u;
     v = _v;
   }
+  void set_to_identity() {
+    u = {1.0, 0.0, 0.0};
+    v = {0.0, 1.0, 0.0};
+  }
   inline _su3 dagger() const {
     // vectors computed using sympy
     const std::array<Complex, 3> u2 = {std::conj(u[0]), std::conj(v[0]),

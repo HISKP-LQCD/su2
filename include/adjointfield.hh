@@ -139,21 +139,21 @@ private:
   }
 };
 
-template <typename Float>
-inline adjointsu2<Float> operator*(const Float &x, const adjointsu2<Float> &A) {
-  return adjointsu2<Float>(x * A.geta(), x * A.getb(), x * A.getc());
-}
-
-template <typename Float>
-inline adjointu1<Float> operator*(const Float &x, const adjointu1<Float> &A) {
-  return adjointu1<Float>(x * A.geta());
-}
-
 template <typename Float, class Group>
 adjointfield<Float, su2> operator*(const Float &x, const adjointfield<Float, Group> &A) {
   adjointfield<Float, Group> res(A.getLx(), A.getLy(), A.getLz(), A.getLt());
   for (size_t i = 0; i < A.getSize(); i++) {
     res[i] = x * A[i];
+  }
+  return res;
+}
+
+template <typename Float>
+Float operator*(const adjointfield<Float, _u1> &A, const adjointfield<Float, _u1> &B) {
+  Float res = 0.;
+  assert(A.getSize() == B.getSize());
+  for (size_t i = 0; i < A.getSize(); i++) {
+    res += A[i].geta() * B[i].geta();
   }
   return res;
 }
@@ -170,11 +170,15 @@ Float operator*(const adjointfield<Float, su2> &A, const adjointfield<Float, su2
 }
 
 template <typename Float>
-Float operator*(const adjointfield<Float, _u1> &A, const adjointfield<Float, _u1> &B) {
+Float operator*(const adjointfield<Float, su3> &A, const adjointfield<Float, su3> &B) {
   Float res = 0.;
   assert(A.getSize() == B.getSize());
   for (size_t i = 0; i < A.getSize(); i++) {
-    res += A[i].geta() * B[i].geta();
+    const std::array<Float, 8> arr_A = A[i].get_arr();
+    const std::array<Float, 8> arr_B = B[i].get_arr();
+    for (size_t k = 0; k < 8; k++) {
+      res += arr_A[i] * arr_B[i];
+    }
   }
   return res;
 }

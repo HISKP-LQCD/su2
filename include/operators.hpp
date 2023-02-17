@@ -12,8 +12,8 @@
 #include <sstream>
 #include <vector>
 
-#include "gradient_flow.hh"
 #include "gaugeconfig.hh"
+#include "gradient_flow.hh"
 #include "links.hpp"
 #include "parameters.hh"
 #include "propagator.hpp"
@@ -111,7 +111,8 @@ namespace operators {
       abort();
     }
     std::vector<size_t> xrun = x;
-    accum L(1., 0.);
+    Group L;
+    L.set_to_identity(); // L = 1.0
     for (size_t i = 0; i < lengths.size(); i++) {
       if (sign[i]) {
         for (size_t j = 0; j < lengths[i]; j++) {

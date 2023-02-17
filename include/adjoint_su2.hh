@@ -20,7 +20,6 @@
 #include <random>
 #include <vector>
 
-
 template <typename Float> class adjointsu2 {
 public:
   adjointsu2(Float _a, Float _b, Float _c) : a(_a), b(_b), c(_c) {}
@@ -62,7 +61,13 @@ private:
   Float a, b, c;
 };
 
+
 template <typename Float = double> inline adjointsu2<Float> get_deriv(su2 &A) {
   const Complex a = A.geta(), b = A.getb();
   return adjointsu2<Float>(2. * std::imag(b), 2. * std::real(b), 2. * std::imag(a));
+}
+
+template <typename Float>
+inline adjointsu2<Float> operator*(const Float &x, const adjointsu2<Float> &A) {
+  return adjointsu2<Float>(x * A.geta(), x * A.getb(), x * A.getc());
 }

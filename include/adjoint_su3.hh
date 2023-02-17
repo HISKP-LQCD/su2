@@ -72,7 +72,7 @@ private:
 };
 
 /**
- * @brief returns (-i)*(B - B.dagger()), where B = A - A - (tr(a)/N_c) * 1, parametrized
+ * @brief returns (-i)*(B - B.dagger()), where B = A - (tr(a)/N_c) * 1, parametrized
  * as an element of su(3)
  *
  * @tparam Float
@@ -81,11 +81,20 @@ private:
  */
 template <typename Float = double> inline adjointsu3<Float> get_deriv(const su3 &A) {
   const su3 A_thh = traceless_antiherm(A);
-  const std::array<Complex, 3>  u = A_thh.get_u();
-  const std::array<Complex, 3>  v = A_thh.get_v();
+  const std::array<Complex, 3> u = A_thh.get_u();
+  const std::array<Complex, 3> v = A_thh.get_v();
   const std::array<Float, 8> arr = {
     2.0 * std::imag(u[0]), 2.0 * std::imag(u[1]), 2.0 * std::imag(u[2]),
     2.0 * std::imag(v[0]),
     2.0 * std::imag(v[1])}; // u*v=0 --> v[2] depends on v[0] and v[1]
   return adjointsu3<Float>(arr);
+}
+
+template <typename Float>
+inline adjointsu3<Float> operator*(const Float &x, const adjointsu3<Float> &A) {
+  std::array<Float, 8> arr = A.get_arr();
+  for (size_t i = 0; i < 8; i++) {
+    arr[i] *= x;
+  }
+  return adjointsu3(arr);
 }

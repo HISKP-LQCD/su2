@@ -55,6 +55,10 @@ public:
     a = _a;
     b = _b;
   }
+  void set_to_identity() {
+    a = 1.0;
+    b = 0.0;
+  }
   inline _su2 dagger() const { return (_su2(std::conj(a), -b)); }
   inline double retrace() { return (2. * std::real(a)); }
   Complex det() { return (a * std::conj(a) + b * std::conj(b)); }

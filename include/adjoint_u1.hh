@@ -21,6 +21,15 @@
 #include <random>
 #include <vector>
 
+/**
+ * @brief element of the adjount representation of U(1), i.e. just a number proportional
+ * to the Identity.
+ *
+ * Note: We use the convention such that tr(t_i*t_j) = delta_{ij} (no factor 1/2), so the
+ * generator of the algebra is the Identity, not divided by sqrt(2)
+ *
+ * @tparam Float
+ */
 template <typename Float> class adjointu1 {
 public:
   adjointu1(Float _a) : a(_a) {}
@@ -44,4 +53,9 @@ private:
 
 template <typename Float = double> inline adjointu1<Float> get_deriv(Complex &A) {
   return adjointu1<Float>(std::imag(A));
+}
+
+template <typename Float>
+inline adjointu1<Float> operator*(const Float &x, const adjointu1<Float> &A) {
+  return adjointu1<Float>(x * A.geta());
 }

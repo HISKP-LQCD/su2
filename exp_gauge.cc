@@ -76,7 +76,7 @@ _su3 exp(const adjointsu3<double> &x) {
       (n[0] + I * n[1]) * (n[3] - I * n[4]) +
       (-n[2] + sqrt(3.0) * n[7] / 3.0) * (n[5] - I * n[6])};
 
-  std::array<Complex, 3> u, v;
+  std::array<Complex, 3> u = {0.0, 0.0, 0.0}, v = {0.0, 0.0, 0.0};
   for (size_t k = 0; k <= 2; k++) {
     const double pk = phi + (2.0 / 3.0) * M_PI * k;
     const double arg_num_k = (2.0 / sqrt(3.0)) * theta * sin(pk);
@@ -91,7 +91,7 @@ _su3 exp(const adjointsu3<double> &x) {
       const Complex v_ik = H2_2[i] + (2.0 / sqrt(3.0)) * H_2[i] * sin(pk) -
                            (1.0 / 3.0) * (1.0 + 2.0 * cos(2.0 * pk));
 
-      v[i] += v_ik;
+      v[i] += v_ik * fact_k;
     }
   }
 

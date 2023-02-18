@@ -173,6 +173,18 @@ public:
     return;
   }
 
+  void print() const {
+    std::array<Complex, 3> w = {
+      u[1] * v[2] - v[1] * u[2], -u[0] * v[2] + v[0] * u[2], u[0] * v[1] - v[0] * u[1]};
+    w = {std::conj(w[0]), std::conj(w[1]), std::conj(w[2])};
+
+    std::cout << "----------------------------------\n";
+    std::cout << u[0] << " " << u[1] << " " << u[2] << "\n";
+    std::cout << v[0] << " " << v[1] << " " << v[2] << "\n";
+    std::cout << w[0] << " " << w[1] << " " << w[2] << "\n";
+    std::cout << "----------------------------------\n";
+  }
+
 private:
   std::array<Complex, 3> u, v;
 };

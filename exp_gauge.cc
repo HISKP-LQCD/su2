@@ -44,7 +44,7 @@ _su3 exp(const adjointsu3<double> &x) {
     n[2] * (n[4] * n[4]) - n[2] * (n[5] * n[5]) - n[2] * (n[6] * n[6]) -
     sqrt_of_3 * (n[3] * n[3]) * n[7] / 3.0 - sqrt_of_3 * (n[4] * n[4]) * n[7] / 3.0 -
     sqrt_of_3 * (n[5] * n[5]) * n[7] / 3.0 - sqrt_of_3 * (n[6] * n[6]) * n[7] / 3.0 -
-    2.0 * sqrt_of_3 * (n[7] * n[7]*n[7]) / 9.0;
+    2.0 * sqrt_of_3 * (n[7] * n[7] * n[7]) / 9.0;
   const double phi = (1.0 / 3.0) * (acos((3.0 / 2.0) * sqrt_of_3 * detH) - M_PI / 2.0);
 
   const Complex I(0.0, 1.0); // imaginary unit
@@ -96,6 +96,16 @@ _su3 exp(const adjointsu3<double> &x) {
     }
   }
 
+  // Complex dp = 0.0;
+  // for (size_t i = 0; i < 3; i++) {
+  //   dp += std::conj(u[i]) * v[i];
+  // }
+  // std::cout << "Perpendicular? " << dp << "\n";
+  // // std::abort();
+
   _su3 res(u, v);
+//  res.restoreSU();
+  _su3 Uc = res*(res.dagger());
+  Uc.print();
   return res;
 }

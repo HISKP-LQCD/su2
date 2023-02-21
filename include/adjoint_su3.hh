@@ -79,13 +79,21 @@ private:
  * @param A
  * @return adjointsu3<Float>
  */
-template <typename Float = double> inline adjointsu3<Float> get_deriv(const su3 &A) {
-//  std::cout << "ERROR: please implement " << __func__ << " for SU(3) \n";
-//  std::abort();
-  const su3 A_thh = traceless_antiherm(A);
-  const std::array<Complex, 3> u = A_thh.get_u();
-  const std::array<Complex, 3> v = A_thh.get_v();
-  const std::array<Float, 8> arr = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}; // = ???
+template <typename Float = double> inline adjointsu3<Float> get_deriv(const su3 &U) {
+  const std::array<Complex, 3> u = U.get_u();
+  const std::array<Complex, 3> v = U.get_v();
+
+  std::array<Float, 8> arr;
+
+arr[0] = std::imag(u[1]) + std::imag(v[0]) ;
+arr[1] = std::real(u[1]) - std::real(v[0]) ;
+arr[2] = std::imag(u[0]) - std::imag(v[1]) ;
+arr[3] = -std::real(u[1])*std::imag(v[2]) + std::real(u[2])*std::imag(v[1]) + std::real(v[1])*std::imag(u[2]) - std::real(v[2])*std::imag(u[1]) + std::imag(u[2]) ;
+arr[4] = -std::real(u[1])*std::real(v[2]) + std::real(u[2])*std::real(v[1]) + std::real(u[2]) + std::imag(u[1])*std::imag(v[2]) - std::imag(u[2])*std::imag(v[1]) ;
+arr[5] = std::real(u[0])*std::imag(v[2]) - std::real(u[2])*std::imag(v[0]) - std::real(v[0])*std::imag(u[2]) + std::real(v[2])*std::imag(u[0]) + std::imag(v[2]) ;
+arr[6] = std::real(u[0])*std::real(v[2]) - std::real(u[2])*std::real(v[0]) + std::real(v[2]) - std::imag(u[0])*std::imag(v[2]) + std::imag(u[2])*std::imag(v[0]) ;
+arr[7] = 2*sqrt(3.0)*std::real(u[0])*std::imag(v[1])/3.0 - 2*sqrt(3.0)*std::real(u[1])*std::imag(v[0])/3.0 - 2*sqrt(3.0)*std::real(v[0])*std::imag(u[1])/3.0 + 2*sqrt(3.0)*std::real(v[1])*std::imag(u[0])/3.0 + sqrt(3.0)*std::imag(u[0])/3.0 + sqrt(3.0)*std::imag(v[1])/3.0 ;
+
   return adjointsu3<Float>(arr);
 }
 

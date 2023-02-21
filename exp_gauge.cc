@@ -57,13 +57,12 @@ _su3 exp(const adjointsu3<double> &x) {
 
   // 1st and 2nd row of H^2
   const std::array<Complex, 3> H2_1 = {
-    (n[0] - I * n[1]) * (n[0] + I * n[1]) +
-      (n[2] + sqrt_of_3 * n[7] / 3.0) * (n[2] + sqrt_of_3 * n[7] / 3.0) +
+    (n[0] - I * n[1]) * (n[0] + I * n[1]) + std::pow(n[2] + sqrt_of_3 * n[7] / 3.0, 2.0) +
       (n[3] - I * n[4]) * (n[3] + I * n[4]),
     (n[0] - I * n[1]) * (-n[2] + sqrt_of_3 * n[7] / 3.0) +
       (n[0] - I * n[1]) * (n[2] + sqrt_of_3 * n[7] / 3.0) +
       (n[3] - I * n[4]) * (n[5] + I * n[6]),
-    -2.0 * sqrt_of_3 * n[7] * (n[3] - I * n[4]) / 3.0 +
+    -2 * sqrt_of_3 * n[7] * (n[3] - I * n[4]) / 3.0 +
       (n[0] - I * n[1]) * (n[5] - I * n[6]) +
       (n[2] + sqrt_of_3 * n[7] / 3.0) * (n[3] - I * n[4])};
   const std::array<Complex, 3> H2_2 = {
@@ -71,9 +70,9 @@ _su3 exp(const adjointsu3<double> &x) {
       (n[0] + I * n[1]) * (n[2] + sqrt_of_3 * n[7] / 3.0) +
       (n[3] + I * n[4]) * (n[5] - I * n[6]),
     (n[0] - I * n[1]) * (n[0] + I * n[1]) +
-      (-n[2] + sqrt_of_3 * n[7] / 3.0) * (-n[2] + sqrt_of_3 * n[7] / 3.0) +
+      std::pow(-n[2] + sqrt_of_3 * n[7] / 3.0, 2.0) +
       (n[5] - I * n[6]) * (n[5] + I * n[6]),
-    -2.0 * sqrt_of_3 * n[7] * (n[5] - I * n[6]) / 3.0 +
+    -2 * sqrt_of_3 * n[7] * (n[5] - I * n[6]) / 3.0 +
       (n[0] + I * n[1]) * (n[3] - I * n[4]) +
       (-n[2] + sqrt_of_3 * n[7] / 3.0) * (n[5] - I * n[6])};
 
@@ -85,27 +84,18 @@ _su3 exp(const adjointsu3<double> &x) {
     const double den_k = 1 - 2.0 * cos(2.0 * pk);
     const Complex fact_k = num_k / den_k;
     for (size_t i = 0; i < 3; i++) {
-      const Complex u_ik = H2_1[i] + (2.0 / sqrt_of_3) * H_1[i] * sin(pk) -
-                           (1.0 / 3.0) * (1.0 + 2.0 * cos(2.0 * pk));
+      const Complex u_ik = H2_1[i] + (2.0 / sqrt_of_3) * H_1[i] * sin(pk);
       u[i] += u_ik * fact_k;
 
-      const Complex v_ik = H2_2[i] + (2.0 / sqrt_of_3) * H_2[i] * sin(pk) -
-                           (1.0 / 3.0) * (1.0 + 2.0 * cos(2.0 * pk));
+      const Complex v_ik = H2_2[i] + (2.0 / sqrt_of_3) * H_2[i] * sin(pk);
 
       v[i] += v_ik * fact_k;
     }
+    // contibution from the identity
+    u[0] += -(1.0 / 3.0) * (1.0 + 2.0 * cos(2.0 * pk)) * fact_k;
+    v[1] += -(1.0 / 3.0) * (1.0 + 2.0 * cos(2.0 * pk)) * fact_k;
   }
 
-  // Complex dp = 0.0;
-  // for (size_t i = 0; i < 3; i++) {
-  //   dp += std::conj(u[i]) * v[i];
-  // }
-  // std::cout << "Perpendicular? " << dp << "\n";
-  // // std::abort();
-
   _su3 res(u, v);
-//  res.restoreSU();
-  _su3 Uc = res*(res.dagger());
-  Uc.print();
   return res;
 }

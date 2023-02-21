@@ -80,8 +80,8 @@ private:
  * @return adjointsu3<Float>
  */
 template <typename Float = double> inline adjointsu3<Float> get_deriv(const su3 &A) {
-  std::cout << "ERROR: please implement " << __func__ << " for SU(3) \n";
-  std::abort();
+//  std::cout << "ERROR: please implement " << __func__ << " for SU(3) \n";
+//  std::abort();
   const su3 A_thh = traceless_antiherm(A);
   const std::array<Complex, 3> u = A_thh.get_u();
   const std::array<Complex, 3> v = A_thh.get_v();

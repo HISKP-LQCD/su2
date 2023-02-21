@@ -46,7 +46,7 @@ public:
                const size_t Lt,
                const size_t ndims = 4)
     : Lx(Lx), Ly(Ly), Lz(Lz), Lt(Lt), volume(Lx * Ly * Lz * Lt), ndims(ndims) {
-    data.resize(volume * 4);
+    data.resize(volume * ndims);
   }
   adjointfield(const adjointfield &U)
     : Lx(U.getLx()),
@@ -120,6 +120,11 @@ public:
 
   const value_type &operator[](size_t const index) const { return data[index]; }
 
+  std::vector<value_type> get_data() const {
+    std::vector<value_type> data2 = data;
+    return data2;
+  }
+
 private:
   size_t Lx, Ly, Lz, Lt, volume, ndims;
 
@@ -177,7 +182,7 @@ Float operator*(const adjointfield<Float, su3> &A, const adjointfield<Float, su3
     const std::array<Float, 8> arr_A = A[i].get_arr();
     const std::array<Float, 8> arr_B = B[i].get_arr();
     for (size_t k = 0; k < 8; k++) {
-      res += arr_A[i] * arr_B[i];
+      res += arr_A[k] * arr_B[k];
     }
   }
   return res;

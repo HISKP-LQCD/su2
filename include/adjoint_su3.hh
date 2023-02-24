@@ -75,19 +75,16 @@ private:
 /**
  * @brief returns A = B - (tr(B)/N_c) * 1_{3x3}, where B = U - U^{\dagger}.
  * The matrix A is returned as an element of the algebra su(3), i.e. giving the
- * coefficients in front of the Gell-Mall matrices
+ * coefficients in front of the Gell-Mall matrices. The expression for them has been computed with sympy.
  *
  * @tparam Float
  * @param A
  * @return adjointsu3<Float>
  */
 template <class Float = double> inline adjointsu3<Float> get_deriv(const su3_accum &U) {
-  su3_accum A = U - U.dagger();
-  _su3 Id; // by default is the identity
-  A = A - (trace(A) / double(U.N_c)) * Id;
-  const std::array<Complex, 3> u = A.get_u();
-  const std::array<Complex, 3> v = A.get_v();
-  const std::array<Complex, 3> w = A.get_w();
+  const std::array<Complex, 3> u = U.get_u();
+  const std::array<Complex, 3> v = U.get_v();
+  const std::array<Complex, 3> w = U.get_w();
 
   std::array<Float, 8> arr;
 
@@ -100,6 +97,8 @@ template <class Float = double> inline adjointsu3<Float> get_deriv(const su3_acc
   arr[6] = std::real(v[2]) - std::real(w[1]);
   arr[7] = sqrt(3.0) * std::imag(u[0]) / 3.0 + sqrt(3.0) * std::imag(v[1]) / 3.0 -
            2.0 * sqrt(3.0) * std::imag(w[2]) / 3.0;
+
+ // std::abort();
 
   return adjointsu3<Float>(arr);
 }

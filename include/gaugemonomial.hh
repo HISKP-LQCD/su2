@@ -19,6 +19,8 @@
 #include "hamiltonian_field.hh"
 #include "monomial.hh"
 #include "su2.hh"
+#include "su3.hh"
+#include "su3_accum.hh"
 #include "u1.hh"
 
 #include <complex>

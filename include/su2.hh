@@ -1,3 +1,14 @@
+/**
+ * @file su2.hh
+ * @author Simone Romiti (simone.romiti@uni-bonn.de)
+ * @brief class representing an SU(2) matrix in the fundamental representation
+ * @version 0.1
+ * @date 2023-02-24
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ */
+
 #pragma once
 
 #include <complex>
@@ -68,6 +79,13 @@ public:
     b /= r;
   }
 
+  void print(){
+    std::cout << "--------------------\n";
+    std::cout << a << " " << b << "\n";
+    std::cout << -std::conj(b) << " " << std::conj(a) << "\n";
+    std::cout << "--------------------\n";
+  }
+
 private:
   Complex a, b;
 };
@@ -127,5 +145,28 @@ inline _su2 operator*(const _su2 &U1, const Complex &U2) {
   res.b = U1.b * U2;
   return (res);
 }
+
+
+using su2_accum = _su2;
+
+inline _su2 accum_to_Group(const su2_accum &x) {
+  _su2 U(x.geta(), x.getb());
+  U.restoreSU();
+  return U;
+}
+
+/**
+ * @brief accumulation type for SU(2) matrices
+ *
+ * Incidentally, for SU(2) linear combinations of products its matrices can be still
+ * parametrized by 2 numbers only. Therefore we use the same class for SU(2) elements and
+ * their accumulations.
+ *
+ * @tparam
+ */
+
+template <> struct accum_type<_su2> {
+  typedef _su2 type;
+};
 
 using su2 = _su2;

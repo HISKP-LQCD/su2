@@ -22,7 +22,7 @@
 using Complex = std::complex<double>;
 
 /**
- * @brief representation of an SU(2) matrix in the fundamental representation with the
+ * @brief representation of an SU(3) matrix in the fundamental representation with the
  * convention of eq. (4.26) of Gattringer&Lang
  * https://link.springer.com/book/10.1007/978-3-642-01850-3
  *
@@ -41,8 +41,8 @@ public:
 
   friend inline _su3 operator+(const _su3 &U1, const _su3 &U2);
   friend inline _su3 operator-(const _su3 &U1, const _su3 &U2);
-  friend inline _su3 operator*(const _su3 &U1, const _su3 &U2);
-  friend inline _su3 operator*(const Complex &U1, const _su3 &U2);
+  //  friend inline _su3 operator*(const _su3 &U1, const _su3 &U2);
+  //  friend inline _su3 operator*(const Complex &U1, const _su3 &U2);
   friend inline _su3 operator*(const _su3 &U1, const Complex &U2);
   _su3 &operator*=(const _su3 &U2) {
     const std::array<Complex, 3> u1 = (*this).u;
@@ -84,22 +84,18 @@ public:
 
   inline std::array<Complex, 3> get_u() const { return u; }
   inline std::array<Complex, 3> get_v() const { return v; }
+  inline std::array<Complex, 3> get_w() const {
+    std::array<Complex, 3> w = {u[1] * v[2] - v[1] * u[2], -u[0] * v[2] + v[0] * u[2],
+                                u[0] * v[1] - v[0] * u[1]};
+    w = {std::conj(w[0]), std::conj(w[1]), std::conj(w[2])};
+    return w;
+  }
+
   inline void operator=(const _su3 &U) {
     u = U.get_u();
     v = U.get_v();
   }
-  inline void operator+=(const _su3 &U) {
-    for (size_t i = 0; i < N_c; i++) {
-      u[i] += U.u[i];
-      v[i] += U.v[i];
-    }
-  }
-  inline void operator-=(const _su3 &U) {
-    for (size_t i = 0; i < N_c; i++) {
-      u[i] -= U.u[i];
-      v[i] -= U.v[i];
-    }
-  }
+
   void set(const std::array<Complex, 3> &_u, const std::array<Complex, 3> &_v) {
     u = _u;
     v = _v;
@@ -119,8 +115,7 @@ public:
   }
   inline Complex trace() const {
     // expression computed using sympy
-    const Complex res =
-      u[0] + v[1] + std::conj(u[0]) * std::conj(v[1]) - std::conj(u[1]) * std::conj(v[0]);
+    const Complex res = u[0] + v[1] + std::conj(u[0] * v[1] - u[1] * v[0]);
     return res;
   }
   inline double retrace() const { return std::real(this->trace()); }
@@ -174,8 +169,7 @@ public:
   }
 
   void print() const {
-    std::array<Complex, 3> w = {
-      u[1] * v[2] - v[1] * u[2], -u[0] * v[2] + v[0] * u[2], u[0] * v[1] - v[0] * u[1]};
+    std::array<Complex, 3> w = this->get_w();
     w = {std::conj(w[0]), std::conj(w[1]), std::conj(w[2])};
 
     std::cout << "----------------------------------\n";
@@ -205,55 +199,6 @@ inline _su3 operator*(const _su3 &U1, const _su3 &U2) {
   _su3 U = U1;
   U *= U2;
   return U;
-}
-
-inline _su3 operator+(const _su3 &U1, const _su3 &U2) {
-  _su3 U = U1;
-  U += U2;
-  return U;
-}
-
-inline _su3 operator-(const _su3 &U1, const _su3 &U2) {
-  _su3 U = U1;
-  U -= U2;
-  return U;
-}
-
-inline _su3 operator*(const double &z, const _su3 &U) {
-  const size_t N_c = U.N_c;
-  std::array<Complex, 3> u, v;
-  for (size_t i = 0; i < N_c; i++) {
-    u[i] *= double(z);
-    v[i] *= double(z);
-  }
-  return _su3(u, v);
-}
-
-inline _su3 operator*(const _su3 &U, const double &z) {
-  return z * U;
-}
-
-inline _su3 operator*(const Complex &z, const _su3 &U) {
-  const size_t N_c = U.N_c;
-  std::array<Complex, 3> u, v;
-  for (size_t i = 0; i < N_c; i++) {
-    u[i] *= Complex(z);
-    v[i] *= Complex(z);
-  }
-  return _su3(u, v);
-}
-
-inline _su3 operator*(const _su3 &U, const Complex &z) {
-  return z * U;
-}
-
-template <> inline _su3 traceless_antiherm(const _su3 &x0) {
-  const _su3 Id({1.0, 0.0, 0.0},
-                {0.0, 1.0, 0.0}); // default constructor: identity operator
-  _su3 x = x0;
-  x = x - (trace(x) / double(x.N_c)) * Id;
-  x = 0.5 * (x - x.dagger());
-  return x;
 }
 
 using su3 = _su3;

@@ -51,7 +51,7 @@ private:
   Float a;
 };
 
-template <typename Float = double> inline adjointu1<Float> get_deriv(Complex &A) {
+template <typename Float = double> inline adjointu1<Float> get_deriv(const u1_accum &A) {
   return adjointu1<Float>(std::imag(A));
 }
 

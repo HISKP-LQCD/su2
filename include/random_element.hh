@@ -36,15 +36,30 @@ void random_element(_su2 &U, URNG &engine, const double delta = 1.) {
   return;
 }
 
+/**
+ * @brief initialized the configuration to some random SU(3) matrix
+ *
+ * In the (u,v) representation of U (see eq. 4.26 of Gattringer&Lang), there's no unique
+ * way of defining "v", because the orthogonal space to a vector "u" is 2-dimensional.
+ * Here we adopt our custom "u_2"-convention, according to which: 
+ * v = (u_2, -u_1-u_3, u_2)^{\dagger} 
+ * At the end we normalize the vectors using the restoreSU() method.
+ *
+ * @tparam URNG
+ * @param U
+ * @param engine
+ * @param delta
+ */
 template <class URNG>
 void random_element(_su3 &U, URNG &engine, const double delta = 1.) {
+
   std::uniform_real_distribution<double> dist(-delta, delta);
-  std::array<Complex, 3> u, v;
+  std::array<Complex, 3> u;
   for (size_t i = 0; i < U.N_c; i++) {
     u[i] = dist(engine);
-    v[i] = dist(engine);
   }
-
+  std::array<Complex, 3> v = {std::conj(u[1]), -std::conj(u[0]) - std::conj(u[2]),
+                              std::conj(u[1])};
   U = _su3(u, v);
   U.restoreSU();
 

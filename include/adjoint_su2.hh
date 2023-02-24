@@ -61,8 +61,8 @@ private:
   Float a, b, c;
 };
 
-
-template <typename Float = double> inline adjointsu2<Float> get_deriv(su2 &A) {
+template <typename Float = double>
+inline adjointsu2<Float> get_deriv(const su2_accum &A) {
   const Complex a = A.geta(), b = A.getb();
   return adjointsu2<Float>(2. * std::imag(b), 2. * std::real(b), 2. * std::imag(a));
 }

@@ -35,12 +35,18 @@ public:
 
   double geta() const { return (a); }
   void operator=(const _u1 &U) { a = U.a; }
-  void set(const double& _a) { a = _a; }
+  void set(const double &_a) { a = _a; }
   void set_to_identity() { a = 0; }
   _u1 dagger() const { return (_u1(-a)); }
   double retrace() const { return (std::cos(a)); }
   Complex det() const { return (std::exp(a * Complex(0., 1.))); }
   void restoreSU() {}
+
+  void print() {
+    std::cout << "---\n";
+    std::cout << std::exp(a * std::complex(0.0, 1.0)) << "\n";
+    std::cout << "---\n";
+  }
 
 private:
   double a;
@@ -58,10 +64,6 @@ inline Complex trace(const Complex c) {
   return (c); // for U(1) the trace operator acts trivially
 }
 
-template <> struct accum_type<_u1> {
-  typedef Complex type;
-};
-
 template <> inline Complex dagger(const Complex &x) {
   return std::conj(x);
 }
@@ -70,18 +72,17 @@ template <> inline _u1 dagger(const _u1 &x) {
   return x.dagger();
 }
 
-
 template <> inline Complex traceless_antiherm(const Complex &x) {
   return (Complex(0., std::imag(x)));
 }
 
 _u1 operator*(const _u1 &U1, const _u1 &U2);
- Complex operator*(const _u1 &U1, const Complex &U2);
- Complex operator*(const Complex &U1, const _u1 &U2);
- Complex operator+(const _u1 &U1, const _u1 &U2);
- Complex operator-(const _u1 &U1, const _u1 &U2);
- void operator+=(Complex & U1, const _u1 & U2);
- void operator*=(Complex & U1, const _u1 & U2);
+Complex operator*(const _u1 &U1, const Complex &U2);
+Complex operator*(const Complex &U1, const _u1 &U2);
+Complex operator+(const _u1 &U1, const _u1 &U2);
+Complex operator-(const _u1 &U1, const _u1 &U2);
+void operator+=(Complex &U1, const _u1 &U2);
+void operator*=(Complex &U1, const _u1 &U2);
 
 inline _u1 operator*(const _u1 &U1, const _u1 &U2) {
   return _u1(U1.a + U2.a);
@@ -109,5 +110,24 @@ inline void operator+=(Complex &U1, const _u1 &U2) {
 inline void operator*=(Complex &U1, const _u1 &U2) {
   U1 *= std::exp(U2.geta() * Complex(0., 1.));
 }
+
+using u1_accum = Complex;
+
+inline _u1 accum_to_Group(const u1_accum &x) {
+  _u1 U(x);
+  U.restoreSU();
+  return U;
+}
+
+/**
+ * @brief accumulation type for U(1)
+ *
+ * sums of phases (U(1) elements) is just a complex numbers.
+ * No need to implement a separate class for it, we use std::complex<double>.
+ *
+ */
+template <> struct accum_type<_u1> {
+  typedef Complex type;
+};
 
 using u1 = _u1;

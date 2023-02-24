@@ -94,9 +94,9 @@ RetType get_staples_down(gaugeconfig<Group> &U, const Arr &x, const size_t &mu) 
  * @param anisotropic boolean flag: true when considering anisotropy
  * @param spatial_only boolean flag: true when summing over spatial staples only
  */
-template <class T, class S, class Arr>
+template <class T, class Group, class Arr>
 void get_staples_MCMC_step(T &K,
-                           gaugeconfig<S> &U,
+                           gaugeconfig<Group> &U,
                            Arr const x,
                            const size_t mu,
                            const double xi = 1.0,

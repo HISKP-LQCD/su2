@@ -41,24 +41,20 @@ namespace omeasurements {
    * @return double
    */
   template <class Group>
-  double get_retr_plaquette_density(const gaugeconfig<Group> &U,
-                                    const std::string &bc,
-                                    const bool &spatial = false) {
-    const double ndims_fact =
-      spacetime_lattice::num_pLloops_half(U.getndims() - int(spatial));
+  double get_retr_plaquette_density(const gaugeconfig<Group> &U, const std::string &bc) {
+    const double ndims_fact = spacetime_lattice::num_pLloops_half(U.getndims());
     double P = 0.0; // plaquette density value
     double den = ndims_fact * double(U.getNc());
 
     if (bc == "periodic") {
-      P = flat_spacetime::retr_sum_Wplaquettes(U, /*xi=*/1.0, /*anisotropic=*/false,
-                                               /*spatial=*/spatial);
+      using flat_spacetime::retr_sum_Wplaquettes;
+      P = retr_sum_Wplaquettes(U); // xi=1.0, anisotropic=false, spatial_only=false
       den *= U.getVolume();
     } else if (bc == "spatial_open") {
       const size_t ndims = U.getndims();
       obc::weights w(bc, U.getLx(), U.getLy(), U.getLz(), U.getLt(), ndims);
 
-      P = obc::retr_sum_Wplaquettes(U, w, /*xi=*/1.0, /*anisotropic=*/false,
-                                    /*spatial=*/spatial);
+      P = obc::retr_sum_Wplaquettes(U, w); // xi = 1.0, anisotropic = false
       if (ndims > 0) {
         den *= U.getLt();
         if (ndims > 1) {
@@ -96,9 +92,10 @@ namespace omeasurements {
     const std::string path = oss.str();
     std::ofstream ofs(path, std::ios::out);
 
+    const double ndims_fact = spacetime_lattice::num_pLloops_half(U.getndims());
+
     ofs << "i P\n";
-    // plaquette density value
-    const double P = get_retr_plaquette_density(U, S.plaquette.bc, S.plaquette.spatial);
+    double P = get_retr_plaquette_density(U, S.plaquette.bc); // plaquette density value
     ofs << i << std::scientific << std::setprecision(16) << " " << P << "\n";
     ofs.close();
 

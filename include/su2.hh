@@ -4,9 +4,9 @@
  * @brief class representing an SU(2) matrix in the fundamental representation
  * @version 0.1
  * @date 2023-02-24
- * 
+ *
  * @copyright Copyright (c) 2023
- * 
+ *
  */
 
 #pragma once
@@ -79,7 +79,7 @@ public:
     b /= r;
   }
 
-  void print(){
+  void print() {
     std::cout << "--------------------\n";
     std::cout << a << " " << b << "\n";
     std::cout << -std::conj(b) << " " << std::conj(a) << "\n";
@@ -108,7 +108,9 @@ template <> inline _su2 dagger(const _su2 &u) {
 }
 
 template <> inline _su2 traceless_antiherm(const _su2 &x) {
-  return (_su2(0.5 * (x.geta() - std::conj(x.geta())), x.getb()));
+  const std::complex<double> a1 = 0.5 * (x.geta() - std::conj(x.geta()));
+  const std::complex<double> b1 = 0.5 * (x.getb() - std::conj(x.getb()));
+  return (_su2(a1, b1));
 }
 
 inline _su2 operator*(const _su2 &U1, const _su2 &U2) {
@@ -145,7 +147,6 @@ inline _su2 operator*(const _su2 &U1, const Complex &U2) {
   res.b = U1.b * U2;
   return (res);
 }
-
 
 using su2_accum = _su2;
 

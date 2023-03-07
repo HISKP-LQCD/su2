@@ -191,4 +191,28 @@ namespace staggered {
     }
   };
 
+  template <typename Float>
+  class detDDdag_monomial<Float, _su3> : public monomial<Float, _su3> {
+  public:
+    detDDdag_monomial(unsigned int _timescale,
+                      const Float &m0_val,
+                      const std::string &solver,
+                      const Float &tolerance,
+                      const size_t &seed,
+                      const size_t &verb)
+      : monomial<Float, _su3>::monomial(_timescale) {
+      spacetime_lattice::fatal_error("SU(3) not supported yet.", __func__);
+    }
+
+    void heatbath(const hamiltonian_field<Float, _su3> &h) override { return; }
+
+    void accept(const hamiltonian_field<Float, _su3> &h) override { return; }
+
+    void derivative(adjointfield<Float, _su3> &deriv,
+                    const hamiltonian_field<Float, _su3> &h,
+                    const Float fac = 1.) const override {
+      return;
+    }
+  };
+
 } // namespace staggered

@@ -14,6 +14,7 @@
 
 #include "geometry.hh"
 #include "random_element.hh"
+#include "su3.hh"
 #include "su2.hh"
 #include "u1.hh"
 

@@ -18,6 +18,8 @@
 #include "hamiltonian_field.hh"
 #include "monomial.hh"
 #include "obc_weights.hh"
+#include "su3.hh"
+#include "su3_accum.hh"
 #include "su2.hh"
 #include "u1.hh"
 
@@ -249,7 +251,7 @@ namespace obc { // open boundary conditions
                   xmnu[nu]++; // x
                 }
                 S = (*h.U)(x, mu) * S; // U*A in eq. 8.40 in Gattringer&Lang
-                deriv(x, mu) += num_fact_i * get_deriv<double>(S);
+                deriv(x, mu) += num_fact_i * get_deriv(S);
 
                 xpmu[mu]--; // x
               }

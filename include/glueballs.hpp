@@ -31,7 +31,7 @@ namespace glueballs {
                                        const bool &Px) {
     typedef typename accum_type<Group>::type accum;
 
-    accum L = U(x, mu) * (U(x, mu).dagger()); // "1", independently of the group
+    Group L = U(x, mu) * (U(x, mu).dagger()); // "1", independently of the group
     for (size_t s = 0; s < a; s++) {
       L *= operators::parity(Px, 0, U, x, mu);
       x[mu] += 1;

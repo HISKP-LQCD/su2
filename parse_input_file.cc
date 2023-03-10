@@ -200,6 +200,7 @@ namespace input_file_parsing {
 
     mpparams.measure_it = true;
     in.read_opt_verb<std::string>(mpparams.subdir, {"subdir"});
+    in.read_opt_verb<bool>(mpparams.spatial, {"spatial"});
     in.read_opt_verb<std::string>(mpparams.bc, {"bc"});
     if (nd["bc"]) {
       check_bc(mpparams.bc);

@@ -52,6 +52,7 @@ namespace global_parameters {
 
     std::string subdir = ""; // subdirectory of the online measurements directory
 
+    bool spatial = false; // true when computing only the spatial contributions
     // boundary condition type (note: can be different from the MCMC)
     std::string bc = "periodic";
   };

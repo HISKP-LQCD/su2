@@ -149,9 +149,6 @@ public:
         (*this).os << "NA";
       }
       (*this).os << " " << Q << std::endl;
-
-
-
     }
   }
 
@@ -176,14 +173,17 @@ public:
       (*this).os << head_str;
     }
 
+    const size_t omeas_icounter = (*this).sparams.omeas.icounter;
+    const size_t omeas_nmeas = (*this).sparams.omeas.n_meas;
+    const size_t omeas_nstep = (*this).sparams.omeas.nstep;
     for (size_t i = (*this).g_icounter; i < (*this).sparams.n_meas + (*this).g_icounter;
          i++) {
       this->do_hmc_step(i);
       // online measurements
-      bool do_omeas =
-        (*this).sparams.do_omeas && (i > (*this).sparams.omeas.icounter) &&
-        ((i - (*this).sparams.omeas.icounter) <= (*this).sparams.omeas.n_meas) &&
-        (i % (*this).sparams.omeas.nstep == 0);
+      const size_t i_off = i - omeas_icounter; // offset removed
+      bool do_omeas = (*this).sparams.do_omeas && (i_off > 0);
+      do_omeas = do_omeas && (i_off <= omeas_nmeas);
+      do_omeas = do_omeas && ((i_off % omeas_nstep) == 0);
       if ((*this).sparams.do_mcmc) {
         // check also if trajectory was accepted
         do_omeas = do_omeas && mdparams.getaccept();

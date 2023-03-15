@@ -126,7 +126,7 @@ namespace global_parameters {
     bool smear_temporal_only = false; // should smearing be done only for temporal links?
 
     std::string conf_basename = "conf"; // root of the output files names
-    bool lenghty_conf_name = true; // add ensemble information in configuration name
+    bool lenghty_conf_name = false; // add ensemble information in configuration name
     size_t beta_str_width = g_beta_str_width; // length of the beta value config filename
 
     bool pion_staggered = false; // true when measuring the staggered pion correlator

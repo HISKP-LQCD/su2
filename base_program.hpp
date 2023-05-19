@@ -453,6 +453,7 @@ public:
       }
 
       if (do_omeas) {
+        set_potential_filenames();
         this->do_omeas_i(i);
       }
 

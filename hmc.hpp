@@ -155,6 +155,9 @@ public:
   void run(const YAML::Node &nd) {
     this->pre_run(nd);
     this->init_gauge_conf_mcmc();
+    if ((*this).sparams.do_omeas){
+        this->set_potential_filenames();
+    }
 
     // Molecular Dynamics parameters
     md_params md_p0((*this).sparams.n_steps, (*this).sparams.tau);

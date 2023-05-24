@@ -154,6 +154,9 @@ public:
     this->pre_run(nd);
     this->init_gauge_conf_mcmc();
     this->set_omp_threads();
+    if ((*this).sparams.do_omeas){
+        this->set_potential_filenames();
+    }
 
     (*this).os << "i E Q E_ss Q_ss\n";
     size_t i_min = (*this).g_icounter;

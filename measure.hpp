@@ -34,6 +34,8 @@ public:
     this->pre_run(nd);
 
     size_t istart = (*this).omeas.icounter;
+    this->set_potential_filenames();
+    
     const size_t nmax = (*this).omeas.n_meas + (*this).omeas.icounter;
     for (size_t i = istart; i < nmax; i += (*this).omeas.nstep) {
       this->do_omeas_i(i);

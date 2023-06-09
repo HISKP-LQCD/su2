@@ -397,12 +397,14 @@ public:
         APEsmearing<double, Group>(U1, omeas.alpha, omeas.smear_spatial_only);
       }
       if (omeas.potentialplanar) {
+        std::cout << "## measure planar potential\n";
         omeasurements::meas_loops_planar_pot(U1, pparams, omeas.sizeWloops,
                                              (*this).filename_coarse,
                                              (*this).filename_fine, i);
       }
 
       if (omeas.potentialnonplanar) {
+        std::cout << "## measure nonplanar potential\n";
         omeasurements::meas_loops_nonplanar_pot(U1, pparams, omeas.sizeWloops,
                                                 (*this).filename_nonplanar, i);
       }

@@ -21,6 +21,7 @@ T = nd["geometry"]["T"]
 nd_omeas = nd["omeas"]
 resdir = nd_omeas["res_dir"]
 nd_glueball = nd_omeas["glueball"]
+n_meas =  nd_omeas["n_meas"]
 
 save_corr = nd_glueball["correlator"]
 nd_interpolator = nd_glueball["interpolator"]
@@ -45,29 +46,36 @@ def hadronize(operator, name_obj, name_ij):
     d2 = d1 + operator + "/" + interp_type + "/"
     d2 += "smearAPEn{n_APE}alpha{alpha}/".format(n_APE=n_APE, alpha=alpha)+"/"
     d2 += name_ij+"/"
+    print("## Reading data from:")
     print(d2)
-    # list all files in d2 and extract configuration numbers from names
+    print("### listing all files in there and extract configuration numbers from names")
     file_names = glob.glob(d2+"/"+name_obj+"_*")
+    if len(file_names) > n_meas:
+        print("### considering only the first n_meas files")
+        file_names = file_names[0:n_meas]
+    ####
     file_index = [int(x.split(name_obj+"_")[1]) for x in file_names]
     #
-    # load .dat file with indices of formatted configurations, if existing
     iconf_file = d2 + "/iconfs.dat"
     # already formatted configurations
     file_index_old = []
     if os.path.exists(iconf_file):
-        print("Old configurations found")
+        print("### load iconfs.dat file with indices of previously formatted configurations")
+        print(iconf_file)
         file_index_old = pd.read_csv(
             iconf_file, sep=" ", header=None)[0].tolist()
-    ####
+    else:
+        print("### no old configurations found")
+    ##
     n_conf_old = len(file_index_old)
     # new matrices for a each J^{PC}
-    # dict({"pp": pd.DataFrame(), "pm": pd.DataFrame(), "mp": pd.DataFrame(), "mm":pd.DataFrame()})
     df_new = dict()
-    print("Reading old data if present")
+    print("### loop over all the J^{PC} quantum numbers: pp, pm, mp, mm")
     for j_pc in ["pp", "pm", "mp", "mm"]:
-        # loop over all J^{PC} quantum numbers
-        df_new[j_pc] = pd.DataFrame(np.zeros(shape=(1, T+1)), columns=["i"]+[
-            str(t) for t in range(T)], index=["remove"])
+        print("##### J^{PC} = ", j_pc)
+        df_new[j_pc] = pd.DataFrame(
+            np.zeros(shape=(1, T+1)),
+            columns=["i"]+[str(t) for t in range(T)], index=["remove"])
         df_new[j_pc] = df_new[j_pc].astype({"i": int})
         if n_conf_old > 0:
             path_old = d2+"/"+j_pc+".dat"
@@ -76,12 +84,12 @@ def hadronize(operator, name_obj, name_ij):
                       iconf_file, "\nexists, but\n", path_old, "\ndoesn't.")
                 raise ValueError
             ####
+            print("#### reading the old dataframe of the correlator")
             df_old = pd.read_csv(path_old, sep=" ", dtype={"i": int})
             df_new[j_pc] = pd.concat([df_new[j_pc], df_old], axis=0)
-            # print(df_new[j_pc])
         ####
     ####
-    print("loop over new and updated files")
+    print("### loop over new/updated files")
     for i_f in range(len(file_index)):
         path_i = file_names[i_f]
         print(i_f, path_i)
@@ -102,7 +110,7 @@ def hadronize(operator, name_obj, name_ij):
             ####
         ####
     ####
-    print("Cleaning up the dataframe format before exporting")
+    print("### Cleaning up the dataframe format before exporting")
     save_iconf = True 
     for j_pc in ["pp", "pm", "mp", "mm"]:
         df_new[j_pc] = df_new[j_pc].drop("remove")
@@ -113,14 +121,15 @@ def hadronize(operator, name_obj, name_ij):
             df_new[j_pc] = df_new[j_pc].sort_values(by=['i'])
             df_new[j_pc].to_csv(d2 + "/"+j_pc+".dat", sep=" ", index=False)
     ####
-    print("Saving the new iconf file")
+    print("### Saving the new iconf.dat file")
     if save_iconf:
-        pd.DataFrame(sorted(file_index)).to_csv(
-            d2+"iconfs.dat", header=False, sep=" ", index=False)
+        pd.DataFrame(
+            sorted(file_index_old + file_index)).to_csv(
+                d2+"iconfs.dat", header=False, sep=" ", index=False)
     ####
-    print("Removing data in the old format")
+    print("### Removing data in the old format")
     for p in file_names:
-        print("removing:", p)
+        print("#### removing:", p)
         os.remove(p)
     ####
 ####

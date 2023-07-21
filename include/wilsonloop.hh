@@ -63,7 +63,8 @@ double planar_wilsonloop_dir(const gaugeconfig<Group> &U,
       for (x[2] = 0; x[2] < U.getLy(); x[2]++) {
         for (x[3] = 0; x[3] < U.getLz(); x[3]++) {
           std::vector<size_t> xrun = x;
-          accum L(1., 0.);
+          Group L;
+          L.set_to_identity(); // L = 1.0
           for (size_t _t = 0; _t < t; _t++) {
             L *= U(xrun, nu);
             xrun[nu] += 1;
@@ -113,7 +114,8 @@ double wilsonloop_non_planar(const gaugeconfig<Group> &U, std::vector<size_t> r)
       for (size_t x2 = 0; x2 < U.getLy(); x2++) {
         for (size_t x3 = 0; x3 < U.getLz(); x3++) {
           std::vector<size_t> xrun = {x0, x1, x2, x3};
-          accum L(1., 0.);
+          Group L;
+          L.set_to_identity(); // L = 1.0
           // needed if vector with directions contains more than 4 entries/if another
           // order than t-x-y-z is wanted
           size_t directionloop;

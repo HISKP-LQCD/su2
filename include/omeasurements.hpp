@@ -9,24 +9,101 @@
 
 #include <iomanip>
 #include <iostream>
+#include <map>
 #include <sstream>
 #include <vector>
 
-#include "flat-gradient_flow.hh"
 #include "glueballs.hpp"
+#include "gradient_flow.hh"
 #include "io.hh"
 #include "links.hpp"
+#include "obc_gaugemonomial.hh"
 #include "operators.hpp"
 #include "parameters.hh"
 #include "propagator.hpp"
 #include "smearape.hh"
 #include "wilsonloop.hh"
+
 #include <boost/filesystem.hpp>
+
 #include <xtensor/xarray.hpp>
+#include <xtensor/xio.hpp>
+#include <xtensor/xview.hpp>
 
 namespace omeasurements {
 
   namespace fsys = boost::filesystem;
+
+  /**
+   * @brief Get the retr plaquette density object
+   *
+   * @param bc
+   * @return double
+   */
+  template <class Group>
+  double get_retr_plaquette_density(const gaugeconfig<Group> &U,
+                                    const std::string &bc,
+                                    const bool &spatial = false) {
+    const double ndims_fact =
+      spacetime_lattice::num_pLloops_half(U.getndims() - int(spatial));
+    double P = 0.0; // plaquette density value
+    double den = ndims_fact * double(U.getNc());
+
+    if (bc == "periodic") {
+      P = flat_spacetime::retr_sum_Wplaquettes(U, /*xi=*/1.0, /*anisotropic=*/false,
+                                               /*spatial=*/spatial);
+      den *= U.getVolume();
+    } else if (bc == "spatial_open") {
+      const size_t ndims = U.getndims();
+      obc::weights w(bc, U.getLx(), U.getLy(), U.getLz(), U.getLt(), ndims);
+
+      P = obc::retr_sum_Wplaquettes(U, w, /*xi=*/1.0, /*anisotropic=*/false,
+                                    /*spatial=*/spatial);
+      if (ndims > 0) {
+        den *= U.getLt();
+        if (ndims > 1) {
+          den *= (U.getLx() - 1);
+          if (ndims > 2) {
+            den *= (U.getLy() - 1);
+            if (ndims > 3) {
+              den *= (U.getLz() - 1);
+            }
+          }
+        }
+      }
+    }
+
+    P /= den; // normalizing
+    return P;
+  }
+
+  template <class Group, class sparams>
+  void meas_plaquette(const gaugeconfig<Group> &U,
+                      const size_t &i,
+                      const global_parameters::physics &pparams,
+                      const sparams &S) {
+    std::ostringstream oss;
+    oss << S.res_dir + "/" + S.plaquette.subdir << "/";
+    fsys::create_directories(fsys::absolute(oss.str())); // creating directory
+
+    oss << "plaquette_";
+    auto prevw = oss.width(8);
+    auto prevf = oss.fill('0');
+    oss << i;
+    oss.width(prevw);
+    oss.fill(prevf);
+
+    const std::string path = oss.str();
+    std::ofstream ofs(path, std::ios::out);
+
+    ofs << "i P\n";
+    // plaquette density value
+    const double P = get_retr_plaquette_density(U, S.plaquette.bc, S.plaquette.spatial);
+    ofs << i << std::scientific << std::setprecision(16) << " " << P << "\n";
+    ofs.close();
+
+    return;
+  }
 
   /**
    * @brief compute and print the wilson loop of a given configuration
@@ -142,7 +219,7 @@ namespace omeasurements {
      */
     template <class Group, class sparams>
     std::vector<xt::xarray<double>>
-    meas_glueball_interpolators_pp_mm(const std::string &type,
+    meas_glueball_interpolators(const std::string &type,
                                 const gaugeconfig<Group> &U,
                                 const size_t &i,
                                 const size_t &nAPEsmear,
@@ -160,7 +237,7 @@ namespace omeasurements {
       if (S.glueball.doAPEsmear) {
         oss_dir << meas_details + "/";
       }
-      fsys::create_directories(fsys::absolute(oss_dir.str()));
+      //      fsys::create_directories(fsys::absolute(oss_dir.str()));
 
       if (S.glueball.doAPEsmear) {
         if (S.glueball.lengthy_file_name) {
@@ -186,15 +263,7 @@ namespace omeasurements {
       for (size_t i1 = 0; i1 < nr; i1++) {
         const size_t r1 = i1 + rmin;
 
-        // directory path
-        const std::string dir_ij =
-          oss_dir.str() + std::to_string(r1) + "/";
-        fsys::create_directories(fsys::absolute(dir_ij)); // creating directory
-
-        const std::string path =
-          dir_ij + "phi" + oss_name.str(); // full path of output file
-
-        phi[ii].resize({T_ext, 3}); // t, ++, --
+        phi[ii].resize({T_ext, 5}); // t, ++, +-, -+, --
 
         for (size_t t = 0; t < T_ext; t++) {
           phi[ii](t, 0) = t;
@@ -203,13 +272,20 @@ namespace omeasurements {
           const std::complex<double> Pm = glueballs::get_rest_trace_loop<double, Group>(
             type, t, U, r1, true, S.glueball.spatial_loops);
           phi[ii](t, 1) = (Pp + Pm).real() / 2.0; // PC=++
-          phi[ii](t, 2) = (Pp + Pm).imag() / 2.0; // PC=--
+          phi[ii](t, 3) = (Pp + Pm).imag() / 2.0; // PC=+-
+          phi[ii](t, 2) = (Pp - Pm).real() / 2.0; // PC=-+
+          phi[ii](t, 4) = (Pp - Pm).imag() / 2.0; // PC=--
         }
 
         if (save_interpolator) {
+          // directory path
+          const std::string dir_ij = oss_dir.str() + std::to_string(r1) + "/";
+          fsys::create_directories(fsys::absolute(dir_ij));
+          // full path of output file
+          const std::string path = dir_ij + "phi" + oss_name.str();
           std::ofstream ofs(path, std::ios::out);
           ofs << std::scientific << std::setprecision(16);
-          io::xtensor_to_stream(ofs, phi[ii], " ", "t pp mm");
+          io::xtensor_to_stream(ofs, phi[ii], " ", "t pp pm mp mm");
           ofs.close();
         }
         ++ii;
@@ -228,7 +304,7 @@ namespace omeasurements {
      * @param S specific parameters
      */
     template <class Group, class sparams>
-    void meas_glueball_correlator_pp_mm(const std::string &type,
+    void meas_glueball_correlator(const std::string &type,
                                   const gaugeconfig<Group> &U,
                                   const size_t &i,
                                   const size_t &nAPEsmear,
@@ -243,7 +319,7 @@ namespace omeasurements {
       if (S.glueball.doAPEsmear) {
         oss_dir << meas_details + "/";
       }
-      fsys::create_directories(fsys::absolute(oss_dir.str()));
+      //      fsys::create_directories(fsys::absolute(oss_dir.str()));
 
       if (S.glueball.doAPEsmear) {
         if (S.glueball.lengthy_file_name) {
@@ -262,8 +338,11 @@ namespace omeasurements {
       const size_t N_ops = rmax; // number of interpolatoing operators
 
       // phi_i(t)^{PC}
-      std::vector<xt::xarray<double>> phi = meas_glueball_interpolators_pp_mm(
+      std::vector<xt::xarray<double>> phi = meas_glueball_interpolators(
         type, U, i, nAPEsmear, S.glueball.save_interpolator, S);
+      if (!S.glueball.correlator) {
+        return;
+      }
 
       const size_t n_phi = phi.size();
 
@@ -277,14 +356,15 @@ namespace omeasurements {
           // full path of output file
           const std::string path = dir_ij + "C_glueball" + oss_name.str();
 
-          const std::string header = "t pp mm";
+          const std::string header = "t pp pm mp mm";
           xt::xarray<double> corr;
-          corr.resize({T_ext, 3}); // t, ++, --
+          corr.resize({T_ext, 5}); // t, ++, +-, -+, --
 
           for (size_t t = 0; t < T_ext; t++) {
             corr(t, 0) = t;
             size_t iPC = 1; // 1st column is time 't'
-            for (size_t PC = 0; PC <= 1; PC++) {
+            for (size_t P = 0; P <= 1; P++) {
+              for (size_t C = 0; C <= 1; C++) {
                 corr(t, iPC) = 0.0;
                 for (size_t tau = 0; tau < T_ext; tau++) {
                   const size_t t1 = (t + tau) % T_ext;
@@ -292,6 +372,7 @@ namespace omeasurements {
                 }
                 corr(t, iPC) /= double(T_ext); // average over all times
                 ++iPC;
+              }
             }
           }
 
@@ -319,7 +400,7 @@ namespace omeasurements {
    * @param S specific parameters
    */
   template <class Group, class sparams>
-  void meas_glueball_interpolators_pp_mm(const std::string &type,
+  void meas_glueball_interpolators(const std::string &type,
                                    const gaugeconfig<Group> &U0,
                                    const size_t &i,
                                    const sparams &S) {
@@ -334,7 +415,7 @@ namespace omeasurements {
         // other nsteps so that we reach the value of v_ns[is]
         spatial_APEsmearing<double, Group>(U, S.glueball.alphaAPEsmear);
       }
-      auto foo = from_smeared_field::meas_glueball_interpolators_pp_mm(
+      auto foo = from_smeared_field::meas_glueball_interpolators(
         type, U, i, v_ns[is], S.glueball.save_interpolator, S);
     }
   }
@@ -365,7 +446,7 @@ namespace omeasurements {
         // other nsteps so that we reach the value of v_ns[is]
         spatial_APEsmearing<double, Group>(U, S.glueball.alphaAPEsmear);
       }
-      from_smeared_field::meas_glueball_correlator_pp_mm(type, U, i, v_ns[is], S);
+      from_smeared_field::meas_glueball_correlator(type, U, i, v_ns[is], S);
     }
   }
 

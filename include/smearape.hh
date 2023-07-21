@@ -5,6 +5,9 @@
 #include "random_element.hh"
 #include "su2.hh"
 #include "u1.hh"
+#include "su3.hh"
+#include "su3_accum.hh"
+
 #include <cassert>
 #include <cmath>
 #include <complex>
@@ -60,7 +63,7 @@ void smearlatticeape(gaugeconfig<Group> &U,
           for (size_t mu = startmu; mu < endmu; mu++) {
             // K is intialized to (0,0) even if not explicitly specified
             accum K(0.0, 0.0);
-            get_staples(K, Uold, x, mu, 1.0, false, spatial_only);
+            get_staples_MCMC_step(K, Uold, x, mu, 1.0, false, spatial_only);
             Group Uprime(Uold(x, mu) * alpha + K * (1 - alpha) / double(norm));
             U(x, mu) = Uprime;
             U(x, mu).restoreSU();
@@ -114,9 +117,10 @@ void APEsmearing(gaugeconfig<Group> &U, const double &alpha, const bool spatial=
             // K is intialized to (0,0) even if not explicitly specified
             accum K;
             get_staples_APE(K, Uold, x, i, spatial);
-            const Group Uprime(alpha*Uold(x, i) + beta*K);
+            K = alpha*accum(Uold(x, i)) + beta*K;
+            const Group Uprime = accum_to_Group(K);
             U(x, i) = Uprime;
-            U(x, i).restoreSU(); //only necessary for su2
+            U(x, i).restoreSU();
           }
         }
       }

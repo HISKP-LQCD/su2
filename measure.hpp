@@ -33,11 +33,10 @@ public:
   void run(const YAML::Node &nd) {
     this->pre_run(nd);
 
-    const size_t istart = (*this).omeas.icounter == 0
-                            ? (*this).omeas.icounter + (*this).omeas.nstep
-                            : (*this).omeas.icounter;
-    const size_t nmax =
-      (*this).omeas.n_meas * (*this).omeas.nstep + (*this).omeas.icounter;
+    size_t istart = (*this).omeas.icounter;
+    this->set_potential_filenames();
+    
+    const size_t nmax = (*this).omeas.n_meas + (*this).omeas.icounter;
     for (size_t i = istart; i < nmax; i += (*this).omeas.nstep) {
       this->do_omeas_i(i);
     }

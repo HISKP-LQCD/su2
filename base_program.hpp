@@ -12,8 +12,8 @@
 #pragma once
 
 #include "flat-energy_density.hh"
-#include "flat-gauge_energy.hpp"
 #include "flat-sweep.hh" // flat spacetime
+#include "gauge_energy.hh"
 #include "gaugeconfig.hh"
 #include "io.hh"
 #include "omeasurements.hpp"
@@ -21,7 +21,7 @@
 #include "random_gauge_trafo.hh"
 // #include "rotating-energy_density.hpp" // rotating spacetime
 // #include "rotating-gauge_energy.hpp" // rotating spacetime
-//#include "rotating-sweep.hpp" // rotating spacetime
+// #include "rotating-sweep.hpp" // rotating spacetime
 #include "su2.hh"
 #include "u1.hh"
 #include "vectorfunctions.hh"
@@ -275,7 +275,7 @@ public:
    */
   void init_gauge_conf_mcmc() {
     /**
-     * @brief measuring spatial plaquettes only means only (ndims-1)/ndims of all
+     * @brief measuring spatial plaquettes means only (ndims-1)/ndims of all
      * plaquettes are measured, so need facnorm for normalization to 1
      *
      */
@@ -300,7 +300,9 @@ public:
       hotstart(U, sparams.seed, g_heat);
     }
 
-    double plaquette = flat_spacetime::gauge_energy(U);
+    // double plaquette = flat_spacetime::gauge_energy(U);
+    double plaquette =
+      omeasurements::get_retr_plaquette_density((*this).U, (*this).pparams.bc);
     double fac = 2. / U.getndims() / (U.getndims() - 1);
     normalisation = fac / U.getVolume() / double(U.getNc());
 
@@ -309,12 +311,12 @@ public:
               << normalisation << "\n";
     std::cout << "## Acceptance rate parcentage: rho = rate/(i+1)\n";
 
-    std::cout << "## Initial Plaquette: " << plaquette * normalisation << std::endl;
+    std::cout << "## Initial Plaquette P: " << plaquette << std::endl;
 
     random_gauge_trafo(U, 654321);
-    plaquette = flat_spacetime::gauge_energy(U);
-    std::cout << "## Plaquette after rnd trafo: " << plaquette * normalisation
-              << std::endl;
+    // plaquette = flat_spacetime::gauge_energy(U);
+    plaquette = omeasurements::get_retr_plaquette_density((*this).U, (*this).pparams.bc);
+    std::cout << "## Plaquette after rnd trafo: " << plaquette << std::endl;
   }
 
   void open_output_data() {
@@ -381,6 +383,13 @@ public:
       }
     }
 
+    if (omeas.plaquette.measure_it) {
+      if ((*this).omeas.verbosity > 0) {
+        std::cout << "## online measuring: Plaquette\n";
+      }
+      omeasurements::meas_plaquette(U, i, pparams, omeas);
+    }
+
     if (omeas.potentialplanar || omeas.potentialnonplanar) {
       gaugeconfig<Group> U1 = U;
       // smear lattice
@@ -388,12 +397,14 @@ public:
         APEsmearing<double, Group>(U1, omeas.alpha, omeas.smear_spatial_only);
       }
       if (omeas.potentialplanar) {
+        std::cout << "## measure planar potential\n";
         omeasurements::meas_loops_planar_pot(U1, pparams, omeas.sizeWloops,
                                              (*this).filename_coarse,
                                              (*this).filename_fine, i);
       }
 
       if (omeas.potentialnonplanar) {
+        std::cout << "## measure nonplanar potential\n";
         omeasurements::meas_loops_nonplanar_pot(U1, pparams, omeas.sizeWloops,
                                                 (*this).filename_nonplanar, i);
       }
@@ -423,10 +434,9 @@ public:
       if ((*this).omeas.verbosity > 0) {
         std::cout << "## online measuring: J^{PC} glueball correlators.\n";
       }
-      if ((*this).omeas.glueball.correlator) {
-        omeasurements::meas_glueball_correlator<Group>(omeas.glueball.interpolator_type,
-                                                       U, i, (*this).omeas);
-      }
+
+      const std::string glb_interp = omeas.glueball.interpolator_type;
+      omeasurements::meas_glueball_correlator<Group>(glb_interp, U, i, (*this).omeas);
     }
     return;
   }

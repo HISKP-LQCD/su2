@@ -29,6 +29,10 @@ namespace global_parameters {
     size_t Lt; // temporal lattice size T > 0
     size_t ndims = 4; // number of dimensions, 2 <= ndims <= 4
 
+    // boundary conditions (default = periodic)
+    // supported types: "periodic", "spatial_open"
+    std::string bc = "periodic";
+
     bool flat_metric = true; // false when considering spacetime curvature
     bool rotating_frame = false; // true when we consider a rotating lattice
     double Omega = 0.0; // imaginary angular frequency (rotating lattice)
@@ -43,6 +47,16 @@ namespace global_parameters {
     bool anisotropic = false; // use anisotropic lattice
   };
 
+  struct measure_plaquette {
+    bool measure_it = false; // whether to measure the plaquette or not
+
+    std::string subdir = ""; // subdirectory of the online measurements directory
+
+    bool spatial = false; // true when computing only the spatial contributions
+    // boundary condition type (note: can be different from the MCMC)
+    std::string bc = "periodic";
+  };
+
   struct measure_glueball {
     bool use_res_dir = true; // path of the correlators, relative to the measurements
     bool lengthy_file_name = false; // add measure information in correlator filename
@@ -54,7 +68,7 @@ namespace global_parameters {
 
     // glueball interpolators are all loops of links of a certain size and shape
     bool interpolator = false; // true if measuring the glueball interpolators
-    std::string interpolator_type = "NONE"; // "squares", "rectangles", "fatL", etc.
+    std::string interpolator_type = "NONE"; // "rectangles" or "fatL"
     bool save_interpolator = false; // true if saving interpolators values
     bool spatial_loops = true; // true if using only spatial loops
     size_t rmin = 0, rmax = 0; // minum and maximum sizes of the interpolating loops
@@ -85,11 +99,12 @@ namespace global_parameters {
     size_t seed = 13526463; // PRNG seed
 
     size_t nstep = 1; // measure each nstep config
-    bool Wloop = false; // whether to measure the Wilson loops or not
 
     std::string conf_dir = "./"; // directory where gauge configurations are stored
     std::string res_dir = "./"; // directory where results from measurements for
                                 // potential, potentialsmall are stored
+
+    bool Wloop = false; // whether to measure the Wilson loops or not
 
     bool potentialplanar =
       false; // measure potential: the loops W(x, t, y=z=0) and W(x, y, t=z=0) are
@@ -111,7 +126,7 @@ namespace global_parameters {
     bool smear_temporal_only = false; // should smearing be done only for temporal links?
 
     std::string conf_basename = "conf"; // root of the output files names
-    bool lenghty_conf_name = true; // add ensemble information in configuration name
+    bool lenghty_conf_name = false; // add ensemble information in configuration name
     size_t beta_str_width = g_beta_str_width; // length of the beta value config filename
 
     bool pion_staggered = false; // true when measuring the staggered pion correlator
@@ -121,6 +136,7 @@ namespace global_parameters {
     size_t solver_verbosity = 0; // Verbosity for the solver for the dirac operator
     size_t seed_pf = 97234719; // Seed for the evaluation of the fermion determinant
 
+    measure_plaquette plaquette; // struct for the measure of the plaquette
     measure_glueball glueball; // struct for the measure of the glueball
     measure_gradient_flow gradient_flow; // struct for the measure of the gradient flow
   };

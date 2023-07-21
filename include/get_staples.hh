@@ -3,6 +3,77 @@
 #include "gaugeconfig.hh"
 
 /**
+ * @brief staple attached to the link U_{\mu}(x) in the nu>0 part of the plane (mu, nu)
+ * Return: = U_nu(x1) U_mu(x2)^\dagger U_nu(x3)^dagger, where:
+ * x1 = x + mu, x2 = x+\nu, x3 = x
+ */
+template <class RetType, class Group, class Arr>
+RetType get_staple_up(const gaugeconfig<Group> &U,
+                      const size_t &mu,
+                      const size_t &nu,
+                      const Arr &x1,
+                      const Arr &x2,
+                      const Arr &x3) {
+  return RetType(U(x1, nu) * U(x2, mu).dagger() * U(x3, nu).dagger());
+}
+
+/**
+ * @brief staple attached to the link U_{\mu}(x) in the nu<0 part of the plane (mu, nu)
+ * Return: = U_nu(x1)^{\dagger} U_mu(x2)^dagger U_nu(x2),
+ * where x1 = x+mu-nu, x2 = x-nu
+ *
+ * Note: only 2 points need to be passed
+ */
+template <class RetType, class Group, class Arr>
+RetType get_staple_down(const gaugeconfig<Group> &U,
+                        const size_t &mu,
+                        const size_t &nu,
+                        const Arr &x1,
+                        const Arr &x2) {
+  return RetType(U(x1, nu).dagger() * U(x2, mu).dagger() * U(x2, nu));
+}
+
+/**
+ * @brief get the sum of the "positive" staples attached to the link U_{\mu}(x)
+ * Return: = \sum_{nu != mu} U_nu(x+mu) U_mu(x+nu)^dagger U_nu(x)^dagger
+ */
+template <class RetType, class Group, class Arr>
+RetType get_staples_up(gaugeconfig<Group> &U, const Arr &x, const size_t &mu) {
+  RetType K;
+  Arr xpm = x, xpn = x;
+  xpm[mu] += 1;
+  for (size_t nu = 0; nu < U.getndims(); nu++) {
+    if (nu != mu) {
+      xpn[nu]++;
+      K += get_staple_up<RetType>(U, mu, nu, xpm, xpn, x);
+      xpn[nu]--;
+    }
+  }
+  return K;
+}
+
+/**
+ * @brief get the sum of the "negative" staples attached to the link U_{\mu}(x)
+ * Return: = \sum_{nu != mu} U_nu(x+mu-nu)^{\dagger} U_mu(x-nu)^dagger U_nu(x-nu)
+ */
+template <class RetType, class Group, class Arr>
+RetType get_staples_down(gaugeconfig<Group> &U, const Arr &x, const size_t &mu) {
+  RetType K;
+  Arr xpm = x, xm = x;
+  xpm[mu] += 1;
+  for (size_t nu = 0; nu < U.getndims(); nu++) {
+    if (nu != mu) {
+      xpm[nu]--;
+      xm[nu]--;
+      K += get_staple_down<RetType>(U, mu, nu, xpm, xm);
+      xpm[nu]++;
+      xm[nu]++;
+    }
+  }
+  return K;
+}
+
+/**
  * @brief Update the value of the staple attached to U_{\mu}(x)
  * Note: use this function only once after the staple object has been created.
  * This function updates the staples surrounding the link at position x and direction mu:
@@ -23,14 +94,14 @@
  * @param anisotropic boolean flag: true when considering anisotropy
  * @param spatial_only boolean flag: true when summing over spatial staples only
  */
-template <class T, class S, class Arr>
-void get_staples(T &K,
-                 gaugeconfig<S> &U,
-                 Arr const x,
-                 const size_t mu,
-                 const double xi = 1.0,
-                 bool anisotropic = false,
-                 bool spatial_only = false) {
+template <class T, class Group, class Arr>
+void get_staples_MCMC_step(T &K,
+                           gaugeconfig<Group> &U,
+                           Arr const x,
+                           const size_t mu,
+                           const double xi = 1.0,
+                           bool anisotropic = false,
+                           bool spatial_only = false) {
   size_t startnu = 0;
   if (spatial_only) {
     startnu = 1;
@@ -86,8 +157,11 @@ void get_staples(T &K,
  * action forms plaquette, smearing needs staples parallel to link
  */
 template <class T, class S, class Arr>
-void get_staples_APE(
-  T &K, const gaugeconfig<S> &U, Arr const x, const size_t mu, bool spatial_only = false) {
+void get_staples_APE(T &K,
+                     const gaugeconfig<S> &U,
+                     Arr const x,
+                     const size_t mu,
+                     bool spatial_only = false) {
   size_t startnu = size_t(spatial_only); // 0 or 1, casted from bool
   Arr y = x, z = x;
   for (size_t nu = startnu; nu < U.getndims(); nu++) {

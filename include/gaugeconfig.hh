@@ -14,6 +14,7 @@
 
 #include "geometry.hh"
 #include "random_element.hh"
+#include "su3.hh"
 #include "su2.hh"
 #include "u1.hh"
 
@@ -26,25 +27,14 @@
 #include <random>
 #include <vector>
 
-// test function to see if the template has been specified correctly
-template <class T> std::string gauge_group_name();
-template <> std::string gauge_group_name<_u1>() {
-  return "u1";
-}
-template <> std::string gauge_group_name<_su2>() {
-  return "su2";
-}
-
-using std::vector;
-
 template <class T> class gaugeconfig {
   template <class iT> using nd_max_arr = spacetime_lattice::nd_max_arr<iT>;
 
 public:
   using value_type = T;
 
-  gaugeconfig(){};
-  ~gaugeconfig(){};
+  gaugeconfig() {}
+  ~gaugeconfig() {}
 
   gaugeconfig(const size_t Lx,
               const size_t Ly,
@@ -61,6 +51,7 @@ public:
       ndims(ndims) {
     data.resize(volume * ndims);
   }
+
   gaugeconfig(const gaugeconfig &U)
     : Lx(U.getLx()),
       Ly(U.getLy()),
@@ -76,42 +67,20 @@ public:
     }
   }
 
-  size_t storage_size() const {
-    return data.size() * sizeof(value_type);
-  };
-  std::vector<value_type> get_data() const {
-    return data;
-  }
-  size_t getLx() const {
-    return (Lx);
-  }
-  size_t getLy() const {
-    return (Ly);
-  }
-  size_t getLz() const {
-    return (Lz);
-  }
-  size_t getLt() const {
-    return (Lt);
-  }
-  size_t getndims() const {
-    return (ndims);
-  }
-  size_t getVolume() const {
-    return (volume);
-  }
-  size_t getSize() const {
-    return (volume * ndims);
-  }
-  double getBeta() const {
-    return beta;
-  }
-  void setBeta(const double _beta) {
-    beta = _beta;
-  }
-  int getNc() const {
-    return (data[0].N_c);
-  }
+  size_t storage_size() const { return data.size() * sizeof(value_type); }
+
+  std::vector<value_type> get_data() const { return data; }
+
+  size_t getLx() const { return (Lx); }
+  size_t getLy() const { return (Ly); }
+  size_t getLz() const { return (Lz); }
+  size_t getLt() const { return (Lt); }
+  size_t getndims() const { return (ndims); }
+  size_t getVolume() const { return (volume); }
+  size_t getSize() const { return (volume * ndims); }
+  double getBeta() const { return beta; }
+  void setBeta(const double _beta) { beta = _beta; }
+  int getNc() const { return (data[0].N_c); }
   void restoreSU() {
 #pragma omp parallel for
     for (size_t i = 0; i < getSize(); i++) {
@@ -176,13 +145,9 @@ public:
     //    return ((double) bs) * Ux_mu + (1 - ((double)bs)) * Udagx_mu;
   }
 
-  value_type &operator[](size_t const index) {
-    return data[index];
-  }
+  value_type &operator[](size_t const index) { return data[index]; }
 
-  value_type operator[](size_t const index) const {
-    return data[index];
-  }
+  value_type operator[](size_t const index) const { return data[index]; }
 
   bool operator==(const gaugeconfig &U) const {
     typedef typename accum_type<T>::type accum;
@@ -242,7 +207,24 @@ template <class T> int gaugeconfig<T>::load(std::string const &path) {
   std::cout << "## Reading config from file " << path << std::endl;
   std::ifstream ifs(path, std::ios::in | std::ios::binary);
   if (ifs) {
+    // check that we're loading a configuration of the correct size
+    std::ifstream ifs_check(path, std::ios::binary);
+    ifs_check.seekg(0, std::ios::end);
+    const size_t ss1 = ifs_check.tellg(); // expected storage size
+
     ifs.read(reinterpret_cast<char *>(data.data()), storage_size());
+    size_t ss2 = this->storage_size(); // storage size after reading the configuration
+
+    if (ss1 != ss2) {
+      std::cerr
+        << "## Error: tried to load a configuration with different geometry. This is "
+           "forbidden.\n"
+        << "## The expected size of configuration doesn't match with the one stored at:"
+        << path << "\n";
+      std::cerr << "## Aborting."
+                << "\n";
+      std::abort();
+    }
     ifs.close();
     return 0;
   } else {

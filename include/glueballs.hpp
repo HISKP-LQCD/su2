@@ -31,7 +31,7 @@ namespace glueballs {
                                        const bool &Px) {
     typedef typename accum_type<Group>::type accum;
 
-    accum L = U(x, mu) * (U(x, mu).dagger()); // "1", independently of the group
+    Group L = U(x, mu) * (U(x, mu).dagger()); // "1", independently of the group
     for (size_t s = 0; s < a; s++) {
       L *= operators::parity(Px, 0, U, x, mu);
       x[mu] += 1;
@@ -47,6 +47,15 @@ namespace glueballs {
     for (size_t _t = 0; _t < b; _t++) {
       x[nu] -= 1;
       L *= operators::parity(Px, 0, U, x, nu).dagger();
+    }
+
+    if (Px == true) {
+      // the loop operator L(x) is transformed by:
+      // 1. symmetrizing the loop (keeping the orientation)
+      // 2. daggering the result.
+      // What computed so far is L.dagger(), so we dagger it once more to get the correct
+      // result
+      L = dagger(L);
     }
 
     return trace(L);
@@ -68,7 +77,6 @@ namespace glueballs {
                                            const size_t &nu,
                                            const bool &Px) {
     typedef typename accum_type<Group>::type accum;
-
     accum L = U(x, mu) * (U(x, mu).dagger()); // "1", independently of the group
     // start at x
     // go to x + (a+1)*\hat{mu}
@@ -102,6 +110,15 @@ namespace glueballs {
       L *= operators::parity(Px, 0, U, x, nu).dagger();
     }
     // loop closed
+
+    if (Px == true) {
+      // the loop operator L(x) is transformed by:
+      // 1. symmetrizing the loop (keeping the orientation)
+      // 2. daggering the result.
+      // What computed so far is L.dagger(), so we dagger it once more to get the correct
+      // result
+      L = dagger(L);
+    }
 
     return trace(L);
   }

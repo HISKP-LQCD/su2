@@ -6,9 +6,8 @@ library(boot)
 #' x = matrix of size n \times N_pts
 #' ex = matrix of size n \times N_pts
 #' y, dy = vectors of size N_pts
-#' guess = vector of guesses:
-#'   -  the first np_ansatz are the guesses for the ansatz itself
-#'   -  while the remaining values are guesses for the matrix elements of x_hat, unrolled by row
+#' guess = vector of guesses (only for the ansatz)
+#' for the x_hat I use the mean values of the x (tested to be unstable if far from this)
 #' maxiter = maximum number of iterations for the minimizer
 fit_xiexiyey <- function(ansatz, x, ex, y, ey,
                          guess, maxiter = 10000, method = "BFGS") {
@@ -18,11 +17,7 @@ fit_xiexiyey <- function(ansatz, x, ex, y, ey,
     N_dof <- N_pts - N_par # number of degrees of freedom
 
     # number of parameters of the ansatz
-    np_ansatz <- length(guess) - n_var * N_pts
-    if (length(guess) <= n_var * N_pts) {
-        print("Error: insufficient number of guess parameters")
-        q()
-    }
+    np_ansatz <- length(guess)
 
     # chi square residual function
     ch2 <- function(p_all) {
@@ -43,6 +38,7 @@ fit_xiexiyey <- function(ansatz, x, ex, y, ey,
         return(ch2_res)
     }
 
+    guess <- c(guess, x) #  ansatz for x_hat=mean values of x
     mini <- optim(
         par = guess, # Initial guess for the minimum
         fn = ch2, # function to be minimized
@@ -63,6 +59,7 @@ fit_xiexiyey <- function(ansatz, x, ex, y, ey,
     return(res)
 }
 
+#' DEPRECATED
 #' fit boostrap by boostrap (generated from y and dy)
 #' x = matrix of size n \times N_pts
 #' returns a list with bootstraps of parameters, their mean, stderr, chi^2, reduced chi^2

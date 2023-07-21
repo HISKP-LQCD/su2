@@ -85,7 +85,7 @@ bootstrap.fit_xiyey <-function(ansatz, x, y, ey, guess, maxiter=10000, method="B
 
     res <- list(
         ansatz=ansatz,
-        N_bts=N_bts, N_pts = N_pts, n_beta=n_beta, N_par=N_par,
+        N_bts=N_bts, N_pts = N_pts, N_par=N_par,
         x=x,
         par=list(bts=par_bts, val=par_val, dval=par_sd),
         ch2=list(bts=ch2_bts, val=ch2_val, dval=ch2_sd),

@@ -64,3 +64,8 @@ omeas:
       save: true
     correlator: true
   Wloop: true
+  plaquette:
+    subdir: plaquette/
+    spatial: true
+    bc: periodic
+

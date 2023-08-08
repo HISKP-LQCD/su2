@@ -144,7 +144,7 @@ namespace omeasurements {
                           const size_t &i,
                           const global_parameters::physics &pparams,
                           const sparams &S) {
-    const std::string res_dir = S.res_dir+"/gradient_flow/";
+    const std::string res_dir = S.res_dir + "/" + S.gradient_flow.subdir + "/";
     fsys::create_directories(fsys::absolute(res_dir));
 
     const double eps = S.gradient_flow.epsilon;

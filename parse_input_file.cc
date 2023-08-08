@@ -262,6 +262,7 @@ namespace input_file_parsing {
     YAML::Node nd = in.get_outer_node();
 
     mgfparams.measure_it = true;
+    in.read_verb<std::string>(mgfparams.subdir, {"subdir"});
     in.read_verb<double>(mgfparams.epsilon, {"epsilon"});
     in.read_verb<double>(mgfparams.tmax, {"tmax"});
     in.read_opt_verb<double>(mgfparams.tstart, {"tstart"});

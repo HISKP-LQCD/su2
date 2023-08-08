@@ -76,6 +76,7 @@ namespace global_parameters {
   };
 
   struct measure_gradient_flow {
+    std::string subdir = ""; // subdirectory of the online measurements directory
     bool measure_it = false; // whether to measure the gradient flow or not
     double epsilon = 0.01; // integration step of the flow equations
     double tmax = 1.0; // tmax for gradient flow

@@ -13,12 +13,15 @@ fit_xiyey <-function(ansatz, x, y, ey,
     N_pts <- length(y) # number of data points
     N_par <- length(guess) # number of parameters of the fit
     N_dof <- N_pts - N_par # number of degrees of freedom
-
                                         # chi square residual function
-    ch2 <- function(p) {
+    ch2 <- function(par) {
         ch2_res <- 0
         for (i in 1:N_pts) {
-            df <- y[i] - ansatz(x[,i], p) # y_i - f_i
+            df <- y[i] - ansatz(x[,i], par) # y_i - f_i
+            #print(x[,i])
+            #print(y[i])
+            #print(ansatz(x[,i], par))
+            #q()
             df <- df / ey[i]
             df2 <- df*df
             ch2_res <- ch2_res + df2
@@ -37,6 +40,7 @@ fit_xiyey <-function(ansatz, x, y, ey,
     res <- list()
 
     res[["ansatz"]] <- ansatz
+    res[["N_pts"]] <- N_pts
     res[["N_par"]] <- N_par
     res[["par"]] <- mini[["par"]]
     res[["ch2"]] <- ch2_value
@@ -50,6 +54,7 @@ fit_xiyey <-function(ansatz, x, y, ey,
 #' x = matrix of size n \times N_pts
 #' returns a list with bootstraps of parameters, their mean, stderr, chi^2, reduced chi^2
 bootstrap.fit_xiyey <-function(ansatz, x, y, ey, guess, maxiter=10000, method="BFGS", N_bts = 1000){
+    N_var <- nrow(x)
     N_pts <- length(y) # number of points
     N_par <- length(guess)
     N_dof = N_pts - N_par
@@ -85,8 +90,8 @@ bootstrap.fit_xiyey <-function(ansatz, x, y, ey, guess, maxiter=10000, method="B
 
     res <- list(
         ansatz=ansatz,
-        N_bts=N_bts, N_pts = N_pts, n_beta=n_beta, N_par=N_par,
-        x=x,
+        N_bts=N_bts, N_pts = N_pts, N_var = N_var, N_par=N_par,
+        x=x, y=y, ey = ey, y_bts = y_bts,
         par=list(bts=par_bts, val=par_val, dval=par_sd),
         ch2=list(bts=ch2_bts, val=ch2_val, dval=ch2_sd),
         ch2_dof=list(
@@ -108,14 +113,17 @@ bootstrap.fit_xiyey.predict <-function(mini, x){
     ansatz <- mini[["ansatz"]] # ansatz function
     y <- matrix(data=NA, nrow=N_bts, ncol=N_pts)
     
-    par <- mini[["par"]][["bts"]]
+    par_bts <- mini[["par"]][["bts"]]
     for (i in 1:N_bts){
         for (j in 1:N_pts){
-            y[i,j] <- ansatz(x[,j], par[i,])
+            y[i,j] <- ansatz(x[,j], par_bts[i,])
         }
     }
 
-    res <- list(mini = mini, x = x, bts = y, value=apply(y, 2, mean), dvalue=apply(y, 2, sd))
+    res <- list(mini = mini,
+                x = x, bts = y,
+                value=apply(y, 2, mean), dvalue=apply(y, 2, sd)
+                )
     return(res)
 }
 

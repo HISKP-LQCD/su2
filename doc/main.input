@@ -47,7 +47,8 @@ omeas:
   icounter: 0
   nstep: 1
   gradient_flow:
-    epsilon: 0.1
+    subdir: ./gradient_flow/
+    epsilon: 0.01
     tmax: 2.0
     tstart: 0.0
     save_conf: true
@@ -64,3 +65,8 @@ omeas:
       save: true
     correlator: true
   Wloop: true
+  plaquette:
+    subdir: plaquette/
+    spatial: true
+    bc: periodic
+

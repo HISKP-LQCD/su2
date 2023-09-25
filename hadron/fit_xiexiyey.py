@@ -25,7 +25,9 @@ def fit_xiexiyey(ansatz, x, ex, y, ey, guess, maxiter = 10000, method = "BFGS"):
     def ch2(p_all):
         ch2_res = 0
         p = p_all[0:np_ansatz]
-        x_hat = np.array(p_all[-(n_var * N_pts):]).reshape(n_var, N_pts)
+        p_res = p_all[-(n_var * N_pts):]
+        x_hat = np.array([[p_res[j + n_var*i] for j in range(N_pts)] for i in range(n_var)])
+        #np.array(p_all[-(n_var * N_pts):]).reshape(n_var, N_pts)
         for i in range(N_pts):
             df1 = y[i] - ansatz(x_hat[:,i], p) # y_i - f_i
             df1 = df1 / ey[i]

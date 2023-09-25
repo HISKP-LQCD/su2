@@ -9,7 +9,7 @@ from fit_xiexiyey import fit_xiexiyey
 def ansatz(x, params):
     m = params[0]
     c = params[1]
-    return(np.exp(-m * (x - c)/2))
+    return np.exp(-m * (x[0] - c)/2)
 ####
 
 # Define the function to generate example data
@@ -22,7 +22,8 @@ def generate_example_data(n, m_true, c_true, x_noise_sd, y_noise_sd):
     x = np.random.uniform(low=0, high=10, size=n)
     
     # Generate y values using the true parameters
-    y = ansatz(x, [m_true, c_true])
+    # [x] because is a function of 1 variable
+    y = np.array([ansatz([xi], [m_true, c_true]) for xi in x])
     
     # Add noise to x and y values
     x_with_noise = x + x_noise
@@ -75,7 +76,7 @@ xi, exi = list(x[0,:]), list(ex[0,:])
 plt.errorbar(xi, y, linestyle="None", xerr=exi, yerr=ey)
 
 xd = np.arange(min(xi), max(xi),  step=0.01)
-yd = ansatz(xd, fitted_params)
+yd = np.array([ansatz([xd_i], fitted_params) for xd_i in xd])
 plt.scatter(xd, yd, s=0.01)
 
 plt.savefig("./plot.pdf")

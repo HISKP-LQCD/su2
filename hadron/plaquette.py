@@ -31,7 +31,7 @@ def hadronize(name):
     print(d2)
     # list all files in d2 and extract configuration numbers from names
     file_names = list(glob.glob(d2+"/"+name+"_*"))
-    file_index = [int(x.split(name+"_")[1]) for x in file_names]
+    file_index = [int(x.rsplit(name+"_", 1)[1]) for x in file_names]
     #
     # load .dat file with indices of formatted configurations, if existing
     iconf_file = d2 + "/iconfs.dat"

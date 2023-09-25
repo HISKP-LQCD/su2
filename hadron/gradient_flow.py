@@ -5,7 +5,7 @@ import os
 import yaml
 import argparse
 import glob
-
+import subprocess
 
 parser = argparse.ArgumentParser(
     prog='gradient_flow',
@@ -15,13 +15,15 @@ parser.add_argument(
     '-f', '--inputfile',
     help="Path to the same yaml input file used for the run"
 )
+# clean flowed configurations
 parser.add_argument(
-    '-cfc', '--clean_flowed_configs',
+    '-cfc',
     action=argparse.BooleanOptionalAction,
     help="Remove the flowed configurations"
 )
+# clean gradient flow
 parser.add_argument(
-    '-cgf', '--clean_gradient_flow',
+    '-cgf',
     action=argparse.BooleanOptionalAction,
     help="""Remove the gradient flow online measurements: 
     ACHTUNG: do it only if you don't want to flow them for larger times"""
@@ -45,21 +47,27 @@ subdir = nd_gflow["subdir"]
 tmin, tmax = nd_gflow["tmin"], nd_gflow["tmax"]
 eps = nd_gflow["epsilon"]
 Nt = int((tmax - tmin)/(2*eps))
+t_flow = [tmin + eps*i for i in range(1, Nt+1)] # flow times
 
-def hadronize(name_obj):
-    print("## Formatting the observable:", name_obj)
+def hadronize():
+    print("## Formatting the flowed plaquettes P, P_ss")
     d2 = resdir+"/"+subdir+"/"
     print("## Reading data from:")
     print(d2)
     print("## listing all files in there and extract configuration numbers from names")
-    f1 = glob.glob(d2+"/gradient_flow"+"*")
-    f2 = glob.glob(d2+"/gradient_flow*.conf")
-    file_names = [f for f in f1 if not f in f2]
-    file_index = [int(x.split("gradient_flow.")[1]) for x in file_names]
+
+    file_names = subprocess.run(
+        "find {d2} -type f -name \"gradient_flow*\" -and -not -name \"*.conf\" ".format(d2=d2),
+        shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+    ).stdout.split("\n")[:-1]
+    file_names_confs = subprocess.run(
+        "find {d2} -type f -name \"gradient_flow*.conf\" ".format(d2=d2),
+        shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+    ).stdout.split("\n")[:-1]
+    file_index = [int(x.split("gradient_flow.")[-1]) for x in file_names]
 
     if len(file_names) == 0:
-        print("## Skipping: No new online measurements found in ", d2)
-        return
+        print("## Warning: No new online measurements found in ", d2)
     ####
 
     # sorting
@@ -72,79 +80,47 @@ def hadronize(name_obj):
         file_index = file_index[0:n_meas]
     ####
 
-    #
-    iconf_file = d2 + "/iconfs.dat"
-    # already formatted configurations
-    file_index_old = []
-    if os.path.exists(iconf_file):
-        print("## load iconfs.dat file with indices of previously formatted configurations")
-        print(iconf_file)
-        file_index_old = pd.read_csv(
-            iconf_file, sep=" ", header=None)[0].tolist()
-    else:
-        print("## no old configurations found")
-    ##
-    n_conf_old = len(file_index_old)
-    # new matrices for a each J^{PC}
-    df_col_names = ["i"]+[str(eps*t) for t in range(1, Nt+1)]
-    df_new = pd.DataFrame(np.zeros(shape=(1, Nt+1)),
-        columns=df_col_names, index=["remove"])
-    df_new = df_new.astype({"i": int})
-    if n_conf_old > 0:
-        path_old = d2+"/"+name_obj+".dat"
-        if os.path.exists(iconf_file) and (not os.path.exists(path_old)):
-            print("Error! Something bad happened, please redo the online measurements:\n",
-                  iconf_file, "\nexists, but\n", path_old, "\ndoesn't.")
-            raise ValueError
-        ####
-        print("#### reading the old dataframe of the correlator")
-        df_old = pd.read_csv(path_old, sep=" ", dtype={"i": int})
-        df_new = pd.concat([df_new, df_old], axis=0)
+    Ng = len(file_index)
+
+    ## t_file = d2 + "/t.dat"
+    ## iconf_file = d2 + "/iconfs.dat"
+    P_file =  d2 + "/P.dat"
+    P_ss_file =  d2 + "/P_ss.dat"
+
+    # df_t = pd.DataFrame({'t': t_flow})
+    # df_t.to_csv(t_file, index=False)
+
+    # df_conf = pd.DataFrame({'i': file_index})
+    # df_conf.to_csv(iconf_file, index=False)
+
+    P = np.zeros(shape=(Ng, Nt))
+    P_ss = np.zeros(shape=(Ng, Nt))
+
+    for i in range(Ng):
+        f = file_names[i]
+        df_i = pd.read_csv(f, sep=" ")
+        P_i = df_i["P"].to_numpy()
+        P_ss_i = df_i["P_ss"].to_numpy()
+        P[i,:] = P_i
+        P_ss[i,:] = P_ss_i
     ####
-    print("### loop over new/updated files")
-    for i_f in range(len(file_index)):
-        path_i = file_names[i_f]
-        print(i_f, path_i)
-        idx_i = file_index[i_f]
-        df_i = pd.read_csv(path_i, sep=" ")
-        arr1 = df_i.to_numpy()
-        if idx_i in file_index_old:
-            # removing old configuration
-            df_new = df_new[df_new["i"] != idx_i]
-        ####
-        df1 = pd.DataFrame(arr1).transpose()
-        df1.insert(0, "i", idx_i)
-        df1.columns = df_col_names
-        # update new array with the new data
-        df_new = pd.concat([df_new, df1])
-        ####
-    ####
-    print("### Cleaning up the dataframe format before exporting")
-    save_iconf = True 
-    df_new = df_new.drop("remove")
-    save_df_new = (df_new.shape[0]>0)
-    save_iconf = save_iconf and save_df_new
-    # saving
-    if save_df_new:
-        df_new = df_new.sort_values(by=['i'])
-        df_new.to_csv(d2 + "/"+name_obj+".dat", sep=" ", index=False)
-    ####
-    print("## Saving the new iconf.dat file")
-    if save_iconf:
-        pd.DataFrame(
-            sorted(file_index_old + file_index)).to_csv(
-                d2+"iconfs.dat", header=False, sep=" ", index=False)
-    ####
+
+    df_P = pd.DataFrame(P, index = file_index, columns=t_flow)
+    df_P.to_csv(P_file, sep=" ")
+
+    df_P_ss = pd.DataFrame(P_ss, index = file_index, columns=t_flow)
+    df_P_ss.to_csv(P_ss_file, sep=" ")
+
     print("## Removing data in the old format")
     if args.cfc:
-        for f in f2:
+        for f in file_names_confs:
             print("## removing", f)
-            # os.remove(f)
+            os.remove(f)
     ####
     if args.cgf:
         for p in file_names:
             print("#### removing:", p)
-            #os.remove(p)
+            os.remove(p)
         ####
     ####
 ####
@@ -152,8 +128,5 @@ def hadronize(name_obj):
 
 
 print("---")
-hadronize("P")
-
-print("---")
-hadronize("P_ss")
+hadronize()
 

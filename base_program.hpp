@@ -325,7 +325,7 @@ public:
       return;
     }
 
-    const std::string file = sparams.conf_dir + "/output.u1-" + algo_name + ".data";
+    const std::string file = sparams.conf_dir + "/output." + algo_name + ".data";
     if (g_icounter == 0) {
       os.open(file, std::ios::out);
     } else {

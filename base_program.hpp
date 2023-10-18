@@ -350,8 +350,6 @@ public:
     this->create_gauge_conf();
 
     this->create_directories();
-
-    this->open_output_data();
   }
 
   /**

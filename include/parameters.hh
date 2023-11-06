@@ -91,7 +91,7 @@ namespace global_parameters {
     bool do_mcmc =
       false; // offline measurements program doesn't do Markov chain Monte carlo
     bool do_omeas = true; // offline measurements program does measuments
-    bool restart = true; // restart from previously saved config
+    bool restart = false; // restart from previously saved config
 
     size_t verbosity = 0; // verbosity of the output
 

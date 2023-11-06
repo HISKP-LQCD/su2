@@ -26,6 +26,7 @@
 #include <iostream>
 #include <random>
 #include <vector>
+#include <boost/filesystem.hpp>
 
 template <class T> class gaugeconfig {
   template <class iT> using nd_max_arr = spacetime_lattice::nd_max_arr<iT>;
@@ -204,7 +205,7 @@ template <class T> void gaugeconfig<T>::save(std::string const &path) const {
  * @return int 0=success and 1=failure to load
  */
 template <class T> int gaugeconfig<T>::load(std::string const &path) {
-  std::cout << "## Reading config from file " << path << std::endl;
+  std::cout << "## Reading config from file " <<  boost::filesystem::absolute(path) << std::endl;
   std::ifstream ifs(path, std::ios::in | std::ios::binary);
   if (ifs) {
     // check that we're loading a configuration of the correct size

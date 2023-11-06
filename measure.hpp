@@ -33,9 +33,9 @@ public:
   void run(const YAML::Node &nd) {
     this->pre_run(nd);
 
-    omeas_counter_file = boost::filesystem::absolute((*this).omeas.res_dir + "omeas_counter.txt");
+		std::string omeas_counter_file = (*this).omeas.res_dir + "/omeas_counter.txt";
     if ((*this).omeas.restart){
-      ifstream omeas_counter(omeas_counter_file);
+			std::ifstream omeas_counter(boost::filesystem::absolute(omeas_counter_file));
       omeas_counter >> (*this).omeas.icounter;
       omeas_counter.close();
     }
@@ -46,9 +46,9 @@ public:
     const size_t nmax = (*this).omeas.n_meas + (*this).omeas.icounter;
     for (size_t i = istart; i < nmax; i += (*this).omeas.nstep) {
       this->do_omeas_i(i);
-      ofstream omeas_counter(omeas_counter_file);
+			std::ofstream omeas_counter(omeas_counter_file);
       omeas_counter << i;
-      omeas_counter.close()
+      omeas_counter.close();
     }
 
     return;

@@ -304,11 +304,10 @@ namespace input_file_parsing {
     in.read_opt_verb<bool>(mparams.restart, {"restart"});
     in.read_opt_verb<size_t>(mparams.icounter, {"icounter"});
     if (mparams.restart && nd["icounter"]){
-      std::cerr << "Incompatible simulataneous restart==true and icounter in omeas block.\n";
+      std::cerr << "Incompatible simultaneous restart==true and icounter in omeas block.\n";
       std::cerr << "Aborting.\n";
       std::abort();
     }
-    
     in.read_opt_verb<size_t>(mparams.nstep, {"nstep"});
     in.read_opt_verb<size_t>(mparams.n_meas, {"n_meas"});
 

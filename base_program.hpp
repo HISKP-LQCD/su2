@@ -74,6 +74,7 @@ void parse_command_line(int ac, char *av[], std::string &input_file) {
 struct running_program {
   bool do_hmc = false; // Hybrid Monte Carlo algorithm
   bool do_metropolis = false; // Metropolis algorithm
+  bool do_heatbath_overrelaxation = false; // heatbath+overrelaxation algorithm
   bool do_omeas = false; // only measuring observables
 };
 
@@ -93,6 +94,7 @@ YAML::Node get_cleaned_input_file(running_program &rp, const std::string &input_
   bool &do_hmc = rp.do_hmc;
   bool &do_metropolis = rp.do_metropolis;
   bool &do_omeas = rp.do_omeas;
+  bool &do_heatbath_overrelaxation = rp.do_heatbath_overrelaxation;
 
   if (nd["hmc"]) {
     in.read_verb<bool>(do_hmc, {"hmc", "do_mcmc"});
@@ -110,13 +112,22 @@ YAML::Node get_cleaned_input_file(running_program &rp, const std::string &input_
     }
   }
 
+  do_heatbath_overrelaxation = false;
+  if (nd["heatbath_overrelaxation"]) {
+    in.read_verb<bool>(do_heatbath_overrelaxation, {"heatbath_overrelaxation", "do_mcmc"});
+    if (!do_heatbath_overrelaxation) {
+      nd.remove("heatbath_overrelaxation");
+    }
+  }
+
   do_omeas = bool(nd["omeas"]);
   std::string err = ""; // error message
+  const int flag_algo = int(do_hmc)+int(do_metropolis)+int(do_heatbath_overrelaxation);
   try {
-    if (do_hmc && do_metropolis) { // both options are incompatible
-      err = "ERROR: Can't run simultaneously hmc and metropolis algorithms.\n";
+    if (flag_algo > 1) { // can run only one algorithm
+      err = "ERROR: You can run no more than one MC algorithm.\n";
       throw err;
-    } else if (!do_hmc && !do_metropolis && !nd["omeas"]["offline"]) {
+    } else if (flag_algo ==0 && !nd["omeas"]["offline"]) {
       err = "Error: You must write the 'offline' measurements node inside 'omeas' "
             "because you're not running any MCMC algorithm.\n";
       throw err;
@@ -156,7 +167,7 @@ protected:
   size_t g_icounter = 0; // 1st configuration(trajectory) to load from
 
   double normalisation;
-  size_t facnorm;
+  double facnorm;
 
   std::ofstream os;
   std::ofstream acceptancerates;

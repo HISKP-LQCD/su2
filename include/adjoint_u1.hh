@@ -55,6 +55,14 @@ template <typename Float = double> inline adjointu1<Float> get_deriv(const u1_ac
   return adjointu1<Float>(std::imag(A));
 }
 
+template <typename Float = double> inline Float get_abs(const u1_accum &A) {
+  return Float(std::abs(A));
+}
+
+template <typename Float = double> inline Float get_phase(const u1_accum &A) {
+  return Float(std::arg(A));
+}
+
 template <typename Float>
 inline adjointu1<Float> operator*(const Float &x, const adjointu1<Float> &A) {
   return adjointu1<Float>(x * A.geta());

@@ -8,6 +8,11 @@
  *
  * @copyright Copyright (c) 2022
  *
+ * This file defines a namespace "input_file_parsing" for the parsing of the input file.
+ * The sub-namespaces contain what is needed for each algorithm.
+ * The functions needed by two or more of them lie in the global namespace
+ * "input_file_parsing"
+ *
  */
 
 #include <iostream>
@@ -151,6 +156,7 @@ namespace input_file_parsing {
     }
 
     if (R["geometry"]["rotating_frame"]) {
+      spacetime_lattice::fatal_error("Rotating metric not supported yet.", __func__);
       pparams.rotating_frame = true;
       pparams.flat_metric = false; // metric is not flat
       in.read_verb<double>(pparams.Omega, {"geometry", "rotating_frame", "Omega"});
@@ -205,7 +211,7 @@ namespace input_file_parsing {
     if (nd["bc"]) {
       check_bc(mpparams.bc);
     }
-    
+
     in.set_InnerTree(state0); // reset to previous state
   }
 
@@ -303,8 +309,9 @@ namespace input_file_parsing {
 
     in.read_opt_verb<bool>(mparams.restart, {"restart"});
     in.read_opt_verb<size_t>(mparams.icounter, {"icounter"});
-    if (mparams.restart && nd["icounter"]){
-      std::cerr << "Incompatible simultaneous restart==true and icounter in omeas block.\n";
+    if (mparams.restart && nd["icounter"]) {
+      std::cerr
+        << "Incompatible simultaneous restart==true and icounter in omeas block.\n";
       std::cerr << "Aborting.\n";
       std::abort();
     }
@@ -380,6 +387,39 @@ namespace input_file_parsing {
     in.read_verb<double>(mcparams.delta, {"delta"});
     in.read_opt_verb<size_t>(mcparams.N_hit, {"N_hit"});
     validate_N_hit(mcparams.N_hit);
+
+    in.set_InnerTree(state0); // reset to previous state
+    return;
+  }
+
+  /**
+   * @brief parsing the `heatbath_overrelaxation` block of the YAML input file
+   *
+   * @param in inspection node (full tree)
+   * @param inner_tree path to the given branch of the tree
+   * @param mcparams reference to the hmc parameters
+   */
+  void parse_heatbath_overrelaxation(Yp::inspect_node &in,
+                                     const std::vector<std::string> &inner_tree,
+                                     gp::heatbath_overrelaxation &mcparams) {
+    const std::vector<std::string> state0 = in.get_InnerTree();
+    in.dig_deeper(inner_tree); // entering the glueball node
+    YAML::Node nd = in.get_outer_node();
+
+    in.read_opt_verb<bool>(mcparams.do_mcmc, {"do_mcmc"});
+    in.read_opt_verb<size_t>(mcparams.n_meas, {"n_meas"});
+    in.read_opt_verb<size_t>(mcparams.N_save, {"N_save"});
+    in.read_opt_verb<size_t>(mcparams.seed, {"seed"});
+    in.read_opt_verb<size_t>(mcparams.N_hit, {"N_hit"});
+
+    in.read_opt_verb<std::string>(mcparams.conf_dir, {"conf_dir"});
+    in.read_opt_verb<std::string>(mcparams.conf_basename, {"conf_basename"});
+    in.read_opt_verb<bool>(mcparams.lenghty_conf_name, {"lenghty_conf_name"});
+
+    heat_restart_incompatible(nd);
+
+    in.read_opt_verb<bool>(mcparams.restart, {"restart"});
+    in.read_opt_verb<bool>(mcparams.heat, {"heat"});
 
     in.set_InnerTree(state0); // reset to previous state
     return;
@@ -561,5 +601,29 @@ namespace input_file_parsing {
     }
 
   } // namespace metropolis
+
+  namespace heatbath_overrelaxation {
+
+    void parse_input_file(const YAML::Node &nd,
+                          gp::physics &pparams,
+                          gp::heatbath_overrelaxation &mcparams) {
+      Yp::inspect_node in(nd);
+
+      parse_geometry(in, pparams);
+      parse_action<gp::heatbath_overrelaxation>(in, {}, pparams, mcparams);
+      parse_heatbath_overrelaxation(in, {"heatbath_overrelaxation"}, mcparams);
+
+      if (nd["omeas"]) {
+        mcparams.do_omeas = true;
+        mcparams.omeas.conf_dir = mcparams.conf_dir;
+        parse_omeas(in, {"omeas"}, mcparams.omeas);
+      }
+
+      in.finalize();
+
+      return;
+    }
+
+  } // namespace heatbath_overrelaxation
 
 } // namespace input_file_parsing

@@ -192,7 +192,7 @@ namespace global_parameters {
     ~hmc() {}
   };
 
-  /* optional parameters for the MCMC the in U(1) theory */
+  /* parameters for the metropolis algorithm */
   struct metropolis {
     size_t n_meas = 10; // total number of sweeps
     size_t icounter = 0; // initial counter for updates
@@ -213,6 +213,38 @@ namespace global_parameters {
                         // the current link
     bool do_mcmc =
       true; // true when generating configurations through the Markov chain Monte Carlo
+
+    // fermions stuff (operators)
+    std::string solver = "CG"; // Type of solver: CG, BiCGStab
+    double tolerance_cg = 1e-10; // Tolerance for the solver for the dirac operator
+    size_t solver_verbosity = 0; // Verbosity for the solver for the dirac operator
+    size_t seed_pf = 97234719; // Seed for the evaluation of the fermion determinant
+
+    bool do_omeas = false; // true when omeasurements are done
+    measure omeas; // struct for online measurements
+  };
+
+  /* parameters for the heatbath_overrelaxation algorithm */
+  struct heatbath_overrelaxation {
+    size_t n_meas = 10; // total number of sweeps
+    size_t icounter = 0; // initial counter for updates
+    size_t seed = 13526463; // PRNG seed
+
+    size_t N_save = 100; // save each N_save config
+
+    bool restart = false; // restart from an existing configuration
+    std::string configfilename = ""; // configuration filename used in case of restart
+    std::string conf_dir = "./"; // directory where gauge configurations are stored
+    std::string conf_basename = "conf"; // root of the output files names
+    bool lenghty_conf_name = true; // add ensemble information in configuration name
+    size_t beta_str_width = g_beta_str_width; // length of the beta value config filename
+
+    size_t N_hit = 1; // N_hit updates 
+    bool heat = true; // randomness of the initial config, true: hot, false: cold
+    double delta = 1.0; // quantifies how much the prooposed new link can differ from
+                        // the current link
+    bool do_mcmc =
+      true; // true if actually running the algorithm to generate configurations
 
     // fermions stuff (operators)
     std::string solver = "CG"; // Type of solver: CG, BiCGStab

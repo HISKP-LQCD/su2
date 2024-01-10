@@ -59,7 +59,8 @@ namespace flat_spacetime {
    * @param anisotropic bool flag, true when considering an anisotropic lattice. In this
    * case the action weights the temporal (including links in direction 0) and spatial
    * links differently
-   * @return std::vector<double> vector of links acceptance rate: {overall, only temporal ones}
+   * @return std::vector<double> vector of links acceptance rate: {overall, only temporal
+   * ones}
    */
   template <class URNG, class Group>
   std::vector<double> sweep(gaugeconfig<Group> &U,
@@ -108,8 +109,9 @@ namespace flat_spacetime {
                   double deltaS = beta / static_cast<double>(U.getNc()) *
                                   (retrace(U(x, mu) * K) - retrace(U(x, mu) * R * K));
                   bool accept = (deltaS < 0);
-                  if (!accept)
+                  if (!accept) {
                     accept = (uniform(engine[thread_num]) < exp(-deltaS));
+                  }
                   if (accept) {
                     U(x, mu) = U(x, mu) * R;
                     U(x, mu).restoreSU();

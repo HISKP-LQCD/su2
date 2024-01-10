@@ -1,7 +1,7 @@
 /**
- * @file metropolis-u1.hpp
+ * @file metropolis.hpp
  * @author Simone Romiti (simone.romiti@uni-bonn.de)
- * @brief class for Metropolis Algorithm for U(1) gauge theory
+ * @brief class for Metropolis Algorithm
  * @version 0.1
  * @date 2022-09-01
  *
@@ -100,9 +100,6 @@ public:
         engines[engine].seed((*this).sparams.seed + i + engine);
       }
 
-      rate += this->sweep((*this).pparams, (*this).U, engines, (*this).sparams.delta,
-                          (*this).sparams.N_hit, (*this).pparams.beta, (*this).pparams.xi,
-                          (*this).pparams.anisotropic);
 
       double E = 0., Q = 0.;
       std::cout << inew;
@@ -114,6 +111,10 @@ public:
       }
       std::cout << "\n";
       (*this).os << "\n";
+
+      rate += this->sweep((*this).pparams, (*this).U, engines, (*this).sparams.delta,
+                          (*this).sparams.N_hit, (*this).pparams.beta, (*this).pparams.xi,
+                          (*this).pparams.anisotropic);
 
       if (inew > 0 && (inew % (*this).sparams.N_save) == 0) {
         std::ostringstream oss_i;

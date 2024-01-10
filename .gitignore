@@ -34,6 +34,8 @@
 core
 su2
 su2hmc
+# python cache files
+*__pycache__*
 
 # non-text files from the documentation
 *.Rhistory

@@ -262,6 +262,7 @@ namespace input_file_parsing {
     YAML::Node nd = in.get_outer_node();
 
     mgfparams.measure_it = true;
+    in.read_verb<std::string>(mgfparams.subdir, {"subdir"});
     in.read_verb<double>(mgfparams.epsilon, {"epsilon"});
     in.read_verb<double>(mgfparams.tmax, {"tmax"});
     in.read_opt_verb<double>(mgfparams.tstart, {"tstart"});
@@ -300,7 +301,13 @@ namespace input_file_parsing {
 
     in.read_opt_verb<size_t>(mparams.verbosity, {"verbosity"});
 
+    in.read_opt_verb<bool>(mparams.restart, {"restart"});
     in.read_opt_verb<size_t>(mparams.icounter, {"icounter"});
+    if (mparams.restart && nd["icounter"]){
+      std::cerr << "Incompatible simultaneous restart==true and icounter in omeas block.\n";
+      std::cerr << "Aborting.\n";
+      std::abort();
+    }
     in.read_opt_verb<size_t>(mparams.nstep, {"nstep"});
     in.read_opt_verb<size_t>(mparams.n_meas, {"n_meas"});
 

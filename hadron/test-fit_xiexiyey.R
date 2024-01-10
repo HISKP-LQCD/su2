@@ -2,11 +2,12 @@
 library(stats) # For optim function
 source("fit_xiexiyey.R")
 
+pdf("cosh.pdf")
 # Define the function y = mx + c
 ansatz <- function(x, params) {
   m <- params[1]
   c <- params[2]
-  return(sin(m*x) + c)
+  return(cosh(-m * (x - c)/2))
 }
 
 
@@ -39,8 +40,8 @@ c_true <- 5
 # Generate example data with some noise
 set.seed(42) # For reproducibility
 n_data_points <- 100
-x_noise_sd <- 0.1
-y_noise_sd <- 0.1
+x_noise_sd <- 0.05
+y_noise_sd <- 0.05
 
 example_data <- generate_example_data(n_data_points, m_true, c_true, x_noise_sd, y_noise_sd)
 
@@ -71,7 +72,10 @@ cat("c_fitted =", fitted_params[2], "\n")
 
 # Plot the data and fitted line
 plot(x, y, pch = 16, col = "blue", xlab = "x", ylab = "y", main = "Example Data with Fitted Line")
-points(x, ansatz(x, fitted_params), col = "red")
+arrows(x0=x, y0=y-dy, x1=x, y1=y+dy, code=3, angle=90, length=0.01, col="blue", lwd=1)
+
+xd <- seq(from = min(x), to = max(x), by = 0.01)
+points(xd, ansatz(xd, fitted_params), col = "red")
 #abline(a = fitted_params[2], b = fitted_params[1], col = "red", lwd = 2)
-legend("topleft", legend = c("Data", "Fitted Line"), col = c("blue", "red"), lty = 1, lwd = 2)
+legend("topright", legend = c("Data", "Fitted Line"), col = c("blue", "red"), lty = 1, lwd = 2)
 

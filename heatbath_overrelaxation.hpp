@@ -54,18 +54,6 @@ public:
     std::cout << "threads " << (*this).threads << std::endl;
   }
 
-  template <class URNG>
-  void heatbath(const gp::physics &pparams,
-                gaugeconfig<Group> &U,
-                std::vector<URNG> engines,
-                const size_t &N_hit,
-                const double &beta,
-                const double &xi = 1.0,
-                const bool &anisotropic = false) {
-    flat_spacetime::heatbath(U, engines, N_hit, pparams.beta, pparams.xi,
-                             pparams.anisotropic);
-  }
-
   /**
    * @brief do the i-th sweep of the heatbath_overrelaxation algorithm
    *
@@ -80,15 +68,14 @@ public:
         engines[i_engine].seed((*this).sparams.seed + i + i_engine);
       }
 
-      this->heatbath((*this).pparams, (*this).U, engines, (*this).sparams.N_hit,
-                     (*this).pparams.beta, (*this).pparams.xi,
-                     (*this).pparams.anisotropic);
+      heatbath((*this).U, engines, (*this).pparams.beta,
+                     (*this).pparams.xi, (*this).pparams.anisotropic);
     }
   }
 
   void do_overrelaxation() {
     overrelaxation((*this).U, (*this).pparams.beta, (*this).pparams.xi,
-                                   (*this).pparams.anisotropic);
+                   (*this).pparams.anisotropic);
   }
 
   void run(const YAML::Node &nd) {
@@ -103,11 +90,11 @@ public:
     (*this).os << "i E Q E_ss Q_ss\n";
     size_t i_min = (*this).g_icounter;
     size_t i_max = (*this).sparams.n_meas * ((*this).threads) + (*this).g_icounter;
-    size_t i_step = (*this).threads; // avoids using the same RNG seed 
+    size_t i_step = (*this).threads; // avoids using the same RNG seed
 
     /**
      * do measurements:
-     * sweep: do N_hit heatbath_overrelaxation-Updates of every link in the lattice
+     * heatbath_overrelaxation updates of every link in the lattice
      * calculate plaquette, spacial plaquette, energy density with and without cloverdef
      * and write to stdout and output-file save every nave configuration
      * */

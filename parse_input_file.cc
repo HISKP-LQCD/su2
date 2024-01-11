@@ -410,7 +410,6 @@ namespace input_file_parsing {
     in.read_opt_verb<size_t>(mcparams.n_meas, {"n_meas"});
     in.read_opt_verb<size_t>(mcparams.N_save, {"N_save"});
     in.read_opt_verb<size_t>(mcparams.seed, {"seed"});
-    in.read_opt_verb<size_t>(mcparams.N_hit, {"N_hit"});
 
     in.read_opt_verb<std::string>(mcparams.conf_dir, {"conf_dir"});
     in.read_opt_verb<std::string>(mcparams.conf_basename, {"conf_basename"});

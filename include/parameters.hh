@@ -239,7 +239,6 @@ namespace global_parameters {
     bool lenghty_conf_name = true; // add ensemble information in configuration name
     size_t beta_str_width = g_beta_str_width; // length of the beta value config filename
 
-    size_t N_hit = 1; // N_hit updates 
     bool heat = true; // randomness of the initial config, true: hot, false: cold
     double delta = 1.0; // quantifies how much the prooposed new link can differ from
                         // the current link

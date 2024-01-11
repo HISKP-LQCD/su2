@@ -61,44 +61,35 @@ namespace flat_spacetime {
     std::uniform_real_distribution<double> uniform(0.0, 1.0);
     typedef typename accum_type<u1>::type accum;
 
-#ifdef _USE_OMP_
-#pragma omp parallel
-    {
+    for (size_t x0_start = 0; x0_start < 2; x0_start++) {
+#pragma omp parallel for
+      for (size_t x0 = x0_start; x0 < U.getLt(); x0 += 2) {
       size_t thread_num = omp_get_thread_num();
-#else
-    size_t thread_num = 0;
-#endif
-
-      for (size_t x0_start = 0; x0_start < 2; x0_start++) {
-#pragma omp for
-        for (size_t x0 = x0_start; x0 < U.getLt(); x0 += 2) {
-          for (size_t x1 = 0; x1 < U.getLx(); x1++) {
-            for (size_t x2 = 0; x2 < U.getLy(); x2++) {
-              for (size_t x3 = 0; x3 < U.getLz(); x3++) {
-                const std::vector<size_t> x = {x0, x1, x2, x3};
-                for (size_t mu = 0; mu < U.getndims(); mu++) {
-                  accum K;
-                  get_staples_MCMC_step(K, U, x, mu, xi, anisotropic);
-                  const double theta_stap = get_phase(K);
-                  const double rho = coupl_fact * get_abs(K);
-                  const double A = rho / (2.0 * sinh(rho));
-                  const double u1 = uniform(engine[thread_num]);
-                  const double y = (1 / rho) * log((rho / A) * u1 + exp(-rho));
-                  double phi = acos(y);
-                  const double u2 = uniform(engine[thread_num]);
-                  if (u2 >= 0.5) {
-                    phi *= -1.0;
-                  }
-                  U(x, mu).set(phi - theta_stap);
+        for (size_t x1 = 0; x1 < U.getLx(); x1++) {
+          for (size_t x2 = 0; x2 < U.getLy(); x2++) {
+            for (size_t x3 = 0; x3 < U.getLz(); x3++) {
+              const std::vector<size_t> x = {x0, x1, x2, x3};
+              for (size_t mu = 0; mu < U.getndims(); mu++) {
+                accum K;
+                get_staples_MCMC_step(K, U, x, mu, xi, anisotropic);
+                const double theta_stap = get_phase(K);
+                const double rho = coupl_fact * get_abs(K);
+                const double A = rho / (2.0 * sinh(rho));
+                const double u1 = uniform(engine[thread_num]);
+                const double y = (1 / rho) * log((rho / A) * u1 + exp(-rho));
+                double phi = acos(y);
+                const double u2 = uniform(engine[thread_num]);
+                if (u2 >= 0.5) {
+                  phi *= -1.0;
                 }
+                U(x, mu).set(phi - theta_stap);
               }
             }
           }
         }
       }
-#ifdef _USE_OMP_
     }
-#endif
+
     return;
   }
 

@@ -29,12 +29,13 @@ namespace flat_spacetime {
   /**
    * @brief heatbath step
    *
-   * Sampling each U_\mu(x) according to eq. (10) of https://www.sciencedirect.com/science/article/pii/S0010465509002148   *
+   * Sampling each U_\mu(x) according to eq. (10) of
+   * https://www.sciencedirect.com/science/article/pii/S0010465509002148   *
    *
    * @tparam URNG
    * @tparam Group
    * @param U gauge configuration
-   * @param engine engine for random number generation
+   * @param engine engine for RNG: size must be 2*number of threads
    * @param N_hit number of hits for the sampling
    * @param beta coupling beta in the action
    * @param xi bare anisotropy
@@ -57,8 +58,9 @@ namespace flat_spacetime {
                 const double &xi = 1.0,
                 const bool &anisotropic = false) {
     const double coupl_fact = (beta / double(U.getNc()));
-    std::uniform_real_distribution<double> uniform(0., 1.);
+    std::uniform_real_distribution<double> uniform(0.0, 1.0);
     typedef typename accum_type<u1>::type accum;
+
 #ifdef _USE_OMP_
 #pragma omp parallel
     {
@@ -79,7 +81,7 @@ namespace flat_spacetime {
                   get_staples_MCMC_step(K, U, x, mu, xi, anisotropic);
                   const double theta_stap = get_phase(K);
                   const double rho = coupl_fact * get_abs(K);
-                  const double A = 2 * sinh(rho) / rho;
+                  const double A = rho / (2.0 * sinh(rho));
                   for (size_t n = 0; n < N_hit; n++) {
                     const double u1 = uniform(engine[thread_num]);
                     const double y = (1 / rho) * log((rho / A) * u1 + exp(-rho));

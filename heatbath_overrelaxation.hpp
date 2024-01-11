@@ -81,11 +81,12 @@ public:
    * @param i trajectory index
    * @param inew
    */
-  void do_heatbath(const size_t &i, const size_t &inew) {
+  void do_heatbath(const size_t &i) {
     if ((*this).sparams.do_mcmc) {
-      std::vector<std::mt19937> engines((*this).threads);
-      for (size_t engine = 0; engine < (*this).threads; engine += 1) {
-        engines[engine].seed((*this).sparams.seed + i + engine);
+      const int n_engines = (*this).threads;
+      std::vector<std::mt19937> engines(n_engines);
+      for (size_t i_engine = 0; i_engine < n_engines; i_engine += 1) {
+        engines[i_engine].seed((*this).sparams.seed + i + i_engine);
       }
 
       this->heatbath((*this).pparams, (*this).U, engines, (*this).sparams.N_hit,
@@ -94,7 +95,7 @@ public:
     }
   }
 
-  void do_overrelaxation(const size_t &i, const size_t &inew) {
+  void do_overrelaxation() {
     flat_spacetime::overrelaxation((*this).U, (*this).pparams.beta, (*this).pparams.xi,
                                    (*this).pparams.anisotropic);
   }
@@ -111,7 +112,7 @@ public:
     (*this).os << "i E Q E_ss Q_ss\n";
     size_t i_min = (*this).g_icounter;
     size_t i_max = (*this).sparams.n_meas * ((*this).threads) + (*this).g_icounter;
-    size_t i_step = (*this).threads;
+    size_t i_step = (*this).threads; // avoids using the same RNG seed 
     /**
      * do measurements:
      * sweep: do N_hit heatbath_overrelaxation-Updates of every link in the lattice
@@ -122,7 +123,6 @@ public:
       // inew counts loops, loop-variable needed to have one RNG per thread with
       // different seeds for every measurement
       size_t inew = (i - (*this).g_icounter) / (*this).threads + (*this).g_icounter;
-
 
       double E = 0., Q = 0.;
       std::cout << inew;
@@ -135,8 +135,8 @@ public:
       std::cout << "\n";
       (*this).os << "\n";
 
-      this->do_heatbath(i, inew);
-      this->do_overrelaxation(i, inew);
+      this->do_heatbath(i);
+      this->do_overrelaxation();
 
       if (inew > 0 && (inew % (*this).sparams.N_save) == 0) {
         std::ostringstream oss_i;
@@ -144,8 +144,10 @@ public:
         ((*this).U).save(oss_i.str());
       }
 
-      bool do_omeas =
-        ((*this).sparams.do_omeas && inew != 0 && (inew % (*this).sparams.N_save) == 0);
+      bool b1 = (*this).sparams.do_omeas;
+      bool b2 = inew != 0;
+      bool b3 = (inew % (*this).sparams.N_save) == 0;
+      bool do_omeas = (b1 && b2 && b3);
       this->after_MCMC_step(inew, do_omeas);
 
       std::ostringstream oss;

@@ -66,15 +66,6 @@ public:
                              pparams.anisotropic);
   }
 
-  void open_output_data() {
-    const std::string out_data_file = "output.heatbath_overrelaxation.data";
-    if ((*this).g_icounter == 0) {
-      (*this).os.open((*this).sparams.conf_dir + "/" + out_data_file, std::ios::out);
-    } else {
-      (*this).os.open((*this).sparams.conf_dir + "/" + out_data_file, std::ios::app);
-    }
-  }
-
   /**
    * @brief do the i-th sweep of the heatbath_overrelaxation algorithm
    *
@@ -85,7 +76,7 @@ public:
     if ((*this).sparams.do_mcmc) {
       const int n_engines = (*this).threads;
       std::vector<std::mt19937> engines(n_engines);
-      for (size_t i_engine = 0; i_engine < n_engines; i_engine += 1) {
+      for (size_t i_engine = 0; i_engine < n_engines; i_engine++) {
         engines[i_engine].seed((*this).sparams.seed + i + i_engine);
       }
 
@@ -96,7 +87,7 @@ public:
   }
 
   void do_overrelaxation() {
-    flat_spacetime::overrelaxation((*this).U, (*this).pparams.beta, (*this).pparams.xi,
+    overrelaxation((*this).U, (*this).pparams.beta, (*this).pparams.xi,
                                    (*this).pparams.anisotropic);
   }
 
@@ -113,6 +104,7 @@ public:
     size_t i_min = (*this).g_icounter;
     size_t i_max = (*this).sparams.n_meas * ((*this).threads) + (*this).g_icounter;
     size_t i_step = (*this).threads; // avoids using the same RNG seed 
+
     /**
      * do measurements:
      * sweep: do N_hit heatbath_overrelaxation-Updates of every link in the lattice

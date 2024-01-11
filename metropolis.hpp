@@ -77,16 +77,6 @@ public:
     }
   }
 
-  void open_output_data() {
-    if ((*this).g_icounter == 0) {
-      (*this).os.open((*this).sparams.conf_dir + "/output.u1-metropolis.data",
-                      std::ios::out);
-    } else {
-      (*this).os.open((*this).sparams.conf_dir + "/output.u1-metropolis.data",
-                      std::ios::app);
-    }
-  }
-
   /**
    * @brief do the i-th sweep of the metropolis algorithm
    *

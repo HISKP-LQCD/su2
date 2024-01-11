@@ -82,16 +82,14 @@ namespace flat_spacetime {
                   const double theta_stap = get_phase(K);
                   const double rho = coupl_fact * get_abs(K);
                   const double A = rho / (2.0 * sinh(rho));
-                  for (size_t n = 0; n < N_hit; n++) {
-                    const double u1 = uniform(engine[thread_num]);
-                    const double y = (1 / rho) * log((rho / A) * u1 + exp(-rho));
-                    const double u2 = uniform(engine[thread_num]);
-                    double phi = acos(y);
-                    if (u2 >= 0.5) {
-                      phi *= -1;
-                    }
-                    U(x, mu).set(phi - theta_stap);
+                  const double u1 = uniform(engine[thread_num]);
+                  const double y = (1 / rho) * log((rho / A) * u1 + exp(-rho));
+                  double phi = acos(y);
+                  const double u2 = uniform(engine[thread_num]);
+                  if (u2 >= 0.5) {
+                    phi *= -1.0;
                   }
+                  U(x, mu).set(phi - theta_stap);
                 }
               }
             }

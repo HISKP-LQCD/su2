@@ -64,10 +64,10 @@ public:
    */
   void do_heatbath(const size_t &i) {
     if ((*this).sparams.do_mcmc) {
-      const int n_engines = (*this).threads;
-      std::vector<std::mt19937> engines(n_engines);
-      for (size_t i_engine = 0; i_engine < n_engines; i_engine++) {
-        engines[i_engine].seed((*this).sparams.seed + i + i_engine);
+      const int n_threads = (*this).threads;
+      std::vector<std::mt19937> engines(n_threads);
+      for (size_t i_engine = 0; i_engine < n_threads; i_engine++) {
+        engines[i_engine].seed((*this).sparams.seed + i*n_threads + i_engine);
       }
 
       (*this).rate = heatbath((*this).U, engines, (*this).pparams.beta,
@@ -118,8 +118,7 @@ public:
     }
 
     size_t i_min = (*this).g_icounter;
-    size_t i_max = (*this).sparams.n_meas * ((*this).threads) + (*this).g_icounter;
-    size_t i_step = (*this).threads; // avoids using the same RNG seed
+    size_t i_max = (*this).sparams.n_meas + (*this).g_icounter;
 
     /**
      * do measurements:
@@ -127,14 +126,10 @@ public:
      * calculate plaquette, spacial plaquette, energy density with and without cloverdef
      * and write to stdout and output-file save every nave configuration
      * */
-    for (size_t i = i_min; i < i_max; i += i_step) {
-      // inew counts loops, loop-variable needed to have one RNG per thread with
-      // different seeds for every measurement
-      size_t inew = (i - (*this).g_icounter) / (*this).threads + (*this).g_icounter;
-
+    for (size_t i = i_min; i < i_max; i++) {
       double E = 0., Q = 0.;
-      std::cout << inew;
-      (*this).os << inew;
+      std::cout << i;
+      (*this).os << i;
       for (bool ss : {false, true}) {
         this->energy_density((*this).pparams, (*this).U, E, Q, false, ss);
         std::cout << " " << std::scientific << std::setprecision(15) << E << " " << Q;
@@ -146,17 +141,17 @@ public:
       this->do_heatbath(i);
       this->do_overrelaxation();
 
-      if (inew > 0 && (inew % (*this).sparams.N_save) == 0) {
+      if (i > 0 && (i % (*this).sparams.N_save) == 0) {
         std::ostringstream oss_i;
-        oss_i << (*this).conf_path_basename << "." << inew << std::ends;
+        oss_i << (*this).conf_path_basename << "." << i << std::ends;
         ((*this).U).save(oss_i.str());
       }
 
       bool b1 = (*this).sparams.do_omeas;
-      bool b2 = inew != 0;
-      bool b3 = (inew % (*this).sparams.N_save) == 0;
+      bool b2 = i != 0;
+      bool b3 = (i % (*this).sparams.N_save) == 0;
       bool do_omeas = (b1 && b2 && b3);
-      this->after_MCMC_step(inew, do_omeas);
+      this->after_MCMC_step(i, do_omeas);
     }
     this->save_acceptance_rates();
     this->save_final_conf();

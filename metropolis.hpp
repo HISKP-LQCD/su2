@@ -11,7 +11,8 @@
 
 #include "base_program.hpp"
 
-template <class Group> class metropolis_algo : public base_program<Group, gp::metropolis> {
+template <class Group>
+class metropolis_algo : public base_program<Group, gp::metropolis> {
 private:
   std::vector<double> rate = {0., 0.};
 
@@ -81,19 +82,18 @@ public:
    * @brief do the i-th sweep of the metropolis algorithm
    *
    * @param i trajectory index
-   * @param inew
    */
-  void do_sweep(const size_t &i, const size_t &inew) {
+  void do_sweep(const size_t &i) {
+    const size_t n_threads = (*this).threads;
     if ((*this).sparams.do_mcmc) {
-      std::vector<std::mt19937> engines((*this).threads);
-      for (size_t engine = 0; engine < (*this).threads; engine += 1) {
-        engines[engine].seed((*this).sparams.seed + i + engine);
+      std::vector<std::mt19937> engines(n_threads);
+      for (size_t i_engine = 0; i_engine < n_threads; i_engine++) {
+        engines[i_engine].seed((*this).sparams.seed + i * n_threads + i_engine);
       }
 
-
       double E = 0., Q = 0.;
-      std::cout << inew;
-      (*this).os << inew;
+      std::cout << i;
+      (*this).os << i;
       for (bool ss : {false, true}) {
         this->energy_density((*this).pparams, (*this).U, E, Q, false, ss);
         std::cout << " " << std::scientific << std::setprecision(15) << E << " " << Q;
@@ -106,9 +106,9 @@ public:
                           (*this).sparams.N_hit, (*this).pparams.beta, (*this).pparams.xi,
                           (*this).pparams.anisotropic);
 
-      if (inew > 0 && (inew % (*this).sparams.N_save) == 0) {
+      if (i > 0 && (i % (*this).sparams.N_save) == 0) {
         std::ostringstream oss_i;
-        oss_i << (*this).conf_path_basename << "." << inew << std::ends;
+        oss_i << (*this).conf_path_basename << "." << i << std::ends;
         ((*this).U).save(oss_i.str());
       }
     }
@@ -118,6 +118,7 @@ public:
 
   // save acceptance rates to additional file to keep track of measurements
   void save_acceptance_rates() {
+    const size_t n_threads = (*this).threads;
     if ((*this).sparams.do_mcmc) {
       std::cout << "## Acceptance rate " << rate[0] / double((*this).sparams.n_meas)
                 << " temporal acceptance rate "
@@ -129,14 +130,10 @@ public:
                               << (*this).pparams.beta << " " << (*this).pparams.Lx << " "
                               << (*this).pparams.Lt << " " << (*this).pparams.xi << " "
                               << (*this).sparams.delta << " " << (*this).sparams.heat
-                              << " " << (*this).threads << " " << (*this).sparams.N_hit
-                              << " " << (*this).sparams.n_meas << " "
-                              << (*this).sparams.seed << " " << std::endl;
+                              << " " << n_threads << " " << (*this).sparams.N_hit << " "
+                              << (*this).sparams.n_meas << " " << (*this).sparams.seed
+                              << " " << std::endl;
       (*this).acceptancerates.close();
-
-      std::ostringstream oss;
-      oss << (*this).conf_path_basename << ".final" << std::ends;
-      ((*this).U).save((*this).sparams.conf_dir + "/" + oss.str());
     }
     return;
   }
@@ -146,31 +143,32 @@ public:
     this->init_gauge_conf_mcmc();
     this->open_output_data();
     this->set_omp_threads();
-    if ((*this).sparams.do_omeas){
-        this->set_potential_filenames();
+    if ((*this).sparams.do_omeas) {
+      this->set_potential_filenames();
     }
 
-    (*this).os << "i E Q E_ss Q_ss\n";
-    size_t i_min = (*this).g_icounter;
-    size_t i_max = (*this).sparams.n_meas * ((*this).threads) + (*this).g_icounter;
-    size_t i_step = (*this).threads;
+    if ((*this).g_icounter == 0) {
+      // header: column names in the output
+      std::string head_str = io::get_header_1(" ");
+      std::cout << head_str;
+      (*this).os << head_str;
+    }
+
+    const size_t i_min = (*this).g_icounter;
+    const size_t i_max = (*this).sparams.n_meas + (*this).g_icounter;
     /**
      * do measurements:
      * sweep: do N_hit Metropolis-Updates of every link in the lattice
      * calculate plaquette, spacial plaquette, energy density with and without cloverdef
      * and write to stdout and output-file save every nave configuration
      * */
-    for (size_t i = i_min; i < i_max; i += i_step) {
-      // inew counts loops, loop-variable needed to have one RNG per thread with
-      // different seeds for every measurement
-      size_t inew = (i - (*this).g_icounter) / (*this).threads + (*this).g_icounter;
-
-      this->do_sweep(i, inew);
+    for (size_t i = i_min; i < i_max; i++) {
+      this->do_sweep(i);
       bool do_omeas =
-        ((*this).sparams.do_omeas && inew != 0 && (inew % (*this).sparams.N_save) == 0);
-      this->after_MCMC_step(inew, do_omeas);
+        ((*this).sparams.do_omeas && i != 0 && (i % (*this).sparams.N_save) == 0);
+      this->after_MCMC_step(i, do_omeas);
     }
-
     this->save_acceptance_rates();
+    this->save_final_conf();
   }
 };

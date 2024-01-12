@@ -114,7 +114,8 @@ YAML::Node get_cleaned_input_file(running_program &rp, const std::string &input_
 
   do_heatbath_overrelaxation = false;
   if (nd["heatbath_overrelaxation"]) {
-    in.read_verb<bool>(do_heatbath_overrelaxation, {"heatbath_overrelaxation", "do_mcmc"});
+    in.read_verb<bool>(do_heatbath_overrelaxation,
+                       {"heatbath_overrelaxation", "do_mcmc"});
     if (!do_heatbath_overrelaxation) {
       nd.remove("heatbath_overrelaxation");
     }
@@ -122,12 +123,13 @@ YAML::Node get_cleaned_input_file(running_program &rp, const std::string &input_
 
   do_omeas = bool(nd["omeas"]);
   std::string err = ""; // error message
-  const int flag_algo = int(do_hmc)+int(do_metropolis)+int(do_heatbath_overrelaxation);
+  const int flag_algo =
+    int(do_hmc) + int(do_metropolis) + int(do_heatbath_overrelaxation);
   try {
     if (flag_algo > 1) { // can run only one algorithm
       err = "ERROR: You can run no more than one MC algorithm.\n";
       throw err;
-    } else if (flag_algo ==0 && !nd["omeas"]["offline"]) {
+    } else if (flag_algo == 0 && !nd["omeas"]["offline"]) {
       err = "Error: You must write the 'offline' measurements node inside 'omeas' "
             "because you're not running any MCMC algorithm.\n";
       throw err;
@@ -145,13 +147,11 @@ namespace gp = global_parameters;
 
 template <class Group, class sparam_type> class base_program {
 protected:
-  std::string algo_name =
-    "UNNAMED_PROGRAM"; // name of the algorithm; initialized specified in child classes
+  std::string algo_name = "UNNAMED_PROGRAM"; // algorithm's name
 
   gp::physics pparams; // physics parameters
   sparam_type sparams; // specific parameters to the given run
   gp::measure omeas; // omeasurements parameters
-  //    YAML::Node nd; // yaml node
 
   size_t threads;
 
@@ -369,6 +369,19 @@ public:
    * @param path path to the input file
    */
   virtual void run(const YAML::Node &nd) = 0;
+
+  // save acceptance rates to additional file to keep track of measurements
+  virtual void save_acceptance_rates() { return; };
+
+  // save the final configuration when doing the MC evolution
+  void save_final_conf() {
+    if ((*this).sparams.do_mcmc) {
+      std::ostringstream oss;
+      oss << (*this).conf_path_basename << ".final" << std::ends;
+      ((*this).U).save((*this).sparams.conf_dir + "/" + oss.str());
+    }
+    return;
+  }
 
   /**
    * @brief online measurements over the i-th trajectory

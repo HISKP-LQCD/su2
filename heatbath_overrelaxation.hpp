@@ -17,6 +17,10 @@
 template <class Group>
 class heatbath_overrelaxation_algo
   : public base_program<Group, gp::heatbath_overrelaxation> {
+private:
+
+  std::vector<double> rate = {0.0, 0.0};
+
 public:
   heatbath_overrelaxation_algo() { (*this).algo_name = "heatbath_overrelaxation"; }
   ~heatbath_overrelaxation_algo() {}
@@ -58,24 +62,44 @@ public:
    * @brief do the i-th sweep of the heatbath_overrelaxation algorithm
    *
    * @param i trajectory index
-   * @param inew
    */
   void do_heatbath(const size_t &i) {
     if ((*this).sparams.do_mcmc) {
-      const int n_engines = (*this).threads;
-      std::vector<std::mt19937> engines(n_engines);
-      for (size_t i_engine = 0; i_engine < n_engines; i_engine++) {
-        engines[i_engine].seed((*this).sparams.seed + i + i_engine);
+      const int n_threads = (*this).threads;
+      std::vector<std::mt19937> engines(n_threads);
+      for (size_t i_engine = 0; i_engine < n_threads; i_engine++) {
+        engines[i_engine].seed((*this).sparams.seed + i * n_threads + i_engine);
       }
 
-      heatbath((*this).U, engines, (*this).pparams.beta,
-                     (*this).pparams.xi, (*this).pparams.anisotropic);
+      (*this).rate += heatbath((*this).U, engines, (*this).pparams.beta,
+                              (*this).pparams.xi, (*this).pparams.anisotropic);
     }
   }
 
   void do_overrelaxation() {
     overrelaxation((*this).U, (*this).pparams.beta, (*this).pparams.xi,
                    (*this).pparams.anisotropic);
+  }
+
+  // save acceptance rates to additional file to keep track of measurements
+  void save_acceptance_rates() {
+    if ((*this).sparams.do_mcmc) {
+      std::cout << "## Acceptance rate " << rate[0] / double((*this).sparams.n_meas)
+                << " temporal acceptance rate "
+                << rate[1] / double((*this).sparams.n_meas) << std::endl;
+      (*this).acceptancerates.open((*this).sparams.conf_dir +
+                                     "/acceptancerates-heatbath_overrelaxation.data",
+                                   std::ios::app);
+      (*this).acceptancerates << rate[0] / double((*this).sparams.n_meas) << " "
+                              << rate[1] / double((*this).sparams.n_meas) << " "
+                              << (*this).pparams.beta << " " << (*this).pparams.Lx << " "
+                              << (*this).pparams.Lt << " " << (*this).pparams.xi << " "
+                              << (*this).sparams.heat << " " << (*this).threads << " "
+                              << (*this).sparams.n_meas << " " << (*this).sparams.seed
+                              << " " << std::endl;
+      (*this).acceptancerates.close();
+    }
+    return;
   }
 
   void run(const YAML::Node &nd) {
@@ -87,10 +111,15 @@ public:
       this->set_potential_filenames();
     }
 
-    (*this).os << "i E Q E_ss Q_ss\n";
+    if ((*this).g_icounter == 0) {
+      // header: column names in the output
+      std::string head_str = io::get_header_1(" ");
+      std::cout << head_str;
+      (*this).os << head_str;
+    }
+
     size_t i_min = (*this).g_icounter;
-    size_t i_max = (*this).sparams.n_meas * ((*this).threads) + (*this).g_icounter;
-    size_t i_step = (*this).threads; // avoids using the same RNG seed
+    size_t i_max = (*this).sparams.n_meas + (*this).g_icounter;
 
     /**
      * do measurements:
@@ -98,14 +127,10 @@ public:
      * calculate plaquette, spacial plaquette, energy density with and without cloverdef
      * and write to stdout and output-file save every nave configuration
      * */
-    for (size_t i = i_min; i < i_max; i += i_step) {
-      // inew counts loops, loop-variable needed to have one RNG per thread with
-      // different seeds for every measurement
-      size_t inew = (i - (*this).g_icounter) / (*this).threads + (*this).g_icounter;
-
+    for (size_t i = i_min; i < i_max; i++) {
       double E = 0., Q = 0.;
-      std::cout << inew;
-      (*this).os << inew;
+      std::cout << i;
+      (*this).os << i;
       for (bool ss : {false, true}) {
         this->energy_density((*this).pparams, (*this).U, E, Q, false, ss);
         std::cout << " " << std::scientific << std::setprecision(15) << E << " " << Q;
@@ -117,21 +142,19 @@ public:
       this->do_heatbath(i);
       this->do_overrelaxation();
 
-      if (inew > 0 && (inew % (*this).sparams.N_save) == 0) {
+      if (i > 0 && (i % (*this).sparams.N_save) == 0) {
         std::ostringstream oss_i;
-        oss_i << (*this).conf_path_basename << "." << inew << std::ends;
+        oss_i << (*this).conf_path_basename << "." << i << std::ends;
         ((*this).U).save(oss_i.str());
       }
 
       bool b1 = (*this).sparams.do_omeas;
-      bool b2 = inew != 0;
-      bool b3 = (inew % (*this).sparams.N_save) == 0;
+      bool b2 = i != 0;
+      bool b3 = (i % (*this).sparams.N_save) == 0;
       bool do_omeas = (b1 && b2 && b3);
-      this->after_MCMC_step(inew, do_omeas);
-
-      std::ostringstream oss;
-      oss << (*this).conf_path_basename << ".final" << std::ends;
-      ((*this).U).save((*this).sparams.conf_dir + "/" + oss.str());
+      this->after_MCMC_step(i, do_omeas);
     }
+    this->save_acceptance_rates();
+    this->save_final_conf();
   }
 };

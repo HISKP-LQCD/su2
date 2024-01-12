@@ -21,8 +21,53 @@
 #include <omp.h>
 #endif
 
+#include <algorithm>
 #include <random>
 #include <vector>
+
+// function defined in the "proposed method" of
+// - https://www.sciencedirect.com/science/article/pii/092056329290356W
+// - https://arxiv.org/pdf/hep-lat/9210016v1.pdf
+namespace hattori_nakajima {
+
+  const double a_star = 0.798953686083986;
+  const double epsilon = 0.001;
+
+  // computes it from da = a-a^*, not from "a" itself
+  double delta(const double &da) {
+    return 0.35 * std::max(0.0, da) + 1.03 * sqrt(std::max(0.0, da));
+  }
+
+  double alpha(const double &a) {
+    const double arg1 = sqrt(a * (2.0 - epsilon));
+    const double arg2 = std::max(sqrt(epsilon * a), delta(a - a_star));
+    return std::min(arg1, arg2);
+  }
+
+  double beta(const double &al, const double &a) {
+    const double arg1 = std::pow(al, 2) / a;
+    const double arg2 = (cosh(M_PI * al) - 1.0) / (exp(2 * a) - 1.0);
+    return std::max(arg1, arg2) - 1.0;
+  }
+
+  double h(const double &al, const double &be, const double &x) {
+    const double beta_fact = sqrt((1.0 - be) / (1.0 + be));
+    const double A = (2.0 * x - 1.0) * atan(beta_fact * tanh(M_PI * al / 2.0));
+    const double B = (1.0 / beta_fact) * tan(A);
+    return (2.0 / al) * atanh(B);
+  }
+
+  double G(const double &al, const double &be, const double &a, const double &theta) {
+    const double A1 = 1 - cos(theta);
+    const double B1 = (cosh(al * theta) - 1.0) / (1.0 + be);
+    return A1 - (1.0 / a) * log(1 + B1);
+  }
+
+  double g(const double &al, const double &be, const double &a, const double &x) {
+    return exp(-a * G(al, be, a, h(al, be, x)));
+  }
+
+} // namespace hattori_nakajima
 
 /**
  * @brief heatbath step
@@ -42,11 +87,11 @@
  */
 template <class URNG, class Group>
 std::vector<double> heatbath(gaugeconfig<Group> &U,
-              std::vector<URNG> engine,
-              const size_t &N_hit,
-              const double &beta,
-              const double &xi = 1.0,
-              const bool &anisotropic = false);
+                             std::vector<URNG> engine,
+                             const size_t &N_hit,
+                             const double &beta,
+                             const double &xi = 1.0,
+                             const bool &anisotropic = false);
 
 template <class URNG>
 std::vector<double> heatbath(gaugeconfig<u1> &U,
@@ -54,6 +99,54 @@ std::vector<double> heatbath(gaugeconfig<u1> &U,
                              const double &beta,
                              const double &xi = 1.0,
                              const bool &anisotropic = false) {
+  const double coupl_fact = (beta / double(U.getNc()));
+  std::uniform_real_distribution<double> uniform(0.0, 1.0);
+  typedef typename accum_type<u1>::type accum;
+  double rate = 0.0, rate_time = 0.0;
+
+  for (size_t x0_start = 0; x0_start < 2; x0_start++) {
+#pragma omp parallel for
+    for (size_t x0 = x0_start; x0 < U.getLt(); x0 += 2) {
+      size_t thread_num = omp_get_thread_num();
+      for (size_t x1 = 0; x1 < U.getLx(); x1++) {
+        for (size_t x2 = 0; x2 < U.getLy(); x2++) {
+          for (size_t x3 = 0; x3 < U.getLz(); x3++) {
+            const std::vector<size_t> x = {x0, x1, x2, x3};
+            for (size_t mu = 0; mu < U.getndims(); mu++) {
+              accum K;
+              get_staples_MCMC_step(K, U, x, mu, xi, anisotropic);
+              const double theta_stap = get_phase(K);
+              const double rho = coupl_fact * get_abs(K);
+              const double alpha = hattori_nakajima::alpha(rho);
+              const double beta = hattori_nakajima::beta(alpha, rho);
+              const double u1 = uniform(engine[thread_num]);
+              const double u2 = uniform(engine[thread_num]);
+              bool accept = (u2 < hattori_nakajima::g(alpha, beta, rho, u1));
+              if (accept) {
+                U(x, mu).set(hattori_nakajima::h(alpha, beta, u1) - theta_stap);
+                rate += 1;
+                if (mu == 0) {
+                  rate_time += 1;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  const std::vector<double> res = {double(rate) / double(U.getSize()),
+                                   double(rate_time) / double(U.getVolume())};
+  return res;
+}
+
+template <class URNG>
+std::vector<double> heatbath_legacy(gaugeconfig<u1> &U,
+                                    std::vector<URNG> engine,
+                                    const double &beta,
+                                    const double &xi = 1.0,
+                                    const bool &anisotropic = false) {
   const double coupl_fact = (beta / double(U.getNc()));
   std::uniform_real_distribution<double> uniform(0.0, 1.0);
   typedef typename accum_type<u1>::type accum;
@@ -94,17 +187,17 @@ std::vector<double> heatbath(gaugeconfig<u1> &U,
   }
 
   const std::vector<double> res = {double(rate) / double(U.getSize()),
-                             double(rate_time) / double(U.getVolume())};
+                                   double(rate_time) / double(U.getVolume())};
   return res;
 }
 
 template <class URNG>
 std::vector<double> heatbath(gaugeconfig<su2> &U,
-              std::vector<URNG> engine,
-              const size_t &N_hit,
-              const double &beta,
-              const double &xi = 1.0,
-              const bool &anisotropic = false) {
+                             std::vector<URNG> engine,
+                             const size_t &N_hit,
+                             const double &beta,
+                             const double &xi = 1.0,
+                             const bool &anisotropic = false) {
   spacetime_lattice::fatal_error("heatbath not implemented for SU(2)!", __func__);
 
   return {};
@@ -112,11 +205,11 @@ std::vector<double> heatbath(gaugeconfig<su2> &U,
 
 template <class URNG>
 std::vector<double> heatbath(gaugeconfig<su3> &U,
-              std::vector<URNG> engine,
-              const size_t &N_hit,
-              const double &beta,
-              const double &xi = 1.0,
-              const bool &anisotropic = false) {
+                             std::vector<URNG> engine,
+                             const size_t &N_hit,
+                             const double &beta,
+                             const double &xi = 1.0,
+                             const bool &anisotropic = false) {
   spacetime_lattice::fatal_error("heatbath not implemented for SU(3)!", __func__);
 
   return {};

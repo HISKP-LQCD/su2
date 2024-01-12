@@ -18,6 +18,7 @@ template <class Group>
 class heatbath_overrelaxation_algo
   : public base_program<Group, gp::heatbath_overrelaxation> {
 private:
+
   std::vector<double> rate = {0.0, 0.0};
 
 public:
@@ -67,10 +68,10 @@ public:
       const int n_threads = (*this).threads;
       std::vector<std::mt19937> engines(n_threads);
       for (size_t i_engine = 0; i_engine < n_threads; i_engine++) {
-        engines[i_engine].seed((*this).sparams.seed + i*n_threads + i_engine);
+        engines[i_engine].seed((*this).sparams.seed + i * n_threads + i_engine);
       }
 
-      (*this).rate = heatbath((*this).U, engines, (*this).pparams.beta,
+      (*this).rate += heatbath((*this).U, engines, (*this).pparams.beta,
                               (*this).pparams.xi, (*this).pparams.anisotropic);
     }
   }

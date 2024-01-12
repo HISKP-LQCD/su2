@@ -58,6 +58,7 @@ public:
    * @brief do the i-th sweep of the heatbath_overrelaxation algorithm
    *
    * @param i trajectory index
+   * @param inew
    */
   void do_heatbath(const size_t &i) {
     if ((*this).sparams.do_mcmc) {
@@ -87,8 +88,8 @@ public:
     }
 
     (*this).os << "i E Q E_ss Q_ss\n";
-    size_t i_min = (*this).g_icounter* ((*this).threads);
-    size_t i_max = ((*this).sparams.n_meas + (*this).g_icounter) * ((*this).threads);
+    size_t i_min = (*this).g_icounter;
+    size_t i_max = (*this).sparams.n_meas * ((*this).threads) + (*this).g_icounter;
     size_t i_step = (*this).threads; // avoids using the same RNG seed
 
     /**
@@ -98,13 +99,13 @@ public:
      * and write to stdout and output-file save every nave configuration
      * */
     for (size_t i = i_min; i < i_max; i += i_step) {
-      // traj_number counts loops, loop-variable needed to have one RNG per thread with
+      // inew counts loops, loop-variable needed to have one RNG per thread with
       // different seeds for every measurement
-      size_t traj_number = i / (*this).threads;
+      size_t inew = (i - (*this).g_icounter) / (*this).threads + (*this).g_icounter;
 
       double E = 0., Q = 0.;
-      std::cout << traj_number;
-      (*this).os << traj_number;
+      std::cout << inew;
+      (*this).os << inew;
       for (bool ss : {false, true}) {
         this->energy_density((*this).pparams, (*this).U, E, Q, false, ss);
         std::cout << " " << std::scientific << std::setprecision(15) << E << " " << Q;
@@ -116,17 +117,17 @@ public:
       this->do_heatbath(i);
       this->do_overrelaxation();
 
-      if (traj_number > 0 && (traj_number % (*this).sparams.N_save) == 0) {
+      if (inew > 0 && (inew % (*this).sparams.N_save) == 0) {
         std::ostringstream oss_i;
-        oss_i << (*this).conf_path_basename << "." << traj_number << std::ends;
+        oss_i << (*this).conf_path_basename << "." << inew << std::ends;
         ((*this).U).save(oss_i.str());
       }
 
       bool b1 = (*this).sparams.do_omeas;
-      bool b2 = traj_number != 0;
-      bool b3 = (traj_number % (*this).sparams.N_save) == 0;
+      bool b2 = inew != 0;
+      bool b3 = (inew % (*this).sparams.N_save) == 0;
       bool do_omeas = (b1 && b2 && b3);
-      this->after_MCMC_step(traj_number, do_omeas);
+      this->after_MCMC_step(inew, do_omeas);
 
       std::ostringstream oss;
       oss << (*this).conf_path_basename << ".final" << std::ends;

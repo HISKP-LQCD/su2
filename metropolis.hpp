@@ -81,9 +81,9 @@ public:
    * @brief do the i-th sweep of the metropolis algorithm
    *
    * @param i trajectory index
-   * @param inew
+   * @param traj_number
    */
-  void do_sweep(const size_t &i, const size_t &inew) {
+  void do_sweep(const size_t &i, const size_t &traj_number) {
     if ((*this).sparams.do_mcmc) {
       std::vector<std::mt19937> engines((*this).threads);
       for (size_t engine = 0; engine < (*this).threads; engine += 1) {
@@ -92,8 +92,8 @@ public:
 
 
       double E = 0., Q = 0.;
-      std::cout << inew;
-      (*this).os << inew;
+      std::cout << traj_number;
+      (*this).os << traj_number;
       for (bool ss : {false, true}) {
         this->energy_density((*this).pparams, (*this).U, E, Q, false, ss);
         std::cout << " " << std::scientific << std::setprecision(15) << E << " " << Q;
@@ -106,9 +106,9 @@ public:
                           (*this).sparams.N_hit, (*this).pparams.beta, (*this).pparams.xi,
                           (*this).pparams.anisotropic);
 
-      if (inew > 0 && (inew % (*this).sparams.N_save) == 0) {
+      if (traj_number > 0 && (traj_number % (*this).sparams.N_save) == 0) {
         std::ostringstream oss_i;
-        oss_i << (*this).conf_path_basename << "." << inew << std::ends;
+        oss_i << (*this).conf_path_basename << "." << traj_number << std::ends;
         ((*this).U).save(oss_i.str());
       }
     }
@@ -151,8 +151,8 @@ public:
     }
 
     (*this).os << "i E Q E_ss Q_ss\n";
-    size_t i_min = (*this).g_icounter;
-    size_t i_max = (*this).sparams.n_meas * ((*this).threads) + (*this).g_icounter;
+    size_t i_min = (*this).g_icounter * ((*this).threads);
+    size_t i_max = ((*this).sparams.n_meas + (*this).g_icounter) * ((*this).threads);
     size_t i_step = (*this).threads;
     /**
      * do measurements:
@@ -161,14 +161,14 @@ public:
      * and write to stdout and output-file save every nave configuration
      * */
     for (size_t i = i_min; i < i_max; i += i_step) {
-      // inew counts loops, loop-variable needed to have one RNG per thread with
+      // traj_number counts loops, loop-variable needed to have one RNG per thread with
       // different seeds for every measurement
-      size_t inew = (i - (*this).g_icounter) / (*this).threads + (*this).g_icounter;
+      size_t traj_number = i / (*this).threads;
 
-      this->do_sweep(i, inew);
+      this->do_sweep(i, traj_number);
       bool do_omeas =
-        ((*this).sparams.do_omeas && inew != 0 && (inew % (*this).sparams.N_save) == 0);
-      this->after_MCMC_step(inew, do_omeas);
+        ((*this).sparams.do_omeas && traj_number != 0 && (traj_number % (*this).sparams.N_save) == 0);
+      this->after_MCMC_step(traj_number, do_omeas);
     }
 
     this->save_acceptance_rates();

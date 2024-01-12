@@ -41,7 +41,7 @@
  * @return std::vector<double>: acceptance rates: {overall, only temporal ones}
  */
 template <class URNG, class Group>
-void heatbath(gaugeconfig<Group> &U,
+std::vector<double> heatbath(gaugeconfig<Group> &U,
               std::vector<URNG> engine,
               const size_t &N_hit,
               const double &beta,
@@ -49,14 +49,15 @@ void heatbath(gaugeconfig<Group> &U,
               const bool &anisotropic = false);
 
 template <class URNG>
-void heatbath(gaugeconfig<u1> &U,
-              std::vector<URNG> engine,
-              const double &beta,
-              const double &xi = 1.0,
-              const bool &anisotropic = false) {
+std::vector<double> heatbath(gaugeconfig<u1> &U,
+                             std::vector<URNG> engine,
+                             const double &beta,
+                             const double &xi = 1.0,
+                             const bool &anisotropic = false) {
   const double coupl_fact = (beta / double(U.getNc()));
   std::uniform_real_distribution<double> uniform(0.0, 1.0);
   typedef typename accum_type<u1>::type accum;
+  double rate = 0.0, rate_time = 0.0;
 
   for (size_t x0_start = 0; x0_start < 2; x0_start++) {
 #pragma omp parallel for
@@ -80,6 +81,10 @@ void heatbath(gaugeconfig<u1> &U,
               }
               if (accept) {
                 U(x, mu).set(phi2 - theta_stap);
+                rate += 1;
+                if (mu == 0) {
+                  rate_time += 1;
+                }
               }
             }
           }
@@ -88,11 +93,13 @@ void heatbath(gaugeconfig<u1> &U,
     }
   }
 
-  return;
+  const std::vector<double> res = {double(rate) / double(U.getSize()),
+                             double(rate_time) / double(U.getVolume())};
+  return res;
 }
 
 template <class URNG>
-void heatbath(gaugeconfig<su2> &U,
+std::vector<double> heatbath(gaugeconfig<su2> &U,
               std::vector<URNG> engine,
               const size_t &N_hit,
               const double &beta,
@@ -100,11 +107,11 @@ void heatbath(gaugeconfig<su2> &U,
               const bool &anisotropic = false) {
   spacetime_lattice::fatal_error("heatbath not implemented for SU(2)!", __func__);
 
-  return;
+  return {};
 }
 
 template <class URNG>
-void heatbath(gaugeconfig<su3> &U,
+std::vector<double> heatbath(gaugeconfig<su3> &U,
               std::vector<URNG> engine,
               const size_t &N_hit,
               const double &beta,
@@ -112,5 +119,5 @@ void heatbath(gaugeconfig<su3> &U,
               const bool &anisotropic = false) {
   spacetime_lattice::fatal_error("heatbath not implemented for SU(3)!", __func__);
 
-  return;
+  return {};
 }

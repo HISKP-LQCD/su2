@@ -11,7 +11,8 @@
 
 #include "base_program.hpp"
 
-template <class Group> class metropolis_algo : public base_program<Group, gp::metropolis> {
+template <class Group>
+class metropolis_algo : public base_program<Group, gp::metropolis> {
 private:
   std::vector<double> rate = {0., 0.};
 
@@ -90,7 +91,6 @@ public:
         engines[engine].seed((*this).sparams.seed + i + engine);
       }
 
-
       double E = 0., Q = 0.;
       std::cout << inew;
       (*this).os << inew;
@@ -133,10 +133,6 @@ public:
                               << " " << (*this).sparams.n_meas << " "
                               << (*this).sparams.seed << " " << std::endl;
       (*this).acceptancerates.close();
-
-      std::ostringstream oss;
-      oss << (*this).conf_path_basename << ".final" << std::ends;
-      ((*this).U).save((*this).sparams.conf_dir + "/" + oss.str());
     }
     return;
   }
@@ -146,11 +142,17 @@ public:
     this->init_gauge_conf_mcmc();
     this->open_output_data();
     this->set_omp_threads();
-    if ((*this).sparams.do_omeas){
-        this->set_potential_filenames();
+    if ((*this).sparams.do_omeas) {
+      this->set_potential_filenames();
     }
 
-    (*this).os << "i E Q E_ss Q_ss\n";
+    if ((*this).g_icounter == 0) {
+      // header: column names in the output
+      std::string head_str = io::get_header_1(" ");
+      std::cout << head_str;
+      (*this).os << head_str;
+    }
+
     size_t i_min = (*this).g_icounter;
     size_t i_max = (*this).sparams.n_meas * ((*this).threads) + (*this).g_icounter;
     size_t i_step = (*this).threads;
@@ -170,7 +172,7 @@ public:
         ((*this).sparams.do_omeas && inew != 0 && (inew % (*this).sparams.N_save) == 0);
       this->after_MCMC_step(inew, do_omeas);
     }
-
     this->save_acceptance_rates();
+    this->save_final_conf();
   }
 };

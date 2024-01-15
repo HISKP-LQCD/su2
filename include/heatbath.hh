@@ -102,10 +102,10 @@ std::vector<double> heatbath(gaugeconfig<u1> &U,
   const double coupl_fact = (beta / double(U.getNc()));
   std::uniform_real_distribution<double> uniform(0.0, 1.0);
   typedef typename accum_type<u1>::type accum;
-  double rate = 0.0, rate_time = 0.0;
+  double rate = 0.0, rate_time = 0.0, total_attempts = 0.0;
 
   for (size_t x0_start = 0; x0_start < 2; x0_start++) {
-#pragma omp parallel for
+#pragma omp parallel for reduction (+: rate, rate_time, total_attempts)
     for (size_t x0 = x0_start; x0 < U.getLt(); x0 += 2) {
       size_t thread_num = omp_get_thread_num();
       for (size_t x1 = 0; x1 < U.getLx(); x1++) {
@@ -119,15 +119,21 @@ std::vector<double> heatbath(gaugeconfig<u1> &U,
               const double rho = coupl_fact * get_abs(K);
               const double alpha = hattori_nakajima::alpha(rho);
               const double beta = hattori_nakajima::beta(alpha, rho);
-              const double u1 = uniform(engine[thread_num]);
-              const double u2 = uniform(engine[thread_num]);
-              bool accept = (u2 < hattori_nakajima::g(alpha, beta, rho, u1));
-              if (accept) {
-                U(x, mu).set(hattori_nakajima::h(alpha, beta, u1) - theta_stap);
-                rate += 1;
-                if (mu == 0) {
-                  rate_time += 1;
-                }
+              bool accept=false;
+              double u1, u2;
+              size_t attempt=0;
+              while (!accept && attempt < 30) {
+                u1 = uniform(engine[thread_num]);
+                u2 = uniform(engine[thread_num]);
+                accept = (u2 < hattori_nakajima::g(alpha, beta, rho, u1));
+                total_attempts+=1;
+                attempt++;
+              }
+              if(attempt==30) spacetime_lattice::fatal_error("too many attempts to generate new link!", __func__);
+              U(x, mu).set(hattori_nakajima::h(alpha, beta, u1) - theta_stap);
+              rate += 1;
+              if (mu == 0) {
+                rate_time += 1;
               }
             }
           }
@@ -137,7 +143,8 @@ std::vector<double> heatbath(gaugeconfig<u1> &U,
   }
 
   const std::vector<double> res = {double(rate) / double(U.getSize()),
-                                   double(rate_time) / double(U.getVolume())};
+                                   double(rate_time) / double(U.getVolume()), 
+                                   double(rate) / double(total_attempts)};
   return res;
 }
 

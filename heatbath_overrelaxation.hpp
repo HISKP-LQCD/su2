@@ -19,7 +19,7 @@ class heatbath_overrelaxation_algo
   : public base_program<Group, gp::heatbath_overrelaxation> {
 private:
 
-  std::vector<double> rate = {0.0, 0.0, 0.0};
+  std::vector<double> rate = {0.0, 0.0, 0.0, 0.0};
 
 public:
   heatbath_overrelaxation_algo() { (*this).algo_name = "heatbath_overrelaxation"; }
@@ -88,13 +88,16 @@ public:
                 << " accepted temporal links "
                 << rate[1] / double((*this).sparams.n_meas)
                 << " acceptance rate "
-                << rate[2] / double((*this).sparams.n_meas) << std::endl;
+                << rate[2] / double((*this).sparams.n_meas)
+                << " temporal acceptance rate "
+                << rate[3] / double((*this).sparams.n_meas) << std::endl;
       (*this).acceptancerates.open((*this).sparams.conf_dir +
                                      "/acceptancerates-heatbath_overrelaxation.data",
                                    std::ios::app);
       (*this).acceptancerates << rate[0] / double((*this).sparams.n_meas) << " "
                               << rate[1] / double((*this).sparams.n_meas) << " "
                               << rate[2] / double((*this).sparams.n_meas) << " "
+                              << rate[3] / double((*this).sparams.n_meas) << " "
                               << (*this).pparams.beta << " " << (*this).pparams.Lx << " "
                               << (*this).pparams.Lt << " " << (*this).pparams.xi << " "
                               << (*this).sparams.heat << " " << (*this).threads << " "

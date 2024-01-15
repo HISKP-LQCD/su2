@@ -409,6 +409,7 @@ namespace input_file_parsing {
     in.read_opt_verb<bool>(mcparams.do_mcmc, {"do_mcmc"});
     in.read_opt_verb<size_t>(mcparams.n_meas, {"n_meas"});
     in.read_opt_verb<size_t>(mcparams.N_save, {"N_save"});
+    in.read_opt_verb<size_t>(mcparams.n_overrelax, {"n_overrelax"});
     in.read_opt_verb<size_t>(mcparams.seed, {"seed"});
 
     in.read_opt_verb<std::string>(mcparams.conf_dir, {"conf_dir"});

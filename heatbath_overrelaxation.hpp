@@ -143,7 +143,9 @@ public:
       (*this).os << "\n";
 
       this->do_heatbath(i);
-      this->do_overrelaxation();
+      for(size_t over = 0; over < (*this).sparams.n_overrelax; over ++) {
+        this->do_overrelaxation();
+      }
 
       if (i > 0 && (i % (*this).sparams.N_save) == 0) {
         std::ostringstream oss_i;

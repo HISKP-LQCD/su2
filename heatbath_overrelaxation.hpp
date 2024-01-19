@@ -18,7 +18,6 @@ template <class Group>
 class heatbath_overrelaxation_algo
   : public base_program<Group, gp::heatbath_overrelaxation> {
 private:
-
   std::vector<double> rate = {0.0, 0.0, 0.0, 0.0};
 
 public:
@@ -72,7 +71,7 @@ public:
       }
 
       (*this).rate += heatbath((*this).U, engines, (*this).pparams.beta,
-                              (*this).pparams.xi, (*this).pparams.anisotropic);
+                               (*this).pparams.xi, (*this).pparams.anisotropic);
     }
   }
 
@@ -85,10 +84,8 @@ public:
   void save_acceptance_rates() {
     if ((*this).sparams.do_mcmc) {
       std::cout << "## Acceptanced links " << rate[0] / double((*this).sparams.n_meas)
-                << " accepted temporal links "
-                << rate[1] / double((*this).sparams.n_meas)
-                << " acceptance rate "
-                << rate[2] / double((*this).sparams.n_meas)
+                << " accepted temporal links " << rate[1] / double((*this).sparams.n_meas)
+                << " acceptance rate " << rate[2] / double((*this).sparams.n_meas)
                 << " temporal acceptance rate "
                 << rate[3] / double((*this).sparams.n_meas) << std::endl;
       (*this).acceptancerates.open((*this).sparams.conf_dir +
@@ -145,8 +142,11 @@ public:
       std::cout << "\n";
       (*this).os << "\n";
 
-      this->do_heatbath(i);
-      for(size_t over = 0; over < (*this).sparams.n_overrelax; over ++) {
+      for (size_t i_hb = 0; i_hb < (*this).sparams.n_heatbath; i_hb++) {
+        this->do_heatbath(i);
+      }
+
+      for (size_t over = 0; over < (*this).sparams.n_overrelax; over++) {
         this->do_overrelaxation();
       }
 

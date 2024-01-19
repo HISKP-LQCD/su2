@@ -231,7 +231,8 @@ namespace global_parameters {
     size_t seed = 13526463; // PRNG seed
 
     size_t N_save = 100; // save each N_save config
-    size_t n_overrelax = 1; // do n overrelaxation sweeps
+    size_t n_heatbath = 1; // number of heatbath sweeps
+    size_t n_overrelax = 1; // number of overrelaxation sweeps
 
     bool restart = false; // restart from an existing configuration
     std::string configfilename = ""; // configuration filename used in case of restart

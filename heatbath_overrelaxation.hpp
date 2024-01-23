@@ -74,28 +74,22 @@ public:
 
   // save acceptance rates to additional file to keep track of measurements
   void save_acceptance_rates() {
+    const double norm_den = double((*this).sparams.n_meas * (*this).sparams.n_heatbath);
     if ((*this).sparams.do_mcmc) {
-      std::cout << "## Acceptanced links "
-                << rate[0] / double((*this).sparams.n_meas * (*this).sparams.n_heatbath)
-                << " accepted temporal links "
-                << rate[1] / double((*this).sparams.n_meas * (*this).sparams.n_heatbath)
-                << " acceptance rate "
-                << rate[2] / double((*this).sparams.n_meas * (*this).sparams.n_heatbath)
-                << " temporal acceptance rate "
-                << rate[3] / double((*this).sparams.n_meas * (*this).sparams.n_heatbath)
-                << std::endl;
+      std::cout << "## Acceptanced links " << rate[0] / norm_den
+                << " accepted temporal links " << rate[1] / norm_den
+                << " acceptance rate " << rate[2] / norm_den
+                << " temporal acceptance rate " << rate[3] / norm_den << std::endl;
       (*this).acceptancerates.open((*this).sparams.conf_dir +
                                      "/acceptancerates-heatbath_overrelaxation.data",
                                    std::ios::app);
-      (*this).acceptancerates
-        << rate[0] / double((*this).sparams.n_meas * (*this).sparams.n_heatbath) << " "
-        << rate[1] / double((*this).sparams.n_meas * (*this).sparams.n_heatbath) << " "
-        << rate[2] / double((*this).sparams.n_meas * (*this).sparams.n_heatbath) << " "
-        << rate[3] / double((*this).sparams.n_meas * (*this).sparams.n_heatbath) << " "
-        << (*this).pparams.beta << " " << (*this).pparams.Lx << " " << (*this).pparams.Lt
-        << " " << (*this).pparams.xi << " " << (*this).sparams.heat << " "
-        << (*this).threads << " " << (*this).sparams.n_meas << " " << (*this).sparams.seed
-        << " " << std::endl;
+      (*this).acceptancerates << rate[0] / norm_den << " " << rate[1] / norm_den << " "
+                              << rate[2] / norm_den << " " << rate[3] / norm_den << " "
+                              << (*this).pparams.beta << " " << (*this).pparams.Lx << " "
+                              << (*this).pparams.Lt << " " << (*this).pparams.xi << " "
+                              << (*this).sparams.heat << " " << (*this).threads << " "
+                              << (*this).sparams.n_meas << " " << (*this).sparams.seed
+                              << " " << std::endl;
       (*this).acceptancerates.close();
     }
     return;

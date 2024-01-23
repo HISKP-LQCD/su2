@@ -62,19 +62,9 @@ public:
    *
    * @param i trajectory index
    */
-  void do_heatbath(const size_t &i, const size_t &i_hb) {
-    if ((*this).sparams.do_mcmc) {
-      const int n_threads = (*this).threads;
-      std::vector<std::mt19937> engines(n_threads);
-      for (size_t i_engine = 0; i_engine < n_threads; i_engine++) {
-        engines[i_engine].seed(((*this).sparams.seed + i * n_threads + i_engine) *
-                                 (*this).sparams.n_heatbath +
-                               i_hb);
-      }
-
-      (*this).rate += heatbath((*this).U, engines, (*this).pparams.beta,
-                               (*this).pparams.xi, (*this).pparams.anisotropic);
-    }
+  void do_heatbath(const size_t &i, const std::vector<std::mt19937> &engines) {
+    (*this).rate += heatbath((*this).U, engines, (*this).pparams.beta, (*this).pparams.xi,
+                             (*this).pparams.anisotropic);
   }
 
   void do_overrelaxation() {
@@ -150,7 +140,7 @@ public:
           for (size_t i_engine = 0; i_engine < n_threads; i_engine++) {
             engines[i_engine].seed(seed + i * d2 * d3 + i_engine * d3 + i_hb);
           }
-          this->do_heatbath(i, i_hb);
+          this->do_heatbath(i, engines);
         }
 
         for (size_t over = 0; over < (*this).sparams.n_overrelax; over++) {

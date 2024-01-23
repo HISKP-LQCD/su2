@@ -346,6 +346,19 @@ public:
     return;
   }
 
+  void output_line(const int &i) {
+    double E = 0., Q = 0.;
+    std::cout << i;
+    (*this).os << i;
+    for (bool ss : {false, true}) {
+      this->energy_density((*this).pparams, (*this).U, E, Q, false, ss);
+      std::cout << " " << std::scientific << std::setprecision(15) << E << " " << Q;
+      (*this).os << " " << std::scientific << std::setprecision(15) << E << " " << Q;
+    }
+    std::cout << "\n";
+    (*this).os << "\n";
+  }
+
   /**
    * @brief part of the program flow common to all programs
    */

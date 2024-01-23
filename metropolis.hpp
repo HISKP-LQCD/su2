@@ -91,16 +91,7 @@ public:
         engines[i_engine].seed((*this).sparams.seed + i * n_threads + i_engine);
       }
 
-      double E = 0., Q = 0.;
-      std::cout << i;
-      (*this).os << i;
-      for (bool ss : {false, true}) {
-        this->energy_density((*this).pparams, (*this).U, E, Q, false, ss);
-        std::cout << " " << std::scientific << std::setprecision(15) << E << " " << Q;
-        (*this).os << " " << std::scientific << std::setprecision(15) << E << " " << Q;
-      }
-      std::cout << "\n";
-      (*this).os << "\n";
+      this->output_line(i);
 
       rate += this->sweep((*this).pparams, (*this).U, engines, (*this).sparams.delta,
                           (*this).sparams.N_hit, (*this).pparams.beta, (*this).pparams.xi,

@@ -67,7 +67,9 @@ public:
       const int n_threads = (*this).threads;
       std::vector<std::mt19937> engines(n_threads);
       for (size_t i_engine = 0; i_engine < n_threads; i_engine++) {
-        engines[i_engine].seed(((*this).sparams.seed + i * n_threads + i_engine) * (*this).sparams.n_heatbath + i_hb);
+        engines[i_engine].seed(((*this).sparams.seed + i * n_threads + i_engine) *
+                                 (*this).sparams.n_heatbath +
+                               i_hb);
       }
 
       (*this).rate += heatbath((*this).U, engines, (*this).pparams.beta,
@@ -83,23 +85,27 @@ public:
   // save acceptance rates to additional file to keep track of measurements
   void save_acceptance_rates() {
     if ((*this).sparams.do_mcmc) {
-      std::cout << "## Acceptanced links " << rate[0] / double((*this).sparams.n_meas*(*this).sparams.n_heatbath)
-                << " accepted temporal links " << rate[1] / double((*this).sparams.n_meas*(*this).sparams.n_heatbath)
-                << " acceptance rate " << rate[2] / double((*this).sparams.n_meas*(*this).sparams.n_heatbath)
+      std::cout << "## Acceptanced links "
+                << rate[0] / double((*this).sparams.n_meas * (*this).sparams.n_heatbath)
+                << " accepted temporal links "
+                << rate[1] / double((*this).sparams.n_meas * (*this).sparams.n_heatbath)
+                << " acceptance rate "
+                << rate[2] / double((*this).sparams.n_meas * (*this).sparams.n_heatbath)
                 << " temporal acceptance rate "
-                << rate[3] / double((*this).sparams.n_meas*(*this).sparams.n_heatbath) << std::endl;
+                << rate[3] / double((*this).sparams.n_meas * (*this).sparams.n_heatbath)
+                << std::endl;
       (*this).acceptancerates.open((*this).sparams.conf_dir +
                                      "/acceptancerates-heatbath_overrelaxation.data",
                                    std::ios::app);
-      (*this).acceptancerates << rate[0] / double((*this).sparams.n_meas*(*this).sparams.n_heatbath) << " "
-                              << rate[1] / double((*this).sparams.n_meas*(*this).sparams.n_heatbath) << " "
-                              << rate[2] / double((*this).sparams.n_meas*(*this).sparams.n_heatbath) << " "
-                              << rate[3] / double((*this).sparams.n_meas*(*this).sparams.n_heatbath) << " "
-                              << (*this).pparams.beta << " " << (*this).pparams.Lx << " "
-                              << (*this).pparams.Lt << " " << (*this).pparams.xi << " "
-                              << (*this).sparams.heat << " " << (*this).threads << " "
-                              << (*this).sparams.n_meas << " " << (*this).sparams.seed
-                              << " " << std::endl;
+      (*this).acceptancerates
+        << rate[0] / double((*this).sparams.n_meas * (*this).sparams.n_heatbath) << " "
+        << rate[1] / double((*this).sparams.n_meas * (*this).sparams.n_heatbath) << " "
+        << rate[2] / double((*this).sparams.n_meas * (*this).sparams.n_heatbath) << " "
+        << rate[3] / double((*this).sparams.n_meas * (*this).sparams.n_heatbath) << " "
+        << (*this).pparams.beta << " " << (*this).pparams.Lx << " " << (*this).pparams.Lt
+        << " " << (*this).pparams.xi << " " << (*this).sparams.heat << " "
+        << (*this).threads << " " << (*this).sparams.n_meas << " " << (*this).sparams.seed
+        << " " << std::endl;
       (*this).acceptancerates.close();
     }
     return;
@@ -130,30 +136,32 @@ public:
      * calculate plaquette, spacial plaquette, energy density with and without cloverdef
      * and write to stdout and output-file save every nave configuration
      * */
+    const int seed = (*this).sparams.seed;
+    const int n_threads = (*this).threads;
+    std::vector<std::mt19937> engines(n_threads);
     for (size_t i = i_min; i < i_max; i++) {
-      double E = 0., Q = 0.;
-      std::cout << i;
-      (*this).os << i;
-      for (bool ss : {false, true}) {
-        this->energy_density((*this).pparams, (*this).U, E, Q, false, ss);
-        std::cout << " " << std::scientific << std::setprecision(15) << E << " " << Q;
-        (*this).os << " " << std::scientific << std::setprecision(15) << E << " " << Q;
-      }
-      std::cout << "\n";
-      (*this).os << "\n";
+      if ((*this).sparams.do_mcmc) {
+        this->output_line(i);
 
-      for (size_t i_hb = 0; i_hb < (*this).sparams.n_heatbath; i_hb++) {
-        this->do_heatbath(i, i_hb);
-      }
+        const int d1 = i;
+        const int d2 = n_threads;
+        const int d3 = (*this).sparams.n_heatbath;
+        for (size_t i_hb = 0; i_hb < (*this).sparams.n_heatbath; i_hb++) {
+          for (size_t i_engine = 0; i_engine < n_threads; i_engine++) {
+            engines[i_engine].seed(seed + i * d2 * d3 + i_engine * d3 + i_hb);
+          }
+          this->do_heatbath(i, i_hb);
+        }
 
-      for (size_t over = 0; over < (*this).sparams.n_overrelax; over++) {
-        this->do_overrelaxation();
-      }
+        for (size_t over = 0; over < (*this).sparams.n_overrelax; over++) {
+          this->do_overrelaxation();
+        }
 
-      if (i > 0 && (i % (*this).sparams.N_save) == 0) {
-        std::ostringstream oss_i;
-        oss_i << (*this).conf_path_basename << "." << i << std::ends;
-        ((*this).U).save(oss_i.str());
+        if (i > 0 && (i % (*this).sparams.N_save) == 0) {
+          std::ostringstream oss_i;
+          oss_i << (*this).conf_path_basename << "." << i << std::ends;
+          ((*this).U).save(oss_i.str());
+        }
       }
 
       bool b1 = (*this).sparams.do_omeas;

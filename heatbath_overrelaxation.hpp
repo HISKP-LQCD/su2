@@ -64,17 +64,25 @@ public:
    */
   void do_heatbath(const size_t &i, const std::vector<std::mt19937> &engines) {
     (*this).rate += heatbath((*this).U, engines, (*this).pparams.beta, (*this).pparams.xi,
-                             (*this).pparams.anisotropic);
+                             (*this).pparams.anisotropic, /*temporalonly=*/false);
+    for (size_t i_hbt = 0; i_hbt < (*this).sparams.n_heatbath_temporal; i_hbt++) {
+      (*this).rate += heatbath((*this).U, engines, (*this).pparams.beta, (*this).pparams.xi,
+                             (*this).pparams.anisotropic, /*temporalonly=*/true);
+    }
   }
 
   void do_overrelaxation() {
     overrelaxation((*this).U, (*this).pparams.beta, (*this).pparams.xi,
-                   (*this).pparams.anisotropic);
+                   (*this).pparams.anisotropic, /*temporalonly=*/false);
+    for (size_t i_ort = 0; i_ort < (*this).sparams.n_overrelax_temporal; i_ort++) {
+      overrelaxation((*this).U, (*this).pparams.beta, (*this).pparams.xi,
+                             (*this).pparams.anisotropic, /*temporalonly=*/true);
+    }
   }
 
   // save acceptance rates to additional file to keep track of measurements
   void save_acceptance_rates() {
-    const double norm_den = double((*this).sparams.n_meas * (*this).sparams.n_heatbath);
+    const double norm_den = double((*this).sparams.n_meas * (*this).sparams.n_heatbath* ((*this).sparams.n_heatbath_temporal+1));
     if ((*this).sparams.do_mcmc) {
       std::cout << "## Acceptanced links " << rate[0] / norm_den
                 << " accepted temporal links " << rate[1] / norm_den

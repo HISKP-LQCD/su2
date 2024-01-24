@@ -91,18 +91,22 @@ std::vector<double> heatbath(gaugeconfig<Group> &U,
                              const size_t &N_hit,
                              const double &beta,
                              const double &xi = 1.0,
-                             const bool &anisotropic = false);
+                             const bool &anisotropic = false,
+                             const bool &temporalonly = false);
 
 template <class URNG>
 std::vector<double> heatbath(gaugeconfig<u1> &U,
                              std::vector<URNG> engine,
                              const double &beta,
                              const double &xi = 1.0,
-                             const bool &anisotropic = false) {
+                             const bool &anisotropic = false,
+                             const bool &temporalonly = false) {
   const double coupl_fact = (beta / double(U.getNc()));
   std::uniform_real_distribution<double> uniform(0.0, 1.0);
   typedef typename accum_type<u1>::type accum;
   double rate = 0.0, rate_time = 0.0, total_attempts = 0.0, temporal_attempts = 0.0;
+
+  const size_t endmu = temporalonly ? 1 : U.getndims(); 
 
   for (size_t x0_start = 0; x0_start < 2; x0_start++) {
 #pragma omp parallel for reduction (+: rate, rate_time, total_attempts, temporal_attempts)
@@ -112,7 +116,7 @@ std::vector<double> heatbath(gaugeconfig<u1> &U,
         for (size_t x2 = 0; x2 < U.getLy(); x2++) {
           for (size_t x3 = 0; x3 < U.getLz(); x3++) {
             const std::vector<size_t> x = {x0, x1, x2, x3};
-            for (size_t mu = 0; mu < U.getndims(); mu++) {
+            for (size_t mu = 0; mu < endmu; mu++) {
               accum K;
               get_staples_MCMC_step(K, U, x, mu, xi, anisotropic);
               const double theta_stap = get_phase(K);
@@ -145,7 +149,8 @@ std::vector<double> heatbath(gaugeconfig<u1> &U,
     }
   }
 
-  const std::vector<double> res = {double(rate) / double(U.getSize()),
+  const size_t den_acceptance_rate = temporalonly ? U.getVolume() : U.getSize();
+  const std::vector<double> res = {double(rate) / double(den_acceptance_rate),
                                    double(rate_time) / double(U.getVolume()), 
                                    double(rate) / double(total_attempts), 
                                    double(rate_time) / double(temporal_attempts)};
@@ -208,7 +213,8 @@ std::vector<double> heatbath(gaugeconfig<su2> &U,
                              const size_t &N_hit,
                              const double &beta,
                              const double &xi = 1.0,
-                             const bool &anisotropic = false) {
+                             const bool &anisotropic = false,
+                             const bool &temporalonly = false) {
   spacetime_lattice::fatal_error("heatbath not implemented for SU(2)!", __func__);
 
   return {};
@@ -220,7 +226,8 @@ std::vector<double> heatbath(gaugeconfig<su3> &U,
                              const size_t &N_hit,
                              const double &beta,
                              const double &xi = 1.0,
-                             const bool &anisotropic = false) {
+                             const bool &anisotropic = false,
+                             const bool &temporalonly = false) {
   spacetime_lattice::fatal_error("heatbath not implemented for SU(3)!", __func__);
 
   return {};

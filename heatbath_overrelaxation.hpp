@@ -136,7 +136,7 @@ public:
         this->output_line(i);
 
         const int d1 = i;
-        const int d2 = n_threads;
+        const int d2 = (*this).pparams.Lt;
         const int d3 = (*this).sparams.n_heatbath;
         for (size_t i_hb = 0; i_hb < (*this).sparams.n_heatbath; i_hb++) {
           for (size_t i_engine = 0; i_engine < n_threads; i_engine++) {

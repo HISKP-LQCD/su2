@@ -211,9 +211,16 @@ public:
                 << std::endl;
       omp_set_num_threads(1);
       std::cerr << "Continuing with one thread." << std::endl;
-    }
+    } 
     // set things up for parallel computing in sweep
     threads = omp_get_max_threads();
+
+    if (threads > pparams.Lt) {
+      std::cerr << "Number of threads larger than temporal does not make sense; setting numer of threads to T." << std::endl;
+      threads = pparams.Lt;
+      omp_set_num_threads(pparams.Lt);
+    }
+
 #else
     threads = 1;
 #endif

@@ -88,7 +88,6 @@ namespace hattori_nakajima {
 template <class URNG, class Group>
 std::vector<double> heatbath(gaugeconfig<Group> &U,
                              std::vector<URNG> engine,
-                             const size_t &N_hit,
                              const double &beta,
                              const double &xi = 1.0,
                              const bool &anisotropic = false,
@@ -210,7 +209,6 @@ std::vector<double> heatbath_legacy(gaugeconfig<u1> &U,
 template <class URNG>
 std::vector<double> heatbath(gaugeconfig<su2> &U,
                              std::vector<URNG> engine,
-                             const size_t &N_hit,
                              const double &beta,
                              const double &xi = 1.0,
                              const bool &anisotropic = false,
@@ -223,7 +221,6 @@ std::vector<double> heatbath(gaugeconfig<su2> &U,
 template <class URNG>
 std::vector<double> heatbath(gaugeconfig<su3> &U,
                              std::vector<URNG> engine,
-                             const size_t &N_hit,
                              const double &beta,
                              const double &xi = 1.0,
                              const bool &anisotropic = false,

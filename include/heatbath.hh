@@ -144,10 +144,10 @@ std::vector<double> heatbath(gaugeconfig<u1> &U,
               rate += 1;
               if (mu == 0) {
                 rate_time += 1;
-                changed_link_temporal += U(x, mu).geta() - oldu;
+                changed_link_temporal += std::abs(U(x, mu).geta() - oldu);
               }
               else {
-                changed_link_spatial += U(x, mu).geta() - oldu;
+                changed_link_spatial += std::abs(U(x, mu).geta() - oldu);
               }
             }
           }

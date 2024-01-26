@@ -76,10 +76,10 @@ void overrelaxation(gaugeconfig<u1> &U,
               const double phi = get_phase(K);
               U(x, mu).set(-2 * phi - U(x, mu).geta());
               if (mu == 0) {
-                changed_link_temporal += U(x, mu).geta() - oldu;
+                changed_link_temporal += std::abs(U(x, mu).geta() - oldu);
               }
               else {
-                changed_link_spatial += U(x, mu).geta() - oldu;
+                changed_link_spatial += std::abs(U(x, mu).geta() - oldu);
               }
             }
           }

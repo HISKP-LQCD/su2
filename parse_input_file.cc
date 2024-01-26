@@ -413,6 +413,7 @@ namespace input_file_parsing {
     in.read_opt_verb<size_t>(mcparams.n_overrelax, {"n_overrelax"});
     in.read_opt_verb<size_t>(mcparams.n_heatbath_temporal, {"n_heatbath_temporal"});
     in.read_opt_verb<size_t>(mcparams.n_overrelax_temporal, {"n_overrelax_temporal"});
+    in.read_opt_verb<bool>(mcparams.write_link_change, {"write_link_change"});
     in.read_opt_verb<size_t>(mcparams.seed, {"seed"});
 
     in.read_opt_verb<std::string>(mcparams.conf_dir, {"conf_dir"});

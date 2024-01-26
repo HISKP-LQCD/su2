@@ -64,19 +64,19 @@ public:
    */
   void do_heatbath(const size_t &i, const std::vector<std::mt19937> &engines) {
     (*this).rate += heatbath((*this).U, engines, (*this).pparams.beta, (*this).pparams.xi,
-                             (*this).pparams.anisotropic, /*temporalonly=*/false);
+                             (*this).pparams.anisotropic, /*temporalonly=*/false, (*this).sparams.write_link_change);
     for (size_t i_hbt = 0; i_hbt < (*this).sparams.n_heatbath_temporal; i_hbt++) {
       (*this).rate += heatbath((*this).U, engines, (*this).pparams.beta, (*this).pparams.xi,
-                             (*this).pparams.anisotropic, /*temporalonly=*/true);
+                             (*this).pparams.anisotropic, /*temporalonly=*/true, (*this).sparams.write_link_change);
     }
   }
 
   void do_overrelaxation() {
     overrelaxation((*this).U, (*this).pparams.beta, (*this).pparams.xi,
-                   (*this).pparams.anisotropic, /*temporalonly=*/false);
+                   (*this).pparams.anisotropic, /*temporalonly=*/false, (*this).sparams.write_link_change);
     for (size_t i_ort = 0; i_ort < (*this).sparams.n_overrelax_temporal; i_ort++) {
       overrelaxation((*this).U, (*this).pparams.beta, (*this).pparams.xi,
-                             (*this).pparams.anisotropic, /*temporalonly=*/true);
+                             (*this).pparams.anisotropic, /*temporalonly=*/true, (*this).sparams.write_link_change);
     }
   }
 

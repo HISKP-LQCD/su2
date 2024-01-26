@@ -91,7 +91,8 @@ std::vector<double> heatbath(gaugeconfig<Group> &U,
                              const double &beta,
                              const double &xi = 1.0,
                              const bool &anisotropic = false,
-                             const bool &temporalonly = false);
+                             const bool &temporalonly = false, 
+                             const bool &write_link = false);
 
 template <class URNG>
 std::vector<double> heatbath(gaugeconfig<u1> &U,
@@ -99,16 +100,18 @@ std::vector<double> heatbath(gaugeconfig<u1> &U,
                              const double &beta,
                              const double &xi = 1.0,
                              const bool &anisotropic = false,
-                             const bool &temporalonly = false) {
+                             const bool &temporalonly = false, 
+                             const bool &write_link = false) {
   const double coupl_fact = (beta / double(U.getNc()));
   std::uniform_real_distribution<double> uniform(0.0, 1.0);
   typedef typename accum_type<u1>::type accum;
   double rate = 0.0, rate_time = 0.0, total_attempts = 0.0, temporal_attempts = 0.0;
+  double changed_link_spatial = 0.0, changed_link_temporal = 0.0;
 
   const size_t endmu = temporalonly ? 1 : U.getndims(); 
 
   for (size_t x0_start = 0; x0_start < 2; x0_start++) {
-#pragma omp parallel for reduction (+: rate, rate_time, total_attempts, temporal_attempts)
+#pragma omp parallel for reduction (+: rate, rate_time, total_attempts, temporal_attempts, changed_link_spatial, changed_link_temporal)
     for (size_t x0 = x0_start; x0 < U.getLt(); x0 += 2) {
       size_t thread_num = omp_get_thread_num();
       for (size_t x1 = 0; x1 < U.getLx(); x1++) {
@@ -122,6 +125,7 @@ std::vector<double> heatbath(gaugeconfig<u1> &U,
               const double rho = coupl_fact * get_abs(K);
               const double alpha = hattori_nakajima::alpha(rho);
               const double beta = hattori_nakajima::beta(alpha, rho);
+              const double oldu = U(x, mu).geta();
               bool accept=false;
               double u1, u2;
               size_t attempt=0;
@@ -140,6 +144,10 @@ std::vector<double> heatbath(gaugeconfig<u1> &U,
               rate += 1;
               if (mu == 0) {
                 rate_time += 1;
+                changed_link_temporal += U(x, mu).geta() - oldu;
+              }
+              else {
+                changed_link_spatial += U(x, mu).geta() - oldu;
               }
             }
           }
@@ -147,6 +155,10 @@ std::vector<double> heatbath(gaugeconfig<u1> &U,
       }
     }
   }
+    if (write_link) {
+      std::cout << std::setw(14) << "#### heatbath " << changed_link_spatial / double(U.getndims()*U.getVolume())
+        << " " << changed_link_temporal / double(U.getVolume()) << std::endl;
+    }
 
   const size_t den_acceptance_rate = temporalonly ? U.getVolume() : U.getSize();
   const std::vector<double> res = {double(rate) / double(den_acceptance_rate),
@@ -212,7 +224,8 @@ std::vector<double> heatbath(gaugeconfig<su2> &U,
                              const double &beta,
                              const double &xi = 1.0,
                              const bool &anisotropic = false,
-                             const bool &temporalonly = false) {
+                             const bool &temporalonly = false, 
+                             const bool &write_link = false) {
   spacetime_lattice::fatal_error("heatbath not implemented for SU(2)!", __func__);
 
   return {};
@@ -224,7 +237,8 @@ std::vector<double> heatbath(gaugeconfig<su3> &U,
                              const double &beta,
                              const double &xi = 1.0,
                              const bool &anisotropic = false,
-                             const bool &temporalonly = false) {
+                             const bool &temporalonly = false, 
+                             const bool &write_link = false) {
   spacetime_lattice::fatal_error("heatbath not implemented for SU(3)!", __func__);
 
   return {};

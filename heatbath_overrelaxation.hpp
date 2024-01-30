@@ -135,7 +135,6 @@ public:
       if ((*this).sparams.do_mcmc) {
         this->output_line(i);
 
-        const int d1 = i;
         const int d2 = (*this).pparams.Lt;
         const int d3 = (*this).sparams.n_heatbath;
         for (size_t i_hb = 0; i_hb < (*this).sparams.n_heatbath; i_hb++) {

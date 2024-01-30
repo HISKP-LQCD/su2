@@ -34,7 +34,6 @@ integrator:
   tau: 1.0
   exponent: 0
 
-
 monomials:
   gauge:
     beta: 2.2

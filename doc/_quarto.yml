@@ -1,0 +1,31 @@
+project:
+  type: book
+
+execute:
+  freeze: auto  # re-render only when source changes
+
+book:
+  title: "su2 code documentation"
+  author: "C. Gross, S. Romiti, C. Urbach"
+  date: last-modified
+  chapters:
+    - index.qmd
+    - theor_background.qmd
+    - install.qmd
+    - howto.qmd
+    - algorithms.qmd
+    - analysis.qmd
+    - development.qmd
+
+bibliography: biblio.bib
+csl: 2d-materials.csl
+embed-resources: true
+
+format:
+  html:
+    theme: cosmo
+  pdf:
+    documentclass: scrreprt
+
+
+

@@ -16,6 +16,7 @@ book:
     - algorithms.qmd
     - analysis.qmd
     - development.qmd
+    - references.qmd
 
 bibliography: biblio.bib
 csl: 2d-materials.csl

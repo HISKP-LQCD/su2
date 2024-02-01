@@ -1,9 +1,10 @@
 import numpy as np
 from scipy.optimize import curve_fit
 
-
-def get_m_eff(C: np.ndarray) -> np.ndarray:
+def get_m_eff_log(C: np.ndarray) -> np.ndarray:
     """Effective mass curve
+
+    log: log(C[t]/C[t+1])
 
     Args:
         C (np.ndarray): Correlator C(t)
@@ -13,6 +14,26 @@ def get_m_eff(C: np.ndarray) -> np.ndarray:
     """
     T = C.shape[0] ## temporal extent
     return np.array([np.log(C[t]/C[t+1]) if C[t]/C[t+1] > 0 else 0.0 for t in range(T-1)])
+####
+
+def get_m_eff(C: np.ndarray, strategy: str) -> np.ndarray:
+    """Effective mass curve from the correlator
+
+    Args:
+        C (np.ndarray): correlator C(t)
+        strategy (str): computation strategy. Supported: ["log"]
+
+    Raises:
+        ValueError: if strategy is not in the list of supported types
+
+    Returns:
+        np.ndarray: array of effective mass values M_eff(t)
+    """
+    if strategy == "log":
+        return get_m_eff_log(C)
+    else:
+        raise ValueError("Illegal strategy for calculation of effective mass: {strategy}".format(strategy=strategy))
+    ####
 ####
 
 def fit_eff_mass(m_eff: np.ndarray, dm_eff: np.ndarray) -> float:
@@ -32,7 +53,6 @@ def fit_eff_mass(m_eff: np.ndarray, dm_eff: np.ndarray) -> float:
     return par[0]
 ####
 
-
 ## example code
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
@@ -41,8 +61,7 @@ if __name__ == "__main__":
     m = 0.15
     C = np.random.normal(1.0, 0.001, T)*np.exp(-m*t)
 
-
-    m_eff = get_m_eff(C)[4:16]
+    m_eff = get_m_eff(C, strategy="log")[4:16]
 
     plt.plot(m_eff)
     plt.show()

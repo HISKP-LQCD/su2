@@ -6,8 +6,23 @@ import numpy as np
 from scipy.optimize import curve_fit
 
 import effective_curves
+import sampling
 
-def read_Wloops(omeas_dir, i1, step, Ng, nmax_iter, L, T):
+def read_Wloops_1st_format(omeas_dir, i1, step, Ng, nmax_iter, L, T):
+    """Reading the Wilson loops in the 1st type of format 
+
+    Args:
+        omeas_dir (str): directory storing the online measurements
+        i1 (int): index of 1st configuration
+        step (int): stap between indices of consedutive configurations
+        Ng (int): number of configurations we want to extract
+        nmax_iter (int): maximum number of attempts to read configurations (avoids getting stuck when files don't exist)
+        L (int): Spatial extent of the lattice
+        T (int): Temporal extent of the lattice
+
+    Returns:
+        numpy.ndarray: array with 3 indices: configuration, t (temporal extent of the loop), r (spatial extent of the loop)
+    """
     data = np.zeros(shape=(Ng, T-1, L-1)) # t=0 or r=0 are not valid loops
     ig = 0
     for it in range(nmax_iter):
@@ -72,7 +87,7 @@ def get_potential_bts(W_bts: np.ndarray, t1:int, t2: int) -> np.ndarray:
         V_bts (np.ndarray): bootstraps for V
     """
     N_bts = W_bts.shape[0]
-    V_eff = np.array([effective_curves.get_m_eff(W_bts[i,t1:(t2+1)]) for i in range(N_bts)])
+    V_eff = np.array([effective_curves.get_m_eff(W_bts[i,t1:(t2+1)], strategy="log") for i in range(N_bts)])
     dV_eff = np.std(a=V_eff, axis=0, ddof=1)
     V_bts = np.array([effective_curves.fit_eff_mass(m_eff=V_eff[i,:], dm_eff=dV_eff) for i in range(N_bts)])
     return V_bts
@@ -123,14 +138,20 @@ def get_r0_QED2p1(b, sigma, c):
 ## example code
 if __name__ == "__main__":
     ## reading the configurations
-    W = read_Wloops("../build/omeas/", i1=10, step=10, Ng=5, nmax_iter=1000, L=16, T=16)
+    W_gauge = read_Wloops_1st_format("../build/omeas/", i1=10, step=10, Ng=5, nmax_iter=1000, L=16, T=16)
+    Ng = W_gauge.shape[0]
+    N_bts = 100
+    bts_idx = np.random.randint(0, high=Ng, size=N_bts, dtype=int)
+    W = sampling.uncorrelated_confs_to_bts(W_gauge, bts_idx=bts_idx)
+
     #W = read_Wloops_format2("../build/omeas/", L=16, T=16, beta=1.3, xi=1.0, ss=False, sizeWloops=0.5)
     V = []
     for ir in range(4):
-       V.append(get_potential_bts(W[:,:,ir], t1=1, t2=4))
+       V.append(get_potential_bts(W[:,:,ir], t1=1, t2=3))
     ###
     V = np.array(V).transpose()
-    print(V)
+    print(V.shape)
+    #
     ## fitting fake data
     L = 16
     N_bts = 1000
@@ -139,7 +160,7 @@ if __name__ == "__main__":
     noise = np.random.normal(1.0, 0.001, size=N_bts)
     ## ignore the warning for log(0), r=0 is not included in the fit
     V = np.array([noise[i]*(v0 + b*np.log(r) + sigma*r) for i in range(N_bts)])
-    r1, r2 = 2, 13
+    r1, r2 = 1, 3
     par = fit_static_potential_QED2p1(V_bts_all=V, r1=r1, r2=r2)
     r0 = get_r0_QED2p1(par[:,1], par[:,2], c=1.65)
     print("Input for    v0, b, sigma :", v0, b, sigma)

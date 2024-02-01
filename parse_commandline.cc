@@ -34,8 +34,7 @@ void add_general_options(po::options_description &desc, general_params &params) 
     ("beta,b", po::value<double>(&params.beta), "beta value")
     ("mass,m", po::value<double>(&params.m0), "bare quark mass")
     ("seed,s", po::value<size_t>(&params.seed)->default_value(13526463), "PRNG seed")
-    ("heat", po::value<double>(&params.heat)->default_value(1.), "randomness of the initial config, 1: hot, 0: cold")
-    ("restart", "restart from an existing configuration")
+    ("restart_condition", po::value<std::string>(&params.restart_condition)->default_value("hot"), "Restart condition for the initial config: hot, cold, read")
     ("configname", po::value< std::string >(&params.configfilename), "configuration filename used in case of restart")
     ("xi", po::value<double>(&params.xi)->default_value(1.0), "xi, characteristic of anisotropy")
     ("anisotropic", po::value<bool>(&params.anisotropic)->default_value(false), "set whether the configurations are anisotropic")
@@ -49,7 +48,7 @@ int parse_commandline(int ac, char * av[], po::options_description &desc, genera
     po::store(po::parse_command_line(ac, av, desc), vm);
     po::notify(vm);
 
-    params.restart = false;
+    params.restart_condition = "hot";
     params.acceptreject = true;
     if (vm.count("help")) {
       std::cout << desc << std::endl;
@@ -86,7 +85,7 @@ int parse_commandline(int ac, char * av[], po::options_description &desc, genera
         std::cout << std::endl << desc << std::endl;
         return 1;
       }
-      params.restart = true;
+      params.restart_condition = "read";
     }
     if (vm.count("no-accept-reject")) {
       params.acceptreject = false;

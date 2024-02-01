@@ -171,27 +171,17 @@ namespace input_file_parsing {
   }
 
   /**
-   * @brief checks that `heat` and `restart` are not both present at the same time
+   * @brief checks that the restart condition one of the following:
+   * `hot`, `cold`, `read`
    *
    */
-  void heat_restart_incompatible(const YAML::Node &nd) {
-    if (nd["restart"]) {
-      if (!(nd["restart"].as<bool>()) && !nd["heat"]) {
-        std::cerr << "Error: Your gave 'restart==false' but didn't specify the 'heat' "
-                     "parameter.\n";
-        std::cerr << "Aborting.\n";
-        std::abort();
-      }
-      if (nd["restart"] && nd["heat"]) {
-        std::cerr << "Error: "
-                  << "'restart' and 'heat' conditions are incompatible in the hmc. "
-                  << "Aborting.\n";
-        std::abort();
-      }
-    }
-    if (!nd["restart"] && !nd["heat"]) {
+  void check_restart_condition(const std::string &rc) {
+    const bool b1 = (rc == "hot");
+    const bool b2 = (rc == "cold");
+    const bool b3 = (rc == "read");
+    if (!(b1 || b2 || b3)) {
       std::cerr << "Error: "
-                << "Please pass either 'restart' or 'heat' to the hmc. "
+                << "Invalid restart condition: " << rc << ". "
                 << "Aborting.\n";
       std::abort();
     }
@@ -379,10 +369,8 @@ namespace input_file_parsing {
     in.read_opt_verb<size_t>(mcparams.beta_str_width, {"beta_str_width"});
     validate_beta_str_width(mcparams.beta_str_width);
 
-    heat_restart_incompatible(nd);
-
-    in.read_opt_verb<bool>(mcparams.restart, {"restart"});
-    in.read_opt_verb<bool>(mcparams.heat, {"heat"});
+    in.read_verb<std::string>(mcparams.restart_condition, {"restart_condition"});
+    check_restart_condition(mcparams.restart_condition);
 
     in.read_verb<double>(mcparams.delta, {"delta"});
     in.read_opt_verb<size_t>(mcparams.N_hit, {"N_hit"});
@@ -417,10 +405,8 @@ namespace input_file_parsing {
     in.read_opt_verb<std::string>(mcparams.conf_basename, {"conf_basename"});
     in.read_opt_verb<bool>(mcparams.lenghty_conf_name, {"lenghty_conf_name"});
 
-    heat_restart_incompatible(nd);
-
-    in.read_opt_verb<bool>(mcparams.restart, {"restart"});
-    in.read_opt_verb<bool>(mcparams.heat, {"heat"});
+    in.read_verb<std::string>(mcparams.restart_condition, {"restart_condition"});
+    check_restart_condition(mcparams.restart_condition);
 
     in.set_InnerTree(state0); // reset to previous state
     return;
@@ -446,10 +432,8 @@ namespace input_file_parsing {
 
     in.read_opt_verb<bool>(hparams.do_mcmc, {"do_mcmc"});
 
-    heat_restart_incompatible(nd);
-
-    in.read_opt_verb<bool>(hparams.restart, {"restart"});
-    in.read_opt_verb<bool>(hparams.heat, {"heat"});
+    in.read_verb<std::string>(hparams.restart_condition, {"restart_condition"});
+    check_restart_condition(hparams.restart_condition);
 
     in.read_opt_verb<size_t>(hparams.seed, {"seed"});
     in.read_opt_verb<std::string>(hparams.configfilename, {"configname"});
@@ -538,7 +522,7 @@ namespace input_file_parsing {
       parse_geometry(in, pparams);
       parse_action<gp::hmc>(in, {}, pparams, hparams);
 
-      parse_hmc(in, {"hmc"}, hparams); // hmc-u1 parameters
+      parse_hmc(in, {"hmc"}, hparams); // hmc parameters
       parse_integrator(in, {"integrator"}, hparams); // integrator parameters
 
       // online measurements

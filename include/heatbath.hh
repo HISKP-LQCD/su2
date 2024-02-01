@@ -98,17 +98,16 @@ std::vector<double> heatbath(gaugeconfig<u1> &U,
                              std::vector<URNG> engine,
                              const double &beta,
                              const double &xi = 1.0,
-                             const bool &anisotropic = false,
-                             const bool &temporalonly = false) {
+                             const bool &anisotropic = false) {
   const double coupl_fact = (beta / double(U.getNc()));
   std::uniform_real_distribution<double> uniform(0.0, 1.0);
   typedef typename accum_type<u1>::type accum;
-  double rate = 0.0, rate_time = 0.0, total_attempts = 0.0, temporal_attempts = 0.0;
+  double rate = 0.0, rate_time = 0.0, total_attempts = 0.0;
 
-  const size_t endmu = temporalonly ? 1 : U.getndims(); 
+  const size_t endmu = U.getndims(); 
 
   for (size_t x0_start = 0; x0_start < 2; x0_start++) {
-#pragma omp parallel for reduction (+: rate, rate_time, total_attempts, temporal_attempts)
+#pragma omp parallel for reduction (+: rate, rate_time, total_attempts)
     for (size_t x0 = x0_start; x0 < U.getLt(); x0 += 2) {
       size_t thread_num = omp_get_thread_num();
       for (size_t x1 = 0; x1 < U.getLx(); x1++) {
@@ -129,10 +128,7 @@ std::vector<double> heatbath(gaugeconfig<u1> &U,
                 u1 = uniform(engine[thread_num]);
                 u2 = uniform(engine[thread_num]);
                 accept = (u2 < hattori_nakajima::g(alpha, beta, rho, u1));
-                total_attempts+=1;
-                if (mu == 0) {
-                  temporal_attempts += 1;
-                }
+                total_attempts++;
                 attempt++;
               }
               if(attempt==3000) spacetime_lattice::fatal_error("too many attempts to generate new link!", __func__);
@@ -148,11 +144,10 @@ std::vector<double> heatbath(gaugeconfig<u1> &U,
     }
   }
 
-  const size_t den_acceptance_rate = temporalonly ? U.getVolume() : U.getSize();
+  const size_t den_acceptance_rate = U.getSize();
   const std::vector<double> res = {double(rate) / double(den_acceptance_rate),
                                    double(rate_time) / double(U.getVolume()), 
-                                   double(rate) / double(total_attempts), 
-                                   double(rate_time) / double(temporal_attempts)};
+                                   double(rate) / double(total_attempts)};
   return res;
 }
 
@@ -211,8 +206,7 @@ std::vector<double> heatbath(gaugeconfig<su2> &U,
                              std::vector<URNG> engine,
                              const double &beta,
                              const double &xi = 1.0,
-                             const bool &anisotropic = false,
-                             const bool &temporalonly = false) {
+                             const bool &anisotropic = false) {
   spacetime_lattice::fatal_error("heatbath not implemented for SU(2)!", __func__);
 
   return {};
@@ -223,8 +217,7 @@ std::vector<double> heatbath(gaugeconfig<su3> &U,
                              std::vector<URNG> engine,
                              const double &beta,
                              const double &xi = 1.0,
-                             const bool &anisotropic = false,
-                             const bool &temporalonly = false) {
+                             const bool &anisotropic = false) {
   spacetime_lattice::fatal_error("heatbath not implemented for SU(3)!", __func__);
 
   return {};

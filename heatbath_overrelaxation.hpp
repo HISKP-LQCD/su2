@@ -64,40 +64,30 @@ public:
    */
   void do_heatbath(const size_t &i, const std::vector<std::mt19937> &engines) {
     (*this).rate += heatbath((*this).U, engines, (*this).pparams.beta, (*this).pparams.xi,
-                             (*this).pparams.anisotropic, /*temporalonly=*/false, (*this).sparams.write_link_change);
-    for (size_t i_hbt = 0; i_hbt < (*this).sparams.n_heatbath_temporal; i_hbt++) {
-      (*this).rate += heatbath((*this).U, engines, (*this).pparams.beta, (*this).pparams.xi,
-                             (*this).pparams.anisotropic, /*temporalonly=*/true, (*this).sparams.write_link_change);
-    }
+                             (*this).pparams.anisotropic);
   }
 
   void do_overrelaxation() {
     overrelaxation((*this).U, (*this).pparams.beta, (*this).pparams.xi,
-                   (*this).pparams.anisotropic, /*temporalonly=*/false, (*this).sparams.write_link_change);
-    for (size_t i_ort = 0; i_ort < (*this).sparams.n_overrelax_temporal; i_ort++) {
-      overrelaxation((*this).U, (*this).pparams.beta, (*this).pparams.xi,
-                             (*this).pparams.anisotropic, /*temporalonly=*/true, (*this).sparams.write_link_change);
-    }
+                   (*this).pparams.anisotropic);
   }
 
   // save acceptance rates to additional file to keep track of measurements
   void save_acceptance_rates() {
-    const double norm_den = double((*this).sparams.n_meas * (*this).sparams.n_heatbath* ((*this).sparams.n_heatbath_temporal+1));
+    const double norm_den = double((*this).sparams.n_meas * (*this).sparams.n_heatbath);
     if ((*this).sparams.do_mcmc) {
       std::cout << "## Acceptanced links " << rate[0] / norm_den
                 << " accepted temporal links " << rate[1] / norm_den
-                << " acceptance rate " << rate[2] / norm_den
-                << " temporal acceptance rate " << rate[3] / norm_den << std::endl;
+                << " acceptance rate " << rate[2] / norm_den << std::endl;
       (*this).acceptancerates.open((*this).sparams.conf_dir +
                                      "/acceptancerates-heatbath_overrelaxation.data",
                                    std::ios::app);
       (*this).acceptancerates << rate[0] / norm_den << " " << rate[1] / norm_den << " "
-                              << rate[2] / norm_den << " " << rate[3] / norm_den << " "
-                              << (*this).pparams.beta << " " << (*this).pparams.Lx << " "
-                              << (*this).pparams.Lt << " " << (*this).pparams.xi << " "
-                              << (*this).sparams.heat << " " << (*this).threads << " "
-                              << (*this).sparams.n_meas << " " << (*this).sparams.seed
-                              << " " << std::endl;
+                              << rate[2] / norm_den << " " << (*this).pparams.beta << " "
+                              << (*this).pparams.Lx << " " << (*this).pparams.Lt << " "
+                              << (*this).pparams.xi << " " << (*this).sparams.heat << " "
+                              << (*this).threads << " " << (*this).sparams.n_meas << " "
+                              << (*this).sparams.seed << " " << std::endl;
       (*this).acceptancerates.close();
     }
     return;
@@ -135,7 +125,6 @@ public:
       if ((*this).sparams.do_mcmc) {
         this->output_line(i);
 
-        const int d1 = i;
         const int d2 = (*this).pparams.Lt;
         const int d3 = (*this).sparams.n_heatbath;
         for (size_t i_hb = 0; i_hb < (*this).sparams.n_heatbath; i_hb++) {

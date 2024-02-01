@@ -1,8 +1,4 @@
----
-output: html_document
----
-
-## Program execution
+## How to use the `su2` library
 
 The `main-u1.cpp` program works using an input file `main.input` as follows:
 

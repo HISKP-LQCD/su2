@@ -1,0 +1,11 @@
+## Installing `su2`
+
+The installation can be done by running the following scripts in a `bash` shell:
+
+```
+./do_cmake.sh
+./do_make.sh
+```
+
+These can be found in the `installation_scripts/` folder.
+

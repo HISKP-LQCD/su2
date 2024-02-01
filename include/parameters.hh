@@ -233,9 +233,6 @@ namespace global_parameters {
     size_t N_save = 100; // save each N_save config
     size_t n_heatbath = 1; // number of heatbath sweeps
     size_t n_overrelax = 1; // number of overrelaxation sweeps
-    size_t n_heatbath_temporal = 0; // number of additional temporal heatbath sweeps per regular sweep
-    size_t n_overrelax_temporal = 0; // number of additional temporal overrelaxation sweeps per regular sweep
-    bool write_link_change = false; // write the average change of the links per sweep to stdout
 
     bool restart = false; // restart from an existing configuration
     std::string configfilename = ""; // configuration filename used in case of restart

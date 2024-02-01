@@ -45,3 +45,9 @@ su2hmc
 
 # build directories
 build*
+
+## documentation
+doc/.quarto
+doc/_book
+doc/_freeze
+doc/*.html

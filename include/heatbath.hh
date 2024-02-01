@@ -90,9 +90,7 @@ std::vector<double> heatbath(gaugeconfig<Group> &U,
                              std::vector<URNG> engine,
                              const double &beta,
                              const double &xi = 1.0,
-                             const bool &anisotropic = false,
-                             const bool &temporalonly = false, 
-                             const bool &write_link = false);
+                             const bool &anisotropic = false);
 
 template <class URNG>
 std::vector<double> heatbath(gaugeconfig<u1> &U,
@@ -122,7 +120,6 @@ std::vector<double> heatbath(gaugeconfig<u1> &U,
               const double rho = coupl_fact * get_abs(K);
               const double alpha = hattori_nakajima::alpha(rho);
               const double beta = hattori_nakajima::beta(alpha, rho);
-              const double oldu = U(x, mu).geta();
               bool accept=false;
               double u1, u2;
               size_t attempt=0;
@@ -138,10 +135,6 @@ std::vector<double> heatbath(gaugeconfig<u1> &U,
               rate += 1;
               if (mu == 0) {
                 rate_time += 1;
-                changed_link_temporal += std::abs(U(x, mu).geta() - oldu);
-              }
-              else {
-                changed_link_spatial += std::abs(U(x, mu).geta() - oldu);
               }
             }
           }
@@ -149,11 +142,6 @@ std::vector<double> heatbath(gaugeconfig<u1> &U,
       }
     }
   }
-    if (write_link) {
-      std::cout << std::setw(14) << "#### heatbath " << changed_link_spatial / double(U.getndims()*U.getVolume())
-        << " " << changed_link_temporal / double(U.getVolume()) << std::endl;
-    }
-
   const size_t den_acceptance_rate = U.getSize();
   const std::vector<double> res = {double(rate) / double(den_acceptance_rate),
                                    double(rate_time) / double(U.getVolume()), 

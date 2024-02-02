@@ -57,7 +57,7 @@ void overrelaxation(gaugeconfig<u1> &U,
 
   const size_t endmu = U.getndims(); 
   for (size_t x0_start = 0; x0_start < 2; x0_start++) {
-#pragma omp parallel for reduction (+: changed_link_spatial, changed_link_temporal)
+#pragma omp parallel for
     for (size_t x0 = x0_start; x0 < U.getLt(); x0 += 2) {
       for (size_t x1 = 0; x1 < U.getLx(); x1++) {
         for (size_t x2 = 0; x2 < U.getLy(); x2++) {

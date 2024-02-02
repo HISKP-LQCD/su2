@@ -47,6 +47,14 @@ public:
     }
     // set things up for parallel computing in sweep
     (*this).threads = omp_get_max_threads();
+    // it does not make sense to have more threads than time slices
+    if ((*this).pparams.Lt < (*this).threads) {
+      std::cerr << "It does not make sense to have more threads than time slices!"
+                << std::endl;
+      omp_set_num_threads((*this).pparams.Lt);
+      (*this).threads = (*this).pparams.Lt;
+      std::cerr << "Setting number of threads to T." << std::endl;
+    }
 #else
     (*this).threads = 1;
 #endif
@@ -82,13 +90,14 @@ public:
    * @brief do the i-th sweep of the metropolis algorithm
    *
    * @param i trajectory index
+   * set random engine such that an overlap and double use of seeds cannot occur
    */
   void do_sweep(const size_t &i) {
     const size_t n_threads = (*this).threads;
     if ((*this).sparams.do_mcmc) {
       std::vector<std::mt19937> engines(n_threads);
       for (size_t i_engine = 0; i_engine < n_threads; i_engine++) {
-        engines[i_engine].seed((*this).sparams.seed + i * n_threads + i_engine);
+        engines[i_engine].seed((*this).sparams.seed + i * (*this).pparams.Lt + i_engine);
       }
 
       this->output_line(i);

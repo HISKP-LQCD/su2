@@ -51,6 +51,14 @@ public:
     }
     // set things up for parallel computing in sweep
     (*this).threads = omp_get_max_threads();
+    // it does not make sense to have more threads than time slices
+    if ((*this).pparams.Lt < (*this).threads) {
+      std::cerr << "It does not make sense to have more threads than time slices!"
+                << std::endl;
+      omp_set_num_threads((*this).pparams.Lt);
+      (*this).threads = (*this).pparams.Lt;
+      std::cerr << "Setting number of threads to T." << std::endl;
+    }
 #else
     (*this).threads = 1;
 #endif
@@ -117,6 +125,7 @@ public:
      * heatbath_overrelaxation updates of every link in the lattice
      * calculate plaquette, spacial plaquette, energy density with and without cloverdef
      * and write to stdout and output-file save every nave configuration
+     * set random engine such that an overlap and double use of seeds cannot occur
      * */
     const int seed = (*this).sparams.seed;
     const int n_threads = (*this).threads;

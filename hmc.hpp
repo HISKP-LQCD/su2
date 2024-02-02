@@ -20,7 +20,7 @@
 
 template <class Group> class hmc_algo : public base_program<Group, gp::hmc> {
 private:
-  double rate = 0.; // acceptance rate
+  double rate = 0.0; // acceptance rate
 
   std::list<monomial<double, Group> *> monomial_list; // list of monomials in the action
 
@@ -34,8 +34,7 @@ private:
   //   *gm_rot = nullptr; // gauge monomial with space rotation
 
   kineticmonomial<double, Group> *km = nullptr; // kinetic momomial (momenta)
-  staggered::detDDdag_monomial<double, Group> *detDDdag =
-    nullptr; // staggered fermions monomial
+  staggered::detDDdag_monomial<double, Group> *detDDdag = nullptr; // staggered fermions
 
   // Molecular Dynamics (MD)
   integrator<double, Group> *md_integ = nullptr; // MD integrator
@@ -52,9 +51,7 @@ public:
     delete md_integ;
   }
 
-  void print_program_info() const {
-    std::cout << "## HMC Algorithm for U(1) gauge theory\n";
-  }
+  void print_program_info() const { std::cout << "## HMC Algorithm\n"; }
 
   void parse_input_file(const YAML::Node &nd) {
     namespace in_hmc = input_file_parsing::hmc;
@@ -118,17 +115,13 @@ public:
       // do the MD update
       md_update((*this).U, engine, mdparams, monomial_list, *md_integ);
 
-      // const double energy = flat_spacetime::gauge_energy((*this).U);
-      const double energy =
-        omeasurements::get_retr_plaquette_density((*this).U, (*this).pparams.bc);
-
       double E = 0., Q = 0.;
       flat_spacetime::energy_density((*this).U, E, Q);
 
       rate += mdparams.getaccept();
 
       std::cout << i << " " << (*this).mdparams.getaccept() << " " << std::scientific
-                << std::setw(18) << std::setprecision(15) << energy << " "
+                << std::setw(18) << std::setprecision(15) << E << " "
                 << std::setw(15) << (*this).mdparams.getdeltaH() << " " << std::setw(15)
                 << rate / static_cast<double>(i + 1) << " ";
 
@@ -140,7 +133,7 @@ public:
       std::cout << " " << Q << std::endl;
 
       (*this).os << i << " " << (*this).mdparams.getaccept() << " " << std::scientific
-                 << std::setw(18) << std::setprecision(15) << energy << " "
+                 << std::setw(18) << std::setprecision(15) << E << " "
                  << std::setw(15) << (*this).mdparams.getdeltaH() << " " << std::setw(15)
                  << rate / static_cast<double>(i + 1) << " ";
       if ((*this).mdparams.getrevtest()) {
@@ -157,8 +150,8 @@ public:
     this->init_gauge_conf_mcmc();
     this->open_output_data();
 
-    if ((*this).sparams.do_omeas){
-        this->set_potential_filenames();
+    if ((*this).sparams.do_omeas) {
+      this->set_potential_filenames();
     }
 
     // Molecular Dynamics parameters
@@ -173,7 +166,7 @@ public:
 
     if ((*this).g_icounter == 0) {
       // header: column names in the output
-      std::string head_str = io::get_header(" ");
+      std::string head_str = io::hmc::get_header(" ");
       std::cout << head_str;
       (*this).os << head_str;
     }

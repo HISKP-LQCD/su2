@@ -8,6 +8,11 @@
  *
  * @copyright Copyright (c) 2022
  *
+ * This file defines a namespace "input_file_parsing" for the parsing of the input file.
+ * The sub-namespaces contain what is needed for each algorithm.
+ * The functions needed by two or more of them lie in the global namespace
+ * "input_file_parsing"
+ *
  */
 
 #include <iostream>
@@ -151,6 +156,7 @@ namespace input_file_parsing {
     }
 
     if (R["geometry"]["rotating_frame"]) {
+      spacetime_lattice::fatal_error("Rotating metric not supported yet.", __func__);
       pparams.rotating_frame = true;
       pparams.flat_metric = false; // metric is not flat
       in.read_verb<double>(pparams.Omega, {"geometry", "rotating_frame", "Omega"});
@@ -165,27 +171,17 @@ namespace input_file_parsing {
   }
 
   /**
-   * @brief checks that `heat` and `restart` are not both present at the same time
+   * @brief checks that the restart condition one of the following:
+   * `hot`, `cold`, `read`
    *
    */
-  void heat_restart_incompatible(const YAML::Node &nd) {
-    if (nd["restart"]) {
-      if (!(nd["restart"].as<bool>()) && !nd["heat"]) {
-        std::cerr << "Error: Your gave 'restart==false' but didn't specify the 'heat' "
-                     "parameter.\n";
-        std::cerr << "Aborting.\n";
-        std::abort();
-      }
-      if (nd["restart"] && nd["heat"]) {
-        std::cerr << "Error: "
-                  << "'restart' and 'heat' conditions are incompatible in the hmc. "
-                  << "Aborting.\n";
-        std::abort();
-      }
-    }
-    if (!nd["restart"] && !nd["heat"]) {
+  void check_restart_condition(const std::string &rc) {
+    const bool b1 = (rc == "hot");
+    const bool b2 = (rc == "cold");
+    const bool b3 = (rc == "read");
+    if (!(b1 || b2 || b3)) {
       std::cerr << "Error: "
-                << "Please pass either 'restart' or 'heat' to the hmc. "
+                << "Invalid restart condition: " << rc << ". "
                 << "Aborting.\n";
       std::abort();
     }
@@ -205,7 +201,7 @@ namespace input_file_parsing {
     if (nd["bc"]) {
       check_bc(mpparams.bc);
     }
-    
+
     in.set_InnerTree(state0); // reset to previous state
   }
 
@@ -303,8 +299,9 @@ namespace input_file_parsing {
 
     in.read_opt_verb<bool>(mparams.restart, {"restart"});
     in.read_opt_verb<size_t>(mparams.icounter, {"icounter"});
-    if (mparams.restart && nd["icounter"]){
-      std::cerr << "Incompatible simultaneous restart==true and icounter in omeas block.\n";
+    if (mparams.restart && nd["icounter"]) {
+      std::cerr
+        << "Incompatible simultaneous restart==true and icounter in omeas block.\n";
       std::cerr << "Aborting.\n";
       std::abort();
     }
@@ -372,14 +369,44 @@ namespace input_file_parsing {
     in.read_opt_verb<size_t>(mcparams.beta_str_width, {"beta_str_width"});
     validate_beta_str_width(mcparams.beta_str_width);
 
-    heat_restart_incompatible(nd);
-
-    in.read_opt_verb<bool>(mcparams.restart, {"restart"});
-    in.read_opt_verb<bool>(mcparams.heat, {"heat"});
+    in.read_verb<std::string>(mcparams.restart_condition, {"restart_condition"});
+    check_restart_condition(mcparams.restart_condition);
 
     in.read_verb<double>(mcparams.delta, {"delta"});
     in.read_opt_verb<size_t>(mcparams.N_hit, {"N_hit"});
     validate_N_hit(mcparams.N_hit);
+
+    in.set_InnerTree(state0); // reset to previous state
+    return;
+  }
+
+  /**
+   * @brief parsing the `heatbath_overrelaxation` block of the YAML input file
+   *
+   * @param in inspection node (full tree)
+   * @param inner_tree path to the given branch of the tree
+   * @param mcparams reference to the hmc parameters
+   */
+  void parse_heatbath_overrelaxation(Yp::inspect_node &in,
+                                     const std::vector<std::string> &inner_tree,
+                                     gp::heatbath_overrelaxation &mcparams) {
+    const std::vector<std::string> state0 = in.get_InnerTree();
+    in.dig_deeper(inner_tree); // entering the glueball node
+    YAML::Node nd = in.get_outer_node();
+
+    in.read_opt_verb<bool>(mcparams.do_mcmc, {"do_mcmc"});
+    in.read_opt_verb<size_t>(mcparams.n_meas, {"n_meas"});
+    in.read_opt_verb<size_t>(mcparams.N_save, {"N_save"});
+    in.read_opt_verb<size_t>(mcparams.n_heatbath, {"n_heatbath"});
+    in.read_opt_verb<size_t>(mcparams.n_overrelax, {"n_overrelax"});
+    in.read_opt_verb<size_t>(mcparams.seed, {"seed"});
+
+    in.read_opt_verb<std::string>(mcparams.conf_dir, {"conf_dir"});
+    in.read_opt_verb<std::string>(mcparams.conf_basename, {"conf_basename"});
+    in.read_opt_verb<bool>(mcparams.lenghty_conf_name, {"lenghty_conf_name"});
+
+    in.read_verb<std::string>(mcparams.restart_condition, {"restart_condition"});
+    check_restart_condition(mcparams.restart_condition);
 
     in.set_InnerTree(state0); // reset to previous state
     return;
@@ -405,10 +432,8 @@ namespace input_file_parsing {
 
     in.read_opt_verb<bool>(hparams.do_mcmc, {"do_mcmc"});
 
-    heat_restart_incompatible(nd);
-
-    in.read_opt_verb<bool>(hparams.restart, {"restart"});
-    in.read_opt_verb<bool>(hparams.heat, {"heat"});
+    in.read_verb<std::string>(hparams.restart_condition, {"restart_condition"});
+    check_restart_condition(hparams.restart_condition);
 
     in.read_opt_verb<size_t>(hparams.seed, {"seed"});
     in.read_opt_verb<std::string>(hparams.configfilename, {"configname"});
@@ -497,7 +522,7 @@ namespace input_file_parsing {
       parse_geometry(in, pparams);
       parse_action<gp::hmc>(in, {}, pparams, hparams);
 
-      parse_hmc(in, {"hmc"}, hparams); // hmc-u1 parameters
+      parse_hmc(in, {"hmc"}, hparams); // hmc parameters
       parse_integrator(in, {"integrator"}, hparams); // integrator parameters
 
       // online measurements
@@ -561,5 +586,29 @@ namespace input_file_parsing {
     }
 
   } // namespace metropolis
+
+  namespace heatbath_overrelaxation {
+
+    void parse_input_file(const YAML::Node &nd,
+                          gp::physics &pparams,
+                          gp::heatbath_overrelaxation &mcparams) {
+      Yp::inspect_node in(nd);
+
+      parse_geometry(in, pparams);
+      parse_action<gp::heatbath_overrelaxation>(in, {}, pparams, mcparams);
+      parse_heatbath_overrelaxation(in, {"heatbath_overrelaxation"}, mcparams);
+
+      if (nd["omeas"]) {
+        mcparams.do_omeas = true;
+        mcparams.omeas.conf_dir = mcparams.conf_dir;
+        parse_omeas(in, {"omeas"}, mcparams.omeas);
+      }
+
+      in.finalize();
+
+      return;
+    }
+
+  } // namespace heatbath_overrelaxation
 
 } // namespace input_file_parsing

@@ -74,6 +74,7 @@ void parse_command_line(int ac, char *av[], std::string &input_file) {
 struct running_program {
   bool do_hmc = false; // Hybrid Monte Carlo algorithm
   bool do_metropolis = false; // Metropolis algorithm
+  bool do_heatbath_overrelaxation = false; // heatbath+overrelaxation algorithm
   bool do_omeas = false; // only measuring observables
 };
 
@@ -93,6 +94,7 @@ YAML::Node get_cleaned_input_file(running_program &rp, const std::string &input_
   bool &do_hmc = rp.do_hmc;
   bool &do_metropolis = rp.do_metropolis;
   bool &do_omeas = rp.do_omeas;
+  bool &do_heatbath_overrelaxation = rp.do_heatbath_overrelaxation;
 
   if (nd["hmc"]) {
     in.read_verb<bool>(do_hmc, {"hmc", "do_mcmc"});
@@ -110,13 +112,24 @@ YAML::Node get_cleaned_input_file(running_program &rp, const std::string &input_
     }
   }
 
+  do_heatbath_overrelaxation = false;
+  if (nd["heatbath_overrelaxation"]) {
+    in.read_verb<bool>(do_heatbath_overrelaxation,
+                       {"heatbath_overrelaxation", "do_mcmc"});
+    if (!do_heatbath_overrelaxation) {
+      nd.remove("heatbath_overrelaxation");
+    }
+  }
+
   do_omeas = bool(nd["omeas"]);
   std::string err = ""; // error message
+  const int flag_algo =
+    int(do_hmc) + int(do_metropolis) + int(do_heatbath_overrelaxation);
   try {
-    if (do_hmc && do_metropolis) { // both options are incompatible
-      err = "ERROR: Can't run simultaneously hmc and metropolis algorithms.\n";
+    if (flag_algo > 1) { // can run only one algorithm
+      err = "ERROR: You can run no more than one MC algorithm.\n";
       throw err;
-    } else if (!do_hmc && !do_metropolis && !nd["omeas"]["offline"]) {
+    } else if (flag_algo == 0 && !nd["omeas"]["offline"]) {
       err = "Error: You must write the 'offline' measurements node inside 'omeas' "
             "because you're not running any MCMC algorithm.\n";
       throw err;
@@ -134,13 +147,11 @@ namespace gp = global_parameters;
 
 template <class Group, class sparam_type> class base_program {
 protected:
-  std::string algo_name =
-    "UNNAMED_PROGRAM"; // name of the algorithm; initialized specified in child classes
+  std::string algo_name = "UNNAMED_PROGRAM"; // algorithm's name
 
   gp::physics pparams; // physics parameters
   sparam_type sparams; // specific parameters to the given run
   gp::measure omeas; // omeasurements parameters
-  //    YAML::Node nd; // yaml node
 
   size_t threads;
 
@@ -156,7 +167,7 @@ protected:
   size_t g_icounter = 0; // 1st configuration(trajectory) to load from
 
   double normalisation;
-  size_t facnorm;
+  double facnorm;
 
   std::ofstream os;
   std::ofstream acceptancerates;
@@ -203,6 +214,15 @@ public:
     }
     // set things up for parallel computing in sweep
     threads = omp_get_max_threads();
+
+    if (threads > pparams.Lt) {
+      std::cerr << "Number of threads larger than temporal does not make sense; setting "
+                   "numer of threads to T."
+                << std::endl;
+      threads = pparams.Lt;
+      omp_set_num_threads(pparams.Lt);
+    }
+
 #else
     threads = 1;
 #endif
@@ -281,8 +301,8 @@ public:
      */
     facnorm = (pparams.ndims > 2) ? pparams.ndims / (pparams.ndims - 2) : 0;
 
-    if (sparams.restart) {
-      std::cout << "## restart " << sparams.restart << "\n";
+    if (sparams.restart_condition == "read") {
+      std::cout << "## restart_condition " << sparams.restart_condition << "\n";
       const std::vector<std::string> v_ncc = io::read_nconf_counter(sparams.conf_dir);
       g_heat = boost::lexical_cast<bool>(v_ncc[0]);
       g_icounter = std::stoi(v_ncc[1]);
@@ -295,7 +315,11 @@ public:
         std::abort();
       }
     } else {
-      g_heat = (sparams.heat == true) ? 1.0 : 0.0;
+      if (sparams.restart_condition == "hot") {
+        g_heat = 1.0;
+      } else if (sparams.restart_condition == "cold") {
+        g_heat = 0.0;
+      }
       g_icounter = 0;
       hotstart(U, sparams.seed, g_heat);
     }
@@ -303,7 +327,7 @@ public:
     // double plaquette = flat_spacetime::gauge_energy(U);
     double plaquette =
       omeasurements::get_retr_plaquette_density((*this).U, (*this).pparams.bc);
-    double fac = 2. / U.getndims() / (U.getndims() - 1);
+    double fac = 2.0 / U.getndims() / (U.getndims() - 1);
     normalisation = fac / U.getVolume() / double(U.getNc());
 
     std::cout << "## Normalization factor: A = 2/(d*(d-1)*N_lat*N_c) = "
@@ -335,6 +359,19 @@ public:
     return;
   }
 
+  void output_line(const int &i) {
+    double E = 0., Q = 0.;
+    std::cout << i;
+    (*this).os << i;
+    for (bool ss : {false, true}) {
+      this->energy_density((*this).pparams, (*this).U, E, Q, false, ss);
+      std::cout << " " << std::scientific << std::setprecision(15) << E << " " << Q;
+      (*this).os << " " << std::scientific << std::setprecision(15) << E << " " << Q;
+    }
+    std::cout << "\n";
+    (*this).os << "\n";
+  }
+
   /**
    * @brief part of the program flow common to all programs
    */
@@ -358,6 +395,19 @@ public:
    * @param path path to the input file
    */
   virtual void run(const YAML::Node &nd) = 0;
+
+  // save acceptance rates to additional file to keep track of measurements
+  virtual void save_acceptance_rates() { return; };
+
+  // save the final configuration when doing the MC evolution
+  void save_final_conf() {
+    if ((*this).sparams.do_mcmc) {
+      std::ostringstream oss;
+      oss << (*this).conf_path_basename << ".final" << std::ends;
+      ((*this).U).save((*this).sparams.conf_dir + "/" + oss.str());
+    }
+    return;
+  }
 
   /**
    * @brief online measurements over the i-th trajectory

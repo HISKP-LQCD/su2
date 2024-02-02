@@ -333,4 +333,13 @@ namespace input_file_parsing {
 
   } // namespace metropolis
 
+  namespace heatbath_overrelaxation {
+    void validate_N_hit(const size_t &n);
+    void parse_input_file(const YAML::Node &nd,
+                          gp::physics &pparams,
+                          gp::heatbath_overrelaxation &mcparams);
+
+  } // namespace heatbath_overrelaxation
+
+
 } // namespace input_file_parsing

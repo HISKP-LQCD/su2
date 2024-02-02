@@ -22,6 +22,7 @@
 #include "hmc.hpp"
 #include "measure.hpp"
 #include "metropolis.hpp"
+#include "heatbath_overrelaxation.hpp"
 
 /**
  * @brief program function for hmc, metropolis and measure
@@ -45,15 +46,17 @@ template <class Group> void run_program(int argc, char *argv[]) {
   bool &do_hmc = rp.do_hmc;
   bool &do_metropolis = rp.do_metropolis;
   bool &do_omeas = rp.do_omeas;
+  bool &do_heatbath_overrelaxation = rp.do_heatbath_overrelaxation;
 
-  if (do_hmc ^ do_metropolis) { // one of the 2 algorithms
-    if (do_hmc) {
-      hmc_algo<Group> h;
-      h.run(nd);
-    } else if (do_metropolis) {
-      metropolis_algo<Group> mpl;
-      mpl.run(nd);
-    }
+  if (do_hmc) {
+    hmc_algo<Group> h;
+    h.run(nd);
+  } else if (do_metropolis) {
+    metropolis_algo<Group> mpl;
+    mpl.run(nd);
+  } else if (do_heatbath_overrelaxation) {
+    heatbath_overrelaxation_algo<Group> hb_or;
+    hb_or.run(nd);
   } else if (do_omeas) { // offline measurements
     measure_algo<Group> ms;
     ms.run(nd);
@@ -61,5 +64,6 @@ template <class Group> void run_program(int argc, char *argv[]) {
     std::cerr << "ERROR: Program ineffective.\n";
     exit(1);
   }
+
   return;
 }

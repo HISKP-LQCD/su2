@@ -103,6 +103,7 @@ template <class Float = double> inline adjointsu3<Float> get_deriv(const su3_acc
   return adjointsu3<Float>(arr);
 }
 
+
 template <typename Float>
 inline adjointsu3<Float> operator*(const Float &x, const adjointsu3<Float> &A) {
   std::array<Float, 8> arr = A.get_arr();

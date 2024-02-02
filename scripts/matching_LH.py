@@ -40,7 +40,7 @@ p0: list
 Returns
 -------
 dict:
-    A dictionalry with the initial data and the bootstraps of the numerical matching curve coordinates
+    A dictionary with the initial data and the bootstraps of the numerical matching curve coordinates
 
 Example:
 --------

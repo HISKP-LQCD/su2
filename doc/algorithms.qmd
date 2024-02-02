@@ -1,0 +1,33 @@
+## Available algorithms
+
+The gauge configurations can be generated with the following Markov Chain Monte Carlo algorithms (see @gattringer2009quantum for the theoretical background):
+
+- Metropolis
+- Hybrid Monte Carlo
+- Heatbath + Overrelaxation
+
+The measurements can be generated either online (during the MCMC) or offline (on previously generated configurations). 
+At present the supported observables are:
+
+- Plaquette standard and clover-improved energy
+- Glueball correlators
+- "pion" correlator
+- Wilson loops and static potential among $\bar{q} q$ pairs
+- Wilson gradient flow
+
+## Programs
+
+- Programs: `main-u1.cpp`, `main-su2.cpp`, `main-su3.cpp`
+- Parameters parsing: `yaml` input file
+- Input file example: see [./main.input](main.input)
+  
+_Notes_:
+
+- Each run produces/updates a file named `nconf_counter.txt` in the directory storing the gauge configurations. This file contains a header line and the values below. An example:
+  ```
+  heat i path_conf
+  1 1140 ./confs/config_u1.4.4.1.16.b1.900000.1140
+  ```
+
+- `restart_condition` can be either `hot`, `cold` or `read`. If equal to `read`, the last configuration id and path are read from the `nconf_counter.txt` file.
+- The program can do online and offline measurements

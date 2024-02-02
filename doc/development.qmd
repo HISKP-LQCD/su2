@@ -1,4 +1,6 @@
-# Adding a parameter to the input file
+## Notes for developers
+
+## Adding a parameter to the input file
 
 In order to add a parameter that will be parsed from the input file, do the following steps.
 For the details please look at the comments inside the source files. 

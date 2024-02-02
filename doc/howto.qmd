@@ -44,7 +44,7 @@ The parameters parsed in the `hmc` block are the following. Further details are 
 
 - `n_meas`
 - `do_mcmc`
-- `restart` and `heat` (incompatible with each other)
+- `restart_condition`
 - `seed`
 - `configname`
 - `conf_dir`

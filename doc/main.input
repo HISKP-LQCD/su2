@@ -12,8 +12,7 @@ metropolis:
   N_save: 5
   N_hit: 250
   delta: 0.01
-  heat: true
-#  restart: true
+  restart_condition: hot
   lenghty_conf_name: false  
 
 hmc:
@@ -21,8 +20,7 @@ hmc:
   seed: 93746
   n_save: 10
   n_meas: 20
-#  restart: true
-  heat: true
+  restart_condition: hot
   configname: ""
   lenghty_conf_name: false
   conf_dir: "./confs/"

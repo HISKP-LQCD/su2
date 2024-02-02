@@ -120,7 +120,7 @@ public:
                               << rate[1] / double((*this).sparams.n_meas) << " "
                               << (*this).pparams.beta << " " << (*this).pparams.Lx << " "
                               << (*this).pparams.Lt << " " << (*this).pparams.xi << " "
-                              << (*this).sparams.delta << " " << (*this).sparams.heat
+                              << (*this).sparams.delta << " " << (*this).g_heat
                               << " " << n_threads << " " << (*this).sparams.N_hit << " "
                               << (*this).sparams.n_meas << " " << (*this).sparams.seed
                               << " " << std::endl;

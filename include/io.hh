@@ -247,7 +247,7 @@ namespace io {
     }
   } // namespace measure
 
-  std::string g_nconf_counter = "nconf_counter.txt"; // global variable: name of file
+  const std::string g_nconf_counter = "nconf_counter.txt"; // global variable: name of file
 
   namespace hmc {
     std::string get_header(const std::string &sep = " ") {
@@ -273,7 +273,7 @@ namespace io {
    * @return std::array<std::string, 2> {"i","/path/to/conf.i"}
    */
   std::vector<std::string> read_nconf_counter(const std::string &conf_dir) {
-    const std::string input_file = conf_dir + g_nconf_counter;
+    const std::string input_file = conf_dir + "/" + g_nconf_counter;
 
     if (!boost::filesystem::exists(input_file)) {
       std::cerr << "Error from " << __func__ << "\n";
@@ -305,7 +305,7 @@ namespace io {
                             const std::string &path_conf) {
     // saving index of the last configuration
     std::ofstream nconf_counter;
-    nconf_counter.open(conf_dir + g_nconf_counter, std::ios::out);
+    nconf_counter.open(conf_dir + "/" + g_nconf_counter, std::ios::out);
     nconf_counter << "heat i path_conf\n";
     nconf_counter << heat << " " << i << " " << path_conf;
     nconf_counter.close();

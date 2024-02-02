@@ -211,12 +211,14 @@ public:
                 << std::endl;
       omp_set_num_threads(1);
       std::cerr << "Continuing with one thread." << std::endl;
-    } 
+    }
     // set things up for parallel computing in sweep
     threads = omp_get_max_threads();
 
     if (threads > pparams.Lt) {
-      std::cerr << "Number of threads larger than temporal does not make sense; setting numer of threads to T." << std::endl;
+      std::cerr << "Number of threads larger than temporal does not make sense; setting "
+                   "numer of threads to T."
+                << std::endl;
       threads = pparams.Lt;
       omp_set_num_threads(pparams.Lt);
     }
@@ -299,8 +301,8 @@ public:
      */
     facnorm = (pparams.ndims > 2) ? pparams.ndims / (pparams.ndims - 2) : 0;
 
-    if (sparams.restart) {
-      std::cout << "## restart " << sparams.restart << "\n";
+    if (sparams.restart_condition == "read") {
+      std::cout << "## restart_condition " << sparams.restart_condition << "\n";
       const std::vector<std::string> v_ncc = io::read_nconf_counter(sparams.conf_dir);
       g_heat = boost::lexical_cast<bool>(v_ncc[0]);
       g_icounter = std::stoi(v_ncc[1]);
@@ -313,7 +315,11 @@ public:
         std::abort();
       }
     } else {
-      g_heat = (sparams.heat == true) ? 1.0 : 0.0;
+      if (sparams.restart_condition == "hot") {
+        g_heat = 1.0;
+      } else if (sparams.restart_condition == "cold") {
+        g_heat = 0.0;
+      }
       g_icounter = 0;
       hotstart(U, sparams.seed, g_heat);
     }
@@ -321,7 +327,7 @@ public:
     // double plaquette = flat_spacetime::gauge_energy(U);
     double plaquette =
       omeasurements::get_retr_plaquette_density((*this).U, (*this).pparams.bc);
-    double fac = 2. / U.getndims() / (U.getndims() - 1);
+    double fac = 2.0 / U.getndims() / (U.getndims() - 1);
     normalisation = fac / U.getVolume() / double(U.getNc());
 
     std::cout << "## Normalization factor: A = 2/(d*(d-1)*N_lat*N_c) = "

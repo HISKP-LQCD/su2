@@ -144,15 +144,13 @@ namespace global_parameters {
 
   /* Optional parameters for the hmc the in U(1) theory */
   struct hmc {
-    bool do_mcmc = true; // whether to do the hmc evolution or not
+    bool do_mcmc = true; // generate confs. with Markov chain Monte Carlo
 
     size_t N_save = 100; // N_save
     size_t n_meas = 10; // total number of sweeps
     size_t icounter = 0; // initial counter for updates
     size_t seed = 13526463; // PRNG seed
-    bool heat = true; // randomness of the initial config, true: hot, false: cold
-    bool restart =
-      false; // restart from the last configuration (reads from nconf_counter.txt)
+    std::string restart_condition = "hot"; // restart condition: hot, cold, read
     bool acceptreject = true; // use accept-reject
     std::string configfilename = ""; // configuration filename used in case of restart
 
@@ -200,7 +198,6 @@ namespace global_parameters {
 
     size_t N_save = 100; // save each N_save config
 
-    bool restart = false; // restart from an existing configuration
     std::string configfilename = ""; // configuration filename used in case of restart
     std::string conf_dir = "./"; // directory where gauge configurations are stored
     std::string conf_basename = "conf"; // root of the output files names
@@ -208,11 +205,10 @@ namespace global_parameters {
     size_t beta_str_width = g_beta_str_width; // length of the beta value config filename
 
     size_t N_hit = 10; // N_hit updates are performed on each link during one sweep
-    bool heat = true; // randomness of the initial config, true: hot, false: cold
+    std::string restart_condition = "hot"; // restart condition: hot, cold, read
     double delta = 1.0; // quantifies how much the prooposed new link can differ from
                         // the current link
-    bool do_mcmc =
-      true; // true when generating configurations through the Markov chain Monte Carlo
+    bool do_mcmc = true; // generate confs. with Markov chain Monte Carlo
 
     // fermions stuff (operators)
     std::string solver = "CG"; // Type of solver: CG, BiCGStab
@@ -234,18 +230,16 @@ namespace global_parameters {
     size_t n_heatbath = 1; // number of heatbath sweeps
     size_t n_overrelax = 1; // number of overrelaxation sweeps
 
-    bool restart = false; // restart from an existing configuration
     std::string configfilename = ""; // configuration filename used in case of restart
     std::string conf_dir = "./"; // directory where gauge configurations are stored
     std::string conf_basename = "conf"; // root of the output files names
     bool lenghty_conf_name = true; // add ensemble information in configuration name
     size_t beta_str_width = g_beta_str_width; // length of the beta value config filename
 
-    bool heat = true; // randomness of the initial config, true: hot, false: cold
+    std::string restart_condition = "hot"; // restart condition: hot, cold, read
     double delta = 1.0; // quantifies how much the prooposed new link can differ from
                         // the current link
-    bool do_mcmc =
-      true; // true if actually running the algorithm to generate configurations
+    bool do_mcmc = true; // generate confs. with Markov chain Monte Carlo
 
     // fermions stuff (operators)
     std::string solver = "CG"; // Type of solver: CG, BiCGStab

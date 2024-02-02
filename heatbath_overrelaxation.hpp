@@ -18,7 +18,7 @@ template <class Group>
 class heatbath_overrelaxation_algo
   : public base_program<Group, gp::heatbath_overrelaxation> {
 private:
-  std::vector<double> rate = {0.0, 0.0, 0.0, 0.0};
+  std::vector<double> rate = {0.0, 0.0, 0.0};
 
 public:
   heatbath_overrelaxation_algo() { (*this).algo_name = "heatbath_overrelaxation"; }
@@ -85,7 +85,7 @@ public:
       (*this).acceptancerates << rate[0] / norm_den << " " << rate[1] / norm_den << " "
                               << rate[2] / norm_den << " " << (*this).pparams.beta << " "
                               << (*this).pparams.Lx << " " << (*this).pparams.Lt << " "
-                              << (*this).pparams.xi << " " << (*this).sparams.heat << " "
+                              << (*this).pparams.xi << " " << (*this).g_heat << " "
                               << (*this).threads << " " << (*this).sparams.n_meas << " "
                               << (*this).sparams.seed << " " << std::endl;
       (*this).acceptancerates.close();

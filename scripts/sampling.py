@@ -1,9 +1,31 @@
 ## resampling techniques from gauge configurations
 
 import numpy as np
+from scipy.stats import bootstrap
+
 from . import uwerr
 
-def correlated_confs_to_bts(Cg: np.ndarray, N_bts: int, seed=12345, output_file=None) -> np.ndarray:
+def uncorrelated_confs_to_bts(x, N_bts, seed=12345):
+    """Bootstrap samples from array of data
+    
+    - generates N_b = N_bts/block_size averages
+      y[i] = \sum_{j=1}^{block_size} x[i*block_size+j] / N_b
+    - samples N_bts values z[i] (with repetition) from the y[i] and returns z
+    
+    Args:
+        x (np.ndarray): time series. Bootstrapping is done on 1st index
+        N_bts (int): Number of bootstraps
+        block_size (int): size of the block
+    
+    Returns:
+        np.ndarray: Bootstrap samples
+    """
+    np.random.seed(seed=seed) # rng = np.random.default_rng(seed=seed)
+    N = x.shape[0]
+    return np.array([np.average(x[np.random.randint(0,high=N,size=N_bts,dtype=int),:], axis=0) for i in range(N_bts)])
+####
+
+def correlated_confs_to_bts(Cg: np.ndarray, N_bts: int, block_size=2, seed=12345, output_file=None) -> np.ndarray:
     """Bootstrap samples from array of correlated configurations
 
     - The configurations are sampled every tau_int, (integrated autocorrelation time)
@@ -23,25 +45,8 @@ def correlated_confs_to_bts(Cg: np.ndarray, N_bts: int, seed=12345, output_file=
     ####
     Ng_uncorr = int(Ng/tauint) ## number of uncorrelated configurations
     Cg_uncorr = Cg[0:Ng:tauint,] #np.array([Cg[i] for i in range(0, Ng, tauint)]) ## uncorrelated values of the observabe
-    np.random.seed(seed=seed) ## setting the seed
-    bts_idx = np.random.randint(0, high=Ng_uncorr, size=N_bts, dtype=int) ## indices of bootstrap samples
-    C_bts = Cg_uncorr[bts_idx,] #np.array([ for i in bts_idx])
-    return C_bts
+    return uncorrelated_confs_to_bts(x=Cg_uncorr, N_bts=N_bts, seed=seed)
 ####
-
-def uncorrelated_confs_to_bts(Cg: np.ndarray, bts_idx) -> np.ndarray:
-    """Bootstrap samples from array of uncorrelated configurations
-
-    Args:
-        C (np.ndarray): "correlator" (observable computed for each configuration)
-        bts_idx : list of indices of the bootstrap samples
-
-    Returns:
-        np.ndarray: Bootstrap samples
-    """
-    return np.array([Cg[i] for i in bts_idx])
-####
-
 
 if __name__ == "__main__":
     Cg = np.array(100*[list(np.random.normal(0.0, 0.4, 50))]).flatten()
@@ -54,8 +59,7 @@ if __name__ == "__main__":
 
     np.random.seed(seed=seed)
     Ng = Cg.shape[0]
-    bts_idx = np.random.randint(0, high=Ng, size=N_bts, dtype=int)
-    C_bts = uncorrelated_confs_to_bts(Cg, bts_idx=bts_idx)
+    C_bts = uncorrelated_confs_to_bts(Cg, N_bts=N_bts)
     print(np.average(Cg))
     print(np.average(C_bts))
 ####

@@ -1,9 +1,9 @@
 ## resampling techniques from gauge configurations
 
 import numpy as np
-import uwerr
+from . import uwerr
 
-def correlated_confs_to_bts(Cg: np.ndarray, N_bts: int, seed=12345) -> np.ndarray:
+def correlated_confs_to_bts(Cg: np.ndarray, N_bts: int, seed=12345, output_file=None) -> np.ndarray:
     """Bootstrap samples from array of correlated configurations
 
     - The configurations are sampled every tau_int, (integrated autocorrelation time)
@@ -17,7 +17,7 @@ def correlated_confs_to_bts(Cg: np.ndarray, N_bts: int, seed=12345) -> np.ndarra
         np.ndarray: Bootstrap samples
     """
     Ng = Cg.shape[0] ## total number of configurations
-    tauint = int(uwerr.uwerr_primary(Cg)["tauint"]) ## integrated autocorrelation time
+    tauint = int(uwerr.uwerr_primary(Cg, output_file=output_file)["tauint"]) ## integrated autocorrelation time
     if tauint == 0:
         tauint = 1 ## uncorrelated data
     ####

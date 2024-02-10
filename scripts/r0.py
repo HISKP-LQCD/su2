@@ -4,9 +4,10 @@ import os
 import pandas as pd
 import numpy as np
 from scipy.optimize import curve_fit
+import matplotlib.pyplot as plt
 
-import effective_curves
-import sampling
+from . import effective_curves
+from . import sampling
 
 def read_Wloops_1st_format(omeas_dir, i1, step, Ng, nmax_iter, L, T):
     """Reading the Wilson loops in the 1st type of format 
@@ -74,26 +75,41 @@ def read_Wloops_format2(omeas_dir: str, L: int, T: int, beta: float, xi: float, 
     return data
 ####
 
-
-def get_potential_bts(W_bts: np.ndarray, t1:int, t2: int) -> np.ndarray:
+def get_potential_bts(W_bts: np.ndarray, t1: int, t2: int, output_plot=None) -> np.ndarray:
     """Extracting the potential from the Wilson loop by fitting between t1 and t2 included
 
     Args:
         W_bts (np.ndarray): bootstraps for W(t) \sim e^{-V*t}. shape = (N_bts, T)
         t1 (int): start of the plateau of V_eff(t)
         t2 (int): end of the plateau of V_eff(t)
+        output_plot (str): path of output file with plot. Default to None.
 
     Return:
         V_bts (np.ndarray): bootstraps for V
     """
-    N_bts = W_bts.shape[0]
-    V_eff = np.array([effective_curves.get_m_eff(W_bts[i,t1:(t2+1)], strategy="log") for i in range(N_bts)])
-    dV_eff = np.std(a=V_eff, axis=0, ddof=1)
-    V_bts = np.array([effective_curves.fit_eff_mass(m_eff=V_eff[i,:], dm_eff=dV_eff) for i in range(N_bts)])
+    N_bts, T = W_bts.shape
+    V_eff = np.array([effective_curves.get_m_eff(W_bts[i,:], strategy="log") for i in range(N_bts)])
+    V_eff_fit = V_eff[:,t1:(t2+1)]
+    dV_eff = np.std(a=V_eff_fit, axis=0, ddof=1)
+    V_bts = np.array([effective_curves.fit_eff_mass(m_eff=V_eff_fit[i,:], dm_eff=dV_eff) for i in range(N_bts)])
+    ##
+    if output_plot != None:
+      x = np.array([t for t in range(T-1)]) ## V_eff undefined at t=T-1
+      y, dy = np.mean(V_eff, axis=0), np.std(V_eff, axis=0, ddof=1)
+      plt.errorbar(x, y, yerr=dy, label="$V_{eff}$", capsize=2)
+      y0, dy0 = np.mean(V_bts, axis=0), np.std(V_bts, axis=0, ddof=1)
+      y1, y2 = np.array(2*[y0-dy0]), np.array(2*[y0+dy0])
+      x_plat = np.array([t1, t2])
+      plt.fill_between(x_plat, y1=y1, y2=y2, label="$V_0$", alpha=0.3)
+      plt.legend()
+      print("Saving output in", output_plot)
+      plt.savefig(output_plot)
+      plt.close()
+    ##
     return V_bts
 ####
 
-def fit_static_potential_QED2p1(V_bts_all: np.ndarray, r1: int, r2: int, p0=[1.0,1.0,1.0]) -> np.ndarray:
+def fit_static_potential_QED2p1(V_bts_all: np.ndarray, r1: int, r2: int, p0=[1.0,1.0,1.0], output_plot=None) -> np.ndarray:
     """QED in 2+1 dimensions: fit the static potential V(r):
 
     V(r) = V_0 + b*log(r) + sigma*r,
@@ -118,6 +134,21 @@ def fit_static_potential_QED2p1(V_bts_all: np.ndarray, r1: int, r2: int, p0=[1.0
     dy = np.std(V_bts, axis=0, ddof=1)
     ansatz = lambda r, v0, b, sigma: v0 + b*np.log(r) + sigma*r
     par = np.array([curve_fit(ansatz, x, V_bts[i,:], sigma=dy, p0=p0)[0] for i in range(N_bts)])
+    if output_plot != None:
+      r = np.array([r for r in range(1,L+1)]) ## V_eff undefined at t=T-1
+      v, dv = np.mean(V_bts_all, axis=0), np.std(V_bts_all, axis=0, ddof=1)
+      plt.errorbar(r, v, yerr=dv, label="$V_{eff}$", capsize=2)
+      #
+      N_dense = 100
+      r_dense = np.linspace(r1, r2, N_dense)
+      V_bts_dense = np.array([ansatz(r_dense, *par[i,:]) for i in range(N_bts)])
+      y_dense, dy_dense = np.mean(V_bts_dense, axis=0), np.std(V_bts_dense, axis=0, ddof=1)
+      plt.fill_between(r_dense, y1=y_dense+dy_dense, y2=y_dense-dy_dense, label="fit", alpha=0.3)
+      plt.legend()
+      print("Saving output in", output_plot)
+      plt.savefig(output_plot)
+      plt.close()
+    ##
     return par
 ####
 

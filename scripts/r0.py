@@ -96,11 +96,12 @@ def get_potential_bts(W_bts: np.ndarray, t1: int, t2: int, output_plot=None) -> 
     if output_plot != None:
       x = np.array([t for t in range(T-1)]) ## V_eff undefined at t=T-1
       y, dy = np.mean(V_eff, axis=0), np.std(V_eff, axis=0, ddof=1)
-      plt.errorbar(x, y, yerr=dy, label="$V_{eff}$", capsize=2)
+      plt.errorbar(x, y, yerr=dy, marker=".", label="$V_{eff}$", capsize=2)
       y0, dy0 = np.mean(V_bts, axis=0), np.std(V_bts, axis=0, ddof=1)
       y1, y2 = np.array(2*[y0-dy0]), np.array(2*[y0+dy0])
       x_plat = np.array([t1, t2])
       plt.fill_between(x_plat, y1=y1, y2=y2, label="$V_0$", alpha=0.3)
+      plt.plot(x_plat, np.array([y0,y0]), linestyle="--")
       plt.legend()
       print("Saving output in", output_plot)
       plt.savefig(output_plot)
@@ -114,10 +115,12 @@ def fit_static_potential_QED2p1(V_bts_all: np.ndarray, r1: int, r2: int, p0=[1.0
 
     V(r) = V_0 + b*log(r) + sigma*r,
 
-    where V_0 is an unphysical offset constant
+    where V_0 is an unphysical offset constant.
+    ACHTUNG: you should provide the data such that V[0] = V(r=1).
+            (r=0 can't be measured: Wilson loop of size 0!)
 
     Args:
-        V_bts_all (np.ndarray): bootstraps for the potential. shape = (N_bts, L)
+        V_bts_all (np.ndarray): bootstraps for the potential. shape = (N_bts, L). V[0] = V(r=1)
         r1 (int): start of the fit interval for V(r)
         r2 (int): end of the fit interval for F(r)
         p0 (list, optional): initial fit guess for "v0", "b" and "sigma" . Defaults to [1.0, 1.0, 1.0].
@@ -126,8 +129,9 @@ def fit_static_potential_QED2p1(V_bts_all: np.ndarray, r1: int, r2: int, p0=[1.0
         np.ndarray: _description_
     """
     N_bts, L = V_bts_all.shape
-    V_bts = V_bts_all[:,r1:(r2+1)]
-    if r1 < 0 or r2 > L-1:
+    i_r1, i_r2 = r1-1, r2-1
+    V_bts = V_bts_all[:,i_r1:(i_r2+1)]
+    if i_r1 < 0 or i_r2 > L-1:
         raise ValueError("Invalid fit range: r1={r1}, r2={r2}, L={L}".format(r1=r1, r2=r2, L=L))
     ####
     x = [i for i in range(r1, r2+1)]
@@ -137,13 +141,18 @@ def fit_static_potential_QED2p1(V_bts_all: np.ndarray, r1: int, r2: int, p0=[1.0
     if output_plot != None:
       r = np.array([r for r in range(1,L+1)]) ## V_eff undefined at t=T-1
       v, dv = np.mean(V_bts_all, axis=0), np.std(V_bts_all, axis=0, ddof=1)
-      plt.errorbar(r, v, yerr=dv, label="$V_{eff}$", capsize=2)
+      plt.errorbar(r, v, yerr=dv, marker=".", label="$V(\\rho_i)$", capsize=2)
       #
       N_dense = 100
       r_dense = np.linspace(r1, r2, N_dense)
       V_bts_dense = np.array([ansatz(r_dense, *par[i,:]) for i in range(N_bts)])
       y_dense, dy_dense = np.mean(V_bts_dense, axis=0), np.std(V_bts_dense, axis=0, ddof=1)
       plt.fill_between(r_dense, y1=y_dense+dy_dense, y2=y_dense-dy_dense, label="fit", alpha=0.3)
+      plt.plot(r_dense, y_dense, linestyle="--")
+      plt.title("Fit of the static potential")
+      plt.xlabel("distance $\\rho$")
+      plt.ylabel("$V(\\rho)$")
+      plt.autoscale()
       plt.legend()
       print("Saving output in", output_plot)
       plt.savefig(output_plot)

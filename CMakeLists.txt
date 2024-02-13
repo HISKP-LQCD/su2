@@ -98,7 +98,7 @@ add_executable(test-groups test.cc)
 add_executable(scaling scaling.cc)
 add_executable(try tryreduce.cc)
 
-set(test_progs "links" "smearing" "yaml" "staggered")
+set(test_progs "links" "smearing" "yaml" "dirac")
 
 if(${HIGHFIVE_FORMAT})
   set(test_progs ${test_progs} "h5-gen" "h5-dump")

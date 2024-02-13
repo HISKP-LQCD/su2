@@ -2,8 +2,6 @@
 
 ## Staggered fermions
 
-Fermions are included as a degenerate doublet using the staggered discretization.
-
 For staggered fermions the Dirac operator is:
 
 $$

@@ -48,7 +48,7 @@ def fit_eff_mass(m_eff: np.ndarray, dm_eff: np.ndarray) -> float:
     """
     T = m_eff.shape[0]
     t = [i for i in range(T)]
-    ansatz = lambda x, m: x
+    ansatz = lambda x, m0: m0
     par, cov = curve_fit(ansatz, t, m_eff, sigma=dm_eff, p0=np.average(m_eff))
     return par[0]
 ####

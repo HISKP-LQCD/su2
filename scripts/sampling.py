@@ -22,7 +22,7 @@ def uncorrelated_confs_to_bts(x, N_bts, seed=12345):
     """
     np.random.seed(seed=seed) # rng = np.random.default_rng(seed=seed)
     N = x.shape[0]
-    return np.array([np.average(x[np.random.randint(0,high=N,size=N_bts,dtype=int),:], axis=0) for i in range(N_bts)])
+    return np.array([np.average(x[np.random.randint(0,high=N,size=N_bts,dtype=int)], axis=0) for i in range(N_bts)])
 ####
 
 def correlated_confs_to_bts(Cg: np.ndarray, N_bts: int, block_size=2, seed=12345, output_file=None) -> np.ndarray:
@@ -44,7 +44,7 @@ def correlated_confs_to_bts(Cg: np.ndarray, N_bts: int, block_size=2, seed=12345
         tauint = 1 ## uncorrelated data
     ####
     Ng_uncorr = int(Ng/tauint) ## number of uncorrelated configurations
-    Cg_uncorr = Cg[0:Ng:tauint,] #np.array([Cg[i] for i in range(0, Ng, tauint)]) ## uncorrelated values of the observabe
+    Cg_uncorr = Cg[0:Ng:tauint] ## uncorrelated values
     return uncorrelated_confs_to_bts(x=Cg_uncorr, N_bts=N_bts, seed=seed)
 ####
 

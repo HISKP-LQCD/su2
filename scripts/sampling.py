@@ -1,7 +1,6 @@
 ## resampling techniques from gauge configurations
 
 import numpy as np
-from scipy.stats import bootstrap
 
 from . import uwerr
 
@@ -10,6 +9,11 @@ def uncorrelated_confs_to_jkf(x, N_jkf):
     Ng = x.shape[0] ## number of configurations
     b = int(Ng/N_jkf)
     return np.array([np.average(np.delete(x, range(i*b, (i+1)*b)), axis=0) for i in range(N_jkf)])
+####
+
+def get_std_jkf(x_jkf):
+    N_jkf = x_jkf.shape[0]
+    return np.sqrt(N_jkf-1)*np.std(x_jkf, axis=0, ddof=0)
 ####
 
 def correlated_confs_to_jkf(Cg: np.ndarray, N_jkf: int, output_file=None) -> np.ndarray:

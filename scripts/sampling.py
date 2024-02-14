@@ -5,6 +5,36 @@ from scipy.stats import bootstrap
 
 from . import uwerr
 
+
+def uncorrelated_confs_to_jkf(x, N_jkf):
+    Ng = x.shape[0] ## number of configurations
+    b = int(Ng/N_jkf)
+    return np.array([np.average(np.delete(x, range(i*b, (i+1)*b)), axis=0) for i in range(N_jkf)])
+####
+
+def correlated_confs_to_jkf(Cg: np.ndarray, N_jkf: int, output_file=None) -> np.ndarray:
+    """Jackknife samples from array of correlated configurations
+
+    - The configurations are sampled every tau_int, (integrated autocorrelation time)
+    - The Jackknife samples are drawn from the uncorrelated configurations
+
+    Args:
+        C (np.ndarray): 1-dimensional "correlator" (observable computed for each configuration)
+        N_bts (int): Number of Jackknifes
+
+    Returns:
+        np.ndarray: Jackknife samples
+    """
+    Ng = Cg.shape[0] ## total number of configurations
+    tauint = int(uwerr.uwerr_primary(Cg, output_file=output_file)["tauint"]) ## integrated autocorrelation time
+    if tauint == 0:
+        tauint = 1 ## uncorrelated data
+    ####
+    Cg_uncorr = Cg[0:Ng:tauint] ## uncorrelated values
+    return uncorrelated_confs_to_jkf(x=Cg_uncorr, N_jkf=N_jkf)
+####
+
+
 def uncorrelated_confs_to_bts(x, N_bts, seed=12345):
     """Bootstrap samples from array of data
     
@@ -32,7 +62,7 @@ def correlated_confs_to_bts(Cg: np.ndarray, N_bts: int, block_size=2, seed=12345
     - The bootstrap samples are drawn from the uncorrelated configurations
 
     Args:
-        C (np.ndarray): "correlator" (observable computed for each configuration)
+        C (np.ndarray): 1-dimensional "correlator" (observable computed for each configuration)
         N_bts (int): Number of bootstraps
 
     Returns:
@@ -43,7 +73,6 @@ def correlated_confs_to_bts(Cg: np.ndarray, N_bts: int, block_size=2, seed=12345
     if tauint == 0:
         tauint = 1 ## uncorrelated data
     ####
-    Ng_uncorr = int(Ng/tauint) ## number of uncorrelated configurations
     Cg_uncorr = Cg[0:Ng:tauint] ## uncorrelated values
     return uncorrelated_confs_to_bts(x=Cg_uncorr, N_bts=N_bts, seed=seed)
 ####

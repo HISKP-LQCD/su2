@@ -1,5 +1,6 @@
 ## python translation of the uwerrprimary function from "hadron": https://github.com/HISKP-LQCD/hadron
 
+import os
 import pandas as pd
 import numpy as np
 from scipy.stats import chi2
@@ -199,8 +200,11 @@ def uwerr_primary(data, nrep=None, S=1.5, output_file=None):
     }
 
     if output_file != None:
+        output_dir = os.path.dirname(output_file)+"/"
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir, exist_ok=True)
+        ####
         plot_uwerr_primary(u=res, output_file=output_file, name_obs="Observable")
-
 
     return res
 ####

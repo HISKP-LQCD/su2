@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.optimize import curve_fit
+from scipy.optimize import root
 
 def get_m_eff_log(C: np.ndarray) -> np.ndarray:
     """Effective mass curve
@@ -14,6 +15,28 @@ def get_m_eff_log(C: np.ndarray) -> np.ndarray:
     """
     T = C.shape[0] ## temporal extent
     return np.array([np.log(C[t]/C[t+1]) if C[t]/C[t+1] > 0 else 0.0 for t in range(T-1)])
+####
+
+
+def get_m_eff_bkw(C, p):
+    """ effective mass including the backward signal """
+    if p==+1:
+        form = lambda x: np.cosh(x)
+    elif p==-1:
+        form = lambda x: np.sinh(x)
+    ####        
+    def func(m, r, t, T_half):
+        return r - form(m*(t-T_half))/form(m*(t+1-T_half))
+
+    T = C.shape[0] ## temporal extent
+    T_half = int(T/2)
+    t_eff = np.array([t for t in range(T_half)])
+    m_eff = np.zeros(shape=(T_half))
+    for t in t_eff:
+        r = C[t]/C[t+1]
+        m_eff[t] = root(func, 1.0, args=(r, t, T_half)).x[0]
+    ####
+    return m_eff
 ####
 
 def get_m_eff(C: np.ndarray, strategy: str) -> np.ndarray:
@@ -31,6 +54,10 @@ def get_m_eff(C: np.ndarray, strategy: str) -> np.ndarray:
     """
     if strategy == "log":
         return get_m_eff_log(C)
+    elif strategy == "cosh":
+        return get_m_eff_bkw(C, +1)
+    elif strategy == "sinh":
+        return get_m_eff_bkw(C, -1)
     else:
         raise ValueError("Illegal strategy for calculation of effective mass: {strategy}".format(strategy=strategy))
     ####
@@ -42,12 +69,14 @@ def fit_eff_mass(m_eff: np.ndarray, dm_eff: np.ndarray) -> float:
     Args:
         m_eff (np.ndarray): array of values for M_eff(t) ONLY in the plateau
         dm_eff (np.ndarray): uncertainty on M_eff(t)
+        
+        NOTE: tmin and tmax are not passed because it is assumed assumed to have slices the arrays in the plateau interval
 
     Returns:
         float: best fit value of M_eff
     """
     T = m_eff.shape[0]
-    t = [i for i in range(T)]
+    t = [i for i in range(T)] ## dummy variables, fitting to a constant
     ansatz = lambda x, m0: m0
     par, cov = curve_fit(ansatz, t, m_eff, sigma=dm_eff, p0=np.average(m_eff))
     return par[0]

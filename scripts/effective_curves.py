@@ -18,8 +18,11 @@ def get_m_eff_log(C: np.ndarray) -> np.ndarray:
 ####
 
 
-def get_m_eff_bkw(C, p):
+def get_m_eff_bkw(C: np.ndarray, T: int, p: int):
     """ effective mass including the backward signal """
+    if T==None:
+        raise ValueError("You need to pass T explicitly as an argument!")
+    ####
     if p==+1:
         form = lambda x: np.cosh(x)
     elif p==-1:
@@ -27,11 +30,11 @@ def get_m_eff_bkw(C, p):
     ####        
     def func(m, r, t, T_half):
         return r - form(m*(t-T_half))/form(m*(t+1-T_half))
-
-    T = C.shape[0] ## temporal extent
+    ####
+    T_ext = C.shape[0] ## temporal extent
     T_half = int(T/2)
-    t_eff = np.array([t for t in range(T_half)])
-    m_eff = np.zeros(shape=(T_half))
+    t_eff = np.array([t for t in range(T_ext-1)])
+    m_eff = np.zeros(shape=(T_ext-1))
     for t in t_eff:
         r = C[t]/C[t+1]
         m_eff[t] = root(func, 1.0, args=(r, t, T_half)).x[0]
@@ -39,7 +42,7 @@ def get_m_eff_bkw(C, p):
     return m_eff
 ####
 
-def get_m_eff(C: np.ndarray, strategy: str) -> np.ndarray:
+def get_m_eff(C: np.ndarray, strategy: str, T=None) -> np.ndarray:
     """Effective mass curve from the correlator
 
     Args:
@@ -55,9 +58,9 @@ def get_m_eff(C: np.ndarray, strategy: str) -> np.ndarray:
     if strategy == "log":
         return get_m_eff_log(C)
     elif strategy == "cosh":
-        return get_m_eff_bkw(C, +1)
+        return get_m_eff_bkw(C=C, T=T, p=+1)
     elif strategy == "sinh":
-        return get_m_eff_bkw(C, -1)
+        return get_m_eff_bkw(C=C, T=T, p=-1)
     else:
         raise ValueError("Illegal strategy for calculation of effective mass: {strategy}".format(strategy=strategy))
     ####

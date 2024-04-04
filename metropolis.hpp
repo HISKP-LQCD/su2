@@ -9,6 +9,7 @@
  *
  */
 
+#include "errors.hpp"
 #include "base_program.hpp"
 
 template <class Group>
@@ -75,13 +76,13 @@ public:
                                    pparams.anisotropic);
     }
     if (pparams.rotating_frame) {
-      spacetime_lattice::fatal_error("Rotating metric not supported yet.", __func__);
+      fatal_error("Rotating metric not supported yet.", __func__);
       return {};
       // return rotating_spacetime::sweep(U, pparams.Omega, engines, delta, N_hit,
       //                                  pparams.beta, pparams.xi,
       //                                  pparams.anisotropic);
     } else {
-      spacetime_lattice::fatal_error("Invalid metric.", __func__);
+      fatal_error("Invalid metric.", __func__);
       return {};
     }
   }

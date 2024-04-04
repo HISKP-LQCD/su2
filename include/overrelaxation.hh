@@ -12,6 +12,7 @@
 
 #pragma once
 
+#include "errors.hpp"
 #include "accum_type.hh"
 #include "gaugeconfig.hh"
 #include "get_staples.hh"
@@ -82,7 +83,7 @@ void overrelaxation(gaugeconfig<su2> &U,
                     const double &beta,
                     const double &xi,
                     const bool &anisotropic) {
-  spacetime_lattice::fatal_error("overrelaxation not implemented for SU(2)!", __func__);
+  fatal_error("overrelaxation not implemented for SU(2)!", __func__);
 
   return;
 }
@@ -92,7 +93,7 @@ void overrelaxation(gaugeconfig<su3> &U,
                     const double &beta,
                     const double &xi,
                     const bool &anisotropic) {
-  spacetime_lattice::fatal_error("overrelaxation not implemented for SU(3)!", __func__);
+  fatal_error("overrelaxation not implemented for SU(3)!", __func__);
 
   return;
 }

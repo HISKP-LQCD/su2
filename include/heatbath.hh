@@ -12,6 +12,7 @@
 
 #pragma once
 
+#include "errors.hpp"
 #include "accum_type.hh"
 #include "gaugeconfig.hh"
 #include "get_staples.hh"
@@ -130,7 +131,7 @@ std::vector<double> heatbath(gaugeconfig<u1> &U,
                 total_attempts++;
                 attempt++;
               }
-              if(attempt==3000) spacetime_lattice::fatal_error("too many attempts to generate new link!", __func__);
+              if(attempt==3000) fatal_error("too many attempts to generate new link!", __func__);
               U(x, mu).set(hattori_nakajima::h(alpha, beta, u1) - theta_stap);
               rate += 1;
               if (mu == 0) {
@@ -205,7 +206,7 @@ std::vector<double> heatbath(gaugeconfig<su2> &U,
                              const double &beta,
                              const double &xi = 1.0,
                              const bool &anisotropic = false) {
-  spacetime_lattice::fatal_error("heatbath not implemented for SU(2)!", __func__);
+  fatal_error("heatbath not implemented for SU(2)!", __func__);
 
   return {};
 }
@@ -216,7 +217,7 @@ std::vector<double> heatbath(gaugeconfig<su3> &U,
                              const double &beta,
                              const double &xi = 1.0,
                              const bool &anisotropic = false) {
-  spacetime_lattice::fatal_error("heatbath not implemented for SU(3)!", __func__);
+  fatal_error("heatbath not implemented for SU(3)!", __func__);
 
   return {};
 }

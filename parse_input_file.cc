@@ -18,6 +18,7 @@
 #include <iostream>
 #include <string>
 
+#include "errors.hpp"
 #include "geometry.hh"
 #include "parse_input_file.hh"
 
@@ -156,7 +157,7 @@ namespace input_file_parsing {
     }
 
     if (R["geometry"]["rotating_frame"]) {
-      spacetime_lattice::fatal_error("Rotating metric not supported yet.", __func__);
+      fatal_error("Rotating metric not supported yet.", __func__);
       pparams.rotating_frame = true;
       pparams.flat_metric = false; // metric is not flat
       in.read_verb<double>(pparams.Omega, {"geometry", "rotating_frame", "Omega"});

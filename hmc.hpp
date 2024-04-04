@@ -9,6 +9,7 @@
  *
  */
 
+#include "errors.hpp"
 #include "base_program.hpp"
 #include "md_update.hh"
 
@@ -73,7 +74,7 @@ public:
 
     if ((*this).pparams.include_gauge) {
       if ((*this).pparams.rotating_frame) {
-        spacetime_lattice::fatal_error("Rotating metric not supported yet.", __func__);
+        fatal_error("Rotating metric not supported yet.", __func__);
         // (*this).gm_rot =
         //   new rotating_spacetime::gauge_monomial<double, Group>(0,
         //   (*this).pparams.Omega);

@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include "errors.hpp"
 #include "flat-energy_density.hh"
 #include "flat-sweep.hh" // flat spacetime
 #include "gauge_energy.hh"
@@ -256,10 +257,10 @@ public:
       return flat_spacetime::gauge_energy(U, spatial_only);
     }
     if (pparams.rotating_frame) {
-      spacetime_lattice::fatal_error("Rotating metric not supported yet.", __func__);
+      fatal_error("Rotating metric not supported yet.", __func__);
       // return rotating_spacetime::gauge_energy(U, pparams.Omega, spatial_only);
     } else {
-      spacetime_lattice::fatal_error("Invalid metric when calling: ", __func__);
+      fatal_error("Invalid metric when calling: ", __func__);
       return {};
     }
   }
@@ -275,7 +276,7 @@ public:
       flat_spacetime::energy_density(U, E, Q, cloverdef, ss);
     }
     if (pparams.rotating_frame) {
-      spacetime_lattice::fatal_error("Rotating metric not supported yet.", __func__);
+      fatal_error("Rotating metric not supported yet.", __func__);
       // rotating_spacetime::energy_density(U, pparams.Omega, E, Q, cloverdef);
     }
     return;

@@ -9,6 +9,7 @@
 
 #pragma once
 
+#include "errors.hpp"
 #include "adjointfield.hh"
 #include "gauge_energy.hpp"
 #include "gaugeconfig.hh"
@@ -177,7 +178,7 @@ namespace staggered {
                       const size_t &seed,
                       const size_t &verb)
       : monomial<Float, _su2>::monomial(_timescale) {
-      spacetime_lattice::fatal_error("SU(2) not supported yet.", __func__);
+      fatal_error("SU(2) not supported yet.", __func__);
     }
 
     void heatbath(const hamiltonian_field<Float, _su2> &h) override { return; }
@@ -201,7 +202,7 @@ namespace staggered {
                       const size_t &seed,
                       const size_t &verb)
       : monomial<Float, _su3>::monomial(_timescale) {
-      spacetime_lattice::fatal_error("SU(3) not supported yet.", __func__);
+      fatal_error("SU(3) not supported yet.", __func__);
     }
 
     void heatbath(const hamiltonian_field<Float, _su3> &h) override { return; }

@@ -71,7 +71,7 @@ def fit_eff_mass(m_eff: np.ndarray, dm_eff: np.ndarray) -> float:
 
     Args:
         m_eff (np.ndarray): array of values for M_eff(t) ONLY in the plateau
-        dm_eff (np.ndarray): uncertainty on M_eff(t)
+        dm_eff (np.ndarray): uncertainty on M_eff(t) in that plateau interval
         
         NOTE: tmin and tmax are not passed because it is assumed assumed to have slices the arrays in the plateau interval
 

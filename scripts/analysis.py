@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from . import effective_curves as ec
+from . import gevp
 
 def bts_corr_plot(
         C_bts: np.ndarray, 
@@ -12,14 +13,15 @@ def bts_corr_plot(
         yscale=None, label=None, linestyle="None"):
     """ Plot of the correlator from the bootstrap samples in the interval t1, t2 included """
     N_bts, T_ext = C_bts.shape
-    plt.plot("## PLotting the correlator")
+    print("## Potting the correlator")
     plt.errorbar(
         x=np.arange(t1, t2+1, 1), y=np.average(C_bts, axis=0)[t1:t2+1], 
         yerr=np.std(C_bts, axis=0)[t1:t2+1], 
         label=label,
-        linestyle = linestyle
+        linestyle = linestyle,
+        capsize=2
         )
-    plt.title("C(t)")
+    plt.ylabel("C(t)")
     if label != None:
         plt.legend()
     ####
@@ -47,7 +49,7 @@ def bts_meff(C_bts: np.ndarray, strategy: str, T: int, t1: int, t2: int, plot=Fa
     M_eff = np.array([ec.get_m_eff(C_bts[ib,:], strategy=strategy, T=T) for ib in range(N_bts)])
     T_ext = M_eff.shape[1] ## time extent of the effective mass curve
     #times_eff = np.array([t for t in range(T-1)])
-    M_eff_plat = M_eff[:,t1:t2+1]
+    M_eff_plat = M_eff[:,t1:(t2+1)]
     dM_eff_plat = np.std(M_eff_plat, axis=0, ddof=1)
     print("## Fitting the effective mass")
     print("T=",T, "t1=", t1, "t2=", t2)
@@ -83,10 +85,12 @@ def bts_meff(C_bts: np.ndarray, strategy: str, T: int, t1: int, t2: int, plot=Fa
             x = np.arange(tmin_plot, tmax_plot),
             y = np.average(M_eff, axis=0)[tmin_plot:tmax_plot], 
             yerr=np.std(M_eff, axis=0)[tmin_plot:tmax_plot], 
-            label=label
+            label=label,
+            capsize=2
             )
         if outfile != None:
             print("output:", outfile) 
+            plt.ylabel("$M_{eff}(t)$")
             plt.legend()
             plt.savefig(outfile)
             plt.close()
@@ -94,3 +98,10 @@ def bts_meff(C_bts: np.ndarray, strategy: str, T: int, t1: int, t2: int, plot=Fa
     return M_eff_fit
 ####
 
+def bts_gevp(C_bts: np.ndarray, t0: int, outfile = None):
+    N_bts = C_bts.shape[0]
+    assert C_bts.shape[1] == C_bts.shape[1]
+    N, T_ext = C_bts.shape[2], C_bts.shape[3]
+    res = np.array([gevp.gevp(C_bts[i,:], t0=t0) for i in range(N_bts)])
+    return res
+####

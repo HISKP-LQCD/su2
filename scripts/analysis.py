@@ -19,7 +19,9 @@ def bts_corr_plot(
         yerr=np.std(C_bts, axis=0)[t1:t2+1], 
         label=label,
         linestyle = linestyle,
-        capsize=2
+        capsize=2,
+        marker = "o",
+        markerfacecolor='None'
         )
     plt.ylabel("C(t)")
     if label != None:
@@ -65,7 +67,9 @@ def bts_meff(C_bts: np.ndarray, strategy: str, T: int, t1: int, t2: int, plot=Fa
             M_eff_fit_avg-dM_eff_fit,
             alpha=0.5
             )
-        plt.plot(np.arange(t1, t2+1, 1), np.full(shape=(t2-t1+1), fill_value=M_eff_fit_avg), linestyle="--")
+        plt.plot(
+            np.arange(t1, t2+1, 1), np.full(shape=(t2-t1+1), fill_value=M_eff_fit_avg), 
+            linestyle="--")
         ## plotting the data
         tmin_plot, tmax_plot = 0, T_ext
         if "tmin_plot" in kwargs.keys():
@@ -86,11 +90,11 @@ def bts_meff(C_bts: np.ndarray, strategy: str, T: int, t1: int, t2: int, plot=Fa
             y = np.average(M_eff, axis=0)[tmin_plot:tmax_plot], 
             yerr=np.std(M_eff, axis=0)[tmin_plot:tmax_plot], 
             label=label,
-            capsize=2
+            capsize=2, marker="o", markerfacecolor='None'
             )
         if outfile != None:
             print("output:", outfile) 
-            plt.ylabel("$M_{eff}(t)$")
+            plt.ylabel("$M_{\mathrm{eff}}(t)$")
             plt.legend()
             plt.savefig(outfile)
             plt.close()

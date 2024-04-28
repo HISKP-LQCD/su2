@@ -76,6 +76,7 @@ struct running_program {
   bool do_hmc = false; // Hybrid Monte Carlo algorithm
   bool do_metropolis = false; // Metropolis algorithm
   bool do_heatbath_overrelaxation = false; // heatbath+overrelaxation algorithm
+  bool do_nested_sampling = false; // nested sampling algorithm
   bool do_omeas = false; // only measuring observables
 };
 
@@ -96,6 +97,7 @@ YAML::Node get_cleaned_input_file(running_program &rp, const std::string &input_
   bool &do_metropolis = rp.do_metropolis;
   bool &do_omeas = rp.do_omeas;
   bool &do_heatbath_overrelaxation = rp.do_heatbath_overrelaxation;
+  bool &do_nested_sampling = rp.do_nested_sampling;
 
   if (nd["hmc"]) {
     in.read_verb<bool>(do_hmc, {"hmc", "do_mcmc"});
@@ -122,10 +124,22 @@ YAML::Node get_cleaned_input_file(running_program &rp, const std::string &input_
     }
   }
 
+  if (nd["nested_sampling"]) {
+    in.read_verb<bool>(do_nested_sampling,
+                       {"nested_sampling", "do_mcmc"});
+    if (!do_nested_sampling) {
+      nd.remove("nested_sampling");
+    }
+    else{
+      nd.remove("monomials");
+      nd.remove("omeas");
+    }
+  }
+
   do_omeas = bool(nd["omeas"]);
   std::string err = ""; // error message
   const int flag_algo =
-    int(do_hmc) + int(do_metropolis) + int(do_heatbath_overrelaxation);
+    int(do_hmc) + int(do_metropolis) + int(do_heatbath_overrelaxation) + int(do_nested_sampling);
   try {
     if (flag_algo > 1) { // can run only one algorithm
       err = "ERROR: You can run no more than one MC algorithm.\n";

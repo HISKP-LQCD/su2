@@ -1,7 +1,7 @@
 /**
  * @file main-u1.hpp
  * @author Simone Romiti (simone.romiti@uni-bonn.de)
- * @brief main programm running any simulation of this library for the U(1) theory
+ * @brief main program running any simulation of this library for the U(1) theory
  * @version 0.1
  * @date 2022-10-03
  *

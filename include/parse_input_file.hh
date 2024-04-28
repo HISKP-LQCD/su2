@@ -341,5 +341,11 @@ namespace input_file_parsing {
 
   } // namespace heatbath_overrelaxation
 
+  namespace nested_sampling {
+
+    void parse_input_file(const YAML::Node &nd,
+                          gp::physics &pparams,
+                          gp::nested_sampling &mcparams);
+  }
 
 } // namespace input_file_parsing

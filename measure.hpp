@@ -1,7 +1,7 @@
 /**
  * @file measure-u1.hpp
  * @author Simone Romiti (simone.romiti@uni-bonn.de)
- * @brief class for the offline measurements for the U(1) gauge theory
+ * @brief class for the offline measurements
  * @version 0.1
  * @date 2022-09-02
  *
@@ -19,7 +19,7 @@ public:
   ~measure_algo() {}
 
   void print_program_info() const {
-    std::cout << "## Measuring Tool for U(1) gauge theory" << std::endl;
+    std::cout << "## Measuring Tool" << std::endl;
   }
 
   void parse_input_file(const YAML::Node &nd) {

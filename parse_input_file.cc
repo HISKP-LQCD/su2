@@ -356,7 +356,7 @@ namespace input_file_parsing {
                         const std::vector<std::string> &inner_tree,
                         gp::metropolis &mcparams) {
     const std::vector<std::string> state0 = in.get_InnerTree();
-    in.dig_deeper(inner_tree); // entering the glueball node
+    in.dig_deeper(inner_tree); // entering the sub-node
     YAML::Node nd = in.get_outer_node();
 
     in.read_opt_verb<bool>(mcparams.do_mcmc, {"do_mcmc"});
@@ -376,6 +376,37 @@ namespace input_file_parsing {
     in.read_verb<double>(mcparams.delta, {"delta"});
     in.read_opt_verb<size_t>(mcparams.N_hit, {"N_hit"});
     validate_N_hit(mcparams.N_hit);
+
+    in.set_InnerTree(state0); // reset to previous state
+    return;
+  }
+
+  /**
+   * @brief parsing the `nested_sampling` block of the YAML input file
+   *
+   * @param in inspection node (full tree)
+   * @param inner_tree path to the given branch of the tree
+   * @param mcparams reference to the hmc parameters
+   */
+  void parse_nested_sampling(Yp::inspect_node &in,
+                             const std::vector<std::string> &inner_tree,
+                             gp::nested_sampling &mcparams) {
+    const std::vector<std::string> state0 = in.get_InnerTree();
+    in.dig_deeper(inner_tree); // entering the sub-node
+    YAML::Node nd = in.get_outer_node();
+
+    in.read_opt_verb<bool>(mcparams.do_mcmc, {"do_mcmc"});
+    in.read_opt_verb<size_t>(mcparams.seed, {"seed"});
+    in.read_opt_verb<size_t>(mcparams.n_live, {"n_live"});
+    // gp::metropolis metr_par;
+    // parse_metropolis(in, {"nested_sampling", "metropolis"}, metr_par);
+    // mcparams.metropolis = metr_par;
+
+    in.read_opt_verb<std::string>(mcparams.conf_dir, {"conf_dir"});
+    in.read_opt_verb<std::string>(mcparams.conf_basename, {"conf_basename"});
+    in.read_opt_verb<bool>(mcparams.lenghty_conf_name, {"lenghty_conf_name"});
+    in.read_opt_verb<size_t>(mcparams.beta_str_width, {"beta_str_width"});
+    validate_beta_str_width(mcparams.beta_str_width);
 
     in.set_InnerTree(state0); // reset to previous state
     return;
@@ -611,5 +642,23 @@ namespace input_file_parsing {
     }
 
   } // namespace heatbath_overrelaxation
+
+  namespace nested_sampling {
+
+    void parse_input_file(const YAML::Node &nd,
+                          gp::physics &pparams,
+                          gp::nested_sampling &mcparams) {
+      Yp::inspect_node in(nd);
+
+      parse_geometry(in, pparams);
+      // parse_action<gp::nested_sampling>(in, {}, pparams, mcparams);
+      parse_nested_sampling(in, {"nested_sampling"}, mcparams);
+
+      in.finalize();
+
+      return;
+    }
+
+  } // namespace nested_sampling
 
 } // namespace input_file_parsing

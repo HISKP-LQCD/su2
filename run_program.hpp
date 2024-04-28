@@ -23,6 +23,7 @@
 #include "measure.hpp"
 #include "metropolis.hpp"
 #include "heatbath_overrelaxation.hpp"
+#include "nested_sampling.hpp"
 
 /**
  * @brief program function for hmc, metropolis and measure
@@ -47,6 +48,7 @@ template <class Group> void run_program(int argc, char *argv[]) {
   bool &do_metropolis = rp.do_metropolis;
   bool &do_omeas = rp.do_omeas;
   bool &do_heatbath_overrelaxation = rp.do_heatbath_overrelaxation;
+  bool &do_nested_sampling = rp.do_nested_sampling;
 
   if (do_hmc) {
     hmc_algo<Group> h;
@@ -57,7 +59,12 @@ template <class Group> void run_program(int argc, char *argv[]) {
   } else if (do_heatbath_overrelaxation) {
     heatbath_overrelaxation_algo<Group> hb_or;
     hb_or.run(nd);
-  } else if (do_omeas) { // offline measurements
+  }
+  else if(do_nested_sampling){
+    nested_sampling_algo<Group> ns;
+    ns.run(nd);
+  } 
+  else if (do_omeas) { // offline measurements
     measure_algo<Group> ms;
     ms.run(nd);
   } else { // program does nothing

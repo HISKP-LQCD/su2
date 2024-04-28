@@ -2,7 +2,7 @@
  * @file gaugeconfig.hh
  * @author Carsten Urbach (urbach@hiskp.uni-bonn.de)
  * @author Simone Romiti (simone.romiti@uni-bonn.de)
- * @brief class for U(1) or SU(2) gauge configuration
+ * @brief class for U(1) or SU(2) or SU(3) gauge configuration
  * @version 0.1
  * @date 2022-10-03
  *

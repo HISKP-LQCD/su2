@@ -84,7 +84,7 @@ namespace global_parameters {
     bool save_conf = true; // save configuration at the end of the evolution
   };
 
-  /* optional parameters for the measure program the in U(1) theory */
+  /* optional parameters for the measure program*/
   struct measure {
     // trivial parameters: needed only to generalize function working with the other
     // programs too
@@ -142,7 +142,7 @@ namespace global_parameters {
     measure_gradient_flow gradient_flow; // struct for the measure of the gradient flow
   };
 
-  /* Optional parameters for the hmc the in U(1) theory */
+  /* Optional parameters for the hmc*/
   struct hmc {
     bool do_mcmc = true; // generate confs. with Markov chain Monte Carlo
 
@@ -206,7 +206,7 @@ namespace global_parameters {
 
     size_t N_hit = 10; // N_hit updates are performed on each link during one sweep
     std::string restart_condition = "hot"; // restart condition: hot, cold, read
-    double delta = 1.0; // quantifies how much the prooposed new link can differ from
+    double delta = 1.0; // quantifies how much the proposed new link can differ from
                         // the current link
     bool do_mcmc = true; // generate confs. with Markov chain Monte Carlo
 
@@ -237,7 +237,7 @@ namespace global_parameters {
     size_t beta_str_width = g_beta_str_width; // length of the beta value config filename
 
     std::string restart_condition = "hot"; // restart condition: hot, cold, read
-    double delta = 1.0; // quantifies how much the prooposed new link can differ from
+    double delta = 1.0; // quantifies how much the proposed new link can differ from
                         // the current link
     bool do_mcmc = true; // generate confs. with Markov chain Monte Carlo
 
@@ -250,5 +250,25 @@ namespace global_parameters {
     bool do_omeas = false; // true when omeasurements are done
     measure omeas; // struct for online measurements
   };
+
+    /* parameters for the metropolis algorithm */
+  struct nested_sampling {
+    size_t n_live = 100; // total number of points
+    size_t seed = 8723659; // PRNG seed
+    std::string restart_condition = "hot"; // restart condition: hot, cold, read
+
+    std::string conf_dir = "./"; // directory where gauge configurations are stored
+    std::string conf_basename = "conf"; // root of the output files names
+    bool lenghty_conf_name = false; // add ensemble information in configuration name
+    size_t beta_str_width = g_beta_str_width; // length of the beta value config filename
+
+    // metropolis metropolis; // parameters of the internal Metropolis updates 
+
+    bool do_mcmc = true; // generate confs. with Markov chain Monte Carlo
+
+    bool do_omeas = false; // true when omeasurements are done
+    measure omeas; // struct for online measurements
+  };
+
 
 } // namespace global_parameters

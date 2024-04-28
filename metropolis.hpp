@@ -22,7 +22,7 @@ public:
   ~metropolis_algo() {}
 
   void print_program_info() const {
-    std::cout << "## Metropolis Algorithm for U(1) gauge theory\n";
+    std::cout << "## Metropolis Algorithm\n";
   }
 
   void parse_input_file(const YAML::Node &nd) {

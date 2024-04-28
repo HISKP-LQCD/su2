@@ -1,6 +1,6 @@
 /**
  * @file exp_gauge.cc
- * @author Simone Romiti (simone.romiti@uni-bonn.de)
+ * @author Simone Romiti (simone.romiti.1994@gmail.com)
  * @brief exponentiation of su(2) and su(3) matrices (Lie algebra)
  * @version 0.1
  * @date 2023-02-21

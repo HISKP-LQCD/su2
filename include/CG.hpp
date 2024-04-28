@@ -1,6 +1,6 @@
 // CG.hpp
 /*
-Simone Romiti - simone.romiti@uni-bonn.de
+Simone Romiti - simone.romiti.1994@gmail.com
 
 Conjugate Gradient method
 Reference: sec. 8.8.2 of

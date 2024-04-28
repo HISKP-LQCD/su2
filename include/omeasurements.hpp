@@ -13,6 +13,8 @@
 #include <sstream>
 #include <vector>
 
+#include "errors.hpp"
+
 #include "glueballs.hpp"
 #include "gradient_flow.hh"
 #include "io.hh"
@@ -71,6 +73,9 @@ namespace omeasurements {
           }
         }
       }
+    }
+    else{
+      fatal_error("Illegal periodic boundary conditions:"+bc, __func__ );
     }
 
     P /= den; // normalizing

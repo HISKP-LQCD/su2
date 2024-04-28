@@ -1,6 +1,6 @@
 /**
  * @file rotating-energy_density.hpp
- * @author Simone Romiti (simone.romiti@uni-bonn.de)
+ * @author Simone Romiti (simone.romiti.1994@gmail.com)
  * @brief energy density in a rotating frame of reference
  * @version 0.1
  * @date 2022-05-20

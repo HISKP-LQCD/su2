@@ -1,6 +1,6 @@
 // CG_solver.hpp
 /*
-Simone Romiti - simone.romiti@uni-bonn.de
+Simone Romiti - simone.romiti.1994@gmail.com
 
 This file defines a general purpose, templated class that is the basis for conjugate
 gradient (CG) algorithms for solving linear systems. Please recall that convergence is

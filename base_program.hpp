@@ -1,6 +1,6 @@
 /**
  * @file base_program.hpp
- * @author Simone Romiti (simone.romiti@uni-bonn.de)
+ * @author Simone Romiti (simone.romiti.1994@gmail.com)
  * @brief mother class for all the classes that handle the programs runs
  * @version 0.1
  * @date 2022-09-01

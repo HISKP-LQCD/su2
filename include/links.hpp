@@ -1,7 +1,7 @@
 /**
  * DEPRECATED - never really used this file
  * @file links.hpp
- * @author Simone Romiti (simone.romiti@uni-bonn.de)
+ * @author Simone Romiti (simone.romiti.1994@gmail.com)
  * @brief
  * @version 0.1
  * @date 2022-07-10

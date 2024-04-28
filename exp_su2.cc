@@ -1,6 +1,6 @@
 /**
  * @file exp_su2.cc
- * @author Simone Romiti (simone.romiti@uni-bonn.de)
+ * @author Simone Romiti (simone.romiti.1994@gmail.com)
  * @brief exponentiation of an element of the su(2) algebra: A=alpha_k*sigma_k -->
  * exp(i*alpha_k*sigma_k)
  * @version 0.1

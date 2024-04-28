@@ -1,6 +1,6 @@
 /**
  * @file rotating-get_staples.hpp
- * @author Simone Romiti (simone.romiti@uni-bonn.de)
+ * @author Simone Romiti (simone.romiti.1994@gmail.com)
  * @brief
  * @version 0.1
  * @date 2022-05-30

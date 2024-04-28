@@ -1,6 +1,6 @@
 /**
  * @file parameters.hh
- * @author Simone Romiti (simone.romiti@uni-bonn.de)
+ * @author Simone Romiti (simone.romiti.1994@gmail.com)
  * @brief global parameters of the programs
  * This file contains a set of 'struct' which serve as containers for the parameters of
  * the programs.
@@ -256,6 +256,9 @@ namespace global_parameters {
     size_t n_live = 100; // total number of points
     size_t seed = 8723659; // PRNG seed
     std::string restart_condition = "hot"; // restart condition: hot, cold, read
+    size_t n_sweeps = 100; // number of sweeps of each internal update
+    double delta = 0.1; // parameter for random gauge conf. generation
+
 
     std::string conf_dir = "./"; // directory where gauge configurations are stored
     std::string conf_basename = "conf"; // root of the output files names

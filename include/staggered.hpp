@@ -1,6 +1,6 @@
 // staggered.hpp
 /**
- Simone Romiti - simone.romiti@uni-bonn.de
+ Simone Romiti - simone.romiti.1994@gmail.com
 
  Staggered fermions routines
 

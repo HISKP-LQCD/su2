@@ -1,6 +1,6 @@
 /**
  * @file su3.hh
- * @author Simone Romiti (simone.romiti@uni-bonn.de)
+ * @author Simone Romiti (simone.romiti.1994@gmail.com)
  * @brief class and routines for an SU(3) matrix in the fundamental representation
  * @version 0.1
  * @date 2023-02-15

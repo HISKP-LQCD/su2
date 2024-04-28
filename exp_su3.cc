@@ -1,6 +1,6 @@
 /**
  * @file exp_su3.cc
- * @author Simone Romiti (simone.romiti@uni-bonn.de)
+ * @author Simone Romiti (simone.romiti.1994@gmail.com)
  * @brief exponentiation of an element of the su(3) algebra: A=a_k*sigma_k -->
  * exp(i*a_k*lambda_k)
  * @version 0.1

@@ -1,6 +1,6 @@
 /**
  * @file obc-gaugemonomial.hh
- * @author Simone Romiti (simone.romiti@uni-bonn.de)
+ * @author Simone Romiti (simone.romiti.1994@gmail.com)
  * @brief gauge monomial S_G with open boundary conditions
  * @version 0.1
  * @date 2022-01-30

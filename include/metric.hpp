@@ -1,6 +1,6 @@
 /**
  * @file metric.hpp
- * @author Simone Romiti (simone.romiti@uni-bonn.de)
+ * @author Simone Romiti (simone.romiti.1994@gmail.com)
  * @brief classes defining metric types: Minkowski, rotating space, FLRW, etc.
  * @version 0.1
  * @date 2022-05-20

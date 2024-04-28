@@ -1,6 +1,6 @@
 /**
  * @file glueballs.hpp
- * @author Simone Romiti (simone.romiti@uni-bonn.de)
+ * @author Simone Romiti (simone.romiti.1994@gmail.com)
  * @brief routines for the calculation of the glueball correlators
  * @version 0.1
  * @date 2022-07-20

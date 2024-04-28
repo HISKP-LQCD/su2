@@ -1,5 +1,5 @@
 # Copyright © 2022 Carsten Urbach <urbach@hiskp.uni-bonn.de>
-#             2022 Simone Romiti <simone.romiti@uni-bonn.de>
+#             2022 Simone Romiti <simone.romiti.1994@gmail.com>
 # Licensed under the GNU Public License version 3
 
 cmake_minimum_required(VERSION 3.16.3)

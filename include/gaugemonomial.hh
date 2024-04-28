@@ -1,7 +1,7 @@
 /**
  * @file gaugemonomial.hh
  * @author Carsten Urbach (urbach@hiskp.uni-bonn.de)
- * @author Simone Romiti (simone.romiti@uni-bonn.de)
+ * @author Simone Romiti (simone.romiti.1994@gmail.com)
  * @brief gauge monomial S_G - piece of the action containing gluons only
  * @version 0.1
  * @date 2022-05-26

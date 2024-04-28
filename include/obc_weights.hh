@@ -1,6 +1,6 @@
 /**
  * @file obc_weights.hh
- * @author Simone Romiti (simone.romiti@uni-bonn.de)
+ * @author Simone Romiti (simone.romiti.1994@gmail.com)
  * @brief weights of the action with open boundary conditions:
  * see eq. 2.7 of https://arxiv.org/pdf/1105.4749.pdf multipled by (-g_0^2) and
  * subtracted

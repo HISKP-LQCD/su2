@@ -1,6 +1,6 @@
 /**
  * @file su3_accum.hh
- * @author Simone Romiti (simone.romiti@uni-bonn.de)
+ * @author Simone Romiti (simone.romiti.1994@gmail.com)
  * @brief accumulation type for SU(3) matrices
  * @version 0.1
  * @date 2023-02-24

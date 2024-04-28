@@ -1,6 +1,6 @@
 /**
  * @file adjoint_su2.hh
- * @author Simone Romiti (simone.romiti@uni-bonn.de)
+ * @author Simone Romiti (simone.romiti.1994@gmail.com)
  * @brief class and routines for an su(2) matrix in the adjoint representation
  * @version 0.1
  * @date 2023-02-15

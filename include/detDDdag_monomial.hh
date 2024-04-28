@@ -1,6 +1,6 @@
 // detDDdag_monomial
 /*
-  Simone Romiti - simone.romiti@uni-bonn.de
+  Simone Romiti - simone.romiti.1994@gmail.com
 
   Evaluation of det(D*D^{\dagger}) with the pseudo-fermion action
   as in eq. (10) of https://www.sciencedirect.com/science/article/pii/0550321389903246

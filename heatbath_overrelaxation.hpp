@@ -1,6 +1,6 @@
 /**
  * @file heatbath_overrelaxation.hpp
- * @author Simone Romiti (simone.romiti@uni-bonn.de)
+ * @author Simone Romiti (simone.romiti.1994@gmail.com)
  * @brief class for heatbath_overrelaxation Algorithm
  * @version 0.1
  * @date 2022-09-01

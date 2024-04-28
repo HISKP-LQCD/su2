@@ -1,6 +1,6 @@
 /**
  * @file flat_spacetime_gauge_energy.hpp
- * @author Simone Romiti (simone.romiti@uni-bonn.de)
+ * @author Simone Romiti (simone.romiti.1994@gmail.com)
  * @brief gauge energy in flat spacetime (euclidean metric)
  * @version 0.1
  * @date 2022-05-20

@@ -1,7 +1,7 @@
 // io.hh
 /**
  * @file io.hh
- * @author Simone Romiti (simone.romiti@uni-bonn.de)
+ * @author Simone Romiti (simone.romiti.1994@gmail.com)
  * @brief routines for input-output of data
  * @version 0.1
  * @date 2022-05-09

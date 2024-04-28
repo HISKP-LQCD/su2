@@ -1,7 +1,7 @@
 // parse_input_file.cc
 /**
  * @file parse_input_file.cc
- * @author Simone Romiti (simone.romiti@uni-bonn.de)
+ * @author Simone Romiti (simone.romiti.1994@gmail.com)
  * @brief definitions of parse_input_file.hh
  * @version 0.1
  * @date 2022-05-04
@@ -397,10 +397,9 @@ namespace input_file_parsing {
 
     in.read_opt_verb<bool>(mcparams.do_mcmc, {"do_mcmc"});
     in.read_opt_verb<size_t>(mcparams.seed, {"seed"});
-    in.read_opt_verb<size_t>(mcparams.n_live, {"n_live"});
-    // gp::metropolis metr_par;
-    // parse_metropolis(in, {"nested_sampling", "metropolis"}, metr_par);
-    // mcparams.metropolis = metr_par;
+    in.read_verb<size_t>(mcparams.n_live, {"n_live"});
+    in.read_opt_verb<size_t>(mcparams.n_sweeps, {"n_sweeps"});
+    in.read_opt_verb<double>(mcparams.delta, {"delta"});
 
     in.read_opt_verb<std::string>(mcparams.conf_dir, {"conf_dir"});
     in.read_opt_verb<std::string>(mcparams.conf_basename, {"conf_basename"});

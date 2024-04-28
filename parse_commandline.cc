@@ -1,7 +1,7 @@
 // parse_commandline.cc
 /**
  * @file parse_commandline.cc
- * @author Simone Romiti (simone.romiti@uni-bonn.de)
+ * @author Simone Romiti (simone.romiti.1994@gmail.com)
  * @brief definitions of parse_commandline.hh 
  * @version 0.1
  * @date 2022-05-04

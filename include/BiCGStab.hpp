@@ -1,6 +1,6 @@
 // BiCGStab.hpp
 /*
-Simone Romiti - simone.romiti@uni-bonn.de
+Simone Romiti - simone.romiti.1994@gmail.com
 
 Bi Conjugate Gradient method
 Reference: sec. 8.8.4 of

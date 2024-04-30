@@ -51,7 +51,7 @@ void uniform_sweeps(gaugeconfig<Group> &U,
             random_element(R, engine, delta);
             double deltaP = retrace(U(x, mu) * R * K) - retrace(U(x, mu) * K);
             double P_new = P_in + (deltaP / norm_fact);
-            if (P_new < Pmax) {
+            if (P_new > Pmax) {
               U(x, mu) = U(x, mu) * R;
               P_in = P_new;
             }

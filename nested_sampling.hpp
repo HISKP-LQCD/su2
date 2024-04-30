@@ -44,6 +44,7 @@ public:
       io::get_conf_path_basename((*this).pparams, (*this).sparams);
   }
 
+  // unsorted list of plaquette values
   std::vector<double> init_nlive(const int &n_live, const int &seed) {
     double p0 = 0.0; // maximum value of plaquette --> minumum of e^(-S/beta)
     // finding the maximum value
@@ -51,13 +52,13 @@ public:
     const double delta = 1.0; //(*this).sparams.delta;
     std::cout << "## Initial n_live value of the plaquette\n";
     for (size_t i = 0; i < n_live; i++) {
-      hotstart<Group>((*this).U, seed+i, delta);
+      hotstart<Group>((*this).U, seed + i, delta);
       std::string path_i = (*this).conf_path_basename + "." + std::to_string(i);
       (*this).U.save(path_i);
 
       const double pi =
         omeasurements::get_retr_plaquette_density((*this).U, (*this).pparams.bc);
-        std::cout << pi << "\n";
+      std::cout << pi << "\n";
       Pi.push_back(pi);
       (*this).indices.push_back(i);
     }
@@ -71,35 +72,34 @@ public:
     this->open_output_data();
 
     const size_t n_live = (*this).sparams.n_live;
+    const size_t n_samples = (*this).sparams.n_samples;
     const size_t seed = (*this).sparams.seed;
     const double delta = (*this).sparams.delta;
     const size_t n_sweeps = (*this).sparams.n_sweeps;
 
     std::vector<double> Pi = this->init_nlive(n_live, seed);
 
-    for (size_t i = 0; i < 1000; i++) {
+    for (size_t i = 0; i < n_samples; i++) {
       // finding the maximum plaquette and appending it to the list
       const size_t i_max =
         std::distance(Pi.begin(), std::max_element(Pi.begin(), Pi.end()));
 
       std::vector<double> Pi_sorted = Pi;
       std::sort(Pi_sorted.begin(), Pi_sorted.end(), std::greater<>());
-      std::cout << "Highest n_live values\n";
-      for (size_t k = 0; k < n_live; k++)
-      {
-        std::cout << i << " " << k << " " << Pi_sorted[k] << "\n";
-      }
-      std::cout << "---\n";
-      
+      // std::cout << "n_live values\n";
+      // for (size_t k = 0; k < Pi.size(); k++) {
+      //   std::cout << i << " " << k << " " << Pi_sorted[k] << "\n";
+      // }
+      // std::cout << "---\n";
 
       const double Pmax = Pi[i_max];
+      std::cout << "Pmax: " << Pmax << "\n";
       (*this).plaquettes.push_back(Pmax);
       (*this).os << std::scientific << std::setprecision(16) << Pmax << "\n";
-      // std::cout << i << " " << std::scientific << std::setprecision(16) << Pmax << "\n";
-      // removing that plaquette and the configuration index from the list
+      // std::cout << i << " " << std::scientific << std::setprecision(16) << Pmax <<
+      // "\n"; removing that plaquette and the configuration index from the list
 
       Pi.erase(Pi.begin() + i_max); // removing that element
-
       (*this).indices.erase((*this).indices.begin() + i_max);
       // drawing a random element from the remained configurations
       // random number generator
@@ -107,17 +107,22 @@ public:
       engine.seed(i);
       std::uniform_int_distribution<> int_dist(0, (*this).indices.size());
       const size_t ii_rand = int_dist(engine);
-      const double P0 = Pi[ii_rand]; // value of the plaquette
+      const double Prand = Pi[ii_rand]; // value of the plaquette
+      std::cout << "Prand : " << Prand << "\n";
       size_t i_rand = (*this).indices[ii_rand]; // index of the configuration
       gaugeconfig<Group> U_i = (*this).U; // configuration corresponding to that index
-      U_i.load((*this).conf_path_basename + "." + std::to_string(i), false);
+      U_i.load((*this).conf_path_basename + "." + std::to_string(i_rand), false);
+      // const double Prand_check =
+      //   omeasurements::get_retr_plaquette_density(U_i, "periodic");
+      // std::cout << "Prand_check : " << Prand_check << "\n";
       // applying n_sweeps sweeps to this configuration
       // to draw another one sampled from the constrained prior
-      uniform_sweeps(U_i, P0, Pmax, engine, delta*double(n_live)/double(i), n_sweeps);
+      uniform_sweeps(U_i, Prand, Pmax, engine, delta * double(n_live) / double(i),
+                     n_sweeps);
       const double P_new = omeasurements::get_retr_plaquette_density(U_i, "periodic");
       Pi.push_back(P_new);
 
-      //std::cout << i << " : " << Pi.size() << "\n";
+      // std::cout << i << " : " << Pi.size() << "\n";
       (*this).indices.push_back(n_live + i);
       // saving the new configuration
       std::string path_i = (*this).conf_path_basename + "." + std::to_string(n_live + i);

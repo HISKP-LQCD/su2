@@ -253,7 +253,8 @@ namespace global_parameters {
 
     /* parameters for the metropolis algorithm */
   struct nested_sampling {
-    size_t n_live = 100; // total number of points
+    size_t n_live = 100; // number of n_live points
+    size_t n_samples = 500; // number of nasted samples
     size_t seed = 8723659; // PRNG seed
     std::string restart_condition = "hot"; // restart condition: hot, cold, read
     size_t n_sweeps = 100; // number of sweeps of each internal update

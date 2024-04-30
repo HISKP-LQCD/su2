@@ -122,7 +122,7 @@ namespace input_file_parsing {
       (R["geometry"]["X"] || R["geometry"]["Y"] || R["geometry"]["Z"]);
 
     if (spec_L ^ spec_Lxyz) {
-      // either L^3*T or Lx*Ly*Lz*T have been specified (but not both)
+      // either L^3*T or Lx*Ly*Lz*Lt have been specified (but not both)
 
       if (spec_L) {
         size_t L;
@@ -139,7 +139,7 @@ namespace input_file_parsing {
     } else {
       std::cerr << "Error: check your input file. ";
       std::cerr
-        << "Either you specify L=Lx=Ly=Lz or each dimension separately, not both.\n";
+        << "Either you specify L=X=Y=Z or each dimension separately, not both.\n";
       std::cerr << "Aborting.\n";
       std::abort();
     }
@@ -396,6 +396,7 @@ namespace input_file_parsing {
     YAML::Node nd = in.get_outer_node();
 
     in.read_opt_verb<bool>(mcparams.do_mcmc, {"do_mcmc"});
+    in.read_opt_verb<bool>(mcparams.continue_run, {"continue_run"});
     in.read_opt_verb<size_t>(mcparams.seed, {"seed"});
     in.read_verb<size_t>(mcparams.n_live, {"n_live"});
     in.read_verb<size_t>(mcparams.n_samples, {"n_samples"});

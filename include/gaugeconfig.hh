@@ -12,6 +12,7 @@
 
 #pragma once
 
+#include "errors.hpp"
 #include "geometry.hh"
 #include "random_element.hh"
 #include "su2.hh"
@@ -68,44 +69,20 @@ public:
     }
   }
 
-  size_t storage_size() const {
-    return data.size() * sizeof(value_type);
-  }
+  size_t storage_size() const { return data.size() * sizeof(value_type); }
 
-  std::vector<value_type> get_data() const {
-    return data;
-  }
+  std::vector<value_type> get_data() const { return data; }
 
-  size_t getLx() const {
-    return (Lx);
-  }
-  size_t getLy() const {
-    return (Ly);
-  }
-  size_t getLz() const {
-    return (Lz);
-  }
-  size_t getLt() const {
-    return (Lt);
-  }
-  size_t getndims() const {
-    return (ndims);
-  }
-  size_t getVolume() const {
-    return (volume);
-  }
-  size_t getSize() const {
-    return (volume * ndims);
-  }
-  double getBeta() const {
-    return beta;
-  }
-  void setBeta(const double _beta) {
-    beta = _beta;
-  }
-  int getNc() const {
-    return (data[0].N_c);
-  }
+  size_t getLx() const { return (Lx); }
+  size_t getLy() const { return (Ly); }
+  size_t getLz() const { return (Lz); }
+  size_t getLt() const { return (Lt); }
+  size_t getndims() const { return (ndims); }
+  size_t getVolume() const { return (volume); }
+  size_t getSize() const { return (volume * ndims); }
+  double getBeta() const { return beta; }
+  void setBeta(const double _beta) { beta = _beta; }
+  int getNc() const { return (data[0].N_c); }
   void restoreSU() {
 #pragma omp parallel for
     for (size_t i = 0; i < getSize(); i++) {
@@ -170,13 +147,9 @@ public:
     //    return ((double) bs) * Ux_mu + (1 - ((double)bs)) * Udagx_mu;
   }
 
-  value_type &operator[](size_t const index) {
-    return data[index];
-  }
+  value_type &operator[](size_t const index) { return data[index]; }
 
-  value_type operator[](size_t const index) const {
-    return data[index];
-  }
+  value_type operator[](size_t const index) const { return data[index]; }
 
   bool operator==(const gaugeconfig &U) const {
     typedef typename accum_type<T>::type accum;
@@ -194,7 +167,9 @@ public:
   }
 
   void save(std::string const &path) const;
-  int load(std::string const &path, const bool& verbose=true);
+  int load(std::string const &path,
+           const bool &verbose = true,
+           const bool &exists_check = false);
 
 private:
   size_t Lx, Ly, Lz, Lt, volume, ndims;
@@ -233,10 +208,15 @@ template <class T> void gaugeconfig<T>::save(std::string const &path) const {
  * @return int 0=success and 1=failure to load
  */
 template <class T>
-int gaugeconfig<T>::load(std::string const &path, const bool &verbose) {
+int gaugeconfig<T>::load(std::string const &path,
+                         const bool &verbose,
+                         const bool &exists_check) {
   if (verbose) {
     std::cout << "## Reading config from file " << boost::filesystem::absolute(path)
               << std::endl;
+  }
+  if (exists_check) {
+    check_file_exists(path, __func__);
   }
   std::ifstream ifs(path, std::ios::in | std::ios::binary);
   if (ifs) {
@@ -254,8 +234,7 @@ int gaugeconfig<T>::load(std::string const &path, const bool &verbose) {
            "forbidden.\n"
         << "## The expected size of configuration doesn't match with the one stored at:"
         << path << "\n";
-      std::cerr << "## Aborting."
-                << "\n";
+      std::cerr << "## Aborting." << "\n";
       std::abort();
     }
     ifs.close();

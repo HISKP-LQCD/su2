@@ -125,12 +125,10 @@ YAML::Node get_cleaned_input_file(running_program &rp, const std::string &input_
   }
 
   if (nd["nested_sampling"]) {
-    in.read_verb<bool>(do_nested_sampling,
-                       {"nested_sampling", "do_mcmc"});
+    in.read_verb<bool>(do_nested_sampling, {"nested_sampling", "do_mcmc"});
     if (!do_nested_sampling) {
       nd.remove("nested_sampling");
-    }
-    else{
+    } else {
       nd.remove("monomials");
       nd.remove("omeas");
     }
@@ -138,8 +136,8 @@ YAML::Node get_cleaned_input_file(running_program &rp, const std::string &input_
 
   do_omeas = bool(nd["omeas"]);
   std::string err = ""; // error message
-  const int flag_algo =
-    int(do_hmc) + int(do_metropolis) + int(do_heatbath_overrelaxation) + int(do_nested_sampling);
+  const int flag_algo = int(do_hmc) + int(do_metropolis) +
+                        int(do_heatbath_overrelaxation) + int(do_nested_sampling);
   try {
     if (flag_algo > 1) { // can run only one algorithm
       err = "ERROR: You can run no more than one MC algorithm.\n";
@@ -189,7 +187,10 @@ protected:
 
 public:
   base_program() {}
-  ~base_program() {}
+  ~base_program() {
+    acceptancerates.close();
+    os.close();
+  }
 
   virtual void print_program_info() const = 0;
 
@@ -342,7 +343,7 @@ public:
     // double plaquette = flat_spacetime::gauge_energy(U);
     double plaquette =
       omeasurements::get_retr_plaquette_density((*this).U, (*this).pparams.bc);
-    double fac = 2.0 / U.getndims() / (U.getndims() - 1);
+    double fac = 2.0 / U.getndims() / (U.getndims() - 1.0);
     normalisation = fac / U.getVolume() / double(U.getNc());
 
     std::cout << "## Normalization factor: A = 2/(d*(d-1)*N_lat*N_c) = "
@@ -358,7 +359,7 @@ public:
     std::cout << "## Plaquette after rnd trafo: " << plaquette << std::endl;
   }
 
-  void open_output_data() {
+  virtual void open_output_data() {
     // doing only offline measurements
     if (!sparams.do_mcmc) {
       return;

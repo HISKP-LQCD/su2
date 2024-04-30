@@ -256,7 +256,7 @@ namespace global_parameters {
     size_t n_live = 100; // number of n_live points
     size_t n_samples = 500; // number of nasted samples
     size_t seed = 8723659; // PRNG seed
-    std::string restart_condition = "hot"; // restart condition: hot, cold, read
+    // std::string restart_condition = "cold"; // restart condition: hot, cold, read
     size_t n_sweeps = 100; // number of sweeps of each internal update
     double delta = 0.1; // parameter for random gauge conf. generation
 
@@ -266,9 +266,8 @@ namespace global_parameters {
     bool lenghty_conf_name = false; // add ensemble information in configuration name
     size_t beta_str_width = g_beta_str_width; // length of the beta value config filename
 
-    // metropolis metropolis; // parameters of the internal Metropolis updates 
-
     bool do_mcmc = true; // generate confs. with Markov chain Monte Carlo
+    bool continue_run = false; // continue the generation of points
 
     bool do_omeas = false; // true when omeasurements are done
     measure omeas; // struct for online measurements

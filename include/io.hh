@@ -11,16 +11,19 @@
  */
 #pragma once
 
-#include "parameters.hh"
-#include <boost/algorithm/string.hpp>
-#include <boost/filesystem.hpp>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <random>
 #include <sstream>
 #include <string>
+
+#include <boost/algorithm/string.hpp>
+#include <boost/filesystem.hpp>
 #include <xtensor/xcsv.hpp>
+
+#include "errors.hpp"
+#include "parameters.hh"
 
 namespace io {
   namespace gp = global_parameters;
@@ -108,13 +111,13 @@ namespace io {
     std::string get_filename_fine(const gp::physics &pparams, const S &mparams) {
       std::ostringstream filename_fine;
 
-      filename_fine << mparams.res_dir << "/"
-                    << "result" << pparams.ndims - 1 << "p1d.u1potential.rotated.Nt"
-                    << pparams.Lt << ".Ns" << pparams.Lx << ".b" << std::fixed
-                    << std::setprecision(mparams.beta_str_width) << pparams.beta << ".xi"
-                    << std::fixed << std::setprecision(mparams.beta_str_width)
-                    << pparams.xi << ".nape" << mparams.n_apesmear << ".alpha"
-                    << std::fixed << mparams.alpha << "finedistance" << std::ends;
+      filename_fine << mparams.res_dir << "/" << "result" << pparams.ndims - 1
+                    << "p1d.u1potential.rotated.Nt" << pparams.Lt << ".Ns" << pparams.Lx
+                    << ".b" << std::fixed << std::setprecision(mparams.beta_str_width)
+                    << pparams.beta << ".xi" << std::fixed
+                    << std::setprecision(mparams.beta_str_width) << pparams.xi << ".nape"
+                    << mparams.n_apesmear << ".alpha" << std::fixed << mparams.alpha
+                    << "finedistance" << std::ends;
 
       return filename_fine.str();
     }
@@ -127,11 +130,10 @@ namespace io {
     std::string get_filename_coarse(const gp::physics &pparams, const S &mparams) {
       std::ostringstream f;
 
-      f << mparams.res_dir << "/"
-        << "result" << pparams.ndims - 1 << "p1d.u1potential.rotated.Nt" << pparams.Lt
-        << ".Ns" << pparams.Lx << ".b" << std::fixed
-        << std::setprecision(mparams.beta_str_width) << pparams.beta << ".xi"
-        << std::fixed << std::setprecision(mparams.beta_str_width) << pparams.xi
+      f << mparams.res_dir << "/" << "result" << pparams.ndims - 1
+        << "p1d.u1potential.rotated.Nt" << pparams.Lt << ".Ns" << pparams.Lx << ".b"
+        << std::fixed << std::setprecision(mparams.beta_str_width) << pparams.beta
+        << ".xi" << std::fixed << std::setprecision(mparams.beta_str_width) << pparams.xi
         << ".nape" << mparams.n_apesmear << ".alpha" << std::fixed << mparams.alpha
         << "coarsedistance" << std::ends;
 
@@ -146,13 +148,12 @@ namespace io {
     std::string get_filename_nonplanar(const gp::physics &pparams, const S &mparams) {
       std::ostringstream f;
 
-      f << mparams.res_dir << "/"
-        << "result" << pparams.ndims - 1 << "p1d.u1potential.Nt" << pparams.Lt << ".Ns"
-        << pparams.Lx << ".b" << std::fixed << std::setprecision(mparams.beta_str_width)
-        << pparams.beta << ".xi" << std::fixed
-        << std::setprecision(mparams.beta_str_width) << pparams.xi << ".nape"
-        << mparams.n_apesmear << ".alpha" << std::fixed << mparams.alpha << "nonplanar"
-        << std::ends;
+      f << mparams.res_dir << "/" << "result" << pparams.ndims - 1 << "p1d.u1potential.Nt"
+        << pparams.Lt << ".Ns" << pparams.Lx << ".b" << std::fixed
+        << std::setprecision(mparams.beta_str_width) << pparams.beta << ".xi"
+        << std::fixed << std::setprecision(mparams.beta_str_width) << pparams.xi
+        << ".nape" << mparams.n_apesmear << ".alpha" << std::fixed << mparams.alpha
+        << "nonplanar" << std::ends;
 
       return f.str();
     }
@@ -247,24 +248,24 @@ namespace io {
     }
   } // namespace measure
 
-  const std::string g_nconf_counter = "nconf_counter.txt"; // global variable: name of file
+  const std::string g_nconf_counter =
+    "nconf_counter.txt"; // global variable: name of file
 
   namespace hmc {
     std::string get_header(const std::string &sep = " ") {
       std::stringstream ss; // header: column names in the io
       ss << "i" << sep << "getaccept" << sep << "E" << sep << "dH" << sep << "rho" << sep
-         << "ddH" << sep << "Q"
-         << "\n";
+         << "ddH" << sep << "Q" << "\n";
       return ss.str();
     }
   } // namespace hmc
 
-    std::string get_header_1(const std::string &sep = " ") {
-      std::stringstream ss; // header: column names in the io
-      ss << "i" << sep << "E" << sep << "Q" << sep << "E_ss" << sep << "Q_ss" << sep
-         << "\n";
-      return ss.str();
-    }
+  std::string get_header_1(const std::string &sep = " ") {
+    std::stringstream ss; // header: column names in the io
+    ss << "i" << sep << "E" << sep << "Q" << sep << "E_ss" << sep << "Q_ss" << sep
+       << "\n";
+    return ss.str();
+  }
 
   /**
    * @brief index and path of the last saved configuration
@@ -275,11 +276,7 @@ namespace io {
   std::vector<std::string> read_nconf_counter(const std::string &conf_dir) {
     const std::string input_file = conf_dir + "/" + g_nconf_counter;
 
-    if (!boost::filesystem::exists(input_file)) {
-      std::cerr << "Error from " << __func__ << "\n";
-      std::cerr << input_file << ": no such file or directory. Aborting.\n";
-      std::abort();
-    }
+    check_file_exists(input_file, __func__);
 
     std::ifstream nconf_counter(input_file);
     std::string line;

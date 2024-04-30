@@ -147,8 +147,8 @@ public:
 
       const double Pmin = Pi[i_min];
       (*this).os << std::scientific << std::setprecision(16) << Pmin << "\n";
-      // std::cout << i_last+i << " " << std::scientific << std::setprecision(16) << Pmin
-      // << "\n";
+      std::cout << i_last + i << " " << std::scientific << std::setprecision(16) << Pmin
+                << "\n";
 
       Pi.erase(Pi.begin() + i_min); // removing that element
       (*this).indices.erase((*this).indices.begin() + i_min);

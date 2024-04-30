@@ -48,7 +48,8 @@ public:
     double p0 = 0.0; // maximum value of plaquette --> minumum of e^(-S/beta)
     // finding the maximum value
     std::vector<double> Pi;
-    const double delta = (*this).sparams.delta;
+    const double delta = 1.0; //(*this).sparams.delta;
+    std::cout << "## Initial n_live value of the plaquette\n";
     for (size_t i = 0; i < n_live; i++) {
       hotstart<Group>((*this).U, seed+i, delta);
       std::string path_i = (*this).conf_path_basename + "." + std::to_string(i);
@@ -56,9 +57,11 @@ public:
 
       const double pi =
         omeasurements::get_retr_plaquette_density((*this).U, (*this).pparams.bc);
+        std::cout << pi << "\n";
       Pi.push_back(pi);
       (*this).indices.push_back(i);
     }
+    std::cout << "---\n";
     return Pi;
   }
 
@@ -74,15 +77,25 @@ public:
 
     std::vector<double> Pi = this->init_nlive(n_live, seed);
 
-    for (size_t i = 0; i < int(std::pow(n_live,4)); i++) {
+    for (size_t i = 0; i < 1000; i++) {
       // finding the maximum plaquette and appending it to the list
       const size_t i_max =
         std::distance(Pi.begin(), std::max_element(Pi.begin(), Pi.end()));
 
+      std::vector<double> Pi_sorted = Pi;
+      std::sort(Pi_sorted.begin(), Pi_sorted.end(), std::greater<>());
+      std::cout << "Highest n_live values\n";
+      for (size_t k = 0; k < n_live; k++)
+      {
+        std::cout << i << " " << k << " " << Pi_sorted[k] << "\n";
+      }
+      std::cout << "---\n";
+      
+
       const double Pmax = Pi[i_max];
       (*this).plaquettes.push_back(Pmax);
       (*this).os << std::scientific << std::setprecision(16) << Pmax << "\n";
-      std::cout << std::scientific << std::setprecision(16) << Pmax << "\n";
+      // std::cout << i << " " << std::scientific << std::setprecision(16) << Pmax << "\n";
       // removing that plaquette and the configuration index from the list
 
       Pi.erase(Pi.begin() + i_max); // removing that element

@@ -84,16 +84,8 @@ public:
       const size_t i_min =
         std::distance(Pi.begin(), std::min_element(Pi.begin(), Pi.end()));
 
-      // std::vector<double> Pi_sorted = Pi;
-      // std::sort(Pi_sorted.begin(), Pi_sorted.end());
-      // std::cout << "n_live values\n";
-      // for (size_t k = 0; k < Pi.size(); k++) {
-      //   std::cout << i << " " << k << " " << Pi_sorted[k] << "\n";
-      // }
-      // std::cout << "---\n";
 
       const double Pmin = Pi[i_min];
-      // std::cout << "Pmin: " << Pmin << "\n";
       (*this).plaquettes.push_back(Pmin);
       (*this).os << std::scientific << std::setprecision(16) << Pmin << "\n";
       std::cout << i << " " << std::scientific << std::setprecision(16) << Pmin << "\n";
@@ -107,13 +99,10 @@ public:
       std::uniform_int_distribution<> int_dist(0, (*this).indices.size());
       const size_t ii_rand = int_dist(engine);
       const double Prand = Pi[ii_rand]; // value of the plaquette
-      // std::cout << "Prand : " << Prand << "\n";
       size_t i_rand = (*this).indices[ii_rand]; // index of the configuration
       gaugeconfig<Group> U_i = (*this).U; // configuration corresponding to that index
       U_i.load((*this).conf_path_basename + "." + std::to_string(i_rand), false);
-      // const double Prand_check =
-      //   omeasurements::get_retr_plaquette_density(U_i, "periodic");
-      // std::cout << "Prand_check : " << Prand_check << "\n";
+
       // applying n_sweeps_lattice sweeps to this configuration
       // to draw another one sampled from the constrained prior
       uniform_sweeps(U_i, Prand, Pmin, engine, delta * double(n_live) / double(i),
@@ -121,7 +110,6 @@ public:
       const double P_new = omeasurements::get_retr_plaquette_density(U_i, "periodic");
       Pi.push_back(P_new);
 
-      // std::cout << i << " : " << Pi.size() << "\n";
       (*this).indices.push_back(n_live + i);
       // saving the new configuration
       std::string path_i = (*this).conf_path_basename + "." + std::to_string(n_live + i);

@@ -10,7 +10,10 @@
  *
  */
 
+#include <algorithm>
 #include <random>
+#include <stdio.h>
+
 #include <xtensor/xadapt.hpp>
 #include <xtensor/xarray.hpp>
 #include <xtensor/xcsv.hpp>
@@ -112,6 +115,10 @@ public:
     (*this).os_nlive << std::scientific << std::setprecision(16);
   }
 
+  std::string get_path_conf(const int &i) const {
+    return (*this).conf_path_basename + "." + std::to_string(i);
+  }
+
   void run(const YAML::Node &nd) {
     this->pre_run(nd);
 
@@ -140,28 +147,37 @@ public:
 
     this->open_output_data();
 
+    // distrubution of indices after the removal of one of the n_live points
+    // ACHTUNG! right bound is included
+    std::uniform_int_distribution<> int_dist(0, n_live - 2);
     for (size_t i = 0; i < n_samples; i++) {
+      const int i_conf = i_last + i; // configuration index
       // finding the minimum plaquette and appending it to the list
       const size_t i_min =
         std::distance(Pi.begin(), std::min_element(Pi.begin(), Pi.end()));
-
       const double Pmin = Pi[i_min];
-      (*this).os << std::scientific << std::setprecision(16) << Pmin << "\n";
-      std::cout << i_last + i << " " << std::scientific << std::setprecision(16) << Pmin
-                << "\n";
 
+      // index of dead configuration
+      const int i_dead_conf = (*this).indices[i_min];
+      (*this).os << i_dead_conf << " " << std::scientific << std::setprecision(16) << Pmin
+                 << "\n";
+      std::cout << i_dead_conf << " " << std::scientific << std::setprecision(16) << Pmin
+                << "\n";
       Pi.erase(Pi.begin() + i_min); // removing that element
       (*this).indices.erase((*this).indices.begin() + i_min);
+      if ((*this).sparams.delete_dead_confs) {
+        std::remove(this->get_path_conf(i_dead_conf).c_str());
+      }
       // drawing a random element from the remained configurations
       // random number generator
       std::mt19937 engine;
-      engine.seed(i_last + i);
-      std::uniform_int_distribution<> int_dist(0, (*this).indices.size());
+      engine.seed(i_conf);
+
       const size_t ii_rand = int_dist(engine);
       const double Prand = Pi[ii_rand]; // value of the plaquette
       const size_t i_rand = (*this).indices[ii_rand]; // index of the configuration
       gaugeconfig<Group> U_i = (*this).U; // configuration corresponding to that index
-      U_i.load((*this).conf_path_basename + "." + std::to_string(i_rand), false, true);
+      U_i.load(this->get_path_conf(i_rand), false, true);
 
       // applying n_sweeps_tot sweeps to this configuration
       // to draw another one sampled from the constrained prior
@@ -169,23 +185,17 @@ public:
       const double P_new = omeasurements::get_retr_plaquette_density(U_i, "periodic");
       Pi.push_back(P_new);
 
-      (*this).indices.push_back(i_last + i);
+      (*this).indices.push_back(i_conf);
       // saving the new configuration
-      std::string path_i = (*this).conf_path_basename + "." + std::to_string(i_last + i);
-      U_i.save(path_i);
+      U_i.save(this->get_path_conf(i_conf));
     }
 
     std::cout << "## Saving final configuration of n_live points\n";
-    xt::xarray<double> conf_n_live(n_live);
-    conf_n_live.resize({n_live, 2}); // i, P
+    (*this).os_nlive << "i P" << std::endl;
     for (size_t i = 0; i < n_live; i++) {
-      conf_n_live(i, 0) = (*this).indices[i];
-      conf_n_live(i, 1) = Pi[i];
+      (*this).os_nlive << (*this).indices[i] << " " << Pi[i] << std::endl;
     }
-    std::cout << conf_n_live << "\n";
 
-    std::string header = "i P";
-    io::xtensor_to_stream((*this).os_nlive, conf_n_live, " ", header);
     std::ofstream icounter((*this).sparams.conf_dir + "/icounter.txt");
     icounter << (i_last + n_samples);
     icounter.close();

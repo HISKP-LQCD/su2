@@ -268,6 +268,10 @@ namespace global_parameters {
 
     bool do_mcmc = true; // generate confs. with Markov chain Monte Carlo
     bool continue_run = false; // continue the generation of points
+    
+    // delete configurations that have been already used 
+    // and will not be needed anymore for nested sampling
+    bool delete_dead_confs = false; 
 
     bool do_omeas = false; // true when omeasurements are done
     measure omeas; // struct for online measurements

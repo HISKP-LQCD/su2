@@ -397,6 +397,7 @@ namespace input_file_parsing {
 
     in.read_opt_verb<bool>(mcparams.do_mcmc, {"do_mcmc"});
     in.read_opt_verb<bool>(mcparams.continue_run, {"continue_run"});
+    in.read_opt_verb<bool>(mcparams.delete_dead_confs, {"delete_dead_confs"});
     in.read_opt_verb<size_t>(mcparams.seed, {"seed"});
     in.read_verb<size_t>(mcparams.n_live, {"n_live"});
     in.read_verb<size_t>(mcparams.n_samples, {"n_samples"});

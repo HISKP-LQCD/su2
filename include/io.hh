@@ -261,7 +261,7 @@ namespace io {
 
     std::string get_header_1(const std::string &sep = " ") {
       std::stringstream ss; // header: column names in the io
-      ss << "i" << sep << "E" << sep << "Q" << sep << "E_ss" << sep << "Q_ss" << sep
+      ss << "## i" << sep << "P" << sep << "E" << sep << "Q" << sep << "P_ss" << sep << "E_ss" << sep << "Q_ss" << sep
          << "\n";
       return ss.str();
     }

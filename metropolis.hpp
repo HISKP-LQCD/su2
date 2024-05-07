@@ -104,13 +104,19 @@ public:
                           (*this).sparams.N_hit, (*this).pparams.beta, (*this).pparams.xi,
                           (*this).pparams.anisotropic);
 
-      double E = 0., Q = 0.;
+      double E = 0., Q = 0., energy, spatialnorm;
+      // number of plaquettes is different for spatial-spatial and total
+      double facnorm = ((*this).pparams.ndims > 2) ? (*this).pparams.ndims / ((*this).pparams.ndims - 2) : 0;
+      // total number of plaquettes, factor 2 because we only sum up mu>nu
+      double normalisation = 2.0 / (*this).pparams.ndims / ((*this).pparams.ndims - 1) / (*this).U.getVolume() / double((*this).U.getNc());
       std::cout << inew;
       (*this).os << inew;
       for (bool ss : {false, true}) {
         this->energy_density((*this).pparams, (*this).U, E, Q, false, ss);
-        std::cout << " " << std::scientific << std::setprecision(15) << E << " " << Q;
-        (*this).os << " " << std::scientific << std::setprecision(15) << E << " " << Q;
+        energy = gauge_energy((*this).pparams, (*this).U, ss);
+        spatialnorm = ss ? facnorm : 1.0;
+        std::cout << " " << std::scientific << std::setprecision(15) << energy*normalisation*spatialnorm << " " << E << " " << Q;
+        (*this).os << " " << std::scientific << std::setprecision(15) << energy*normalisation*spatialnorm << " " << E << " " << Q;
       }
       std::cout << "\n";
       (*this).os << "\n";
@@ -155,7 +161,7 @@ public:
     this->init_gauge_conf_mcmc();
     this->set_omp_threads();
 
-    (*this).os << "i E Q E_ss Q_ss\n";
+    (*this).os << "## i P E Q P_ss E_ss Q_ss\n";
     size_t i_min = (*this).g_icounter;
     size_t i_max = (*this).sparams.n_meas * ((*this).threads) + (*this).g_icounter;
     size_t i_step = (*this).threads;

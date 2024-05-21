@@ -113,7 +113,7 @@ public:
       (*this).os << inew;
       for (bool ss : {false, true}) {
         this->energy_density((*this).pparams, (*this).U, E, Q, false, ss);
-        energy = gauge_energy((*this).pparams, (*this).U, ss);
+        energy = this->gauge_energy((*this).pparams, (*this).U, ss);
         spatialnorm = ss ? facnorm : 1.0;
         std::cout << " " << std::scientific << std::setprecision(15) << energy*normalisation*spatialnorm << " " << E << " " << Q;
         (*this).os << " " << std::scientific << std::setprecision(15) << energy*normalisation*spatialnorm << " " << E << " " << Q;

@@ -374,6 +374,7 @@ namespace input_file_parsing {
     check_restart_condition(mcparams.restart_condition);
 
     in.read_verb<double>(mcparams.delta, {"delta"});
+    in.read_verb<double>(mcparams.gaugemass, {"gaugemass"});
     in.read_opt_verb<size_t>(mcparams.N_hit, {"N_hit"});
     validate_N_hit(mcparams.N_hit);
 

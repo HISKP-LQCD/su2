@@ -208,6 +208,7 @@ namespace global_parameters {
     std::string restart_condition = "hot"; // restart condition: hot, cold, read
     double delta = 1.0; // quantifies how much the prooposed new link can differ from
                         // the current link
+    double gaugemass = 0.0; // mass of gauge boson for sweep
     bool do_mcmc = true; // generate confs. with Markov chain Monte Carlo
 
     // fermions stuff (operators)

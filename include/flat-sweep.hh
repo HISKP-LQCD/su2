@@ -66,6 +66,7 @@ namespace flat_spacetime {
   std::vector<double> sweep(gaugeconfig<Group> &U,
                             std::vector<URNG> engine,
                             const double &delta,
+                            const double &gaugemass,
                             const size_t &N_hit,
                             const double &beta,
                             const double &xi = 1.0,
@@ -110,7 +111,7 @@ namespace flat_spacetime {
                   for (size_t n = 0; n < N_hit; n++) {
                     random_element(R, engine[thread_num], delta);
                     double deltaS = beta / static_cast<double>(U.getNc()) *
-                                    (retrace(U(x, mu) * K) - retrace(U(x, mu) * R * K));
+                                    (retrace(U(x, mu) * K) - retrace(U(x, mu) * R * K) + gaugemass * (retrace(U(x, mu)) - retrace(U(x, mu)*R)));
                     bool accept = (deltaS < 0);
                     if (!accept) {
                       accept = (uniform(engine[thread_num]) < exp(-deltaS));
@@ -150,6 +151,7 @@ namespace flat_spacetime {
   std::vector<double> sweepone(gaugeconfig<Group> &U,
                                URNG &engine,
                                const double delta,
+                               const double gaugemass,
                                const size_t N_hit,
                                const double beta,
                                const double xi = 1.0,
@@ -176,7 +178,7 @@ namespace flat_spacetime {
                 for (size_t n = 0; n < N_hit; n++) {
                   random_element(R, engine, delta);
                   double deltaS = beta / static_cast<double>(U.getNc()) *
-                                  (retrace(U(x, mu) * K) - retrace(U(x, mu) * R * K));
+                                  (retrace(U(x, mu) * K) - retrace(U(x, mu) * R * K) + gaugemass*(retrace(U(x, mu)) - retrace(U(x, mu)*R)));
                   bool accept = (deltaS < 0);
                   if (!accept)
                     accept = (uniform(engine) < exp(-deltaS));
@@ -207,7 +209,7 @@ namespace flat_spacetime {
                 for (size_t n = 0; n < N_hit; n++) {
                   random_element(R, engine, delta);
                   double deltaS = beta / static_cast<double>(U.getNc()) *
-                                  (retrace(U(x, mu) * K) - retrace(U(x, mu) * R * K));
+                                  (retrace(U(x, mu) * K) - retrace(U(x, mu) * R * K) + gaugemass*(retrace(U(x, mu)) - retrace(U(x, mu)*R)));
                   bool accept = (deltaS < 0);
                   if (!accept)
                     accept = (uniform(engine) < exp(-deltaS));

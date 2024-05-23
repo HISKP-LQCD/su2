@@ -436,9 +436,9 @@ public:
       if ((*this).omeas.verbosity > 0){
         std::cout << "## online measuring : Retrace \n";
       }
-      omeasurements::meas_retrace(U, i, pparams, omeas);
+      omeasurements::meas_realtrace(U, i, pparams, omeas);
     }
-    
+
     if (omeas.plaquette.measure_it) {
       if ((*this).omeas.verbosity > 0) {
         std::cout << "## online measuring: Plaquette\n";

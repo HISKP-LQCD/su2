@@ -51,7 +51,7 @@ namespace global_parameters {
     bool measure_retrace = false;
 
     std::string subdir = "";
-  }
+  };
   struct measure_plaquette {
     bool measure_it = false; // whether to measure the plaquette or not
 

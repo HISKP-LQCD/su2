@@ -36,10 +36,12 @@ namespace omeasurements {
 
   template <class Group>
   double get_retr_realtrace_density(const gaugeconfig<Group> &U){
-  double denuminator = U.getVolume();
+  double denuminator = 2*U.getVolume()*U.getndims();
   double realtrace = obc::retr_sum_realtrace(U);
   realtrace /= denuminator;
+  return realtrace;
   }
+
   /**
    * @brief Get the retr plaquette density object
    *
@@ -84,7 +86,7 @@ namespace omeasurements {
   }
 
 
-template <class Group>
+template <class Group, class sparams>
 void meas_realtrace(const gaugeconfig <Group> U,
                     const size_t &i,
                     const global_parameters::physics &pparams,

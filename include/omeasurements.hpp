@@ -34,6 +34,12 @@ namespace omeasurements {
 
   namespace fsys = boost::filesystem;
 
+  template <class Group>
+  double get_retr_realtrace_density(const gaugeconfig<Group> &U){
+  double denuminator = U.getVolume();
+  double realtrace = obc::retr_sum_realtrace(U);
+  realtrace /= denuminator;
+  }
   /**
    * @brief Get the retr plaquette density object
    *
@@ -76,6 +82,35 @@ namespace omeasurements {
     P /= den; // normalizing
     return P;
   }
+
+
+template <class Group>
+void meas_realtrace(const gaugeconfig <Group> U,
+                    const size_t &i,
+                    const global_parameters::physics &pparams,
+                    const sparams &S){
+  std::ostringstream oss;
+  oss << S.res_dir +"/" + S.retrace.subdir <<"/";
+  fsys::create_directories(fsys::absolute(oss.str()));
+
+  oss << "retrace_";
+  auto prevw = oss.width(8);
+  auto prevf = oss.fill('0');
+  oss << i;
+  oss.width(prevw);
+  oss.fill(prevf);
+
+  const std::string path = oss.str();
+  std::ofstream ofs(path, std::ios::out);
+
+  ofs << "i retrace \n";
+
+  const double retrace = get_retr_realtrace_density(U);
+  ofs << i << std::scientific << std::setprecision(16) << " " << retrace << "\n";
+  ofs.close();
+
+  return;
+}
 
   template <class Group, class sparams>
   void meas_plaquette(const gaugeconfig<Group> &U,

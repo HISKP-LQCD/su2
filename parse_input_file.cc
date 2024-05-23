@@ -188,6 +188,20 @@ namespace input_file_parsing {
     }
   }
 
+  void parse_retrace_measure(Yp:: inspect_node &in,
+                            const std::vector <std::string> &inner_tree,
+                            gp::measure_retrace &mpparams){
+
+    const std::vector<std::string> state0 = in.get_InnerTree();
+    in.dig_deeper(inner_tree);
+    YAML::Node nd = in.get_outer_node();
+
+    mpparams.measure_retrace = true;
+    in.read_opt_verb<std::string>(mpparams.subdir, {"subdir"});
+    
+    in.set_InnerTree(state0); // reset to previous state
+  }
+
   void parse_plaquette_measure(Yp::inspect_node &in,
                                const std::vector<std::string> &inner_tree,
                                gp::measure_plaquette &mpparams) {
@@ -311,6 +325,10 @@ namespace input_file_parsing {
 
     if (nd["plaquette"]) {
       parse_plaquette_measure(in, {"plaquette"}, mparams.plaquette);
+    }
+
+    if (nd["retrace"]){
+      parse_retrace_measure(in, {"retrace"}, mparams.retrace);
     }
 
     if (nd["pion_staggered"]) {

@@ -39,6 +39,25 @@ namespace obc { // open boundary conditions
    * @param xi anisotropy in the action: S_G \supset (\beta/xi)*P_{0i} + (xi*\beta)*P_{ij}
    * @return double
    */
+
+  template <class T>
+  double retr_sum_realtrace(const gaugeconfig<T> &U){
+    double res = 0.;
+  #pragma omp parallel for reduction(+ : res)
+    for (size_t x0 = 0; x0 < U.getLt(); x0++){
+      for (size_t x1 = 0; x1 < U.getLx(); x1++){
+        for (size_t x2 = 0; x2 < U.getLy(); x2++){
+          for (size_t x3 = 0; x3 < U.getLz(); x3++){
+            const std::vector<size_t> x = {x0, x1, x2, x3};
+            for(size_t mu = 0; mu < U.getndims() -1; mu++){
+              res += retrace(U(x, mu));
+            }
+          }
+        }
+      }
+    }
+  return res;
+  }
   template <class T>
   double retr_sum_Wplaquettes(const gaugeconfig<T> &U,
                               const obc::weights &w,

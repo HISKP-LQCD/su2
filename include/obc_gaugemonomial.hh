@@ -28,18 +28,14 @@
 
 namespace obc { // open boundary conditions
 
-  /**
-   * @brief real part of the trace of the Wilson plaquette (with spatial open boundary
-   * conditions)
-   *
-   *
-   * @tparam T gauge group
-   * @param U gauge configuration
-   * @param spatial_only: true when only the plaquettes with mu, nu > 0 are calculated
-   * @param xi anisotropy in the action: S_G \supset (\beta/xi)*P_{0i} + (xi*\beta)*P_{ij}
-   * @return double
-   */
+/**
 
+ * @brief sum of the real trace of all gauge links with periodic boundary conditions 
+ * 
+ * @tparam T gauge group
+ * @param U gauge configuration
+ * @return double 
+ */
   template <class T>
   double retr_sum_realtrace(const gaugeconfig<T> &U){
     double res = 0.;
@@ -58,6 +54,17 @@ namespace obc { // open boundary conditions
     }
   return res;
   }
+  /**
+   * @brief real part of the trace of the Wilson plaquette (with spatial open boundary
+   * conditions)
+   *
+   *
+   * @tparam T gauge group
+   * @param U gauge configuration
+   * @param spatial_only: true when only the plaquettes with mu, nu > 0 are calculated
+   * @param xi anisotropy in the action: S_G \supset (\beta/xi)*P_{0i} + (xi*\beta)*P_{ij}
+   * @return double
+   */
   template <class T>
   double retr_sum_Wplaquettes(const gaugeconfig<T> &U,
                               const obc::weights &w,

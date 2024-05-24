@@ -5,18 +5,23 @@ import argparse
 import glob
 import yaml
 
+### load the input file from the command line ###
 parser = argparse.ArgumentParser(prog="retrace", description="""format retrace files in the "hadron" format""")
 parser.add_argument('-f', '--inputfile', help = "Path to the same yaml input file used for the run")
 args = parser.parse_args()
 
+### load and parse the input file to yaml ###
 nd = yaml.load(open(str(args.inputfile)), Loader=yaml.Loader)
 
+### get needed info ###
 gaugemass = nd["metropolis"]["gaugemass"]
 nd_omeas = nd["omeas"]
 resdir = nd_omeas["res_dir"]
 nd_retr = nd_omeas["retrace"]
 subdir = nd_retr["subdir"]
 
+### function that saves all retraces into one file with the gaugemass in its name ###
+### copied and modified from the plaquette.py script ###
 def hadronize(name):
     d1 = resdir
     d2 = d1 + "/" + subdir + "/"

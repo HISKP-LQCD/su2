@@ -34,6 +34,13 @@ namespace omeasurements {
 
   namespace fsys = boost::filesystem;
 
+  /**
+   * @brief Get the retr realtrace density object
+   * 
+   * @tparam Gauge group
+   * @param U gauge configuration
+   * @return double 
+   */
   template <class Group>
   double get_retr_realtrace_density(const gaugeconfig<Group> &U){
   double denuminator = U.getVolume()*U.getndims();
@@ -85,7 +92,16 @@ namespace omeasurements {
     return P;
   }
 
-
+/**
+ * @brief calculates the realtrace density and saves it in a file 
+ * 
+ * @tparam Group 
+ * @tparam sparams struct containing info on the computation and physics
+ * @param U gauge configuration
+ * @param i configuration index 
+ * @param pparams physical parameters
+ * @param S realtrace configuration paramters
+ */
 template <class Group, class sparams>
 void meas_realtrace(const gaugeconfig <Group> U,
                     const size_t &i,

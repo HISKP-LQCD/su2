@@ -48,9 +48,9 @@ namespace global_parameters {
   };
 
   struct measure_retrace{
-    bool measure_retrace = false;
+    bool measure_retrace = false; //bool to note, if the realtrace is measured or not
 
-    std::string subdir = "";
+    std::string subdir = ""; //subdirectory to save the results to
   };
   struct measure_plaquette {
     bool measure_it = false; // whether to measure the plaquette or not
@@ -142,7 +142,7 @@ namespace global_parameters {
     size_t solver_verbosity = 0; // Verbosity for the solver for the dirac operator
     size_t seed_pf = 97234719; // Seed for the evaluation of the fermion determinant
 
-    measure_retrace retrace;
+    measure_retrace retrace; //struct for the measure of the realtrace density
     measure_plaquette plaquette; // struct for the measure of the plaquette
     measure_glueball glueball; // struct for the measure of the glueball
     measure_gradient_flow gradient_flow; // struct for the measure of the gradient flow

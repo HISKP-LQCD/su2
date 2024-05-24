@@ -36,7 +36,7 @@ namespace omeasurements {
 
   template <class Group>
   double get_retr_realtrace_density(const gaugeconfig<Group> &U){
-  double denuminator = 2*U.getVolume()*U.getndims();
+  double denuminator = U.getVolume()*U.getndims();
   double realtrace = obc::retr_sum_realtrace(U);
   realtrace /= denuminator;
   return realtrace;

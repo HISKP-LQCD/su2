@@ -13,18 +13,26 @@ parser = argparse.ArgumentParser(
 
 parser.add_argument('-f', '--inputfile',
                     help="Path to the same yaml input file used for the run")
+parser.add_argument('-o', '--outputfolder', help="optional output folder to save output file to")
+parser.add_argument("-append_gaugemass",type=bool, default=False, help="if true, the gaugemassis appended to the output file name")
 args = parser.parse_args()
 
 # loading and parsing the input file for the needed info
 nd = yaml.load(open(str(args.inputfile)), Loader=yaml.Loader)
-
+added_string = ""
+if args.append_gaugemass:
+    gaugemass = nd["metropolis"]["gaugemass"]
+    added_string = str(gaugemass)
 T = nd["geometry"]["T"]
 nd_omeas = nd["omeas"]
 resdir = nd_omeas["res_dir"]
 nd_plaquette = nd_omeas["plaquette"]
 subdir = nd_plaquette["subdir"]
 
-
+if args.outputfolder == None:
+    outputfolder = resdir + "/" + subdir + "/"
+else:
+    outputfolder = str(args.outputfolder) + "/"
 def hadronize(name):
     d1 = resdir
     d2 = d1 + "/" + subdir + "/"
@@ -83,11 +91,11 @@ def hadronize(name):
     # saving
     if save_df_new:
         df_new = df_new.sort_values(by=['i'])
-        df_new.to_csv(d2 + "/"+name+".dat", sep=" ", index=False)
+        df_new.to_csv(outputfolder + "/"+name+added_string + ".dat", sep=" ", index=False)
     print("Saving the new iconf file")
     if save_iconf:
         pd.DataFrame(sorted(file_index)).to_csv(
-            d2+"iconfs.dat", header=False, sep=" ", index=False)
+            outputfolder + added_string + "iconfs.dat", header=False, sep=" ", index=False)
     ####
     print("Removing data in the old format")
     for p in file_names:

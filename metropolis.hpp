@@ -67,12 +67,13 @@ public:
                             gaugeconfig<Group> &U,
                             std::vector<URNG> engines,
                             const double &delta,
+                            const double &gaugemass,
                             const size_t &N_hit,
                             const double &beta,
                             const double &xi = 1.0,
                             const bool &anisotropic = false) {
     if (pparams.flat_metric) {
-      return flat_spacetime::sweep(U, engines, delta, N_hit, pparams.beta, pparams.xi,
+      return flat_spacetime::sweep(U, engines, delta, gaugemass, N_hit, pparams.beta, pparams.xi,
                                    pparams.anisotropic);
     }
     if (pparams.rotating_frame) {
@@ -103,7 +104,7 @@ public:
 
       this->output_line(i);
 
-      rate += this->sweep((*this).pparams, (*this).U, engines, (*this).sparams.delta,
+      rate += this->sweep((*this).pparams, (*this).U, engines, (*this).sparams.delta, (*this).sparams.gaugemass,
                           (*this).sparams.N_hit, (*this).pparams.beta, (*this).pparams.xi,
                           (*this).pparams.anisotropic);
 

@@ -8,10 +8,12 @@ import yaml
 ### load the input file from the command line ###
 parser = argparse.ArgumentParser(prog="retrace", description="""format retrace files in the "hadron" format""")
 parser.add_argument('-f', '--inputfile', help = "Path to the same yaml input file used for the run")
+parser.add_argument('-o','--outputfolder',help = "Optional argument for the folder, in which the file is saved")
 args = parser.parse_args()
 
 ### load and parse the input file to yaml ###
 nd = yaml.load(open(str(args.inputfile)), Loader=yaml.Loader)
+
 
 ### get needed info ###
 gaugemass = nd["metropolis"]["gaugemass"]
@@ -20,6 +22,10 @@ resdir = nd_omeas["res_dir"]
 nd_retr = nd_omeas["retrace"]
 subdir = nd_retr["subdir"]
 
+if args.outputfolder == None:
+    outputfolder = resdir + "/" + subdir + "/"
+else:
+    outputfolder = str(args.outputfolder) + "/"
 ### function that saves all retraces into one file with the gaugemass in its name ###
 ### copied and modified from the plaquette.py script ###
 def hadronize(name):
@@ -80,11 +86,11 @@ def hadronize(name):
     # saving
     if save_df_new:
         df_new = df_new.sort_values(by=['i'])
-        df_new.to_csv(d2 + "/"+name+str(gaugemass) + ".dat", sep=" ", index=False)
+        df_new.to_csv(outputfolder + "/"+name+str(gaugemass) + ".dat", sep=" ", index=False)
     print("Saving the new iconf file")
     if save_iconf:
         pd.DataFrame(sorted(file_index)).to_csv(
-            d2+"iconfs.dat", header=False, sep=" ", index=False)
+            outputfolder+"iconfs.dat", header=False, sep=" ", index=False)
     ####
     print("Removing data in the old format")
     for p in file_names:

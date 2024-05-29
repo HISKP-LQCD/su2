@@ -198,7 +198,11 @@ namespace input_file_parsing {
 
     mpparams.measure_retrace = true;
     in.read_opt_verb<std::string>(mpparams.subdir, {"subdir"});
-    
+    in.read_opt_verb<std::string>(mpparams.bc, {"bc"});
+
+    if (nd["bc"]) {
+      check_bc(mpparams.bc);
+    }
     in.set_InnerTree(state0); // reset to previous state
   }
 

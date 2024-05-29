@@ -49,7 +49,7 @@ namespace global_parameters {
 
   struct measure_retrace{
     bool measure_retrace = false; //bool to note, if the realtrace is measured or not
-
+    std::string bc = "periodic";
     std::string subdir = ""; //subdirectory to save the results to
   };
   struct measure_plaquette {

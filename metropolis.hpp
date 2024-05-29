@@ -11,6 +11,7 @@
 
 #include "errors.hpp"
 #include "base_program.hpp"
+#include "random_gauge_trafo.hh"
 
 template <class Group>
 class metropolis_algo : public base_program<Group, gp::metropolis> {
@@ -162,13 +163,15 @@ public:
      * do measurements:
      * sweep: do N_hit Metropolis-Updates of every link in the lattice
      * calculate plaquette, spacial plaquette, energy density with and without cloverdef
-     * and write to stdout and output-file save every nave configuration
+     * and write to stdout and output-file save every N_save configurations
      * */
     for (size_t i = i_min; i < i_max; i++) {
       this->do_sweep(i);
       bool do_omeas =
         ((*this).sparams.do_omeas && i != 0 && (i % (*this).sparams.N_save) == 0);
       this->after_MCMC_step(i, do_omeas);
+      
+
     }
     this->save_acceptance_rates();
     this->save_final_conf();

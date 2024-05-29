@@ -514,6 +514,10 @@ public:
         this->do_omeas_i(i);
       }
 
+      if (i > 0 && (i % (*this).sparams.N_trafo) == 0 && (*this).sparams.do_gaugetrafo){
+        random_gauge_trafo((*this).U, 654321); // doing a random gauge trafo after N_trafo sweeps
+      }
+
       if ((*this).sparams.do_mcmc) {
         // storing last conf index (only after online measurements has been done)
         io::update_nconf_counter((*this).sparams.conf_dir, (*this).g_heat, i, path_i);

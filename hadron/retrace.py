@@ -86,11 +86,11 @@ def hadronize(name):
     # saving
     if save_df_new:
         df_new = df_new.sort_values(by=['i'])
-        df_new.to_csv(outputfolder + "/"+name+str(gaugemass) + ".dat", sep=" ", index=False)
+        df_new.to_csv(outputfolder + "/"+name+f'{gaugemass: .2f}' + ".dat", sep=" ", index=False)
     print("Saving the new iconf file")
     if save_iconf:
         pd.DataFrame(sorted(file_index)).to_csv(
-            outputfolder+str(gaugemass) + "iconfs.dat", header=False, sep=" ", index=False)
+            outputfolder+f'{gaugemass : .2f}' + "iconfs.dat", header=False, sep=" ", index=False)
     ####
     print("Removing data in the old format")
     for p in file_names:

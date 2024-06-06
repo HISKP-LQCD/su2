@@ -47,7 +47,7 @@ namespace obc { // open boundary conditions
           for (size_t x3 = 0; x3 < U.getLz(); x3++){
             const std::vector<size_t> x = {x0, x1, x2, x3};
             for(size_t mu = 0; mu < U.getndims() -1; mu++){
-              res += std::pow(retrace(U(x, mu)),1);
+              res += retrace(U(x, mu));
             }
           }
         }

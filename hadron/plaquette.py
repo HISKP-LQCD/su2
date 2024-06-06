@@ -22,7 +22,7 @@ nd = yaml.load(open(str(args.inputfile)), Loader=yaml.Loader)
 added_string = ""
 if args.append_gaugemass:
     gaugemass = nd["metropolis"]["gaugemass"]
-    added_string = str(gaugemass)
+    added_string = f'{gaugemass:.2f}'
 T = nd["geometry"]["T"]
 nd_omeas = nd["omeas"]
 resdir = nd_omeas["res_dir"]

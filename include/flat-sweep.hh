@@ -74,7 +74,7 @@ namespace flat_spacetime {
     std::uniform_real_distribution<double> uniform(0., 1.);
     typedef typename accum_type<Group>::type accum;
     size_t rate = 0, rate_time = 0;
-    std::cout << "## Gaugemass in sweep " << gaugemass << "\n";
+    //std::cout << "## Gaugemass in sweep " << gaugemass << "\n";
 #ifdef _USE_OMP_
 #pragma omp parallel
     {

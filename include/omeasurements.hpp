@@ -44,6 +44,7 @@ namespace omeasurements {
   template <class Group>
   double get_retr_realtrace_density(const gaugeconfig<Group> &U, const std::string &bc, const double &gaugemass = 0.0){
   //double denuminator = U.getVolume()*U.getndims();
+  std::cout << "gaugemass in retrace" << gaugemass << "\n ";
   obc::weights w(bc, U.getLx(), U.getLy(), U.getLz(), U.getLt(), U.getndims());
   double realtrace = obc::retr_sum_realtrace(U, w);
   double num_lattice_sites = 1;
@@ -141,7 +142,7 @@ void meas_realtrace(const gaugeconfig <Group> U,
 
   ofs << "i retrace \n";
 
-  const double retrace = get_retr_realtrace_density(U, S.retrace.bc);
+  const double retrace = get_retr_realtrace_density(U, S.retrace.bc, gaugemass);
   ofs << i << std::scientific << std::setprecision(16) << " " << retrace << "\n";
   ofs.close();
 

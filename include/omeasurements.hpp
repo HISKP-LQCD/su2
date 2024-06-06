@@ -42,9 +42,9 @@ namespace omeasurements {
    * @return double 
    */
   template <class Group>
-  double get_retr_realtrace_density(const gaugeconfig<Group> &U, const std::string &bc, const double &gaugemass = 0.0){
+  double get_retr_realtrace_density(const gaugeconfig<Group> &U, const std::string &bc){
   //double denuminator = U.getVolume()*U.getndims();
-  std::cout << "gaugemass in retrace" << gaugemass << "\n ";
+  //std::cout << "gaugemass in retrace" << gaugemass << "\n ";
   obc::weights w(bc, U.getLx(), U.getLy(), U.getLz(), U.getLt(), U.getndims());
   double realtrace = obc::retr_sum_realtrace(U, w);
   double num_lattice_sites = 1;
@@ -61,7 +61,7 @@ namespace omeasurements {
       }
     }
   }
-  double normalized_retrace = - (U.getBeta()/(2. * num_lattice_sites)) * gaugemass * realtrace; 
+  double normalized_retrace = - (U.getBeta()/(2. * num_lattice_sites)) * realtrace; 
   return normalized_retrace;
   //realtrace /= denuminator;
   //return realtrace;
@@ -124,7 +124,6 @@ template <class Group, class sparams>
 void meas_realtrace(const gaugeconfig <Group> U,
                     const size_t &i,
                     const global_parameters::physics &pparams,
-                    const double &gaugemass,
                     const sparams &S){
   std::ostringstream oss;
   oss << S.res_dir +"/" + S.retrace.subdir <<"/";
@@ -142,7 +141,7 @@ void meas_realtrace(const gaugeconfig <Group> U,
 
   ofs << "i retrace \n";
 
-  const double retrace = get_retr_realtrace_density(U, S.retrace.bc, gaugemass);
+  const double retrace = get_retr_realtrace_density(U, S.retrace.bc);
   ofs << i << std::scientific << std::setprecision(16) << " " << retrace << "\n";
   ofs.close();
 

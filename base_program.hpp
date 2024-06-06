@@ -431,12 +431,12 @@ public:
         return; // simply ignore configuration
       }
     }
-    gp::metropolis mparams;
+    //gp::metropolis mparams;
     if (omeas.retrace.measure_retrace) {
       if ((*this).omeas.verbosity > 0){
         std::cout << "## online measuring : Retrace \n";
       }
-      omeasurements::meas_realtrace(U, i, pparams, mparams.gaugemass , omeas);
+      omeasurements::meas_realtrace(U, i, pparams, omeas);
     }
 
     if (omeas.plaquette.measure_it) {

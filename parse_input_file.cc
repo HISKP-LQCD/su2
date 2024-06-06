@@ -198,7 +198,11 @@ namespace input_file_parsing {
 
     mpparams.measure_retrace = true;
     in.read_opt_verb<std::string>(mpparams.subdir, {"subdir"});
-    
+    in.read_opt_verb<std::string>(mpparams.bc, {"bc"});
+
+    if (nd["bc"]) {
+      check_bc(mpparams.bc);
+    }
     in.set_InnerTree(state0); // reset to previous state
   }
 
@@ -377,6 +381,8 @@ namespace input_file_parsing {
     in.dig_deeper(inner_tree); // entering the glueball node
     YAML::Node nd = in.get_outer_node();
 
+    in.read_opt_verb<size_t>(mcparams.N_trafo, {"N_trafo"});
+    in.read_opt_verb<bool>(mcparams.do_gaugetrafo, {"do_gaugetrafo"});
     in.read_opt_verb<bool>(mcparams.do_mcmc, {"do_mcmc"});
     in.read_opt_verb<size_t>(mcparams.n_meas, {"n_meas"});
     in.read_opt_verb<size_t>(mcparams.N_save, {"N_save"});
@@ -414,6 +420,8 @@ namespace input_file_parsing {
     in.dig_deeper(inner_tree); // entering the glueball node
     YAML::Node nd = in.get_outer_node();
 
+    in.read_opt_verb<size_t>(mcparams.N_trafo, {"N_trafo"});
+    in.read_opt_verb<bool>(mcparams.do_gaugetrafo, {"do_gaugetrafo"});
     in.read_opt_verb<bool>(mcparams.do_mcmc, {"do_mcmc"});
     in.read_opt_verb<size_t>(mcparams.n_meas, {"n_meas"});
     in.read_opt_verb<size_t>(mcparams.N_save, {"N_save"});
@@ -452,6 +460,8 @@ namespace input_file_parsing {
 
     in.read_opt_verb<bool>(hparams.do_mcmc, {"do_mcmc"});
 
+    in.read_opt_verb<size_t>(hparams.N_trafo, {"N_trafo"});
+    in.read_opt_verb<bool>(hparams.do_gaugetrafo, {"do_gaugetrafo"});
     in.read_verb<std::string>(hparams.restart_condition, {"restart_condition"});
     check_restart_condition(hparams.restart_condition);
 
@@ -590,6 +600,8 @@ namespace input_file_parsing {
                           gp::metropolis &mcparams) {
       Yp::inspect_node in(nd);
 
+      in.read_opt_verb<size_t>(mcparams.N_trafo, {"N_trafo"});
+      in.read_opt_verb<bool>(mcparams.do_gaugetrafo, {"do_gaugetrafo"});
       parse_geometry(in, pparams);
       parse_action<gp::metropolis>(in, {}, pparams, mcparams);
       parse_metropolis(in, {"metropolis"}, mcparams);
@@ -618,6 +630,8 @@ namespace input_file_parsing {
       parse_action<gp::heatbath_overrelaxation>(in, {}, pparams, mcparams);
       parse_heatbath_overrelaxation(in, {"heatbath_overrelaxation"}, mcparams);
 
+      in.read_opt_verb<size_t>(mcparams.N_trafo, {"N_trafo"});
+      in.read_opt_verb<bool>(mcparams.do_gaugetrafo, {"do_gaugetrafo"});
       if (nd["omeas"]) {
         mcparams.do_omeas = true;
         mcparams.omeas.conf_dir = mcparams.conf_dir;

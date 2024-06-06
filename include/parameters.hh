@@ -49,7 +49,7 @@ namespace global_parameters {
 
   struct measure_retrace{
     bool measure_retrace = false; //bool to note, if the realtrace is measured or not
-
+    std::string bc = "periodic";
     std::string subdir = ""; //subdirectory to save the results to
   };
   struct measure_plaquette {
@@ -152,6 +152,8 @@ namespace global_parameters {
   struct hmc {
     bool do_mcmc = true; // generate confs. with Markov chain Monte Carlo
 
+    bool do_gaugetrafo = false; // whether to do a random global gauge trafo after N_trafo steps
+    size_t N_trafo = 100; // does a gauge trafe after N_trafo many sweeps
     size_t N_save = 100; // N_save
     size_t n_meas = 10; // total number of sweeps
     size_t icounter = 0; // initial counter for updates
@@ -202,8 +204,10 @@ namespace global_parameters {
     size_t icounter = 0; // initial counter for updates
     size_t seed = 13526463; // PRNG seed
 
+    bool do_gaugetrafo = false; // whether to do a random global gauge trafo after N_trafo steps
+    size_t N_trafo = 100; // does a gauge trafe after N_trafo many sweeps
     size_t N_save = 100; // save each N_save config
-
+    
     std::string configfilename = ""; // configuration filename used in case of restart
     std::string conf_dir = "./"; // directory where gauge configurations are stored
     std::string conf_basename = "conf"; // root of the output files names
@@ -233,6 +237,8 @@ namespace global_parameters {
     size_t icounter = 0; // initial counter for updates
     size_t seed = 13526463; // PRNG seed
 
+    bool do_gaugetrafo = false; // whether to do a random global gauge trafo after N_trafo steps
+    size_t N_trafo = 100; // does a gauge trafe after N_trafo many sweeps
     size_t N_save = 100; // save each N_save config
     size_t n_heatbath = 1; // number of heatbath sweeps
     size_t n_overrelax = 1; // number of overrelaxation sweeps

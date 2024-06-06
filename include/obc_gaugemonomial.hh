@@ -38,7 +38,7 @@ namespace obc { // open boundary conditions
  * @return double 
  */
   template <class T>
-  double retr_sum_realtrace(const gaugeconfig<T> &U){
+  double retr_sum_realtrace(const gaugeconfig<T> &U, const obc::weights &w){
     double res = 0.;
   #pragma omp parallel for reduction(+ : res)
     for (size_t x0 = 0; x0 < U.getLt(); x0++){
@@ -46,8 +46,9 @@ namespace obc { // open boundary conditions
         for (size_t x2 = 0; x2 < U.getLy(); x2++){
           for (size_t x3 = 0; x3 < U.getLz(); x3++){
             const std::vector<size_t> x = {x0, x1, x2, x3};
+            const double wx = w(x);
             for(size_t mu = 0; mu < U.getndims() -1; mu++){
-              res += retrace(U(x, mu));
+              res += wx*retrace(U(x, mu));
             }
           }
         }

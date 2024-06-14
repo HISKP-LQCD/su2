@@ -23,6 +23,7 @@
 #include "propagator.hpp"
 #include "smearape.hh"
 #include "wilsonloop.hh"
+#include "polyakov_loop.hh"
 
 #include <boost/filesystem.hpp>
 
@@ -61,7 +62,7 @@ namespace omeasurements {
       }
     }
   }
-  double normalized_retrace = - (U.getBeta()/(2. * num_lattice_sites)) * realtrace; 
+  double normalized_retrace =  (1./(2. * num_lattice_sites*ndims)) * realtrace; 
   return normalized_retrace;
   //realtrace /= denuminator;
   //return realtrace;
@@ -200,7 +201,40 @@ void meas_realtrace(const gaugeconfig <Group> U,
 
     return;
   }
+  template <class Group, class sparams>
+  void meas_spatial_polyakov(const gaugeconfig<Group> &U,
+                                          const size_t &i,
+                                          const sparams &S){
+/*  std::ostringstream os;
+  os << res_dir + "/polyakovloop.";
 
+  auto prevw = os.width(6);
+  auto prevf = os.fill('0');
+  os << i;
+  os.width(prevw);
+  os.fill(prevf);
+
+*/ 
+std::ostringstream oss;
+oss << S.res_dir +"/" + S.spatial_polyakov.subdir <<"/";
+fsys::create_directories(fsys::absolute(oss.str()));
+
+oss << "polyakov_";
+auto prevw = oss.width(8);
+auto prevf = oss.fill('0');
+oss << i;
+oss.width(prevw);
+oss.fill(prevf);
+
+const std::string path = oss.str();
+std::ofstream ofs(path, std::ios::out);
+
+ofs << "i polyakov spatial \n";
+
+const double spatial_polyakov = polyakov_loop::polyakov_loop_spatial_average(U);
+ofs << i << std::scientific << std::setprecision(16) << " " << spatial_polyakov << "\n";
+ofs.close();
+}
   /**
    * @brief compute and print the gradient flow of a given configuration
    *

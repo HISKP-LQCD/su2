@@ -52,6 +52,12 @@ namespace global_parameters {
     std::string bc = "periodic";
     std::string subdir = ""; //subdirectory to save the results to
   };
+
+  struct measure_spatial_polyakov{
+    bool measure_spatial_polyakov = false; //true if spatial polyakov measured
+    std::string subdir = ""; //subdirectory to save the result to
+  };
+
   struct measure_plaquette {
     bool measure_it = false; // whether to measure the plaquette or not
 
@@ -146,6 +152,7 @@ namespace global_parameters {
     measure_plaquette plaquette; // struct for the measure of the plaquette
     measure_glueball glueball; // struct for the measure of the glueball
     measure_gradient_flow gradient_flow; // struct for the measure of the gradient flow
+    measure_spatial_polyakov spatial_polyakov; //struct for the measure of the spatially averaged polyakov loop
   };
 
   /* Optional parameters for the hmc the in U(1) theory */

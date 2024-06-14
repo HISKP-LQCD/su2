@@ -188,6 +188,20 @@ namespace input_file_parsing {
     }
   }
 
+
+  void parse_spatial_polyakov_measure(Yp:: inspect_node &in,
+                                    const std::vector <std::string> &inner_tree,
+                                    gp::measure_spatial_polyakov &mpparams){
+
+    const std::vector<std::string> state0 = in.get_InnerTree();
+    in.dig_deeper(inner_tree);
+    YAML::Node nd = in.get_outer_node();
+
+    mpparams.measure_spatial_polyakov = true;
+    in.read_opt_verb<std::string>(mpparams.subdir, {"subdir"});
+    in.set_InnerTree(state0);    
+                                    }
+
   void parse_retrace_measure(Yp:: inspect_node &in,
                             const std::vector <std::string> &inner_tree,
                             gp::measure_retrace &mpparams){
@@ -333,6 +347,10 @@ namespace input_file_parsing {
 
     if (nd["retrace"]){
       parse_retrace_measure(in, {"retrace"}, mparams.retrace);
+    }
+
+    if(nd["spatial_polyakov"]){
+      parse_spatial_polyakov_measure(in, {"spatial_polyakov"}, mparams.spatial_polyakov);
     }
 
     if (nd["pion_staggered"]) {

@@ -431,6 +431,13 @@ public:
         return; // simply ignore configuration
       }
     }
+    if (omeas.spatial_polyakov.measure_spatial_polyakov){
+      if ((*this).omeas.verbosity > 0){
+        std::cout << "## online measuring: Spatial Polyakov \n";
+  
+      }
+      omeasurements::meas_spatial_polyakov(U, i, omeas);
+    }
     //gp::metropolis mparams;
     if (omeas.retrace.measure_retrace) {
       if ((*this).omeas.verbosity > 0){

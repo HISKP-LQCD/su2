@@ -14,6 +14,8 @@
 #include <iomanip>
 #include <vector>
 
+
+namespace polyakov_loop{
 /**
  * @brief Polyakov loop at spatial point \vec{x}: P(\vec{x})
  * (see eq. 3.60 of https://link.springer.com/book/10.1007/978-3-642-01850-3)
@@ -25,12 +27,15 @@
  */
 template <class Group = su2>
 double polyakov_loop(const gaugeconfig<Group> &U,
-                     const std::array<int, spacetime_lattice::nd_max - 1> &xi) {
+                     const std::array<size_t, spacetime_lattice::nd_max - 1> &xi) {
   typedef typename accum_type<Group>::type accum;
 
   const size_t mu = 0; // Polyakov loop contains U_{\mu=0}(x) only
   std::vector<size_t> x = {0, xi[0], xi[1], xi[2]};
-  accum P(1., 0.);
+  //accum P;
+  Group P;
+  P.set_to_identity();
+
   for (x[0] = 0; x[0] < U.getLt(); x[0]++) {
       P *= U(x, mu);
   }
@@ -44,9 +49,10 @@ double polyakov_loop(const gaugeconfig<Group> &U,
  * @param U
  * @return double
  */
-template <class Group = su2> double polyakov_loop_spatial_average(gaugeconfig<Group> &U) {
+template <class Group = su2>
+ double polyakov_loop_spatial_average(const gaugeconfig<Group> &U) {
   double ploop = 0.;
-  typedef typename accum_type<Group>::type accum;
+  //typedef typename accum_type<Group>::type accum;
   const size_t ndims = U.getndims();
 
   const size_t nd_s = spacetime_lattice::nd_max - 1;
@@ -54,10 +60,11 @@ template <class Group = su2> double polyakov_loop_spatial_average(gaugeconfig<Gr
   for (size_t x1 = 0; x1 < U.getLx(); x1++) {
     for (size_t x2 = 0; x2 < U.getLy(); x2++) {
       for (size_t x3 = 0; x3 < U.getLz(); x3++) {
-        std::array<int, nd_s> x = {x1, x2, x3}; // spatial position
+        std::array<size_t, nd_s> x = {x1, x2, x3}; // spatial position
         ploop += polyakov_loop(U, x);
       }
     }
   }
   return ploop / U.getVolume();
+}
 }

@@ -6,6 +6,7 @@
  */
 
 #pragma once
+#include <complex>
 
 #include <iomanip>
 #include <iostream>
@@ -30,6 +31,7 @@
 #include <xtensor/xarray.hpp>
 #include <xtensor/xio.hpp>
 #include <xtensor/xview.hpp>
+using Complex = std::complex<double>;
 
 namespace omeasurements {
 
@@ -229,9 +231,9 @@ oss.fill(prevf);
 const std::string path = oss.str();
 std::ofstream ofs(path, std::ios::out);
 
-ofs << "i polyakov spatial \n";
+ofs << "i polyakov \n";
 
-const double spatial_polyakov = polyakov_loop::polyakov_loop_spatial_average(U);
+const Complex spatial_polyakov = polyakov_loop::polyakov_loop_spatial_average(U);
 ofs << i << std::scientific << std::setprecision(16) << " " << spatial_polyakov << "\n";
 ofs.close();
 }

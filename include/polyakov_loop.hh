@@ -1,7 +1,7 @@
 // Copyright (C) 2022 S. Romiti
 
 #pragma once
-
+#include <complex>
 #include "accum_type.hh"
 #include "gaugeconfig.hh"
 #include "geometry.hh"
@@ -14,6 +14,7 @@
 #include <iomanip>
 #include <vector>
 
+using Complex = std::complex<double>;
 
 namespace polyakov_loop{
 /**
@@ -26,7 +27,7 @@ namespace polyakov_loop{
  * @return double
  */
 template <class Group = su2>
-double polyakov_loop(const gaugeconfig<Group> &U,
+Complex polyakov_loop(const gaugeconfig<Group> &U,
                      const std::array<size_t, spacetime_lattice::nd_max - 1> &xi) {
   typedef typename accum_type<Group>::type accum;
 
@@ -39,7 +40,7 @@ double polyakov_loop(const gaugeconfig<Group> &U,
   for (x[0] = 0; x[0] < U.getLt(); x[0]++) {
       P *= U(x, mu);
   }
-  return retrace(P); // taking the real part averages over the 2 orientations
+  return trace(P); // taking the real part averages over the 2 orientations
 }
 
 /**
@@ -50,8 +51,8 @@ double polyakov_loop(const gaugeconfig<Group> &U,
  * @return double
  */
 template <class Group = su2>
- double polyakov_loop_spatial_average(const gaugeconfig<Group> &U) {
-  double ploop = 0.;
+ Complex polyakov_loop_spatial_average(const gaugeconfig<Group> &U) {
+  Complex ploop = 0.;
   //typedef typename accum_type<Group>::type accum;
   const size_t ndims = U.getndims();
 
@@ -65,6 +66,8 @@ template <class Group = su2>
       }
     }
   }
-  return ploop / U.getVolume();
+
+  Complex helpvar = U.getVolume();
+  return ploop / helpvar;
 }
 }

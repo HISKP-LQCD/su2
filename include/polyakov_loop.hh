@@ -24,7 +24,7 @@ namespace polyakov_loop{
  * @tparam Group
  * @param U gauge configuration pointer
  * @param xi spatial components of the position
- * @return double
+ * @return Complex
  */
 template <class Group = su2>
 Complex polyakov_loop(const gaugeconfig<Group> &U,
@@ -44,11 +44,37 @@ Complex polyakov_loop(const gaugeconfig<Group> &U,
 }
 
 /**
+ * @brief Implements the correlator 3.61 in Gattringer Lang by fixing x at zero
+*and averaging over x + r in all space directions
+ * @tparam Group  
+ * @param U configuration pointer
+ * @param r Distance between x and y
+ * @return Complex 
+ */
+template <class Group = su2>
+Complex polyakov_loop_correlator(const gaugeconfig<Group> &U,
+                                const size_t &r){
+                                  const size_t nd_s = spacetime_lattice::nd_max - 1;
+                                  std::array <size_t, nd_s> x = {0,0,0}; // x fixed at zero
+                                  Complex polyakov_loop_x = conj(polyakov_loop(U, x)); //complex conjugate of polyakov loop for x 
+                                  std::array <size_t, nd_s> y = {r, 0,0}; // x +r in x direction
+                                  Complex correlator = 0.;
+
+                                  correlator += polyakov_loop_x*polyakov_loop(U, y);
+                                  y = {0,r,0}; //x + r in y direction
+                                  correlator += polyakov_loop_x*polyakov_loop(U, y);
+                                  y = {0,0,r}; // x + r in z direction
+                                  correlator += polyakov_loop_x * polyakov_loop(U,y);
+                                  correlator /= 3.; // average over all directions
+                                  return correlator;
+                                }
+
+/**
  * @brief spatial average of the Polyakov loop
  * (see eq. 11 of https://journals.aps.org/prd/pdf/10.1103/PhysRevD.103.094515)
  * @tparam Group
  * @param U
- * @return double
+ * @return Complex
  */
 template <class Group = su2>
  Complex polyakov_loop_spatial_average(const gaugeconfig<Group> &U) {

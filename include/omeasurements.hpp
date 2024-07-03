@@ -632,6 +632,53 @@ ofs.close();
     }
   }
 
+/**
+ * @brief saves the correlators of the polyakov loops to file
+ * 
+ * @param U pointer to config
+ * @param S pointer to measure params
+ * @param i index of configuration 
+ */
+ template <class Group, class sparams>
+  void meas_correlator_polyakov_pot(const gaugeconfig<Group> &U,
+                                    const sparams &S,
+                                    const size_t &i
+                                    ){
+                                      const size_t rmax = S.polypot.rmax;
+                                      Complex correlator;
+                                      std::ostringstream oss;
+                                      oss << S.res_dir + "/" + S.polypot.subdir +"/";
+                                      fsys::create_directories(fsys::absolute(oss.str()));
+
+                                      oss << "polypot_";
+                                      auto prevw = oss.width(8);
+                                      auto prevf = oss.fill('0');
+                                      oss << i;
+                                      oss.width(prevw);
+                                      oss.fill(prevf);
+
+                                      const std::string path = oss.str();
+                                      std::ofstream ofs(path, std::ios::out);
+
+                                      ofs << "i ";
+                                      for(size_t r= 1; r <= rmax; r++){
+                                        ofs << std::to_string(r) << " ";
+                                      }
+                                      ofs << "\n";
+                                      ofs << i << " ";
+                                      //resultfile.open(filename_polyakov_corr, std::ios::app);
+                                      //resultfile << i;
+                                      for(size_t r = 1; r <= rmax; r++){
+                                        correlator = polyakov_loop::polyakov_loop_correlator(U, r);
+                                        ofs << std::scientific << std::setprecision(16) << std::real(correlator) << " ";
+                                        //resultfile << std::setw(14) << std::scientific << correlator << " ";
+                                      }
+                                      ofs << "\n";
+                                      ofs.close();
+                                      return;
+                                      //resultfile << std::endl;
+                                      //resultfile.close() 
+                                    }
   /**
    * measures the nonplanar wilson loops in temporal and spatial direction
    * writes one line per configuration into the resultfiles.

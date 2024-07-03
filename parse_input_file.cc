@@ -202,6 +202,20 @@ namespace input_file_parsing {
     in.set_InnerTree(state0);    
                                     }
 
+  void parse_polypot_measure(Yp:: inspect_node &in,
+                            const std::vector <std::string> &inner_tree,
+                            gp::measure_polypot &mpparams){
+
+                              const std::vector<std::string> state0 = in.get_InnerTree();
+                              in.dig_deeper(inner_tree);
+                              YAML::Node nd = in.get_outer_node();
+
+                              mpparams.measure_polypot = true;
+                              in.read_opt_verb<std::string>(mpparams.subdir, {"subdir"});
+                              in.read_opt_verb<size_t>(mpparams.rmax, {"rmax"});
+
+                              in.set_InnerTree(state0); 
+                            }
   void parse_retrace_measure(Yp:: inspect_node &in,
                             const std::vector <std::string> &inner_tree,
                             gp::measure_retrace &mpparams){
@@ -347,6 +361,10 @@ namespace input_file_parsing {
 
     if (nd["retrace"]){
       parse_retrace_measure(in, {"retrace"}, mparams.retrace);
+    }
+
+    if (nd["polypot"]){
+      parse_polypot_measure(in, {"polypot"}, mparams.polypot);
     }
 
     if(nd["spatial_polyakov"]){

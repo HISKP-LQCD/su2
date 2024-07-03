@@ -53,6 +53,11 @@ namespace global_parameters {
     std::string subdir = ""; //subdirectory to save the results to
   };
 
+  struct measure_polypot{
+    bool measure_polypot = false; // do the polyakov potential measurement
+    std::string subdir = ""; //subdir to save results
+    size_t rmax = 1; //maximal distance between points
+  };
   struct measure_spatial_polyakov{
     bool measure_spatial_polyakov = false; //true if spatial polyakov measured
     std::string subdir = ""; //subdirectory to save the result to
@@ -148,6 +153,7 @@ namespace global_parameters {
     size_t solver_verbosity = 0; // Verbosity for the solver for the dirac operator
     size_t seed_pf = 97234719; // Seed for the evaluation of the fermion determinant
 
+    measure_polypot polypot; //struct to measure the potential via the polyakov loops
     measure_retrace retrace; //struct for the measure of the realtrace density
     measure_plaquette plaquette; // struct for the measure of the plaquette
     measure_glueball glueball; // struct for the measure of the glueball

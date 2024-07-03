@@ -438,6 +438,13 @@ public:
       }
       omeasurements::meas_spatial_polyakov(U, i, omeas);
     }
+
+    if (omeas.polypot.measure_polypot){
+      if ((*this).omeas.verbosity > 0){
+        std::cout << "## calculating potential from Polyakov loops \n";
+      }
+      omeasurements::meas_correlator_polyakov_pot(U, omeas, i);
+    }
     //gp::metropolis mparams;
     if (omeas.retrace.measure_retrace) {
       if ((*this).omeas.verbosity > 0){

@@ -40,7 +40,7 @@ Complex polyakov_loop(const gaugeconfig<Group> &U,
   for (x[0] = 0; x[0] < U.getLt(); x[0]++) {
       P *= U(x, mu);
   }
-  return trace(P); // taking the real part averages over the 2 orientations
+  return trace(P); // taking the rtrace part averages over the 2 orientations
 }
 
 /**

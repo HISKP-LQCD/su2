@@ -35,7 +35,7 @@ public:
 
 		std::string omeas_counter_file = (*this).omeas.res_dir + "/omeas_counter.txt";
     if ((*this).omeas.restart){
-			std::ifstream omeas_counter(boost::filesystem::absolute(omeas_counter_file));
+			boost::filesystem::ifstream omeas_counter(boost::filesystem::absolute(omeas_counter_file));
       omeas_counter >> (*this).omeas.icounter;
       omeas_counter.close();
     }

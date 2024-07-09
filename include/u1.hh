@@ -44,7 +44,7 @@ public:
 
   void print() {
     std::cout << "---\n";
-    std::cout << std::exp(a * std::complex(0.0, 1.0)) << "\n";
+    std::cout << std::exp(a * std::complex<double>(0.0, 1.0)) << "\n";
     std::cout << "---\n";
   }
 

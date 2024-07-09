@@ -110,5 +110,5 @@ inline adjointsu3<Float> operator*(const Float &x, const adjointsu3<Float> &A) {
   for (size_t i = 0; i < 8; i++) {
     arr[i] *= x;
   }
-  return adjointsu3(arr);
+  return adjointsu3<Float>(arr);
 }

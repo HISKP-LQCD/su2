@@ -1,0 +1,57 @@
+geometry:
+  L: 8
+  T: 8
+  ndims: 4
+metropolis:
+  gaugemass: 0.00
+  do_mcmc: true
+  conf_dir: ./confs/
+  n_meas: 1000
+  do_gaugetrafo: false
+  N_save: 15
+  N_trafo: 1
+  N_hit: 11
+  delta: 0.1
+  restart_condition: cold
+  lenghty_conf_name: false
+hmc:
+  do_mcmc: false
+  seed: 93746
+  n_save: 10
+  n_meas: 20
+  restart_condition: hot
+  configname: ''
+  lenghty_conf_name: false
+  conf_dir: ./confs/
+integrator:
+  name: leapfrog
+  N_rev: 0
+  n_steps: 50
+  tau: 1.0
+  exponent: 0
+monomials:
+  gauge:
+    beta: 1.2
+    anisotropic:
+      xi: 1.0
+omeas:
+  res_dir: ./omeas/
+  verbosity: 1
+  icounter: 0
+  nstep: 15
+  n_meas: 1000
+  plaquette:
+    subdir: plaquette/
+    spatial: false
+    bc: periodic
+  retrace:
+    subdir: retrace/
+  Wloop: false
+  spatial_polyakov:
+    subdir: spatial_polyakov/
+  polypot:
+    subdir: polypot
+    rmax: 15
+  potential:
+    potentialplanar: false
+    potentialnonplanar: false

@@ -78,7 +78,7 @@ namespace staggered {
       }
       eta[0] *= -1;
     }
-    return std::pair(D, col_idx);
+    return std::pair<Float *, size_t *>(D, col_idx);
   }
 
 } // namespace staggered

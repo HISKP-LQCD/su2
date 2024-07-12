@@ -11,6 +11,7 @@ parser.add_argument('-stepsize', help="the step size in the gauge masses", type=
 parser.add_argument('-o', "--outputfolder", help = "the folder to save the outputfiles in")
 parser.add_argument('-op', "--outputfolder_plaquettes", help = "The output folder for the calculated plaquettes")
 parser.add_argument('-osp', "--outputfolder_polyakov", help = "the outputfolder for the spatially averaged polyakov loops")
+parser.add_argument('-opol', "--outputfolder_polypot", help= "outputfolder for the polyakov loop correlator")
 args = parser.parse_args()
 
 ### iterate over all wanted gaugemasses ###
@@ -34,5 +35,6 @@ while i < args.numit:
     #os.system("python3 ~/code/su2/hadron/retrace.py -f " + str(args.inputfile) + "-o " + str(args.outputfolder))
     #os.system("python3 ~/code/su2/hadron/plaquette.py -f " + str(args.inputfile) + "--outputfolder" + str(args.outputfolder))
     os.system(f"python3 ~/code/su2/hadron/average_polyakov_loop.py -f {str(args.inputfile)} -o {str(args.outputfolder_polyakov)} -append_gaugemass True")
-    os.system(f"mv omeas/result3p1d.u1potential.rotated.Nt16.Ns16.b3.000000.xi1.000000.nape0.alpha1.000000coarsedistance  potential_files/result3p1d.u1potential.rotated.Nt16.Ns16.b3.000000.xi1.000000.nape0.alpha1.000000coarsedistance_{str(args.startmass + i*args.stepsize)}")
+    os.system(f"python3 ~/code/su2/hadron/polypot.py -f {str(args.inputfile)} -o {str(args.outputfolder_polypot)} -append_gaugemass True")
+    #os.system(f"mv omeas/result3p1d.u1potential.rotated.Nt16.Ns16.b3.000000.xi1.000000.nape0.alpha1.000000coarsedistance  potential_files/result3p1d.u1potential.rotated.Nt16.Ns16.b3.000000.xi1.000000.nape0.alpha1.000000coarsedistance_{str(args.startmass + i*args.stepsize)}")
     i += 1

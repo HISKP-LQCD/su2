@@ -51,8 +51,8 @@ def hadronize(name):
     ####
     n_conf_old = len(file_index_old)
     print("Reading old data if present")
-    df_new = pd.DataFrame(np.zeros(shape=(1, 2)),
-                          columns=["i", "polyakov"], index=["remove"])
+    df_new = pd.DataFrame(np.zeros(shape=(1, 3)),
+                          columns=["i", "polyreal", "polyimag"], index=["remove"])
     df_new = df_new.astype({"i": int})
     if n_conf_old > 0:
         path_old = d2+"/"+name+".dat"
@@ -69,15 +69,15 @@ def hadronize(name):
         path_i = file_names[i_f]
         print(i_f, path_i)
         idx_i = file_index[i_f]
-        df_i = pd.read_csv(path_i, sep=" ")["polyakov"]
+        df_i = pd.read_csv(path_i, sep=" ")[["polyreal", "polyimag"]]
         arr1 = df_i.to_numpy()
         if idx_i in file_index_old:
             # removing old configuration
             df_new = df_new[df_new["i"] != idx_i]
         ####
-        df1 = pd.DataFrame(arr1).transpose()
+        df1 = pd.DataFrame(arr1)
         df1.insert(0, "i", idx_i)
-        df1.columns = ["i", "polyakov"]
+        df1.columns = ["i", "polyreal", "polyimag"]
         # update new array with the new dataT+1
         df_new = pd.concat([df_new, df1])
         ####

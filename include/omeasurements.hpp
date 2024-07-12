@@ -231,10 +231,10 @@ oss.fill(prevf);
 const std::string path = oss.str();
 std::ofstream ofs(path, std::ios::out);
 
-ofs << "i polyakov \n";
+ofs << "i polyreal polyimag \n";
 
 const Complex spatial_polyakov = polyakov_loop::polyakov_loop_spatial_average(U);
-ofs << i << std::scientific << std::setprecision(16) << " " << spatial_polyakov << "\n";
+ofs << i << std::scientific << std::setprecision(16) << " " << std::real(spatial_polyakov) << " " << std::imag(spatial_polyakov) << "\n";
 ofs.close();
 }
   /**

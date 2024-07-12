@@ -61,11 +61,11 @@ Complex polyakov_loop_correlator(const gaugeconfig<Group> &U,
                                   Complex correlator = 0.;
 
                                   correlator += polyakov_loop_x*polyakov_loop(U, y);
-                                  //y = {0,r,0}; //x + r in y direction
-                                  //correlator += polyakov_loop_x*polyakov_loop(U, y);
-                                  //y = {0,0,r}; // x + r in z direction
-                                  //correlator += polyakov_loop_x * polyakov_loop(U,y);
-                                  //correlator /= 3.; // average over all directions
+                                  y = {0,r,0}; //x + r in y direction
+                                  correlator += polyakov_loop_x*polyakov_loop(U, y);
+                                  y = {0,0,r}; // x + r in z direction
+                                  correlator += polyakov_loop_x * polyakov_loop(U,y);
+                                  correlator /= 3.; // average over all directions
                                   return correlator;
                                 }
 

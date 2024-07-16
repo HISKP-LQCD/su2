@@ -88,8 +88,6 @@ public:
     for (size_t i = 0; i < n_live; i++) {
       (*this).indices[i] = int(conf_n_live(i, 0));
       Pi[i] = conf_n_live(i, 1);
-
-      // std::cout << i << " " << Pi[i] << "\n";
     }
     in_file.close();
 
@@ -188,16 +186,16 @@ public:
       (*this).indices.push_back(i_conf);
       // saving the new configuration
       U_i.save(this->get_path_conf(i_conf));
-    }
 
-    std::cout << "## Saving final configuration of n_live points\n";
-    (*this).os_nlive << "i P" << std::endl;
-    for (size_t i = 0; i < n_live; i++) {
-      (*this).os_nlive << (*this).indices[i] << " " << Pi[i] << std::endl;
-    }
+      std::cout << "## Saving final configuration of n_live points\n";
+      (*this).os_nlive << "i P" << std::endl;
+      for (size_t i = 0; i < n_live; i++) {
+        (*this).os_nlive << (*this).indices[i] << " " << Pi[i] << std::endl;
+      }
 
-    std::ofstream icounter((*this).sparams.conf_dir + "/icounter.txt");
-    icounter << (i_last + n_samples);
-    icounter.close();
+      std::ofstream icounter((*this).sparams.conf_dir + "/icounter.txt");
+      icounter << (i_last + n_samples);
+      icounter.close();
+    }
   }
 };

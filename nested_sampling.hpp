@@ -102,15 +102,18 @@ public:
     if ((*this).sparams.continue_run == true) {
       (*this).os.open(output_file, std::ios::app);
       // check if there is a saved configuration for the n_live points
+      check_file_exists(path_nlive_conf, __func__);
     } else {
       (*this).os.open(output_file, std::ios::out);
+
+      // opening the file for the last n_live points      
+      //(*this).os_nlive.open(path_nlive_conf, std::ios::out);
+      
     }
-    // opening the file for the last n_live points
-    check_file_exists(path_nlive_conf, __func__);
 
     // scientific notation's precision
     (*this).os << std::scientific << std::setprecision(16);
-    (*this).os_nlive << std::scientific << std::setprecision(16);
+    // (*this).os_nlive << std::scientific << std::setprecision(16);
   }
 
   std::string get_path_conf(const int &i) const {
@@ -191,6 +194,7 @@ public:
 
       std::cout << "## Saving final configuration of n_live points\n";
       (*this).os_nlive.open(path_nlive_conf, std::ios::out);
+      (*this).os_nlive << std::scientific << std::setprecision(16);
       (*this).os_nlive << "i P" << std::endl;
       for (size_t k = 0; k < n_live; k++) {
         (*this).os_nlive << (*this).indices[k] << " " << Pi[k] << std::endl;

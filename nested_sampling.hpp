@@ -64,16 +64,16 @@ public:
       (*this).U.save(path_i);
 
       const double pi = omeasurements::get_retr_plaquette_density((*this).U, "periodic");
-      std::cout << pi << "\n";
+      std::cout << pi << std::endl;
       Pi[i] = pi;
       (*this).indices[i] = i;
     }
-    std::cout << "---\n";
+    std::cout << "---" << std::endl;
     return Pi;
   }
 
   std::vector<double> read_nlive_conf() {
-    std::cout << "## Reading old n_live points from " << path_nlive_conf << "\n";
+    std::cout << "## Reading old n_live points from " << path_nlive_conf << std::endl;
     const int n_live = (*this).sparams.n_live;
     check_file_exists(path_nlive_conf, __func__);
     std::vector<double> Pi(n_live);
@@ -83,8 +83,8 @@ public:
     const char delim = ' ';
     xt::xarray<double> conf_n_live = xt::load_csv<double>(in_file, delim, 1);
 
-    std::cout << "Reading the following configuration\n";
-    std::cout << conf_n_live << "\n";
+    std::cout << "Reading the following configuration" << std::endl;
+    std::cout << conf_n_live << std::endl;
     for (size_t i = 0; i < n_live; i++) {
       (*this).indices[i] = int(conf_n_live(i, 0));
       Pi[i] = conf_n_live(i, 1);
@@ -106,8 +106,8 @@ public:
       (*this).os.open(output_file, std::ios::out);
     }
     // opening the file for the last n_live points
-    // check_file_exists(path_nlive_conf, __func__);
-    (*this).os_nlive.open(path_nlive_conf, std::ios::out);
+    check_file_exists(path_nlive_conf, __func__);
+
     // scientific notation's precision
     (*this).os << std::scientific << std::setprecision(16);
     (*this).os_nlive << std::scientific << std::setprecision(16);
@@ -140,7 +140,7 @@ public:
     } else {
       std::cout << "## Initializing n_live points\n";
       Pi = init_nlive(n_live, seed);
-      i_last = n_live;
+      i_last = 0; //n_live;
     }
 
     this->open_output_data();
@@ -151,21 +151,23 @@ public:
     for (size_t i = 0; i < n_samples; i++) {
       const int i_conf = i_last + i; // configuration index
       // finding the minimum plaquette and appending it to the list
-      const size_t i_min =
-        std::distance(Pi.begin(), std::min_element(Pi.begin(), Pi.end()));
+      auto P_min_element = std::min_element(Pi.begin(), Pi.end());
+      const size_t i_min = std::distance(Pi.begin(), P_min_element);
       const double Pmin = Pi[i_min];
 
       // index of dead configuration
       const int i_dead_conf = (*this).indices[i_min];
-      (*this).os << i_dead_conf << " " << std::scientific << std::setprecision(16) << Pmin
-                 << "\n";
-      std::cout << i_dead_conf << " " << std::scientific << std::setprecision(16) << Pmin
-                << "\n";
+      ((*this).os) << i_dead_conf << " ";
+      ((*this).os) << std::scientific << std::setprecision(16) << Pmin << std::endl;
+      std::cout << i_dead_conf << " ";
+      std::cout << std::scientific << std::setprecision(16) << Pmin << std::endl;
+
       Pi.erase(Pi.begin() + i_min); // removing that element
       (*this).indices.erase((*this).indices.begin() + i_min);
       if ((*this).sparams.delete_dead_confs) {
         std::remove(this->get_path_conf(i_dead_conf).c_str());
       }
+      
       // drawing a random element from the remained configurations
       // random number generator
       std::mt19937 engine;
@@ -188,13 +190,15 @@ public:
       U_i.save(this->get_path_conf(i_conf));
 
       std::cout << "## Saving final configuration of n_live points\n";
+      (*this).os_nlive.open(path_nlive_conf, std::ios::out);
       (*this).os_nlive << "i P" << std::endl;
-      for (size_t i = 0; i < n_live; i++) {
-        (*this).os_nlive << (*this).indices[i] << " " << Pi[i] << std::endl;
+      for (size_t k = 0; k < n_live; k++) {
+        (*this).os_nlive << (*this).indices[k] << " " << Pi[k] << std::endl;
       }
+      (*this).os_nlive.close();
 
       std::ofstream icounter((*this).sparams.conf_dir + "/icounter.txt");
-      icounter << (i_last + n_samples);
+      icounter << (i_last + i);
       icounter.close();
     }
   }

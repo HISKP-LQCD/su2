@@ -106,9 +106,8 @@ public:
     } else {
       (*this).os.open(output_file, std::ios::out);
 
-      // opening the file for the last n_live points      
+      // opening the file for the last n_live points
       //(*this).os_nlive.open(path_nlive_conf, std::ios::out);
-      
     }
 
     // scientific notation's precision
@@ -143,7 +142,7 @@ public:
     } else {
       std::cout << "## Initializing n_live points\n";
       Pi = init_nlive(n_live, seed);
-      i_last = 0; //n_live;
+      i_last = n_live;
     }
 
     this->open_output_data();
@@ -165,12 +164,15 @@ public:
       std::cout << i_dead_conf << " ";
       std::cout << std::scientific << std::setprecision(16) << Pmin << std::endl;
 
-      Pi.erase(Pi.begin() + i_min); // removing that element
+      // removing that element
+      Pi.erase(Pi.begin() + i_min);
       (*this).indices.erase((*this).indices.begin() + i_min);
+
       if ((*this).sparams.delete_dead_confs) {
+        // removing dead configuration
         std::remove(this->get_path_conf(i_dead_conf).c_str());
       }
-      
+
       // drawing a random element from the remained configurations
       // random number generator
       std::mt19937 engine;
@@ -180,6 +182,7 @@ public:
       const double Prand = Pi[ii_rand]; // value of the plaquette
       const size_t i_rand = (*this).indices[ii_rand]; // index of the configuration
       gaugeconfig<Group> U_i = (*this).U; // configuration corresponding to that index
+
       U_i.load(this->get_path_conf(i_rand), false, true);
 
       // applying n_sweeps_tot sweeps to this configuration

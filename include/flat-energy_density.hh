@@ -61,6 +61,8 @@ namespace flat_spacetime {
                       bool cloverdef = true,
                       const bool &ss = false) {
     const size_t mu_start = bool(ss);
+    const double ndims_fact =
+      spacetime_lattice::num_pLloops_half(U.getndims() - mu_start);
 
     res = 0.;
     Q = 0.;
@@ -151,7 +153,7 @@ namespace flat_spacetime {
     }
     // now we need to devide by 2, but we get a factor of two since we only
     // averaged mu < nu
-    res = -res / U.getVolume();
+    res = -res / U.getVolume() / ndims_fact;
     // averaged over four plaquette Wilson loops 1./4./4.
     if (cloverdef) {
       res /= 16.;

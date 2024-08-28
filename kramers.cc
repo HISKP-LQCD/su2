@@ -66,13 +66,20 @@ int main(int ac, char *av[]) {
 
   gaugeconfig<su2> U(gparams.Lx, gparams.Ly, gparams.Lz, gparams.Lt, gparams.ndims,
                      gparams.beta);
-  if (gparams.restart) {
+  if (gparams.restart_condition == "read") {
     err = U.load(gparams.configfilename);
     if (err != 0) {
       return err;
     }
   } else {
-    hotstart(U, gparams.seed, gparams.heat);
+    double g_heat = -1.0;
+    if (gparams.restart_condition == "hot") {
+      g_heat = 1.0;
+    } else if (gparams.restart_condition == "cold") {
+      g_heat = 0.0;
+    }
+
+    hotstart(U, gparams.seed, g_heat);
   }
   // Molecular Dynamics parameters
   md_params mdparams(n_steps, tau);

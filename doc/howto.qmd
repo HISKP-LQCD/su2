@@ -1,8 +1,4 @@
----
-output: html_document
----
-
-## Program execution
+## How to use the `su2` library
 
 The `main-u1.cpp` program works using an input file `main.input` as follows:
 
@@ -48,7 +44,7 @@ The parameters parsed in the `hmc` block are the following. Further details are 
 
 - `n_meas`
 - `do_mcmc`
-- `restart` and `heat` (incompatible with each other)
+- `restart_condition`
 - `seed`
 - `configname`
 - `conf_dir`

@@ -247,61 +247,68 @@ namespace io {
     }
   } // namespace measure
 
+  const std::string g_nconf_counter = "nconf_counter.txt"; // global variable: name of file
 
-    std::string g_nconf_counter = "nconf_counter.txt"; // global variable: name of file
-
+  namespace hmc {
     std::string get_header(const std::string &sep = " ") {
       std::stringstream ss; // header: column names in the io
-      ss << "i" << sep << "getaccept" << sep << "E" << sep << "dH" << sep << "rho"
-         << sep << "ddH" << sep << "Q"
+      ss << "i" << sep << "getaccept" << sep << "E" << sep << "dH" << sep << "rho" << sep
+         << "ddH" << sep << "Q"
+         << "\n";
+      return ss.str();
+    }
+  } // namespace hmc
+
+    std::string get_header_1(const std::string &sep = " ") {
+      std::stringstream ss; // header: column names in the io
+      ss << "i" << sep << "E" << sep << "Q" << sep << "E_ss" << sep << "Q_ss" << sep
          << "\n";
       return ss.str();
     }
 
-    /**
-     * @brief index and path of the last saved configuration
-     *
-     * @param conf_dir directory with nconf_counter.txt inside
-     * @return std::array<std::string, 2> {"i","/path/to/conf.i"}
-     */
-    std::vector<std::string> read_nconf_counter(const std::string &conf_dir) {
-      const std::string input_file = conf_dir + g_nconf_counter;
+  /**
+   * @brief index and path of the last saved configuration
+   *
+   * @param conf_dir directory with nconf_counter.txt inside
+   * @return std::array<std::string, 2> {"i","/path/to/conf.i"}
+   */
+  std::vector<std::string> read_nconf_counter(const std::string &conf_dir) {
+    const std::string input_file = conf_dir + "/" + g_nconf_counter;
 
-      if (!boost::filesystem::exists(input_file)) {
-        std::cerr << "Error from " << __func__ << "\n";
-        std::cerr << input_file << ": no such file or directory. Aborting.\n";
-        std::abort();
-      }
-
-      std::ifstream nconf_counter(input_file);
-      std::string line;
-      std::getline(nconf_counter, line); // 1st line is just a header
-      std::getline(nconf_counter, line);
-      nconf_counter.close();
-
-      std::vector<std::string> v;
-      boost::split(v, line, boost::is_any_of(" "));
-      return {v[0], v[1], v[2]};
+    if (!boost::filesystem::exists(input_file)) {
+      std::cerr << "Error from " << __func__ << "\n";
+      std::cerr << input_file << ": no such file or directory. Aborting.\n";
+      std::abort();
     }
 
-    /**
-     * @brief saving the index and path of the last gauge configuration
-     *
-     * @param conf_dir directory containing the configurations
-     * @param i trajectory index of the last configuration
-     * @param path_conf full path to the last configuration
-     */
-    void update_nconf_counter(const std::string &conf_dir,
-                              const double &heat,
-                              const size_t &i,
-                              const std::string &path_conf) {
-      // saving index of the last configuration
-      std::ofstream nconf_counter;
-      nconf_counter.open(conf_dir + g_nconf_counter, std::ios::out);
-      nconf_counter << "heat i path_conf\n";
-      nconf_counter << heat << " " << i << " " << path_conf;
-      nconf_counter.close();
-    }
+    std::ifstream nconf_counter(input_file);
+    std::string line;
+    std::getline(nconf_counter, line); // 1st line is just a header
+    std::getline(nconf_counter, line);
+    nconf_counter.close();
 
+    std::vector<std::string> v;
+    boost::split(v, line, boost::is_any_of(" "));
+    return {v[0], v[1], v[2]};
+  }
+
+  /**
+   * @brief saving the index and path of the last gauge configuration
+   *
+   * @param conf_dir directory containing the configurations
+   * @param i trajectory index of the last configuration
+   * @param path_conf full path to the last configuration
+   */
+  void update_nconf_counter(const std::string &conf_dir,
+                            const double &heat,
+                            const size_t &i,
+                            const std::string &path_conf) {
+    // saving index of the last configuration
+    std::ofstream nconf_counter;
+    nconf_counter.open(conf_dir + "/" + g_nconf_counter, std::ios::out);
+    nconf_counter << "heat i path_conf\n";
+    nconf_counter << heat << " " << i << " " << path_conf;
+    nconf_counter.close();
+  }
 
 } // namespace io

@@ -39,6 +39,7 @@ configure_file(
   
   include_directories(${CMAKE_SOURCE_DIR}/)
   include_directories(${CMAKE_SOURCE_DIR}/include/)
+  include_directories(${CMAKE_SOURCE_DIR}/fermions/)
   include_directories(${CMAKE_BINARY_DIR}/generated/)
   
   
@@ -63,6 +64,8 @@ configure_file(
   if(${HIGHFIVE_FORMAT})
     find_package(HighFive REQUIRED)
   endif()
+
+  find_package (Eigen3 3.3 REQUIRED NO_MODULE)
   
 # We could just have two `add_executable` blocks listing almost all source
 # files. However, CMake would then compile the source files twice, once for
@@ -95,7 +98,7 @@ add_executable(test-groups test.cc)
 add_executable(scaling scaling.cc)
 add_executable(try tryreduce.cc)
 
-set(test_progs "links" "smearing" "yaml")
+set(test_progs "links" "smearing" "yaml" "dirac")
 
 if(${HIGHFIVE_FORMAT})
   set(test_progs ${test_progs} "h5-gen" "h5-dump")
@@ -128,6 +131,9 @@ foreach(target u1-main su2-main su3-main su2-kramers test-groups scaling try ${t
   else()
     target_link_libraries(${target} su2 "-lboost_program_options -lboost_filesystem -lboost_system")
   endif()
+
+  target_link_libraries (${target} Eigen3::Eigen)
+
 endforeach(target)
 
 # installing 

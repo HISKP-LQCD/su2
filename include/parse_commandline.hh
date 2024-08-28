@@ -25,8 +25,7 @@ public:
   size_t n_meas = 10; // total number of sweeps
   size_t icounter = 0; // initial counter for updates
   size_t seed = 13526463; // PRNG seed
-  double heat = 1.0; // randomness of the initial config, 1: hot, 0: cold
-  bool restart = false; // restart from an existing configuration
+  std::string restart_condition = "hot"; // restart from an existing configuration
   bool acceptreject = true; // use accept-reject
   bool anisotropic = false; // use anisotropic lattice
   std::string configfilename = ""; // configuration filename used in case of restart

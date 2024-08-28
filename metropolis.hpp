@@ -1,7 +1,7 @@
 /**
- * @file metropolis-u1.hpp
+ * @file metropolis.hpp
  * @author Simone Romiti (simone.romiti@uni-bonn.de)
- * @brief class for Metropolis Algorithm for U(1) gauge theory
+ * @brief class for Metropolis Algorithm
  * @version 0.1
  * @date 2022-09-01
  *
@@ -9,9 +9,11 @@
  *
  */
 
+#include "errors.hpp"
 #include "base_program.hpp"
 
-template <class Group> class metropolis_algo : public base_program<Group, gp::metropolis> {
+template <class Group>
+class metropolis_algo : public base_program<Group, gp::metropolis> {
 private:
   std::vector<double> rate = {0., 0.};
 
@@ -46,6 +48,14 @@ public:
     }
     // set things up for parallel computing in sweep
     (*this).threads = omp_get_max_threads();
+    // it does not make sense to have more threads than time slices
+    if ((*this).pparams.Lt < (*this).threads) {
+      std::cerr << "It does not make sense to have more threads than time slices!"
+                << std::endl;
+      omp_set_num_threads((*this).pparams.Lt);
+      (*this).threads = (*this).pparams.Lt;
+      std::cerr << "Setting number of threads to T." << std::endl;
+    }
 #else
     (*this).threads = 1;
 #endif
@@ -66,24 +76,14 @@ public:
                                    pparams.anisotropic);
     }
     if (pparams.rotating_frame) {
-      spacetime_lattice::fatal_error("Rotating metric not supported yet.", __func__);
+      fatal_error("Rotating metric not supported yet.", __func__);
       return {};
       // return rotating_spacetime::sweep(U, pparams.Omega, engines, delta, N_hit,
       //                                  pparams.beta, pparams.xi,
       //                                  pparams.anisotropic);
     } else {
-      spacetime_lattice::fatal_error("Invalid metric.", __func__);
+      fatal_error("Invalid metric.", __func__);
       return {};
-    }
-  }
-
-  void open_output_data() {
-    if ((*this).g_icounter == 0) {
-      (*this).os.open((*this).sparams.conf_dir + "/output.u1-metropolis.data",
-                      std::ios::out);
-    } else {
-      (*this).os.open((*this).sparams.conf_dir + "/output.u1-metropolis.data",
-                      std::ios::app);
     }
   }
 
@@ -91,33 +91,25 @@ public:
    * @brief do the i-th sweep of the metropolis algorithm
    *
    * @param i trajectory index
-   * @param inew
+   * set random engine such that an overlap and double use of seeds cannot occur
    */
-  void do_sweep(const size_t &i, const size_t &inew) {
+  void do_sweep(const size_t &i) {
+    const size_t n_threads = (*this).threads;
     if ((*this).sparams.do_mcmc) {
-      std::vector<std::mt19937> engines((*this).threads);
-      for (size_t engine = 0; engine < (*this).threads; engine += 1) {
-        engines[engine].seed((*this).sparams.seed + i + engine);
+      std::vector<std::mt19937> engines(n_threads);
+      for (size_t i_engine = 0; i_engine < n_threads; i_engine++) {
+        engines[i_engine].seed((*this).sparams.seed + i * (*this).pparams.Lt + i_engine);
       }
+
+      this->output_line(i);
 
       rate += this->sweep((*this).pparams, (*this).U, engines, (*this).sparams.delta,
                           (*this).sparams.N_hit, (*this).pparams.beta, (*this).pparams.xi,
                           (*this).pparams.anisotropic);
 
-      double E = 0., Q = 0.;
-      std::cout << inew;
-      (*this).os << inew;
-      for (bool ss : {false, true}) {
-        this->energy_density((*this).pparams, (*this).U, E, Q, false, ss);
-        std::cout << " " << std::scientific << std::setprecision(15) << E << " " << Q;
-        (*this).os << " " << std::scientific << std::setprecision(15) << E << " " << Q;
-      }
-      std::cout << "\n";
-      (*this).os << "\n";
-
-      if (inew > 0 && (inew % (*this).sparams.N_save) == 0) {
+      if (i > 0 && (i % (*this).sparams.N_save) == 0) {
         std::ostringstream oss_i;
-        oss_i << (*this).conf_path_basename << "." << inew << std::ends;
+        oss_i << (*this).conf_path_basename << "." << i << std::ends;
         ((*this).U).save(oss_i.str());
       }
     }
@@ -127,6 +119,7 @@ public:
 
   // save acceptance rates to additional file to keep track of measurements
   void save_acceptance_rates() {
+    const size_t n_threads = (*this).threads;
     if ((*this).sparams.do_mcmc) {
       std::cout << "## Acceptance rate " << rate[0] / double((*this).sparams.n_meas)
                 << " temporal acceptance rate "
@@ -137,15 +130,11 @@ public:
                               << rate[1] / double((*this).sparams.n_meas) << " "
                               << (*this).pparams.beta << " " << (*this).pparams.Lx << " "
                               << (*this).pparams.Lt << " " << (*this).pparams.xi << " "
-                              << (*this).sparams.delta << " " << (*this).sparams.heat
-                              << " " << (*this).threads << " " << (*this).sparams.N_hit
-                              << " " << (*this).sparams.n_meas << " "
-                              << (*this).sparams.seed << " " << std::endl;
+                              << (*this).sparams.delta << " " << (*this).g_heat
+                              << " " << n_threads << " " << (*this).sparams.N_hit << " "
+                              << (*this).sparams.n_meas << " " << (*this).sparams.seed
+                              << " " << std::endl;
       (*this).acceptancerates.close();
-
-      std::ostringstream oss;
-      oss << (*this).conf_path_basename << ".final" << std::ends;
-      ((*this).U).save((*this).sparams.conf_dir + "/" + oss.str());
     }
     return;
   }
@@ -155,31 +144,32 @@ public:
     this->init_gauge_conf_mcmc();
     this->open_output_data();
     this->set_omp_threads();
-    if ((*this).sparams.do_omeas){
-        this->set_potential_filenames();
+    if ((*this).sparams.do_omeas) {
+      this->set_potential_filenames();
     }
 
-    (*this).os << "i E Q E_ss Q_ss\n";
-    size_t i_min = (*this).g_icounter;
-    size_t i_max = (*this).sparams.n_meas * ((*this).threads) + (*this).g_icounter;
-    size_t i_step = (*this).threads;
+    if ((*this).g_icounter == 0) {
+      // header: column names in the output
+      std::string head_str = io::get_header_1(" ");
+      std::cout << head_str;
+      (*this).os << head_str;
+    }
+
+    const size_t i_min = (*this).g_icounter;
+    const size_t i_max = (*this).sparams.n_meas + (*this).g_icounter;
     /**
      * do measurements:
      * sweep: do N_hit Metropolis-Updates of every link in the lattice
      * calculate plaquette, spacial plaquette, energy density with and without cloverdef
      * and write to stdout and output-file save every nave configuration
      * */
-    for (size_t i = i_min; i < i_max; i += i_step) {
-      // inew counts loops, loop-variable needed to have one RNG per thread with
-      // different seeds for every measurement
-      size_t inew = (i - (*this).g_icounter) / (*this).threads + (*this).g_icounter;
-
-      this->do_sweep(i, inew);
+    for (size_t i = i_min; i < i_max; i++) {
+      this->do_sweep(i);
       bool do_omeas =
-        ((*this).sparams.do_omeas && inew != 0 && (inew % (*this).sparams.N_save) == 0);
-      this->after_MCMC_step(inew, do_omeas);
+        ((*this).sparams.do_omeas && i != 0 && (i % (*this).sparams.N_save) == 0);
+      this->after_MCMC_step(i, do_omeas);
     }
-
     this->save_acceptance_rates();
+    this->save_final_conf();
   }
 };

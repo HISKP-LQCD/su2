@@ -15,6 +15,7 @@
 #include <random>
 #include <vector>
 
+#include "errors.hpp"
 #include "adjointfield.hh"
 #include "gauge_energy.hpp"
 #include "gaugeconfig.hh"
@@ -344,7 +345,7 @@ namespace staggered {
   spinor_lat<Float, Type> apply_D(const gaugeconfig<_su2> &U,
                                   const Float &m,
                                   const spinor_lat<Float, Type> &psi) {
-    spacetime_lattice::fatal_error("Staggered fermions not supported for SU(2)",
+    fatal_error("Staggered fermions not supported for SU(2)",
                                    __func__);
     return psi;
   }
@@ -353,7 +354,7 @@ namespace staggered {
   spinor_lat<Float, Type> apply_D(const gaugeconfig<_su3> &U,
                                   const Float &m,
                                   const spinor_lat<Float, Type> &psi) {
-    spacetime_lattice::fatal_error("Staggered fermions not supported for SU(3)",
+    fatal_error("Staggered fermions not supported for SU(3)",
                                    __func__);
     return psi;
   }
@@ -401,7 +402,7 @@ namespace staggered {
   spinor_lat<Float, Type> apply_Ddag(const gaugeconfig<_su2> &U,
                                      const Float &m,
                                      const spinor_lat<Float, Type> &psi) {
-    spacetime_lattice::fatal_error("Staggered fermions not supported for SU(2)",
+    fatal_error("Staggered fermions not supported for SU(2)",
                                    __func__);
     return psi;
   }
@@ -410,7 +411,7 @@ namespace staggered {
   spinor_lat<Float, Type> apply_Ddag(const gaugeconfig<_su3> &U,
                                      const Float &m,
                                      const spinor_lat<Float, Type> &psi) {
-    spacetime_lattice::fatal_error("Staggered fermions not supported for SU(3)",
+    fatal_error("Staggered fermions not supported for SU(3)",
                                    __func__);
     return psi;
   }

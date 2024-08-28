@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include "errors.hpp"
 #include "operators.hpp"
 
 namespace glueballs {
@@ -246,7 +247,7 @@ namespace glueballs {
                                           const size_t &r,
                                           const bool &Px,
                                           const bool &spatial = false) {
-    spacetime_lattice::fatal_error("SU(2) not supported yet.", __func__);
+    fatal_error("SU(2) not supported yet.", __func__);
     return std::complex<Float>(0.0);
   }
 

@@ -1,0 +1,16 @@
+## Index
+
+This repository contains routines for numerical simulations of $SU(2)$ and $U(1)$ lattice gauge theories in $d=2,3,4$ dimensions.
+
+Here are some useful links:
+
+- [Notes on the theoretical background](theor_background.qmd)
+- [Installation of the library](install.qmd)
+- [How to use the library](howto.qmd)
+- [Available algorithms and programs](algorithms.qmd)
+- [Data analysis scripts](analysis.qmd)
+- [Notes for developers](development.qmd)
+
+The `test/` folder contains various simple programs implementing the routines of this repository. 
+For further details please look at the `test/README.md` file.
+

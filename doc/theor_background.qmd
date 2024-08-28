@@ -1,11 +1,4 @@
----
-#title: Staggered fermions
-#author: Simone Romiti
-output: html_document
-#bibliography: biblio.bib  
-#csl: 2d-materials.csl
-#link-citations: true
----
+# Theoretical background
 
 ## Staggered fermions
 
@@ -216,6 +209,4 @@ D^{\dagger}$, the above equation leads to:
 = - 2 \operatorname{Re} \left( \chi^{\dagger}  \frac{\partial D}{\partial U_{\mu}(x)} D^{\dagger}  \chi \right)
 \end{equation}
 
-
-### References
 

@@ -474,53 +474,61 @@ namespace omeasurements {
     std::ofstream resultfile;
     //~ //calculate wilsonloops for potential
     if (pparams.ndims == 4) {
-      resultfile.open(filename_fine, std::ios::app);
+      std::ostringstream oss;
       for (size_t t = 1; t <= pparams.Lt * sizeWloops; t++) {
         for (size_t x = 1; x <= pparams.Lx * sizeWloops; x++) {
           loop = wilsonloop_non_planar(U, {t, x, 0, 0});
-          resultfile << std::setw(14) << std::scientific << loop / U.getVolume() << "  ";
+          oss << std::setw(14) << std::scientific << loop / U.getVolume() << "  ";
         }
       }
-      resultfile << i;
-      resultfile << std::endl;
+      oss << i;
+      oss << std::endl;
+      resultfile.open(filename_fine, std::ios::app);
+      resultfile << oss.str();
       resultfile.close();
 
-      resultfile.open(filename_coarse, std::ios::app);
+      oss.str("");
       for (size_t y = 1; y <= pparams.Ly * sizeWloops; y++) {
         for (size_t x = 1; x <= pparams.Lx * sizeWloops; x++) {
           loop = wilsonloop_non_planar(U, {0, x, y, 0});
           loop += wilsonloop_non_planar(U, {0, x, 0, y});
-          resultfile << std::setw(14) << std::scientific << loop / U.getVolume() / 2.0
+          oss << std::setw(14) << std::scientific << loop / U.getVolume() / 2.0
                      << "  ";
         }
       }
-      resultfile << i;
-      resultfile << std::endl;
+      oss << i;
+      oss << std::endl;
+      resultfile.open(filename_coarse, std::ios::app);
+      resultfile << oss.str();
       resultfile.close();
     }
     if (pparams.ndims == 3) {
-      resultfile.open(filename_fine, std::ios::app);
+      std::ostringstream oss;
       for (size_t t = 1; t <= pparams.Lt * sizeWloops; t++) {
         for (size_t x = 1; x <= pparams.Lx * sizeWloops; x++) {
           loop = wilsonloop_non_planar(U, {t, x, 0});
           //~ loop  += wilsonloop_non_planar(U, {t, 0, x});
-          resultfile << std::setw(14) << std::scientific << loop / U.getVolume() << "  ";
+          oss << std::setw(14) << std::scientific << loop / U.getVolume() << "  ";
         }
       }
-      resultfile << i;
-      resultfile << std::endl;
+      oss << i;
+      oss << std::endl;
+      resultfile.open(filename_fine, std::ios::app);
+      resultfile << oss.str();
       resultfile.close();
 
-      resultfile.open(filename_coarse, std::ios::app);
+      oss.str("");
       for (size_t y = 1; y <= pparams.Ly * sizeWloops; y++) {
         for (size_t x = 1; x <= pparams.Lx * sizeWloops; x++) {
           loop = wilsonloop_non_planar(U, {0, x, y});
           //~ loop += wilsonloop_non_planar(U, {0, y, x});
-          resultfile << std::setw(14) << std::scientific << loop / U.getVolume() << "  ";
+          oss << std::setw(14) << std::scientific << loop / U.getVolume() << "  ";
         }
       }
-      resultfile << i;
-      resultfile << std::endl;
+      oss << i;
+      oss << std::endl;
+      resultfile.open(filename_coarse, std::ios::app);
+      resultfile << oss.str();
       resultfile.close();
     }
   }
@@ -545,17 +553,19 @@ namespace omeasurements {
     double loop;
     std::ofstream resultfile;
     size_t maxsizenonplanar = (pparams.Lx < 4) ? pparams.Lx : 4;
-    resultfile.open(filename_nonplanar, std::ios::app);
+      std::ostringstream oss;
     for (size_t t = 0; t <= pparams.Lt * sizeWloops; t++) {
       for (size_t x = 0; x <= maxsizenonplanar; x++) {
         for (size_t y = 0; y <= maxsizenonplanar; y++) {
           loop = wilsonloop_non_planar(U, {t, x, y});
-          resultfile << std::setw(14) << std::scientific << loop / U.getVolume() << "  ";
+          oss << std::setw(14) << std::scientific << loop / U.getVolume() << "  ";
         }
       }
     }
-    resultfile << i;
-    resultfile << std::endl;
+    oss << i;
+    oss << std::endl;
+    resultfile.open(filename_nonplanar, std::ios::app);
+    resultfile << oss.str();
     resultfile.close();
   }
 

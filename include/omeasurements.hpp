@@ -35,6 +35,7 @@
 namespace omeasurements {
 
   namespace fsys = boost::filesystem;
+    using Complex = std::complex<double>;
 
   /**
    * @brief Get the retr plaquette density object
@@ -73,9 +74,8 @@ namespace omeasurements {
           }
         }
       }
-    }
-    else{
-      fatal_error("Illegal periodic boundary conditions:"+bc, __func__ );
+    } else {
+      fatal_error("Illegal periodic boundary conditions:" + bc, __func__);
     }
 
     P /= den; // normalizing
@@ -105,6 +105,41 @@ namespace omeasurements {
     // plaquette density value
     const double P = get_retr_plaquette_density(U, S.plaquette.bc, S.plaquette.spatial);
     ofs << i << std::scientific << std::setprecision(16) << " " << P << "\n";
+    ofs.close();
+
+    return;
+  }
+
+  // measure Polyakov loops
+  template <class Group>
+  Complex get_polyakov_loop(const gaugeconfig<Group> &U, const std::vector<size_t> &x_i) {
+
+    std::vector<size_t> x = {0, x_i[0], x_i[1], x_i[2]};
+
+    Group U0 = U(x, 0);
+    for (size_t t = 1; t < U.getLt(); t++) {
+      x[0] = t;
+      U0 = U0 * U(x, 0);
+    }
+    Complex res = trace(U0);
+
+    return res;
+  }
+
+  // measure Polyakov loops
+  template <class Group>
+  void meas_polyakov(const gaugeconfig<Group> &U, const std::string &output_file) {
+    std::ofstream ofs(output_file, std::ios::out);
+
+    for (size_t x1 = 0; x1 < U.getLx(); x1++) {
+      for (size_t x2 = 0; x2 < U.getLy(); x2++) {
+        for (size_t x3 = 0; x3 < U.getLz(); x3++) {
+          std::vector<size_t> x_i = {x1, x2, x3};
+          const Complex Ploop = get_polyakov_loop(U, x_i);
+          ofs << x1 << " " << x2 << " " << x3 << " " << Ploop << std::endl;
+        }
+      }
+    }
     ofs.close();
 
     return;

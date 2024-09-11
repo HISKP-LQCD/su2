@@ -47,6 +47,12 @@ namespace global_parameters {
     bool anisotropic = false; // use anisotropic lattice
   };
 
+  struct measure_polyakov {
+    bool measure_it = false; // whether to measure the plaquette or not
+
+    std::string subdir = ""; // subdirectory of the online measurements directory
+  };
+
   struct measure_plaquette {
     bool measure_it = false; // whether to measure the plaquette or not
 
@@ -137,11 +143,12 @@ namespace global_parameters {
     size_t solver_verbosity = 0; // Verbosity for the solver for the dirac operator
     size_t seed_pf = 97234719; // Seed for the evaluation of the fermion determinant
 
+    measure_polyakov polyakov; // struct for the measure of the Polyakov loops
     measure_plaquette plaquette; // struct for the measure of the plaquette
     measure_glueball glueball; // struct for the measure of the glueball
     measure_gradient_flow gradient_flow; // struct for the measure of the gradient flow
 
-    bool nested_sampling = false; // measure on confs generated with Nested Sampling
+    // bool nested_sampling = false; // measure on confs generated with Nested Sampling
   };
 
   /* Optional parameters for the hmc*/
@@ -276,6 +283,11 @@ namespace global_parameters {
     bool delete_dead_confs = false; 
 
     bool do_omeas = false; // true when omeasurements are done
+
+    // number of overrelaxation steps when measuring over each configuration
+    // NOTE: each configuration corresponds to an isocontour of the action value in phase space
+    // overrelaxation steps are gauge transformations that make us move along the isocontour
+    size_t n_overrelaxation = 0; 
     measure omeas; // struct for online measurements
   };
 

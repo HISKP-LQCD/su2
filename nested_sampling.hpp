@@ -14,6 +14,9 @@
 #include <random>
 #include <stdio.h>
 
+#include <boost/filesystem.hpp>
+#include <boost/lexical_cast.hpp>
+
 #include <xtensor/xadapt.hpp>
 #include <xtensor/xarray.hpp>
 #include <xtensor/xcsv.hpp>
@@ -119,6 +122,44 @@ public:
     return (*this).conf_path_basename + "." + std::to_string(i);
   }
 
+  void do_omeas_i(const size_t &i) {
+      namespace fsys = boost::filesystem;
+
+    gaugeconfig<Group> U_i = (*this).U;
+
+    if (!(*this).sparams.do_mcmc) { // doing only offline measurements
+      const std::string path_i = get_path_conf(i) + "." + std::to_string(i);
+      int ierrU = U_i.load(path_i);
+
+      if (ierrU == 1) { // cannot load gauge config
+        return; // simply ignore configuration
+      }
+    }
+
+    if ((*this).omeas.polyakov.measure_it) {
+      if ((*this).omeas.verbosity > 0) {
+        std::cout << "## online measuring: Polyakov loop\n";
+      }
+
+      // creating the output directory
+      std::ostringstream oss;
+      oss << (*this).omeas.res_dir + "/" + (*this).omeas.polyakov.subdir << "/";
+      std::string out_dir = oss.str();
+      fsys::create_directories(fsys::absolute(out_dir)); // creating directory
+
+      size_t i_orlx = 0;
+      while (i_orlx < (*this).sparams.n_overrelaxation + 1) {
+        overrelaxation(U_i, 1.0, false);
+
+        std::string output_file = out_dir + "/Ploops." +
+                                  boost::lexical_cast<std::string>(i) + "-" +
+                                  boost::lexical_cast<std::string>(i_orlx);
+        omeasurements::meas_polyakov(U_i, output_file);
+        i_orlx++;
+      }
+    }
+  }
+
   void run(const YAML::Node &nd) {
     this->pre_run(nd);
 
@@ -214,6 +255,15 @@ public:
 
       if (do_omeas) {
         this->do_omeas_i(i_conf);
+        //   this->do_omeas_i(i_conf, U_overrelaxed, file_suffix);
+        //   gaugeconfig<Group> U_overrelaxed = U_i;
+        //   // applying overrelaxation steps: action is unchanged
+        //   for (size_t i_orlx = 0; i_orlx < (*this).sparams.n_overrelaxation; i_orlx++)
+        //   {
+        //   overrelaxation(U_overrelaxed, 1.0, false);
+        //   const std::string file_suffix =
+        //   ".overrelax-"+boost::lexical_cast<bool>(i_orlx);
+        //   }
       }
     }
   }

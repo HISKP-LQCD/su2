@@ -42,7 +42,6 @@
  */
 template <class Group>
 void overrelaxation(gaugeconfig<Group> &U,
-                    const double &beta,
                     const double &xi = 1.0,
                     const bool &anisotropic = false);
 
@@ -51,7 +50,6 @@ void overrelaxation(gaugeconfig<Group> &U,
  */
 template <>
 void overrelaxation(gaugeconfig<u1> &U,
-                    const double &beta,
                     const double &xi,
                     const bool &anisotropic) {
   typedef typename accum_type<u1>::type accum;
@@ -80,7 +78,6 @@ void overrelaxation(gaugeconfig<u1> &U,
 
 template <>
 void overrelaxation(gaugeconfig<su2> &U,
-                    const double &beta,
                     const double &xi,
                     const bool &anisotropic) {
   fatal_error("overrelaxation not implemented for SU(2)!", __func__);
@@ -90,7 +87,6 @@ void overrelaxation(gaugeconfig<su2> &U,
 
 template <>
 void overrelaxation(gaugeconfig<su3> &U,
-                    const double &beta,
                     const double &xi,
                     const bool &anisotropic) {
   fatal_error("overrelaxation not implemented for SU(3)!", __func__);

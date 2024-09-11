@@ -130,7 +130,6 @@ YAML::Node get_cleaned_input_file(running_program &rp, const std::string &input_
       nd.remove("nested_sampling");
     } else {
       nd.remove("monomials");
-      // nd.remove("omeas");
     }
   }
 
@@ -425,12 +424,13 @@ public:
     return;
   }
 
+
   /**
    * @brief online measurements over the i-th trajectory
    *
    * @param i trajectory index
    */
-  void do_omeas_i(const size_t &i) {
+  virtual void do_omeas_i(const size_t &i) {
     const bool flag_i =
       sparams.do_omeas && (i > omeas.icounter) && ((i % omeas.nstep) == 0);
 

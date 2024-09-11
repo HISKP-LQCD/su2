@@ -187,6 +187,19 @@ namespace input_file_parsing {
     }
   }
 
+  void parse_polyakov_measure(Yp::inspect_node &in,
+                              const std::vector<std::string> &inner_tree,
+                              gp::measure_polyakov &mpparams) {
+    const std::vector<std::string> state0 = in.get_InnerTree();
+    in.dig_deeper(inner_tree); // entering the glueball node
+    YAML::Node nd = in.get_outer_node();
+
+    mpparams.measure_it = true;
+    in.read_opt_verb<std::string>(mpparams.subdir, {"subdir"});
+
+    in.set_InnerTree(state0); // reset to previous state
+  }
+
   void parse_plaquette_measure(Yp::inspect_node &in,
                                const std::vector<std::string> &inner_tree,
                                gp::measure_plaquette &mpparams) {
@@ -308,6 +321,11 @@ namespace input_file_parsing {
     in.read_opt_verb<size_t>(mparams.nstep, {"nstep"});
     in.read_opt_verb<size_t>(mparams.n_meas, {"n_meas"});
 
+
+    if (nd["polyakov"]) {
+      parse_polyakov_measure(in, {"polyakov"}, mparams.polyakov);
+    }
+
     if (nd["plaquette"]) {
       parse_plaquette_measure(in, {"plaquette"}, mparams.plaquette);
     }
@@ -402,6 +420,7 @@ namespace input_file_parsing {
     in.read_verb<size_t>(mcparams.n_samples, {"n_samples"});
     in.read_opt_verb<size_t>(mcparams.n_sweeps, {"n_sweeps"});
     in.read_opt_verb<double>(mcparams.delta, {"delta"});
+    in.read_opt_verb<size_t>(mcparams.n_overrelaxation, {"n_overrelaxation"});
 
     in.read_opt_verb<std::string>(mcparams.conf_dir, {"conf_dir"});
     in.read_opt_verb<std::string>(mcparams.conf_basename, {"conf_basename"});

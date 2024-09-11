@@ -76,7 +76,7 @@ public:
   }
 
   void do_overrelaxation() {
-    overrelaxation((*this).U, (*this).pparams.beta, (*this).pparams.xi,
+    overrelaxation((*this).U, (*this).pparams.xi,
                    (*this).pparams.anisotropic);
   }
 

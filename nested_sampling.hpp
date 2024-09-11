@@ -122,6 +122,8 @@ public:
   void run(const YAML::Node &nd) {
     this->pre_run(nd);
 
+    bool do_omeas = (*this).sparams.do_omeas;
+
     const size_t n_live = (*this).sparams.n_live;
     const size_t n_samples = (*this).sparams.n_samples;
     const size_t seed = (*this).sparams.seed;
@@ -147,9 +149,12 @@ public:
 
     this->open_output_data();
 
-    // distrubution of indices after the removal of one of the n_live points
-    // ACHTUNG! right bound is included
+    // distribution of indices after the removal of one of the n_live points
+    // ACHTUNG! right bound is included (it is the c++ syntax)
     std::uniform_int_distribution<> int_dist(0, n_live - 2);
+
+    gaugeconfig<Group> &U_i = (*this).U; // configuration corresponding to that index
+    // sampling n_samples points in the phase space
     for (size_t i = 0; i < n_samples; i++) {
       const int i_conf = i_last + i; // configuration index
       // finding the minimum plaquette and appending it to the list
@@ -181,11 +186,10 @@ public:
       const size_t ii_rand = int_dist(engine);
       const double Prand = Pi[ii_rand]; // value of the plaquette
       const size_t i_rand = (*this).indices[ii_rand]; // index of the configuration
-      gaugeconfig<Group> U_i = (*this).U; // configuration corresponding to that index
 
       U_i.load(this->get_path_conf(i_rand), false, true);
 
-      // applying n_sweeps_tot sweeps to this configuration
+      // applying a minimum of "n_sweeps_tot" sweeps to this configuration
       // to draw another one sampled from the constrained prior
       uniform_sweeps(U_i, Prand, Pmin, engine, delta, n_sweeps_tot);
       const double P_new = omeasurements::get_retr_plaquette_density(U_i, "periodic");
@@ -207,6 +211,10 @@ public:
       std::ofstream icounter((*this).sparams.conf_dir + "/icounter.txt");
       icounter << (i_last + i);
       icounter.close();
+
+      if (do_omeas) {
+        this->do_omeas_i(i_conf);
+      }
     }
   }
 };

@@ -140,6 +140,8 @@ namespace global_parameters {
     measure_plaquette plaquette; // struct for the measure of the plaquette
     measure_glueball glueball; // struct for the measure of the glueball
     measure_gradient_flow gradient_flow; // struct for the measure of the gradient flow
+
+    bool nested_sampling = false; // measure on confs generated with Nested Sampling
   };
 
   /* Optional parameters for the hmc*/

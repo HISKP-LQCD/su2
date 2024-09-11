@@ -130,7 +130,7 @@ YAML::Node get_cleaned_input_file(running_program &rp, const std::string &input_
       nd.remove("nested_sampling");
     } else {
       nd.remove("monomials");
-      nd.remove("omeas");
+      // nd.remove("omeas");
     }
   }
 

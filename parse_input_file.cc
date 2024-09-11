@@ -138,8 +138,7 @@ namespace input_file_parsing {
 
     } else {
       std::cerr << "Error: check your input file. ";
-      std::cerr
-        << "Either you specify L=X=Y=Z or each dimension separately, not both.\n";
+      std::cerr << "Either you specify L=X=Y=Z or each dimension separately, not both.\n";
       std::cerr << "Aborting.\n";
       std::abort();
     }
@@ -655,6 +654,11 @@ namespace input_file_parsing {
       parse_geometry(in, pparams);
       // parse_action<gp::nested_sampling>(in, {}, pparams, mcparams);
       parse_nested_sampling(in, {"nested_sampling"}, mcparams);
+      if (nd["omeas"]) {
+        mcparams.do_omeas = true;
+        mcparams.omeas.conf_dir = mcparams.conf_dir;
+        parse_omeas(in, {"omeas"}, mcparams.omeas);
+      }
 
       in.finalize();
 

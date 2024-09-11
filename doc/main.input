@@ -5,6 +5,20 @@ geometry:
   T : 16
   ndims : 3
 
+
+nested_sampling:
+  do_mcmc: true
+  continue_run: false
+  delete_dead_confs: false
+  n_live: 5
+  n_samples: 1000
+  n_sweeps: 2
+  n_overrelaxation: 10
+  delta: 1.0
+  seed: 1
+  conf_dir: ./confs
+##
+
 metropolis:
   do_mcmc: true
   conf_dir: "./confs/"

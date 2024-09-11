@@ -598,12 +598,12 @@ namespace input_file_parsing {
 
       parse_geometry(in, pparams);
 
-      // beta, xi value from the gauge action
-      in.read_verb<double>(pparams.beta, {"monomials", "gauge", "beta"});
-      if (nd["monomials"]["gauge"]["anisotropic"]) {
-        pparams.anisotropic = true;
-        in.read_opt_verb<double>(pparams.xi, {"monomials", "gauge", "anisotropic", "xi"});
-      }
+      // // beta, xi value from the gauge action
+      // in.read_verb<double>(pparams.beta, {"monomials", "gauge", "beta"});
+      // if (nd["monomials"]["gauge"]["anisotropic"]) {
+      //   pparams.anisotropic = true;
+      //   in.read_opt_verb<double>(pparams.xi, {"monomials", "gauge", "anisotropic", "xi"});
+      // }
 
       if (nd["omeas"]) {
         parse_omeas(in, {"omeas"}, mparams);

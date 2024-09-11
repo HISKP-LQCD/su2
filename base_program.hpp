@@ -83,7 +83,7 @@ struct running_program {
 /**
  * @brief node without conflicting nodes
  * In the input file one may have specified multiple MC algorithms or none (only offline
- * measurements). This function takes the path to theinput file as input and returns a
+ * measurements). This function takes the path to the input file as input and returns a
  * YAML node cleaned and ready to be used.
  *
  * @param rp running program
@@ -125,15 +125,19 @@ YAML::Node get_cleaned_input_file(running_program &rp, const std::string &input_
   }
 
   if (nd["nested_sampling"]) {
-    in.read_verb<bool>(do_nested_sampling, {"nested_sampling", "do_mcmc"});
-    if (!do_nested_sampling) {
-      nd.remove("nested_sampling");
-    } else {
-      nd.remove("monomials");
-    }
+    // in.read_verb<bool>(do_nested_sampling, {"nested_sampling", "do_mcmc"});
+    // if (!do_nested_sampling) {
+    //   nd.remove("nested_sampling");
+    // } else {
+    // }
+    do_nested_sampling =true;
+    nd.remove("monomials");
   }
 
-  do_omeas = bool(nd["omeas"]);
+  // NOTE: offline measurements are handles independently by the NS algorithm class
+  do_omeas = bool(nd["omeas"]) && (!do_nested_sampling); // offline measurements
+
+  // checking that no more than 1 algorithm is running
   std::string err = ""; // error message
   const int flag_algo = int(do_hmc) + int(do_metropolis) +
                         int(do_heatbath_overrelaxation) + int(do_nested_sampling);
@@ -141,7 +145,7 @@ YAML::Node get_cleaned_input_file(running_program &rp, const std::string &input_
     if (flag_algo > 1) { // can run only one algorithm
       err = "ERROR: You can run no more than one MC algorithm.\n";
       throw err;
-    } else if (flag_algo == 0 && !nd["omeas"]["offline"]) {
+    } else if (flag_algo == 0 && !nd["omeas"]["offline"] && !do_nested_sampling) {
       err = "Error: You must write the 'offline' measurements node inside 'omeas' "
             "because you're not running any MCMC algorithm.\n";
       throw err;
@@ -423,7 +427,6 @@ public:
     }
     return;
   }
-
 
   /**
    * @brief online measurements over the i-th trajectory

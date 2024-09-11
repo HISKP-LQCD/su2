@@ -11,8 +11,12 @@
  */
 
 #include <algorithm>
+#include <fstream>
+#include <iostream>
 #include <random>
+#include <sstream>
 #include <stdio.h>
+#include <string>
 
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
@@ -123,12 +127,12 @@ public:
   }
 
   void do_omeas_i(const size_t &i) {
-      namespace fsys = boost::filesystem;
+    namespace fsys = boost::filesystem;
 
     gaugeconfig<Group> U_i = (*this).U;
 
     if (!(*this).sparams.do_mcmc) { // doing only offline measurements
-      const std::string path_i = get_path_conf(i) + "." + std::to_string(i);
+      const std::string path_i = get_path_conf(i);
       int ierrU = U_i.load(path_i);
 
       if (ierrU == 1) { // cannot load gauge config
@@ -158,12 +162,44 @@ public:
         i_orlx++;
       }
     }
+
+    return;
+  }
+
+  void offline_measurements() {
+    const std::string output_data_file =
+      (*this).sparams.conf_dir + "/output." + (*this).algo_name + ".data";
+
+    std::ifstream file(output_data_file);
+
+    if (!file.is_open()) {
+      std::cerr << "Error opening: " << output_data_file << std::endl;
+      std::abort();
+    }
+
+    std::string line;
+    while (getline(file, line)) {
+      std::istringstream iss(line);
+      std::string firstColumn;
+      if (getline(iss, firstColumn, ' ')) {
+        const size_t i_conf = stod(firstColumn);
+
+        this->do_omeas_i(i_conf);
+      }
+    }
+
+    file.close();
   }
 
   void run(const YAML::Node &nd) {
     this->pre_run(nd);
 
     bool do_omeas = (*this).sparams.do_omeas;
+    bool do_mcmc = nd["nested_sampling"]["do_mcmc"].as<bool>();
+    if (!do_mcmc) {
+      this->offline_measurements();
+      return;
+    }
 
     const size_t n_live = (*this).sparams.n_live;
     const size_t n_samples = (*this).sparams.n_samples;
@@ -186,6 +222,12 @@ public:
       std::cout << "## Initializing n_live points\n";
       Pi = init_nlive(n_live, seed);
       i_last = n_live;
+    }
+
+    if (do_omeas && !(*this).sparams.continue_run) {
+      for (size_t j = 0; j < n_live; j++) {
+        this->do_omeas_i((*this).indices[j]);
+      }
     }
 
     this->open_output_data();
@@ -255,15 +297,6 @@ public:
 
       if (do_omeas) {
         this->do_omeas_i(i_conf);
-        //   this->do_omeas_i(i_conf, U_overrelaxed, file_suffix);
-        //   gaugeconfig<Group> U_overrelaxed = U_i;
-        //   // applying overrelaxation steps: action is unchanged
-        //   for (size_t i_orlx = 0; i_orlx < (*this).sparams.n_overrelaxation; i_orlx++)
-        //   {
-        //   overrelaxation(U_overrelaxed, 1.0, false);
-        //   const std::string file_suffix =
-        //   ".overrelax-"+boost::lexical_cast<bool>(i_orlx);
-        //   }
       }
     }
   }

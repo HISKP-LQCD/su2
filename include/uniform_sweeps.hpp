@@ -19,11 +19,11 @@
 #include <random>
 #include <vector>
 
-// apply n_sweeps sweeps drawing elements uniformly with the constraint of P < Pmax
+// apply n_sweeps sweeps drawing elements uniformly with the constraint of P > Pmin
 template <class URNG, class Group>
 void uniform_sweeps(gaugeconfig<Group> &U,
                     const double &P0,
-                    const double &Pmax,
+                    const double &Pmin,
                     URNG engine,
                     const double &delta,
                     const size_t &n_sweeps) {
@@ -33,7 +33,7 @@ void uniform_sweeps(gaugeconfig<Group> &U,
   const double norm_fact =
     double(U.getVolume() * U.getNc() * spacetime_lattice::num_pLloops_half(U.getndims()));
 
-  double P_in = P0; // initial value of Plaquette average
+  double P_in = P0; // initial value of plaquette average
 
   bool changed = false; // true when configuration has changed
   size_t i_sweep = 0;
@@ -50,7 +50,7 @@ void uniform_sweeps(gaugeconfig<Group> &U,
               random_element(R, engine, delta);
               double deltaP = retrace(U(x, mu) * R * K) - retrace(U(x, mu) * K);
               double P_new = P_in + (deltaP / norm_fact);
-              if (P_new > Pmax) {
+              if (P_new > Pmin) {
                 changed = true;
                 U(x, mu) = U(x, mu) * R;
                 P_in = P_new;

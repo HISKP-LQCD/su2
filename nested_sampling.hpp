@@ -262,9 +262,8 @@ public:
       }
 
       // drawing a random element from the remained configurations
-      // random number generator
-      std::mt19937 engine;
-      engine.seed(i_conf);
+      std::mt19937 engine; // Random Number Generator (RNG)
+      engine.seed(i_conf); // setting the seed of the RNG
 
       const size_t ii_rand = int_dist(engine);
       const double Prand = Pi[ii_rand]; // value of the plaquette

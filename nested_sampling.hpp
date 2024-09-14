@@ -35,7 +35,7 @@ template <class Group>
 class nested_sampling_algo : public base_program<Group, gp::nested_sampling> {
 private:
   double rate = 0.0; // acceptance rate of the internal Metropolis update
-  std::vector<size_t> indices; // list of gonfiguration indices
+  std::vector<size_t> indices; // list of configuration indices
   // std::vector<double> plaquettes; // list of plaquette expectation values
   std::mt19937 engine; // engine for random number generation
   std::ofstream os_nlive; // output stram for the configuration of the final n_live points

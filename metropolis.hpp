@@ -69,13 +69,20 @@ public:
                             std::vector<URNG> engines,
                             const double &delta,
                             const double &gaugemass,
+                            #ifdef Genz
+                            const size_t &m,
+                            #endif
                             const size_t &N_hit,
                             const double &beta,
                             const double &xi = 1.0,
                             const bool &anisotropic = false) {
+                              std::cout << "next delta"<< delta << "\n";
     if (pparams.flat_metric) {
-      return flat_spacetime::sweep(U, engines, delta, gaugemass, N_hit, pparams.beta, pparams.xi,
-                                   pparams.anisotropic);
+      return flat_spacetime::sweep(U, engines, delta, gaugemass,
+                                  #ifdef Genz
+                                  m,
+                                  #endif
+                                   N_hit, pparams.beta, pparams.xi, pparams.anisotropic);
     }
     if (pparams.rotating_frame) {
       fatal_error("Rotating metric not supported yet.", __func__);
@@ -97,6 +104,7 @@ public:
    */
   void do_sweep(const size_t &i) {
     const size_t n_threads = (*this).threads;
+    std::cout << "delta in sweep" << (*this).sparams.delta << "\n";
     if ((*this).sparams.do_mcmc) {
       std::vector<std::mt19937> engines(n_threads);
       for (size_t i_engine = 0; i_engine < n_threads; i_engine++) {
@@ -106,6 +114,9 @@ public:
       this->output_line(i);
 
       rate += this->sweep((*this).pparams, (*this).U, engines, (*this).sparams.delta, (*this).sparams.gaugemass,
+                          #ifdef Genz
+                          (*this).pparams.m,
+                          #endif
                           (*this).sparams.N_hit, (*this).pparams.beta, (*this).pparams.xi,
                           (*this).pparams.anisotropic);
 

@@ -10,9 +10,9 @@
  */
 
 #include "base_program.hpp"
-
+#ifndef parti
 #include "detDDdag_monomial.hh"
-
+#endif
 template <class Group> class measure_algo : public base_program<Group, gp::measure> {
 public:
   measure_algo() {}
@@ -35,7 +35,7 @@ public:
 
 		std::string omeas_counter_file = (*this).omeas.res_dir + "/omeas_counter.txt";
     if ((*this).omeas.restart){
-			boost::filesystem::ifstream omeas_counter(boost::filesystem::absolute(omeas_counter_file));
+			std::ifstream omeas_counter(boost::filesystem::absolute(omeas_counter_file));
       omeas_counter >> (*this).omeas.icounter;
       omeas_counter.close();
     }

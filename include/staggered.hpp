@@ -8,6 +8,8 @@
  with 4-dimensional containes for coordinates and dimensions
 */
 
+
+#ifndef Genz
 #pragma once
 
 #include <array>
@@ -417,3 +419,4 @@ namespace staggered {
   }
 
 } // namespace staggered
+#endif

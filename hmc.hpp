@@ -9,6 +9,7 @@
  *
  */
 
+#ifndef Genz
 #include "errors.hpp"
 #include "base_program.hpp"
 #include "md_update.hh"
@@ -200,3 +201,4 @@ public:
     return;
   }
 };
+#endif

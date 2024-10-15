@@ -6,6 +6,7 @@
 #include "gaugeconfig.hh"
 #include "geometry.hh"
 #include "su2.hh"
+#include "partitionings.hh"
 
 #ifdef _USE_OMP_
 #include <omp.h>

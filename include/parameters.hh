@@ -14,11 +14,15 @@
 #pragma once
 
 #include <string>
+#include <vector>
+
 
 namespace global_parameters {
 
   // default string width for the beta name in output file
   const size_t g_beta_str_width = 6;
+
+  
 
   /* struct for parameters concerning the physics of the system */
   struct physics {
@@ -29,6 +33,8 @@ namespace global_parameters {
     size_t Lt; // temporal lattice size T > 0
     size_t ndims = 4; // number of dimensions, 2 <= ndims <= 4
 
+
+    size_t m = 100;
     // boundary conditions (default = periodic)
     // supported types: "periodic", "spatial_open"
     std::string bc = "periodic";
@@ -275,6 +281,18 @@ namespace global_parameters {
 
     bool do_omeas = false; // true when omeasurements are done
     measure omeas; // struct for online measurements
+  };
+
+/* struct for all parameters of partitionings */
+  struct Partitionings{
+    std::vector<size_t> dagger; // index of element closest to daggered
+    std::vector<double> point0; // 0 coordinate of point on hypersphere
+    std::vector<double> point1; // 1 coordinate of point on hypersphere
+    std::vector<double> point2; // 2 coordinate of point on hypersphere
+    std::vector<double> point3; // 3 coordinate of point on hypersphere
+    std::vector<double> distance_to_indentitiy; // the euclidean distance of every point on the hypersphere to the idenity
+    std::vector< std::vector<size_t> > multiplication_loopup_table; // a lookup table for the indeces of the results of multiplication
+    std::vector< std::vector<size_t> > addition_lookup_table; // a lookup table for the indeces of the results of addition
   };
 
 } // namespace global_parameters

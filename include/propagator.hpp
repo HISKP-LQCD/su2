@@ -5,7 +5,7 @@
  */
 
 #pragma once
-
+#ifndef Genz
 #include "./staggered.hpp"
 
 namespace staggered {
@@ -63,3 +63,4 @@ namespace staggered {
   }
 
 } // namespace staggered
+#endif

@@ -25,6 +25,8 @@
 // #include "rotating-sweep.hpp" // rotating spacetime
 #include "su2.hh"
 #include "u1.hh"
+#include "genzsu2.hh"
+#include "partitionings.hh"
 #include "vectorfunctions.hh"
 #include "version.hh"
 
@@ -322,6 +324,7 @@ public:
         g_heat = 0.0;
       }
       g_icounter = 0;
+      std::cout << "oh no" << "\n";
       hotstart(U, sparams.seed, g_heat);
     }
 
@@ -486,6 +489,8 @@ public:
       }
       omeasurements::meas_wilson_loop<Group>(U, i, omeas.res_dir);
     }
+    #ifndef parti
+    #ifndef Genz
     if ((*this).omeas.gradient_flow.measure_it) {
       if ((*this).omeas.verbosity > 0) {
         std::cout << "## online measuring: Gradient flow\n";
@@ -508,9 +513,11 @@ public:
       const std::string glb_interp = omeas.glueball.interpolator_type;
       omeasurements::meas_glueball_correlator<Group>(glb_interp, U, i, (*this).omeas);
     }
+    #endif
     return;
+  
+  #endif
   }
-
   /**
    * @brief operations to be done after the i-th step of the MCMC
    *

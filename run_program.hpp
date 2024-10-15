@@ -10,19 +10,25 @@
  */
 
 #pragma once
-
+#
 #include <ctime>
 #include <iostream>
 #include <sstream>
+
 
 #include "boost/lexical_cast.hpp"
 
 #include "parse_input_file.hh"
 
+#ifndef Genz
+#ifndef parti
 #include "hmc.hpp"
+#include "heatbath_overrelaxation.hpp"
+#endif
+#endif
+
 #include "measure.hpp"
 #include "metropolis.hpp"
-#include "heatbath_overrelaxation.hpp"
 
 /**
  * @brief program function for hmc, metropolis and measure
@@ -36,6 +42,7 @@
  * @param argv
  */
 template <class Group> void run_program(int argc, char *argv[]) {
+  
   std::string input_file;
   parse_command_line(argc, argv, input_file);
   std::cout << "## Parsing input file: " << input_file << "\n";
@@ -48,16 +55,25 @@ template <class Group> void run_program(int argc, char *argv[]) {
   bool &do_omeas = rp.do_omeas;
   bool &do_heatbath_overrelaxation = rp.do_heatbath_overrelaxation;
 
-  if (do_hmc) {
-    hmc_algo<Group> h;
-    h.run(nd);
-  } else if (do_metropolis) {
+  
+  if (do_metropolis) {
     metropolis_algo<Group> mpl;
     mpl.run(nd);
-  } else if (do_heatbath_overrelaxation) {
+  } 
+  #ifndef Genz
+  #ifndef parti
+  else if (do_hmc ) {
+    hmc_algo<Group> h;
+    h.run(nd);
+  }
+  
+   else if (do_heatbath_overrelaxation ) {
     heatbath_overrelaxation_algo<Group> hb_or;
     hb_or.run(nd);
-  } else if (do_omeas) { // offline measurements
+  }
+  #endif
+  #endif
+   else if (do_omeas) { // offline measurements
     measure_algo<Group> ms;
     ms.run(nd);
   } else { // program does nothing

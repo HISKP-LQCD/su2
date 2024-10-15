@@ -6,7 +6,7 @@
   as in eq. (10) of https://www.sciencedirect.com/science/article/pii/0550321389903246
   or s eq. (8.9) of https://link.springer.com/book/10.1007/978-3-642-01850-3
 */
-
+#ifndef Genz
 #pragma once
 
 #include "errors.hpp"
@@ -17,6 +17,7 @@
 #include "hamiltonian_field.hh"
 #include "monomial.hh"
 #include "su2.hh"
+#include "partitionings.hh"
 #include "u1.hh"
 #include <array>
 #include <complex>
@@ -217,3 +218,4 @@ namespace staggered {
   };
 
 } // namespace staggered
+#endif

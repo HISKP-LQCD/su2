@@ -15,6 +15,8 @@
 // #include<cmath>
 #include <iostream>
 
+
+#include "parameters.hh"
 #include "accum_type.hh"
 #include "dagger.hh"
 #include "traceless_antiherm.hh"
@@ -30,6 +32,8 @@ using Complex = std::complex<double>;
 class _su2 {
 public:
   const size_t N_c = 2;
+  
+  
   explicit _su2() : a(0), b(0) {}
   explicit _su2(Complex a, Complex b) : a(a), b(b) {}
   _su2(const _su2 &U) : a(U.a), b(U.b) {}

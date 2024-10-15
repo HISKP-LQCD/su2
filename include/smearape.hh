@@ -6,6 +6,7 @@
 #include "su2.hh"
 #include "u1.hh"
 #include "su3.hh"
+#include "partitionings.hh"
 #include "su3_accum.hh"
 
 #include <cassert>
@@ -117,8 +118,12 @@ void APEsmearing(gaugeconfig<Group> &U, const double &alpha, const bool spatial=
             // K is intialized to (0,0) even if not explicitly specified
             accum K;
             get_staples_APE(K, Uold, x, i, spatial);
-            K = alpha*accum(Uold(x, i)) + beta*K;
+            K = alpha*(Uold(x, i)) + beta*K;
+            #ifndef Genz
             const Group Uprime = accum_to_Group(K);
+            #else 
+            const su2 Uprime = accum_to_Group(K);
+            #endif
             U(x, i) = Uprime;
             U(x, i).restoreSU();
           }

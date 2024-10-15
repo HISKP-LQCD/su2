@@ -17,6 +17,7 @@
 #include "adjointfield.hh"
 #include "exp_gauge.hh"
 #include "su2.hh"
+#include "partitionings.hh"
 
 /**
  * @brief exp(i*alpha_k*sigma_k), where the sigma_k are the Pauli matrices and alpha_k are

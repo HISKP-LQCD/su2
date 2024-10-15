@@ -2,6 +2,7 @@
 #include "accum_type.hh"
 #include "gaugeconfig.hh"
 #include "tensors.hh"
+#include "partitionings.hh"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846

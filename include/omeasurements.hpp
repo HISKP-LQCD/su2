@@ -13,13 +13,16 @@
 #include <map>
 #include <sstream>
 #include <vector>
-
+//#ifndef parti
 #include "glueballs.hpp"
+//#endif
 #include "gradient_flow.hh"
 #include "io.hh"
 #include "links.hpp"
 #include "obc_gaugemonomial.hh"
+//#ifndef parti
 #include "operators.hpp"
+//#endif
 #include "parameters.hh"
 #include "propagator.hpp"
 #include "smearape.hh"
@@ -237,6 +240,8 @@ const Complex spatial_polyakov = polyakov_loop::polyakov_loop_spatial_average(U)
 ofs << i << std::scientific << std::setprecision(16) << " " << std::real(spatial_polyakov) << " " << std::imag(spatial_polyakov) << "\n";
 ofs.close();
 }
+//#ifndef parti
+#ifndef Genz
   /**
    * @brief compute and print the gradient flow of a given configuration
    *
@@ -558,7 +563,8 @@ ofs.close();
       from_smeared_field::meas_glueball_correlator(type, U, i, v_ns[is], S);
     }
   }
-
+#endif
+//#endif
   /**
    * measures the planar wilson loops in temporal and spatial direction
    * -(0,1) loops for temporal, (1,2) and (1,3) loops for spatial

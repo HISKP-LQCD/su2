@@ -144,7 +144,7 @@ namespace obc { // open boundary conditions
     }
     return res;
   }
-
+  #ifndef Genz
   /**
    * @brief Get the S_G action for the HMC
    * Get the action subtracted from unnecessary constant factors (unphisical).
@@ -297,5 +297,6 @@ namespace obc { // open boundary conditions
     double xi; // bare anisotropy xi
     obc::weights w; // weights for obc
   };
+   #endif
 
 } // namespace obc

@@ -5,6 +5,7 @@
 #include "parse_commandline.hh"
 #include "random_gauge_trafo.hh"
 #include "su2.hh"
+#include "partitionings.hh"
 #include "u1.hh"
 #include "vectorfunctions.hh"
 #include "version.hh"

@@ -75,6 +75,7 @@ configure_file(
 # here.
 set(${CMAKE_INSTALL_LIBDIR} ${CMAKE_INSTALL_PREFIX}/lib/)
 add_library(${PROJECT_NAME}
+    partitionings.hh
     exp_gauge.cc
     print_program_options.cc
     parse_commandline.cc
@@ -92,6 +93,8 @@ set(${CMAKE_BINARY_DIR} ${CMAKE_INSTALL_PREFIX}/bin/)
 add_executable(u1-main main-u1.cpp)
 add_executable(su2-main main-su2.cpp)
 add_executable(su3-main main-su3.cpp)
+add_executable(genz-main main-genz.cpp)
+add_executable(partition-main main-partitioning.cpp)
 
 add_executable(su2-kramers kramers.cc)
 add_executable(test-groups test.cc)
@@ -122,7 +125,7 @@ endforeach(target)
 
 target_link_directories(${CMAKE_PROJECT_NAME} PUBLIC ${YAML_CPP_LIBRARY_DIR})
 
-foreach(target u1-main su2-main su3-main su2-kramers test-groups scaling try ${test_progs_fullname})
+foreach(target u1-main su2-main su3-main genz-main partition-main su2-kramers test-groups scaling try ${test_progs_fullname})
   target_link_libraries(${target} su2 ${YAML_CPP_LIBRARIES})
   target_link_libraries(${target} su2 ${YAML_CPP_LIBRARIES})
 
@@ -141,7 +144,7 @@ endforeach(target)
 install(TARGETS ${PROJECT_NAME}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
-install(TARGETS u1-main su2-main su3-main)
+install(TARGETS u1-main su2-main su3-main genz-main partition-main)
 install(TARGETS su2-kramers test-groups scaling try)
 
 # tests

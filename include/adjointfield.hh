@@ -29,6 +29,9 @@ template <typename Float> struct adjoint_type<Float, su3> {
   typedef adjointsu3<Float> type;
 };
 
+
+
+
 /**
  * @brief field of adjoint matrices
  *

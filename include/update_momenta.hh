@@ -1,3 +1,5 @@
+#ifndef Genz
+
 #pragma once
 
 #include"monomial.hh"
@@ -57,3 +59,4 @@ template<typename Float, class Group> void round_and_update_momenta(std::list<mo
 
   return;
 }
+#endif

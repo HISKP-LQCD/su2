@@ -551,6 +551,7 @@ namespace input_file_parsing {
       if (nd["monomials"]["gauge"]) {
         pparams.include_gauge = true;
         in.read_verb<double>(pparams.beta, {"monomials", "gauge", "beta"});
+        in.read_verb<size_t>(pparams.m, {"monomials", "gauge", "m"});
         if (nd["monomials"]["gauge"]["anisotropic"]) {
           pparams.anisotropic = true;
           in.read_opt_verb<double>(pparams.xi,
@@ -665,7 +666,7 @@ namespace input_file_parsing {
       parse_geometry(in, pparams);
       parse_action<gp::heatbath_overrelaxation>(in, {}, pparams, mcparams);
       parse_heatbath_overrelaxation(in, {"heatbath_overrelaxation"}, mcparams);
-
+      in.read_opt_verb<size_t>(pparams.m, {"m"});
       in.read_opt_verb<size_t>(mcparams.N_trafo, {"N_trafo"});
       in.read_opt_verb<bool>(mcparams.do_gaugetrafo, {"do_gaugetrafo"});
       if (nd["omeas"]) {

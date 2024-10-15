@@ -1,6 +1,7 @@
 #pragma once
 
 #include"su2.hh"
+#include "partitionings.hh"
 #include"random_element.hh"
 #include "gaugeconfig.hh"
 
@@ -9,7 +10,7 @@
 
 template<class T> void random_gauge_trafo(gaugeconfig<T> &U, const int seed) {
   std::mt19937 engine(seed);
-  
+ //TODO:Is this a problem?  
   T rU, tmp;
   std::vector<size_t> x = {0, 0, 0, 0};
   for(x[0] = 0; x[0] < U.getLt(); x[0]++) {

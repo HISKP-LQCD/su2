@@ -8,7 +8,7 @@
  * @copyright Copyright (c) 2022
  *
  */
-
+#ifndef Genz
 #pragma once
 
 #include "errors.hpp"
@@ -34,11 +34,11 @@ namespace glueballs {
 
     Group L = U(x, mu) * (U(x, mu).dagger()); // "1", independently of the group
     for (size_t s = 0; s < a; s++) {
-      L *= operators::parity(Px, 0, U, x, mu);
+      L = L* operators::parity(Px, 0, U, x, mu);
       x[mu] += 1;
     }
     for (size_t _t = 0; _t < b; _t++) {
-      L *= operators::parity(Px, 0, U, x, nu);
+      L = L* operators::parity(Px, 0, U, x, nu);
       x[nu] += 1;
     }
     for (size_t s = 0; s < a; s++) {
@@ -82,33 +82,33 @@ namespace glueballs {
     // start at x
     // go to x + (a+1)*\hat{mu}
     for (size_t s = 0; s < (a + 1); s++) {
-      L *= operators::parity(Px, 0, U, x, mu);
+      L = L * operators::parity(Px, 0, U, x, mu);
       x[mu]++;
     }
     // go to x + (a+1)*\hat{mu} + \hat{nu}
     for (size_t _t = 0; _t < 1; _t++) {
-      L *= operators::parity(Px, 0, U, x, nu);
+      L = L * operators::parity(Px, 0, U, x, nu);
       x[nu]++;
     }
     // go to x + \hat{mu} + \hat{nu}
     for (size_t s = 0; s < a; s++) {
       x[mu]--;
-      L *= operators::parity(Px, 0, U, x, mu).dagger();
+      L = L * operators::parity(Px, 0, U, x, mu).dagger();
     }
     // go to x + \hat{mu} + (b+1)\hat{nu}
     for (size_t _t = 0; _t < b; _t++) {
-      L *= operators::parity(Px, 0, U, x, nu);
+      L = L * operators::parity(Px, 0, U, x, nu);
       x[nu]++;
     }
     // go to x + (b+1)*\hat{nu}
     for (size_t s = 0; s < 1; s++) {
       x[mu] -= 1;
-      L *= operators::parity(Px, 0, U, x, mu).dagger();
+      L = L * operators::parity(Px, 0, U, x, mu).dagger();
     }
     // go to x
     for (size_t _t = 0; _t < (b + 1); _t++) {
       x[nu] -= 1;
-      L *= operators::parity(Px, 0, U, x, nu).dagger();
+      L = L * operators::parity(Px, 0, U, x, nu).dagger();
     }
     // loop closed
 
@@ -252,3 +252,4 @@ namespace glueballs {
   }
 
 } // namespace glueballs
+#endif

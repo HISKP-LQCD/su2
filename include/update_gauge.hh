@@ -1,7 +1,10 @@
+
+#ifndef Genz
 #pragma once
 
 #include"hamiltonian_field.hh"
 #include"su2.hh"
+#include "partitionings.hh"
 #include"exp_gauge.hh"
 #include<complex>
 
@@ -25,3 +28,4 @@ template<typename Float, class Group> void round_and_update_gauge(hamiltonian_fi
   }
   return;
 }
+#endif

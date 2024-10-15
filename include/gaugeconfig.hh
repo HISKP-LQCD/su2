@@ -17,6 +17,8 @@
 #include "su3.hh"
 #include "su2.hh"
 #include "u1.hh"
+#include "genzsu2.hh"
+#include "partitionings.hh"
 
 #include <array>
 #include <cassert>
@@ -278,6 +280,7 @@ void hotstart(gaugeconfig<T> &config, const int seed, const double _delta) {
 template <class T>
 void hotstart(gaugeconfig<T> &config, const int seed, const bool &hot) {
   const double delta = (double)hot;
+  std::cout << "hell is frozen " <<  delta << "\n";
   std::mt19937 engine(seed);
   for (size_t i = 0; i < config.getSize(); i++) {
     random_element(config[i], engine, delta);

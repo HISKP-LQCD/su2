@@ -3,6 +3,8 @@
 #include "su2.hh"
 #include "su3.hh"
 #include "u1.hh"
+#include "genzsu2.hh"
+#include "partitionings.hh"
 
 #include <random>
 
@@ -36,6 +38,25 @@ void random_element(_su2 &U, URNG &engine, const double delta = 1.) {
   return;
 }
 
+template <class URNG>
+void random_element(partitioning &U, URNG &engine, const double delta = 1.){
+  std::uniform_int_distribution<int> dist1(0, partitioning::distance_to_identity.size() -1 );
+  //std::cout << "delta in random " << delta << "\n";
+  size_t min_index = std::distance(partitioning::distance_to_identity.begin(), partitioning::distance_to_identity.end());
+  double min_distance = partitioning::distance_to_identity[min_index];
+  if (delta <=  min_distance){
+    U.set_to_identity();
+  }
+  else{
+  size_t r = dist1(engine);
+  while (_partitioning::distance_to_identity[r] > delta ){
+    r = dist1(engine);
+    //std::cout << "still searching " << _partitioning::distance_to_identity[r] << " \n";
+  } 
+  U = _partitioning(r);}
+  return;
+}
+
 /**
  * @brief initialized the configuration to some random SU(3) matrix
  *
@@ -63,5 +84,27 @@ void random_element(_su3 &U, URNG &engine, const double delta = 1.) {
   U = _su3(u, v);
   U.restoreSU();
 
+  return;
+}
+
+template<class URNG> void random_element(Gsu2 &U, URNG &engine, 
+                                         const double delta = 1.) {
+  const size_t m = U.getm();
+  size_t lower = static_cast<int>(delta * m);
+  size_t j[4];
+  std::uniform_int_distribution<int> uni1(lower, m);
+  j[0] = uni1(engine);
+  std::uniform_int_distribution<int> uni2(0, m-j[0]);
+  j[1] = uni2(engine);
+  std::uniform_int_distribution<int> uni3(0, m-j[0]-j[1]);
+  j[2] = uni3(engine);
+  j[3] = m - j[0] - j[1] - j[2];
+
+  std::uniform_int_distribution<int> uni4(0, 1);
+  int s[4];
+  for(int i = 0; i < 4; i++) {
+    s[i] = 2*uni4(engine) - 1;
+  }
+  U = Gsu2(m, j, s);
   return;
 }

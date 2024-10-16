@@ -284,15 +284,15 @@ namespace global_parameters {
   };
 
 /* struct for all parameters of partitionings */
-  struct Partitionings{
-    std::vector<size_t> dagger; // index of element closest to daggered
-    std::vector<double> point0; // 0 coordinate of point on hypersphere
-    std::vector<double> point1; // 1 coordinate of point on hypersphere
-    std::vector<double> point2; // 2 coordinate of point on hypersphere
-    std::vector<double> point3; // 3 coordinate of point on hypersphere
-    std::vector<double> distance_to_indentitiy; // the euclidean distance of every point on the hypersphere to the idenity
-    std::vector< std::vector<size_t> > multiplication_loopup_table; // a lookup table for the indeces of the results of multiplication
-    std::vector< std::vector<size_t> > addition_lookup_table; // a lookup table for the indeces of the results of addition
-  };
+ // struct Partitionings{
+  //  std::vector<size_t> dagger; // index of element closest to daggered
+   // std::vector<double> point0; // 0 coordinate of point on hypersphere
+    //std::vector<double> point1; // 1 coordinate of point on hypersphere
+    //std::vector<double> point2; // 2 coordinate of point on hypersphere
+    //std::vector<double> point3; // 3 coordinate of point on hypersphere
+    //std::vector<double> distance_to_indentitiy; // the euclidean distance of every point on the hypersphere to the idenity
+    //std::vector< std::vector<size_t> > multiplication_loopup_table; // a lookup table for the indeces of the results of multiplication
+    //std::vector< std::vector<size_t> > addition_lookup_table; // a lookup table for the indeces of the results of addition
+  //};
 
 } // namespace global_parameters

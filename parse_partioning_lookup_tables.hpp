@@ -1,3 +1,16 @@
+/**
+ * @file parse_partioning_lookup_tables.hpp
+ * @author Sebastian Mueller (s6sbmuel@uni-bonn.de)
+ * @brief loads the lookup tables for the partitioning.
+ * Their names are fixed since they are loaded before the yaml file
+ * @version 0.1
+ * @date 2024-10-16
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ */
+
+
 #pragma once
 #include "partitionings.hh"
 #include <ctime>
@@ -6,8 +19,12 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
+
+
 namespace read_partitionings {
-std::string readFileIntoString(const std::string& path) {
+  
+
+  std::string readFileIntoString(const std::string& path) {
   auto ss = std::ostringstream{};
   std::ifstream input_file(path);
   //input_file.open(path);

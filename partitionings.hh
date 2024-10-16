@@ -1,3 +1,17 @@
+/**
+ * @file partitionings.hh
+ * @author Sebastian Mueller (s6sbmuel@uni-bonn.de)
+ * @brief class representing the SU(2)-partitioning (in a fundamental representation)
+ * @version 0.1
+ * @date 2024-10-16
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ */
+
+
+
+
 #pragma once
 
 #include<fstream>

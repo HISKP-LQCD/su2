@@ -144,5 +144,9 @@ void load_tables(){
     linecounter += 1;
   }
 
+
+  std::vector<double>::iterator result = std::min_element(partitioning::distance_to_identity.begin(), partitioning::distance_to_identity.end());
+  partitioning::min_distance_index = std::distance(partitioning::distance_to_identity.begin(), result);
+  partitioning::min_distance = partitioning::distance_to_identity[partitioning::min_distance_index];
 }
 } //end namespace read_partitionings

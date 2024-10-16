@@ -38,20 +38,26 @@ void random_element(_su2 &U, URNG &engine, const double delta = 1.) {
   return;
 }
 
+/**
+ * @brief Initizalizes the configuration of a random partitioning element with distance smaller than 
+ * delta to the identity
+ * 
+ * @tparam URNG 
+ * @param U group element that is replaced with a random element 
+ * @param engine engine for random number generation
+ * @param delta maximal distance to identity
+ */
 template <class URNG>
 void random_element(partitioning &U, URNG &engine, const double delta = 1.){
   std::uniform_int_distribution<int> dist1(0, partitioning::distance_to_identity.size() -1 );
-  //std::cout << "delta in random " << delta << "\n";
-  size_t min_index = std::distance(partitioning::distance_to_identity.begin(), partitioning::distance_to_identity.end());
-  double min_distance = partitioning::distance_to_identity[min_index];
-  if (delta <=  min_distance){
+  // The if statement protects against infinite searches for delta smaller than the smallest distance
+  if (delta <=  partitioning::min_distance){
     U.set_to_identity();
   }
   else{
   size_t r = dist1(engine);
   while (_partitioning::distance_to_identity[r] > delta ){
     r = dist1(engine);
-    //std::cout << "still searching " << _partitioning::distance_to_identity[r] << " \n";
   } 
   U = _partitioning(r);}
   return;

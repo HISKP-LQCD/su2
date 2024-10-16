@@ -21,7 +21,6 @@
 #include<stdexcept>
 #include<complex>
 
-//#include<math.h>
 #include<cmath>
 #include<cassert>
 #include<iostream>
@@ -35,6 +34,8 @@ class _partitioning {
 
     public:
     const size_t N_c = 2;
+    inline static double min_distance; //smallest distance to the identity
+    inline static size_t min_distance_index; // index of the element closest to the identity
     inline static std::vector<size_t> dagger_vector; // index of element closest to daggered
     inline static std::vector<double> point0 ; // 0 coordinate of point on hypersphere
     inline static std::vector<double> point1 ; // 1 coordinate of point on hypersphere
@@ -91,8 +92,7 @@ class _partitioning {
     multiplicator = _multiplicator;
     }
     void set_to_identity(){
-        std::vector<double>::iterator result = std::min_element(distance_to_identity.begin(), distance_to_identity.end());
-        index = std::distance(distance_to_identity.begin(), result);
+        index = min_distance_index;
         multiplicator = Complex(1,0);
     }
     inline _partitioning dagger() const { return (_partitioning(dagger_vector[index], std::conj(multiplicator)));}

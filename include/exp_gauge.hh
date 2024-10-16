@@ -1,4 +1,4 @@
-#ifndef Genz
+//#ifndef Genz
 #pragma once
 
 #include "su2.hh"
@@ -13,4 +13,4 @@ inline _u1 exp(adjointu1<double> const & x) {
 
 _su2 exp(adjointsu2<double> const & x);
 _su3 exp(adjointsu3<double> const & x);
-#endif
+//#endif

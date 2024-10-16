@@ -17,7 +17,7 @@
 #include "su3.hh"
 #include "su2.hh"
 #include "u1.hh"
-#include "genzsu2.hh"
+//#include "genzsu2.hh"
 #include "partitionings.hh"
 
 #include <array>

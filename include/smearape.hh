@@ -119,11 +119,11 @@ void APEsmearing(gaugeconfig<Group> &U, const double &alpha, const bool spatial=
             accum K;
             get_staples_APE(K, Uold, x, i, spatial);
             K = alpha*(Uold(x, i)) + beta*K;
-            #ifndef Genz
+            //#ifndef Genz
             const Group Uprime = accum_to_Group(K);
-            #else 
-            const su2 Uprime = accum_to_Group(K);
-            #endif
+            //#else 
+            //const su2 Uprime = accum_to_Group(K);
+            //#endif
             U(x, i) = Uprime;
             U(x, i).restoreSU();
           }

@@ -9,7 +9,7 @@
 */
 
 
-#ifndef Genz
+//#ifndef Genz
 #pragma once
 
 #include <array>
@@ -419,4 +419,4 @@ namespace staggered {
   }
 
 } // namespace staggered
-#endif
+//#endif

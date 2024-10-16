@@ -1,5 +1,5 @@
 
-#ifndef Genz
+//#ifndef Genz
 #pragma once
 
 #include"hamiltonian_field.hh"
@@ -28,4 +28,4 @@ template<typename Float, class Group> void round_and_update_gauge(hamiltonian_fi
   }
   return;
 }
-#endif
+//#endif

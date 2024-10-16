@@ -9,7 +9,7 @@
  * @copyright Copyright (c) 2022
  *
  */
-#ifndef Genz
+//#ifndef Genz
 #pragma once
 #include "adjointfield.hh"
 #include "gauge_energy.hpp"
@@ -147,4 +147,4 @@ namespace flat_spacetime {
   };
 
 } // namespace flat_spacetime
-#endif
+//#endif

@@ -8,7 +8,7 @@
  * @copyright Copyright (c) 2022
  *
  */
-#ifndef Genz
+//#ifndef Genz
 #pragma once
 
 #include "errors.hpp"
@@ -252,4 +252,4 @@ namespace glueballs {
   }
 
 } // namespace glueballs
-#endif
+//#endif

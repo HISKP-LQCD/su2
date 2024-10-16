@@ -3,7 +3,7 @@
 #include "su2.hh"
 #include "su3.hh"
 #include "u1.hh"
-#include "genzsu2.hh"
+//#include "genzsu2.hh"
 #include "partitionings.hh"
 
 #include <random>
@@ -92,7 +92,7 @@ void random_element(_su3 &U, URNG &engine, const double delta = 1.) {
 
   return;
 }
-
+/* 
 template<class URNG> void random_element(Gsu2 &U, URNG &engine, 
                                          const double delta = 1.) {
   const size_t m = U.getm();
@@ -113,4 +113,4 @@ template<class URNG> void random_element(Gsu2 &U, URNG &engine,
   }
   U = Gsu2(m, j, s);
   return;
-}
+}*/

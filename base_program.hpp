@@ -25,7 +25,7 @@
 // #include "rotating-sweep.hpp" // rotating spacetime
 #include "su2.hh"
 #include "u1.hh"
-#include "genzsu2.hh"
+//#include "genzsu2.hh"
 #include "partitionings.hh"
 #include "vectorfunctions.hh"
 #include "version.hh"
@@ -490,7 +490,7 @@ public:
       omeasurements::meas_wilson_loop<Group>(U, i, omeas.res_dir);
     }
     #ifndef parti
-    #ifndef Genz
+    //#ifndef Genz
     if ((*this).omeas.gradient_flow.measure_it) {
       if ((*this).omeas.verbosity > 0) {
         std::cout << "## online measuring: Gradient flow\n";
@@ -516,7 +516,7 @@ public:
     #endif
     return;
   
-  #endif
+  //#endif
   }
   /**
    * @brief operations to be done after the i-th step of the MCMC

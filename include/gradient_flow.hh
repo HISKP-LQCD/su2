@@ -1,5 +1,5 @@
 
-#ifndef Genz
+//#ifndef Genz
 #pragma once
 
 #include "adjointfield.hh"
@@ -195,4 +195,4 @@ namespace flat_spacetime {
   }
 
 } // namespace flat_spacetime
-#endif
+//#endif

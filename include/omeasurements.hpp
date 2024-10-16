@@ -241,7 +241,7 @@ ofs << i << std::scientific << std::setprecision(16) << " " << std::real(spatial
 ofs.close();
 }
 //#ifndef parti
-#ifndef Genz
+//#ifndef Genz
   /**
    * @brief compute and print the gradient flow of a given configuration
    *
@@ -563,7 +563,7 @@ ofs.close();
       from_smeared_field::meas_glueball_correlator(type, U, i, v_ns[is], S);
     }
   }
-#endif
+//#endif
 //#endif
   /**
    * measures the planar wilson loops in temporal and spatial direction

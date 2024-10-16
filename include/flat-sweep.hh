@@ -25,11 +25,9 @@
 #include <vector>
 
 namespace flat_spacetime {
-  #ifdef Genz
-    /**
-     * @brief 
-     * 
-     */
+  /*#ifdef Genz
+    
+     
 
      template <class URNG, class Group>
   std::vector<double> sweep(gaugeconfig<Group> &U,
@@ -69,7 +67,7 @@ namespace flat_spacetime {
            * argument list, then one of the arguments must be omp_priv or the address of
            * omp_priv This is not the case here, but in an example the code compiled
            * anyway.
-           */
+           *//** 
           std::cout << "m: "<< m << "\n";
           std::uniform_real_distribution<double> uniform(0., 1.);
           std::uniform_int_distribution<int> uniindex(0, 3);
@@ -147,7 +145,7 @@ namespace flat_spacetime {
                         rate_time += 1;
                       }
               }  
-              /*std::cout << U(x, mu).getj(0) << " " << U(x, mu).getj(1) << " " << U(x, mu).getj(2) << " " << U(x, mu).getj(3) << "\n"; */
+              /*std::cout << U(x, mu).getj(0) << " " << U(x, mu).getj(1) << " " << U(x, mu).getj(2) << " " << U(x, mu).getj(3) << "\n"; *//** 
               }
             }
           }
@@ -163,7 +161,7 @@ namespace flat_spacetime {
     return res;
   }
 
-#else
+#else*/
 
   /**
    * @brief N_hit Metropolis-Updates
@@ -213,7 +211,6 @@ namespace flat_spacetime {
     std::uniform_real_distribution<double> uniform(0., 1.);
     typedef typename accum_type<Group>::type accum;
     size_t rate = 0, rate_time = 0;
-    std::cout << "## delta in sweep " << delta << "\n";
 #ifdef _USE_OMP_
 #pragma omp parallel
     {
@@ -383,5 +380,5 @@ namespace flat_spacetime {
                                double(rate_time) / double(N_hit) / double(U.getVolume())};
     return res;
   }
-#endif
+//#endif
 } // namespace flat_spacetime

@@ -435,6 +435,7 @@ namespace input_file_parsing {
 
     in.read_verb<double>(mcparams.delta, {"delta"});
     in.read_opt_verb<double>(mcparams.gaugemass, {"gaugemass"});
+    in.read_opt_verb<size_t>(mcparams.gaugeexponent, {"gaugeexponent"});
     in.read_opt_verb<size_t>(mcparams.N_hit, {"N_hit"});
     validate_N_hit(mcparams.N_hit);
 
@@ -551,7 +552,7 @@ namespace input_file_parsing {
       if (nd["monomials"]["gauge"]) {
         pparams.include_gauge = true;
         in.read_verb<double>(pparams.beta, {"monomials", "gauge", "beta"});
-        in.read_verb<size_t>(pparams.m, {"monomials", "gauge", "m"});
+        //in.read_verb<size_t>(pparams.m, {"monomials", "gauge", "m"});
         if (nd["monomials"]["gauge"]["anisotropic"]) {
           pparams.anisotropic = true;
           in.read_opt_verb<double>(pparams.xi,

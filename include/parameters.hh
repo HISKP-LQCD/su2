@@ -238,6 +238,7 @@ namespace global_parameters {
     double delta = 1.0; // quantifies how much the prooposed new link can differ from
                         // the current link
     double gaugemass = 0.0; // mass of gauge boson for sweep
+    size_t gaugeexponent = 1;
     bool do_mcmc = true; // generate confs. with Markov chain Monte Carlo
 
     // fermions stuff (operators)

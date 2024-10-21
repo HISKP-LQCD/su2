@@ -204,6 +204,7 @@ namespace flat_spacetime {
                             std::vector<URNG> engine,
                             const double &delta,
                             const double &gaugemass,
+                            const size_t &gaugeexponent,
                             const size_t &N_hit,
                             const double &beta,
                             const double &xi = 1.0,
@@ -248,8 +249,15 @@ namespace flat_spacetime {
                   for (size_t n = 0; n < N_hit; n++) {
                    
                     random_element(R, engine[thread_num], delta);
+                    double gaugeterm;
+                    if (gaugeexponent == 2){ 
+                      gaugeterm = (gaugemass/static_cast<double>(U.getNc())) * (retrace(U(x, mu)*U(x, mu)) - retrace(U(x, mu)*R*U(x, mu)*R));
+                      //std::cout << "hello there \n";
+                      }
+                    else 
+                    {gaugeterm = (gaugemass/static_cast<double>(U.getNc())) * (retrace(U(x, mu)) - retrace(U(x, mu)*R));}
                     double deltaS = (beta / static_cast<double>(U.getNc())) *
-                                    (retrace(U(x, mu) * K) - retrace(U(x, mu) * R * K)) + (gaugemass/static_cast<double>(U.getNc())) * (retrace(U(x, mu)) - retrace(U(x, mu)*R));
+                                    (retrace(U(x, mu) * K) - retrace(U(x, mu) * R * K)) +  gaugeterm;
                     #ifndef parti
                     bool accept = (deltaS < 0);
                     if (!accept) {

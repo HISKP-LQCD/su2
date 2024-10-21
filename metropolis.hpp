@@ -69,6 +69,7 @@ public:
                             std::vector<URNG> engines,
                             const double &delta,
                             const double &gaugemass,
+                            const size_t &gaugeexponent,
                             //#ifdef Genz
                             //const size_t &m,
                             //#endif
@@ -77,7 +78,7 @@ public:
                             const double &xi = 1.0,
                             const bool &anisotropic = false) {
     if (pparams.flat_metric) {
-      return flat_spacetime::sweep(U, engines, delta, gaugemass,
+      return flat_spacetime::sweep(U, engines, delta, gaugemass, gaugeexponent,
                                   //#ifdef Genz
                                   //m,
                                   //#endif
@@ -111,7 +112,7 @@ public:
 
       this->output_line(i);
 
-      rate += this->sweep((*this).pparams, (*this).U, engines, (*this).sparams.delta, (*this).sparams.gaugemass,
+      rate += this->sweep((*this).pparams, (*this).U, engines, (*this).sparams.delta, (*this).sparams.gaugemass, (*this).sparams.gaugeexponent,
                           //#ifdef Genz
                           //(*this).pparams.m,
                           //#endif

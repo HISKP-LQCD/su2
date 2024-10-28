@@ -31,8 +31,12 @@ namespace glueballs {
                                        const size_t &nu,
                                        const bool &Px) {
     typedef typename accum_type<Group>::type accum;
-
-    Group L = U(x, mu) * (U(x, mu).dagger()); // "1", independently of the group
+    #ifndef partinn
+    Group L;
+    #else
+    su2 L;
+    #endif
+    L = U(x, mu) * (U(x, mu).dagger()); // "1", independently of the group
     for (size_t s = 0; s < a; s++) {
       L = L* operators::parity(Px, 0, U, x, mu);
       x[mu] += 1;

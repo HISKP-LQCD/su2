@@ -5,6 +5,7 @@
 #include"hamiltonian_field.hh"
 #include"su2.hh"
 #include "partitionings.hh"
+#include "partitionings_nn.hh"
 #include"exp_gauge.hh"
 #include<complex>
 

@@ -6,6 +6,7 @@
 #include "random_gauge_trafo.hh"
 #include "su2.hh"
 #include "partitionings.hh"
+#include "partitionings_nn.hh"
 #include "u1.hh"
 #include "vectorfunctions.hh"
 #include "version.hh"

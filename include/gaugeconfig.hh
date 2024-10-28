@@ -19,6 +19,7 @@
 #include "u1.hh"
 //#include "genzsu2.hh"
 #include "partitionings.hh"
+#include "partitionings_nn.hh"
 
 #include <array>
 #include <cassert>
@@ -249,6 +250,22 @@ template <class T> void coldstart(gaugeconfig<_u1> &config) {
     config[i] = _u1(0.);
   }
 }
+
+template <class T>
+void hotstart(gaugeconfig<T> &config, const int seed, const size_t _delta) {
+  size_t delta = _delta;
+  if (delta < 0.)
+    delta = 0;
+  if (delta > 1.)
+    delta = 1.;
+  std::mt19937 engine(seed);
+
+  for (size_t i = 0; i < config.getSize(); i++) {
+    random_element(config[i], engine, delta);
+  }
+}
+
+
 
 /**
  * @brief Initialize the gauge configuration to either hot or cold start.

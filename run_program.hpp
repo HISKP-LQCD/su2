@@ -62,6 +62,7 @@ template <class Group> void run_program(int argc, char *argv[]) {
   } 
   //#ifndef Genz
   #ifndef parti
+  #ifndef partinn
   else if (do_hmc ) {
     hmc_algo<Group> h;
     h.run(nd);
@@ -71,7 +72,7 @@ template <class Group> void run_program(int argc, char *argv[]) {
     heatbath_overrelaxation_algo<Group> hb_or;
     hb_or.run(nd);
   }
-  //#endif
+  #endif
   #endif
    else if (do_omeas) { // offline measurements
     measure_algo<Group> ms;

@@ -238,7 +238,9 @@ namespace flat_spacetime {
            * anyway.
            */
 
+          #ifndef patinn
           Group R;
+          #endif
           for (size_t x1 = 0; x1 < U.getLx(); x1++) {
             for (size_t x2 = 0; x2 < U.getLy(); x2++) {
               for (size_t x3 = 0; x3 < U.getLz(); x3++) {
@@ -247,29 +249,49 @@ namespace flat_spacetime {
                   accum K;
                   get_staples_MCMC_step(K, U, x, mu, xi, anisotropic);
                   for (size_t n = 0; n < N_hit; n++) {
-                   
+                   #ifndef partinn
                     random_element(R, engine[thread_num], delta);
-                    double gaugeterm;
-                    if (gaugeexponent == 2){ 
-                      gaugeterm = (gaugemass/static_cast<double>(U.getNc())) * (retrace(U(x, mu)*U(x, mu)) - retrace(U(x, mu)*R*U(x, mu)*R));
-                      //std::cout << "hello there \n";
-                      }
-                    else 
-                    {gaugeterm = (gaugemass/static_cast<double>(U.getNc())) * (retrace(U(x, mu)) - retrace(U(x, mu)*R));}
+                    Group proposed_element = U(x, mu)*R;
+                    #else
+                    Group proposed_element = random_element(U(x, mu), engine[thread_num], delta);
+                    #endif
+                    
+                    size_t internal_exponent = gaugeexponent;
+                    #if defined (partinn)
+                    su2 old_element = U(x, mu).getsu2();
+                    su2 help_element = proposed_element.getsu2();
+                    #else
+                    Group old_element = U(x, mu);
+                    Group help_element = proposed_element;
+                    #endif
+                    while (internal_exponent > 1){
+                     old_element =old_element * old_element;
+                      help_element = help_element * proposed_element;
+                      internal_exponent -= 1;
+                    }
                     double deltaS = (beta / static_cast<double>(U.getNc())) *
-                                    (retrace(U(x, mu) * K) - retrace(U(x, mu) * R * K)) +  gaugeterm;
+                                    (retrace(old_element * K) - retrace(help_element * K)) +  (gaugemass/static_cast<double>(U.getNc())) * (retrace(old_element) - retrace(help_element));
+                    
                     #ifndef parti
+                    #ifndef partinn
                     bool accept = (deltaS < 0);
                     if (!accept) {
                       
                      accept = (uniform(engine[thread_num]) < exp(-deltaS));
                     }
-                     #else
+                    
+                     #endif
+                     #endif
+                     #ifdef parti
                      bool accept = (uniform(engine[thread_num]) < exp(-deltaS))*(partitioning::weights[((U(x, mu)*R).getindex())]/partitioning::weights[U(x, mu).getindex()]);
                       
                     #endif
+                    #ifdef partinn
+                    bool accept = (uniform(engine[thread_num]) < exp(-deltaS))*(proposed_element.getweight()/U(x, mu).getweight());
+                    
+                    #endif
                     if (accept) {
-                      U(x, mu) = U(x, mu) * R;
+                      U(x, mu) = proposed_element;
                       U(x, mu).restoreSU();
                       rate += 1;
                       if (mu == 0) {

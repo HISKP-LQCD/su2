@@ -95,7 +95,7 @@ add_executable(su2-main main-su2.cpp)
 add_executable(su3-main main-su3.cpp)
 #add_executable(genz-main main-genz.cpp)
 add_executable(partition-main main-partitioning.cpp)
-
+add_executable(partitionnn-main main_partitioning_nn.cpp)
 add_executable(su2-kramers kramers.cc)
 add_executable(test-groups test.cc)
 add_executable(scaling scaling.cc)
@@ -125,7 +125,7 @@ endforeach(target)
 
 target_link_directories(${CMAKE_PROJECT_NAME} PUBLIC ${YAML_CPP_LIBRARY_DIR})
 
-foreach(target u1-main su2-main su3-main partition-main su2-kramers test-groups scaling try ${test_progs_fullname})
+foreach(target u1-main su2-main su3-main partition-main partitionnn-main su2-kramers test-groups scaling try ${test_progs_fullname})
   target_link_libraries(${target} su2 ${YAML_CPP_LIBRARIES})
   target_link_libraries(${target} su2 ${YAML_CPP_LIBRARIES})
 
@@ -144,7 +144,7 @@ endforeach(target)
 install(TARGETS ${PROJECT_NAME}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
-install(TARGETS u1-main su2-main su3-main partition-main)
+install(TARGETS u1-main su2-main su3-main partition-main partitionnn-main)
 install(TARGETS su2-kramers test-groups scaling try)
 
 # tests

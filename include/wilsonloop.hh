@@ -7,6 +7,7 @@
 #include "geometry.hh"
 #include "su2.hh"
 #include "partitionings.hh"
+#include "partitionings_nn.hh"
 
 #ifdef _USE_OMP_
 #include <omp.h>
@@ -64,23 +65,28 @@ double planar_wilsonloop_dir(const gaugeconfig<Group> &U,
       for (x[2] = 0; x[2] < U.getLy(); x[2]++) {
         for (x[3] = 0; x[3] < U.getLz(); x[3]++) {
           std::vector<size_t> xrun = x;
+          #ifndef partinn
           Group L;
+          #endif
+          #ifdef partinn
+          su2 L;
+          #endif
           L.set_to_identity(); // L = 1.0
           for (size_t _t = 0; _t < t; _t++) {
-            L *= U(xrun, nu);
+            L = L* U(xrun, nu);
             xrun[nu] += 1;
           }
           for (size_t s = 0; s < r; s++) {
-            L *= U(xrun, mu);
+            L = L* U(xrun, mu);
             xrun[mu] += 1;
           }
           for (size_t _t = 0; _t < t; _t++) {
             xrun[nu] -= 1;
-            L *= U(xrun, nu).dagger();
+            L = L* U(xrun, nu).dagger();
           }
           for (size_t s = 0; s < r; s++) {
             xrun[mu] -= 1;
-            L *= U(xrun, mu).dagger();
+            L = L* U(xrun, mu).dagger();
           }
           loop += retrace(L); // taking the real part averages over the 2 orientations
         }

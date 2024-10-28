@@ -37,7 +37,7 @@ public:
   explicit _su2() : a(0), b(0) {}
   explicit _su2(Complex a, Complex b) : a(a), b(b) {}
   _su2(const _su2 &U) : a(U.a), b(U.b) {}
-
+  //friend inline _su2 operator*=(const partitioning_nn &U1);
   friend inline _su2 operator+(const _su2 &U1, const _su2 &U2);
   friend inline _su2 operator-(const _su2 &U1, const _su2 &U2);
   friend inline _su2 operator*(const _su2 &U1, const _su2 &U2);
@@ -49,6 +49,7 @@ public:
     this->b = a * U1.b + this->b * std::conj(U1.a);
     return *this;
   }
+  
   _su2 round(size_t n) const {
     double dn = n;
     return _su2(

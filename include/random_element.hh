@@ -5,16 +5,17 @@
 #include "u1.hh"
 //#include "genzsu2.hh"
 #include "partitionings.hh"
+#include "partitionings_nn.hh"
 
 #include <random>
 
 constexpr double pi() {
   return std::atan(1) * 4;
 }
-
+#ifndef partinn
 template <class URNG, class T>
 void random_element(T &U, URNG &engine, const double delta = 1.);
-
+#endif
 template <class URNG> void random_element(_u1 &U, URNG &engine, const double delta = 1.) {
   std::uniform_real_distribution<double> dist(-pi() * delta, pi() * delta);
 
@@ -22,6 +23,7 @@ template <class URNG> void random_element(_u1 &U, URNG &engine, const double del
   return;
 }
 
+#ifndef partinn
 template <class URNG>
 void random_element(_su2 &U, URNG &engine, const double delta = 1.) {
   std::uniform_real_distribution<double> dist1(-1., 1.);
@@ -37,7 +39,7 @@ void random_element(_su2 &U, URNG &engine, const double delta = 1.) {
   U = _su2(Complex(cos(alpha), salpha * u), salpha * r * Complex(sin(theta), cos(theta)));
   return;
 }
-
+#endif
 /**
  * @brief Initizalizes the configuration of a random partitioning element with distance smaller than 
  * delta to the identity
@@ -62,7 +64,33 @@ void random_element(partitioning &U, URNG &engine, const double delta = 1.){
   U = _partitioning(r);}
   return;
 }
-
+#ifdef partinn
+template <class URNG>
+_partitioning_nn random_element(partitioning_nn &U, URNG &engine, const double delta = 1){
+  //TODO: Incorporate delta
+  if (delta > 0){
+    int delta_counter = static_cast<size_t> (delta) -1;
+    
+    std::vector <size_t> neigborvector = U.getneigborindeces();
+    delta_counter -= 1;
+    
+    while (delta_counter >  0){
+      for (auto ind : neigborvector){
+        neigborvector.reserve(partitioning_nn::nn_lookup[ind].size());
+        neigborvector.insert(std::end(neigborvector), std::begin(partitioning_nn::nn_lookup[ind]), std::end(partitioning_nn::nn_lookup[ind]));
+      }
+      delta_counter -= 1;
+    }
+    //neigborvector.insert(U.getneigborindeces());
+    //neigborvector.insert(std::end(neigborvector), std::begin(U.getneigborindeces()), std::end(U.getneigborindeces()));
+    std::uniform_int_distribution<int> dist1(0, neigborvector.size() - 1);
+    
+    return partitioning_nn(neigborvector[dist1(engine)]);}
+  else {
+    return U;
+  }
+}
+#endif
 /**
  * @brief initialized the configuration to some random SU(3) matrix
  *

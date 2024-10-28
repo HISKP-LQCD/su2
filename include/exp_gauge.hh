@@ -3,6 +3,7 @@
 
 #include "su2.hh"
 #include "partitionings.hh"
+#include "partitionings_nn.hh"
 #include "su3.hh"
 #include "u1.hh"
 #include "adjointfield.hh"

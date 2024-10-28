@@ -34,11 +34,15 @@ Complex polyakov_loop(const gaugeconfig<Group> &U,
   const size_t mu = 0; // Polyakov loop contains U_{\mu=0}(x) only
   std::vector<size_t> x = {0, xi[0], xi[1], xi[2]};
   //accum P;
+  #ifndef partinn
   Group P;
+  #else
+  su2 P;
+  #endif
   P.set_to_identity();
 
   for (x[0] = 0; x[0] < U.getLt(); x[0]++) {
-      P *= U(x, mu);
+      P = P* U(x, mu);
   }
   return trace(P); // taking the rtrace part averages over the 2 orientations
 }

@@ -18,6 +18,7 @@
 #include "monomial.hh"
 #include "su2.hh"
 #include "partitionings.hh"
+#include "partitionings_nn.hh"
 #include "u1.hh"
 #include <array>
 #include <complex>

@@ -130,7 +130,6 @@ void APEsmearing(gaugeconfig<Group> &U, const double &alpha, const bool spatial=
             K = alpha*(Uold(x, i)) + beta*K;
             //#ifndef Genz
             const Group Uprime = (Group) accum_to_Group(K);
-            std::cout << "got here \n";
             //#else 
             //const su2 Uprime = accum_to_Group(K);
             //#endif

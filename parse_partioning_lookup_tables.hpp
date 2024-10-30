@@ -106,7 +106,7 @@ void load_tables(){
     }
     linecounter += 1;
   }
- std::cout << "stain alive" << "\n"; 
+// std::cout << "stain alive" << "\n"; 
   linecounter = 0;
   while (std::getline(additionsstream, record)){
     std::istringstream additionline(record);

@@ -44,11 +44,10 @@ void load_tables(){
     int linecounter = 0;
     while (std::getline(sstream, record)) {
       std::istringstream line(record);
-      std::cout << "reading main " << "\n";
+      std::cout << "### reading lookup talbe ### " << "\n";
       int wordcounter = 0;
       std::vector<size_t> neighbors;
       while (std::getline(line, record, delimiter)){
-          std::cout << "linecounter"  << linecounter << "\n";
           if (wordcounter == 1){
             partitioning_nn::point0.push_back(std::stod(record));
           }

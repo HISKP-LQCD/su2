@@ -325,7 +325,7 @@ public:
         g_heat = 0.0;
       }
       g_icounter = 0;
-      std::cout << "oh no" << "\n";
+      //std::cout << "oh no" << "\n";
       hotstart(U, sparams.seed, g_heat);
     }
 

@@ -121,7 +121,12 @@ double wilsonloop_non_planar(const gaugeconfig<Group> &U, std::vector<size_t> r)
       for (size_t x2 = 0; x2 < U.getLy(); x2++) {
         for (size_t x3 = 0; x3 < U.getLz(); x3++) {
           std::vector<size_t> xrun = {x0, x1, x2, x3};
+          #ifndef partinn
           Group L;
+          #endif
+          #ifdef partinn
+          su2 L;
+          #endif
           L.set_to_identity(); // L = 1.0
           // needed if vector with directions contains more than 4 entries/if another
           // order than t-x-y-z is wanted
@@ -129,7 +134,7 @@ double wilsonloop_non_planar(const gaugeconfig<Group> &U, std::vector<size_t> r)
           for (size_t direction = 0; direction < r.size(); direction++) {
             directionloop = (direction + U.getndims()) % U.getndims();
             for (size_t length = 0; length < r[direction]; length++) {
-              L *= U(xrun, directionloop);
+              L = L* U(xrun, directionloop);
               xrun[directionloop] += 1;
             }
           }
@@ -137,7 +142,7 @@ double wilsonloop_non_planar(const gaugeconfig<Group> &U, std::vector<size_t> r)
             directionloop = (direction + U.getndims()) % U.getndims();
             for (size_t length = 0; length < r[direction]; length++) {
               xrun[directionloop] -= 1;
-              L *= U(xrun, directionloop).dagger();
+              L = L* U(xrun, directionloop).dagger();
             }
           }
           loop += retrace(L);

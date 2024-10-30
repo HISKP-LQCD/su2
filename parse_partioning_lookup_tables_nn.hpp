@@ -1,3 +1,14 @@
+/**
+ * @file parse_partioning_lookup_tables_nn.hpp
+ * @author Sebastian Müller (s6sbmuel@uni-bonn.de)
+ * @brief loads the lookup table for the neighrest neighbor implementation of the partitioning
+ * @version 0.1
+ * @date 2024-10-30
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ */
+
 #pragma once
 #include "partitionings_nn.hh"
 #include <ctime>
@@ -27,13 +38,9 @@ void load_tables(){
     
     
     char delimiter = ',';
-    std::string file_contents = readFileIntoString( "lookuptable_nn.csv");
-    //std::string file_contents_multiplication = readFileIntoString("lookup_table_multiplication.csv");
-    //std::string file_contents_addition = readFileIntoString("lookup_table_addition.csv");
-    
+    std::string file_contents = readFileIntoString( "lookuptable_nn.csv"); //filename fixed since this is loaded before the YAML file
     std::istringstream sstream(file_contents);
     std::string record;
-
     int linecounter = 0;
     while (std::getline(sstream, record)) {
       std::istringstream line(record);
@@ -59,23 +66,19 @@ void load_tables(){
           }
           else if (wordcounter > 5){
             
-            if (record != ""){
+            if (record != ""){ // "" is the represnetation of NaN and thus the end of the neighrest neighbor list
             neighbors.push_back(std::stol(record));}
-          else {
+          else { // breaks the loop if end of neighrest neighbor list
             break;
           }
           }
           
-         std::cout << "wordcounter " << wordcounter << "\n"; 
           wordcounter += 1;
       }
-      std::cout << "hello there \n";
       partitioning_nn::nn_lookup.push_back(neighbors);
-      std::cout << "i am still here \n";
       neighbors.clear();
       linecounter += 1;
     }
-  std::cout << "stain alive \n";
   }
 
 }

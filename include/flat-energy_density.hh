@@ -80,13 +80,22 @@ namespace flat_spacetime {
             std::vector<size_t> x1 = x;
             std::vector<size_t> x2 = x;
             std::vector<size_t> x3 = x;
+            #ifndef partinn
             accum G[4][4];
+            #else
+            su2 G[4][4];
+            #endif
             for (size_t mu = mu_start; mu < U.getndims() - 1; mu++) {
               for (size_t nu = mu + 1; nu < U.getndims(); nu++) {
                 x1[mu] += 1; // x + mu
                 x2[nu] += 1; // x + nu
+                #ifndef partinn 
                 accum leaf =
                   U(x, mu) * U(x1, nu) * U(x2, mu).dagger() * U(x, nu).dagger();
+                  #else
+                  su2 leaf =
+                  U(x, mu) * U(x1, nu) * U(x2, mu).dagger() * U(x, nu).dagger();
+                  #endif
                 x1[mu] -= 1; // x
                 x2[nu] -= 1; // x
 

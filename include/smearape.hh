@@ -64,9 +64,13 @@ void smearlatticeape(gaugeconfig<Group> &U,
           std::vector<size_t> x = {x0, x1, x2, x3};
           for (size_t mu = startmu; mu < endmu; mu++) {
             // K is intialized to (0,0) even if not explicitly specified
+            #ifndef partinn
             accum K(0.0, 0.0);
+            #else
+            su2_accum K(0.0, 0.0);
+            #endif
             get_staples_MCMC_step(K, Uold, x, mu, 1.0, false, spatial_only);
-            Group Uprime(Uold(x, mu) * alpha + K * (1 - alpha) / double(norm));
+            Group Uprime(Uold(x, mu) * alpha + K * ((1 - alpha) / double(norm)));
             U(x, mu) = Uprime;
             U(x, mu).restoreSU();
           }
@@ -117,12 +121,16 @@ void APEsmearing(gaugeconfig<Group> &U, const double &alpha, const bool spatial=
           std::vector<size_t> x = {x0, x1, x2, x3};
           for (size_t i = startmu; i < d; i++) {
             // K is intialized to (0,0) even if not explicitly specified
-            
+            #ifndef partinn
             accum K;
+            #else
+            su2_accum K;
+            #endif
             get_staples_APE(K, Uold, x, i, spatial);
             K = alpha*(Uold(x, i)) + beta*K;
             //#ifndef Genz
             const Group Uprime = (Group) accum_to_Group(K);
+            std::cout << "got here \n";
             //#else 
             //const su2 Uprime = accum_to_Group(K);
             //#endif

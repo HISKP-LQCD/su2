@@ -247,6 +247,7 @@ namespace flat_spacetime {
                 std::vector<size_t> x = {x0, x1, x2, x3};
                 for (size_t mu = 0; mu < U.getndims(); mu++) {
                   accum K;
+                  //std::cout << "gaugeexponent" << gaugeexponent << "\n";
                   get_staples_MCMC_step(K, U, x, mu, xi, anisotropic);
                   for (size_t n = 0; n < N_hit; n++) {
                    #ifndef partinn
@@ -259,18 +260,22 @@ namespace flat_spacetime {
                     size_t internal_exponent = gaugeexponent;
                     #if defined (partinn)
                     su2 old_element = U(x, mu).getsu2();
+                    su2 saved_element = old_element;
                     su2 help_element = proposed_element.getsu2();
                     #else
                     Group old_element = U(x, mu);
+                    Group saved_element = old_element;
                     Group help_element = proposed_element;
                     #endif
+                    //std::cout << "internal exponent " << internal_exponent << "\n";
                     while (internal_exponent > 1){
                      old_element =old_element * old_element;
                       help_element = help_element * proposed_element;
                       internal_exponent -= 1;
                     }
+                    
                     double deltaS = (beta / static_cast<double>(U.getNc())) *
-                                    (retrace(old_element * K) - retrace(help_element * K)) +  (gaugemass/static_cast<double>(U.getNc())) * (retrace(old_element) - retrace(help_element));
+                                    (retrace(saved_element * K) - retrace(proposed_element * K)) +  (gaugemass/static_cast<double>(U.getNc())) * (retrace(old_element) - retrace(help_element));
                     
                     #ifndef parti
                     #ifndef partinn

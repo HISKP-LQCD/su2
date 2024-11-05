@@ -65,4 +65,4 @@ with open('lookuptable_nn.csv', 'x') as file: # note: produces an error, if the 
             anothercounter += 1
         file.write('\n') # begin next line
         counter += 1
-
+    file.close()

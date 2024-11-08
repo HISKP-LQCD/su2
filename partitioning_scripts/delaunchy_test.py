@@ -2,7 +2,7 @@
 
 import numpy as np
 import HLGTTools.operators as ho
-import HLGTTools.operators.DJT.S3_sphere.partition as S3_partition
+#import HLGTTools.operators.DJT.S3_sphere.partition as S3_partition
 import pandas as pd
 import argparse
 import scipy.spatial 
@@ -11,7 +11,6 @@ parser = argparse.ArgumentParser(prog = "calculate_tables", description="""calul
 parser.add_argument('-m', '--m',type=int,  help = "The m/N argument for the calculation of the partitoning")
 parser.add_argument('-partitioning', '--wanted_partitioning', type=str, help = "The wanted partioning")
 args = parser.parse_args()
-
 wanted_partitioning = args.wanted_partitioning
 m = args.m
 

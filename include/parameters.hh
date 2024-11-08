@@ -119,7 +119,7 @@ namespace global_parameters {
 
     size_t n_meas = 10; // total number of sweeps
     size_t icounter = 0; // initial counter for updates
-    size_t seed = 13526463; // PRNG seed
+    size_t seed = time(0); // PRNG seed
 
     size_t nstep = 1; // measure each nstep config
 
@@ -176,7 +176,7 @@ namespace global_parameters {
     size_t N_save = 100; // N_save
     size_t n_meas = 10; // total number of sweeps
     size_t icounter = 0; // initial counter for updates
-    size_t seed = 13526463; // PRNG seed
+    size_t seed = time(0); // PRNG seed
     std::string restart_condition = "hot"; // restart condition: hot, cold, read
     bool acceptreject = true; // use accept-reject
     std::string configfilename = ""; // configuration filename used in case of restart
@@ -221,7 +221,7 @@ namespace global_parameters {
   struct metropolis {
     size_t n_meas = 10; // total number of sweeps
     size_t icounter = 0; // initial counter for updates
-    size_t seed = 13526463; // PRNG seed
+    size_t seed = time(0); // PRNG seed
 
     bool do_gaugetrafo = false; // whether to do a random global gauge trafo after N_trafo steps
     size_t N_trafo = 100; // does a gauge trafe after N_trafo many sweeps
@@ -255,7 +255,7 @@ namespace global_parameters {
   struct heatbath_overrelaxation {
     size_t n_meas = 10; // total number of sweeps
     size_t icounter = 0; // initial counter for updates
-    size_t seed = 13526463; // PRNG seed
+    size_t seed = time(0); // PRNG seed
 
     bool do_gaugetrafo = false; // whether to do a random global gauge trafo after N_trafo steps
     size_t N_trafo = 100; // does a gauge trafe after N_trafo many sweeps

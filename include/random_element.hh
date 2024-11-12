@@ -67,7 +67,7 @@ void random_element(partitioning &U, URNG &engine, const double delta = 1.){
 #ifdef partinn
 template <class URNG>
 _partitioning_nn random_element(partitioning_nn &U, URNG &engine, const double delta = 1){
-  //TODO: Incorporate delta
+  
   if (delta > 0){
     int delta_counter = static_cast<size_t> (delta) -1;
     
@@ -87,6 +87,7 @@ _partitioning_nn random_element(partitioning_nn &U, URNG &engine, const double d
     
     return partitioning_nn(neigborvector[dist1(engine)]);}
   else {
+    U.set_to_identity();
     return U;
   }
 }

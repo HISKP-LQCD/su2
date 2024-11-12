@@ -106,9 +106,8 @@ class _partitioning_nn {
     inline su2 operator+=(_partitioning_nn &U){
         return getsu2()*U.getsu2();
     }
-    inline su2 set_to_identity(){ //returns an su2 identity matrix since the identity is not necessarily part of the partitioning (eg. for Fibonacci)
-        su2 helpmatrix;
-        helpmatrix.set_to_identity();
+    inline _partitioning_nn set_to_identity(){ //returns an su2 identity matrix since the identity is not necessarily part of the partitioning (eg. for Fibonacci)
+        _partitioning_nn helpmatrix( su2(1, 0));
         return helpmatrix;
     }
     void set(const size_t _i){index = _i;} // set the partitioning to a specific element

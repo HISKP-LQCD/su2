@@ -318,6 +318,8 @@ public:
   }
 
   void open_output_data() {
+    // set potential filenames
+    this->set_potential_filenames();
     // doing only offline measurements
     if (!sparams.do_mcmc) {
       return;
@@ -437,15 +439,14 @@ public:
    * @param i configuration index
    */
   void after_MCMC_step(const size_t &i, const bool &do_omeas) {
+    if (do_omeas) { 
+      this->do_omeas_i(i);
+    }
     if (i > 0 && (i % (*this).sparams.N_save) ==
                    0) { // saving (*this).U after each N_save trajectories
       std::string path_i = (*this).conf_path_basename + "." + std::to_string(i);
       if ((*this).sparams.do_mcmc) {
         (*this).U.save(path_i);
-      }
-
-      if (do_omeas) {
-        this->do_omeas_i(i);
       }
 
       if ((*this).sparams.do_mcmc) {

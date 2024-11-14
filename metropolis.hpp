@@ -178,7 +178,7 @@ public:
 
       this->do_sweep(i, inew);
       bool do_omeas =
-        ((*this).sparams.do_omeas && inew != 0 && (inew % (*this).sparams.N_save) == 0);
+        ((*this).sparams.do_omeas && inew != 0 && (inew % (*this).omeas.nstep) == 0);
       this->after_MCMC_step(inew, do_omeas);
     }
 

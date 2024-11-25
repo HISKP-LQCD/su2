@@ -71,7 +71,7 @@ class _partitioning_nn {
             }
             i = i +1;
         } 
-
+        //std::cout <<"min index" <<  min_index << "\n";
         index = min_index;       
     }
     inline Complex geta() const { // get a from the su2 matrix

@@ -79,8 +79,15 @@ _partitioning_nn random_element(partitioning_nn &U, URNG &engine, const double d
         neigborvector.reserve(partitioning_nn::nn_lookup[ind].size());
         neigborvector.insert(std::end(neigborvector), std::begin(partitioning_nn::nn_lookup[ind]), std::end(partitioning_nn::nn_lookup[ind]));
       }
+      
+
       delta_counter -= 1;
     }
+    //std::cout << "U index "<< U.getindex() << "\n";
+
+    //for (auto i: neigborvector){
+    //  std::cout << " i " << i << "\n";
+    //}
     //neigborvector.insert(U.getneigborindeces());
     //neigborvector.insert(std::end(neigborvector), std::begin(U.getneigborindeces()), std::end(U.getneigborindeces()));
     std::uniform_int_distribution<int> dist1(0, neigborvector.size() - 1);

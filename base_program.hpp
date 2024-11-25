@@ -324,6 +324,7 @@ public:
       } else if (sparams.restart_condition == "cold") {
         g_heat = 0.0;
       }
+      //std::cout << g_heat << "g heat \n";
       g_icounter = 0;
       //std::cout << "oh no" << "\n";
       hotstart(U, sparams.seed, g_heat);

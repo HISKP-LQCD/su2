@@ -77,8 +77,36 @@ void load_tables(){
       partitioning_nn::nn_lookup.push_back(neighbors);
       neighbors.clear();
       linecounter += 1;
+      
+    }
+    std::cout << " -------- point 0 ----- \n";
+    for (auto i: partitioning_nn::point0){
+      std::cout << i << "\n";
+    }
+    std::cout << " --------- point 1 ----\n"; 
+    for (auto i: partitioning_nn::point1){
+      std::cout << i << "\n";
+    }
+    std::cout << " ----- point 2 ------ \n";
+    for (auto i: partitioning_nn::point2){
+      std::cout << i << "\n";
+    }
+    std::cout << " -------- point 3 ------ \n";
+    for (auto i: partitioning_nn::point3){
+      std::cout << i << "\n";
+    }
+  
+  std::cout << " --- nn lookup ---- \n";
+  for (auto i:partitioning_nn::nn_lookup){
+    std::cout << " --- next element -- \n";
+    for (auto j: i){
+      std::cout << j << "\n";
     }
   }
-
+  std::cout << "-------- weights ------ \n";
+  for (auto i:partitioning_nn::weights){
+    std::cout << "weight " <<  i << "\n";
+  }
 }
+};
  //end namespace read_partitionings

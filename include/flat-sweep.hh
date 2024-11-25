@@ -252,9 +252,12 @@ namespace flat_spacetime {
                   for (size_t n = 0; n < N_hit; n++) {
                    #ifndef partinn
                     random_element(R, engine[thread_num], delta);
+                    
                     Group proposed_element = U(x, mu)*R;
                     #else
                     Group proposed_element = random_element(U(x, mu), engine[thread_num], delta);
+                    //std::cout << " proposed element "<< proposed_element.geta() << " " << proposed_element.getb() << "\n";
+                    //std::cout << " U(x, mu) " << U(x, mu).geta() << " " << U(x, mu).getb() << "\n";
                     #endif
                     
                     size_t internal_exponent = gaugeexponent;
@@ -273,10 +276,10 @@ namespace flat_spacetime {
                       help_element = help_element * proposed_element;
                       internal_exponent -= 1;
                     }
-                    
+                   //std::cout << "gaugemass " << gaugemass << "\n"; 
                     double deltaS = (beta / static_cast<double>(U.getNc())) *
                                     (retrace(saved_element * K) - retrace(proposed_element * K)) +  (gaugemass/static_cast<double>(U.getNc())) * (retrace(old_element) - retrace(help_element));
-                    
+                    //std::cout <<" Delta S " <<  deltaS << "\n"; 
                     #ifndef parti
                     #ifndef partinn
                     bool accept = (deltaS < 0);
@@ -337,6 +340,7 @@ namespace flat_spacetime {
                                const double beta,
                                const double xi = 1.0,
                                bool anisotropic = false) {
+    std::cout << "never ever read this please  \n";
     std::uniform_real_distribution<double> uniform(0., 1.);
     typedef typename accum_type<Group>::type accum;
     size_t rate = 0, rate_time = 0;

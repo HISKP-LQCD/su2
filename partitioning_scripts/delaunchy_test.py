@@ -10,10 +10,12 @@ import scipy.spatial
 parser = argparse.ArgumentParser(prog = "calculate_tables", description="""calulate the lookup tables for the partitionings""")
 parser.add_argument('-m', '--m',type=int,  help = "The m/N argument for the calculation of the partitoning")
 parser.add_argument('-partitioning', '--wanted_partitioning', type=str, help = "The wanted partioning")
+parser.add_argument("-wl", '--weightsincluded', type= int, help = "should the weights be included or set to 1")
 args = parser.parse_args()
 wanted_partitioning = args.wanted_partitioning
 m = args.m
-
+weights_included = args.weightsincluded
+print(weights_included)
 ### calculate partitioning and weights ###
 if wanted_partitioning == "Genz":    
     partitioning = ho.getSu2GenzPartitioning(m)
@@ -30,11 +32,14 @@ elif wanted_partitioning == "Volleyball":
 else:
     raise Exception("paritioning not implimented")
 
+print(partitioning)
 print("generated partitionings")
 
 ### uses Timos code to get the weights ###
-weights = ho.getSU2TriangulatedIntegrationWeights(points=partitioning)
-
+if weights_included:
+    weights = ho.getSU2TriangulatedIntegrationWeights(points=partitioning)
+else:
+    weights = np.ones(shape = len(partitioning))
 ### setup the Delaunay triangulation ###
 Delaunchy = scipy.spatial.Delaunay(points = partitioning)
 helpresult = Delaunchy.vertex_neighbor_vertices

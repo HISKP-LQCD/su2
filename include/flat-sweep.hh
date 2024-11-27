@@ -261,7 +261,7 @@ namespace flat_spacetime {
                     #endif
                     
                     size_t internal_exponent = gaugeexponent;
-                    #if defined (partinn)
+                    #ifdef partinn
                     su2 old_element = U(x, mu).getsu2();
                     su2 saved_element = old_element;
                     su2 help_element = proposed_element.getsu2();

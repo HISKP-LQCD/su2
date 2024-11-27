@@ -237,6 +237,7 @@ public:
     std::uniform_int_distribution<> int_dist(0, n_live - 2);
 
     gaugeconfig<Group> &U_i = (*this).U; // configuration corresponding to that index
+
     // sampling n_samples points in the phase space
     for (size_t i = 0; i < n_samples; i++) {
       const int i_conf = i_last + i; // configuration index

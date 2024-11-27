@@ -275,7 +275,8 @@ namespace global_parameters {
     bool lenghty_conf_name = false; // add ensemble information in configuration name
     size_t beta_str_width = g_beta_str_width; // length of the beta value config filename
 
-    bool do_mcmc = true; // generate confs. with Markov chain Monte Carlo
+    bool use_NS = true; // sample confs. with NS, measure them, or both
+    bool do_mcmc = false; // sample confs.
     bool continue_run = false; // continue the generation of points
     
     // delete configurations that have been already used 

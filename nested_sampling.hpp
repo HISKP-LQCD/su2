@@ -282,7 +282,7 @@ public:
       // saving the new configuration
       U_i.save(this->get_path_conf(i_conf));
 
-      std::cout << "## Saving final configuration of n_live points\n";
+      //std::cout << "## Saving final configuration of n_live points\n";
       (*this).os_nlive.open(path_nlive_conf, std::ios::out);
       (*this).os_nlive << std::scientific << std::setprecision(16);
       (*this).os_nlive << "i P" << std::endl;

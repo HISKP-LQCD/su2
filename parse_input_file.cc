@@ -376,7 +376,7 @@ namespace input_file_parsing {
     in.dig_deeper(inner_tree); // entering the sub-node
     YAML::Node nd = in.get_outer_node();
 
-    in.read_opt_verb<bool>(mcparams.do_mcmc, {"do_mcmc"});
+    in.read_verb<bool>(mcparams.do_mcmc, {"do_mcmc"});
     in.read_opt_verb<size_t>(mcparams.n_meas, {"n_meas"});
     in.read_opt_verb<size_t>(mcparams.N_save, {"N_save"});
     in.read_opt_verb<size_t>(mcparams.seed, {"seed"});
@@ -412,7 +412,8 @@ namespace input_file_parsing {
     in.dig_deeper(inner_tree); // entering the sub-node
     YAML::Node nd = in.get_outer_node();
 
-    in.read_opt_verb<bool>(mcparams.do_mcmc, {"do_mcmc"});
+    in.read_verb<bool>(mcparams.use_NS, {"use_NS"});
+    in.read_verb<bool>(mcparams.do_mcmc, {"do_mcmc"});
     in.read_opt_verb<bool>(mcparams.continue_run, {"continue_run"});
     in.read_opt_verb<bool>(mcparams.delete_dead_confs, {"delete_dead_confs"});
     in.read_opt_verb<size_t>(mcparams.seed, {"seed"});
@@ -446,7 +447,7 @@ namespace input_file_parsing {
     in.dig_deeper(inner_tree); // entering the glueball node
     YAML::Node nd = in.get_outer_node();
 
-    in.read_opt_verb<bool>(mcparams.do_mcmc, {"do_mcmc"});
+    in.read_verb<bool>(mcparams.do_mcmc, {"do_mcmc"});
     in.read_opt_verb<size_t>(mcparams.n_meas, {"n_meas"});
     in.read_opt_verb<size_t>(mcparams.N_save, {"N_save"});
     in.read_opt_verb<size_t>(mcparams.n_heatbath, {"n_heatbath"});
@@ -482,7 +483,7 @@ namespace input_file_parsing {
     in.read_verb<size_t>(hparams.N_save, {"n_save"});
     in.read_verb<size_t>(hparams.n_meas, {"n_meas"});
 
-    in.read_opt_verb<bool>(hparams.do_mcmc, {"do_mcmc"});
+    in.read_verb<bool>(hparams.do_mcmc, {"do_mcmc"});
 
     in.read_verb<std::string>(hparams.restart_condition, {"restart_condition"});
     check_restart_condition(hparams.restart_condition);

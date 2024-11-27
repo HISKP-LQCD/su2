@@ -124,14 +124,14 @@ YAML::Node get_cleaned_input_file(running_program &rp, const std::string &input_
     }
   }
 
+  do_nested_sampling = false;
   if (nd["nested_sampling"]) {
-    // in.read_verb<bool>(do_nested_sampling, {"nested_sampling", "do_mcmc"});
-    // if (!do_nested_sampling) {
-    //   nd.remove("nested_sampling");
-    // } else {
-    // }
-    do_nested_sampling =true;
-    nd.remove("monomials");
+    in.read_verb<bool>(do_nested_sampling, {"nested_sampling", "use_NS"});
+    if (!do_nested_sampling) {
+      nd.remove("nested_sampling");
+    } else {
+      nd.remove("monomials");
+    }
   }
 
   // NOTE: offline measurements are handles independently by the NS algorithm class
@@ -141,6 +141,8 @@ YAML::Node get_cleaned_input_file(running_program &rp, const std::string &input_
   std::string err = ""; // error message
   const int flag_algo = int(do_hmc) + int(do_metropolis) +
                         int(do_heatbath_overrelaxation) + int(do_nested_sampling);
+  std::cout << do_hmc << " " << do_metropolis << "  " << " " << do_heatbath_overrelaxation
+            << " " << do_nested_sampling << std::endl;
   try {
     if (flag_algo > 1) { // can run only one algorithm
       err = "ERROR: You can run no more than one MC algorithm.\n";

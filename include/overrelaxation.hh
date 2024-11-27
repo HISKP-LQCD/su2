@@ -12,8 +12,8 @@
 
 #pragma once
 
-#include "errors.hpp"
 #include "accum_type.hh"
+#include "errors.hpp"
 #include "gaugeconfig.hh"
 #include "get_staples.hh"
 #include "random_element.hh"
@@ -49,12 +49,10 @@ void overrelaxation(gaugeconfig<Group> &U,
  * @brief  eq. below (4.50) of https://link.springer.com/book/10.1007/978-3-642-01850-3
  */
 template <>
-void overrelaxation(gaugeconfig<u1> &U,
-                    const double &xi,
-                    const bool &anisotropic) {
+void overrelaxation(gaugeconfig<u1> &U, const double &xi, const bool &anisotropic) {
   typedef typename accum_type<u1>::type accum;
 
-  const size_t endmu = U.getndims(); 
+  const size_t endmu = U.getndims();
   for (size_t x0_start = 0; x0_start < 2; x0_start++) {
 #pragma omp parallel for
     for (size_t x0 = x0_start; x0 < U.getLt(); x0 += 2) {
@@ -77,18 +75,34 @@ void overrelaxation(gaugeconfig<u1> &U,
 }
 
 template <>
-void overrelaxation(gaugeconfig<su2> &U,
-                    const double &xi,
-                    const bool &anisotropic) {
-  fatal_error("overrelaxation not implemented for SU(2)!", __func__);
+void overrelaxation(gaugeconfig<su2> &U, const double &xi, const bool &anisotropic) {
+  typedef typename accum_type<su2>::type accum;
+
+  const size_t endmu = U.getndims();
+  for (size_t x0_start = 0; x0_start < 2; x0_start++) {
+#pragma omp parallel for
+    for (size_t x0 = x0_start; x0 < U.getLt(); x0 += 2) {
+      for (size_t x1 = 0; x1 < U.getLx(); x1++) {
+        for (size_t x2 = 0; x2 < U.getLy(); x2++) {
+          for (size_t x3 = 0; x3 < U.getLz(); x3++) {
+            const std::vector<size_t> x = {x0, x1, x2, x3};
+            for (size_t mu = 0; mu < endmu; mu++) {
+              accum K;
+              get_staples_MCMC_step(K, U, x, mu, xi, anisotropic);
+              K = (1.0 / sqrt(K.det())) * K;
+              U(x, mu).set(K.geta(), K.getb());
+            }
+          }
+        }
+      }
+    }
+  }
 
   return;
 }
 
 template <>
-void overrelaxation(gaugeconfig<su3> &U,
-                    const double &xi,
-                    const bool &anisotropic) {
+void overrelaxation(gaugeconfig<su3> &U, const double &xi, const bool &anisotropic) {
   fatal_error("overrelaxation not implemented for SU(3)!", __func__);
 
   return;

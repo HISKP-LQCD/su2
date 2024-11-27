@@ -111,6 +111,9 @@ public:
   size_t getLy() const { return L[2]; }
   size_t getLz() const { return L[3]; }
 
+  size_t get_N_pts() const { return N_pts; }
+  std::vector<std::vector<size_t>> get_idx_xplus_mu() const { return idx_xplus_mu; }
+
   size_t getIndex(const int t, const int x, const int y, const int z) const {
     size_t Lt = L[0];
     size_t Lx = L[1];

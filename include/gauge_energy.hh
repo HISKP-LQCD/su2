@@ -59,6 +59,29 @@ namespace flat_spacetime {
           }
         }
       }
+
+      double res2 = 0.0;
+      std::vector<size_t> L_values = {U.getLt(), U.getLx(), U.getLy(), 1};
+      geometry G1(L_values);
+      G1.set_xpmu_idx_pbc();
+      const std::vector<std::vector<size_t>> idx_xplus_mu = G1.get_idx_xplus_mu();
+      size_t n_dims = U.getndims();
+      std::cout << "ciao  " << idx_xplus_mu[0].size() << "\n";
+
+      for (size_t i = 0; i < G1.get_N_pts(); i++) {
+        for (size_t mu = startmu; mu < U.getndims() - 1; mu++) {
+          const size_t i_xpmu = n_dims * idx_xplus_mu[mu][i];
+          for (size_t nu = mu + 1; nu < n_dims; nu++) {
+            const size_t i_xpnu = n_dims * idx_xplus_mu[nu][i];
+            std::cout << U.getSize() << " " << n_dims * i + mu << " " << i_xpmu + nu
+                      << " " << i_xpnu + mu << " " << n_dims * i + nu << "\n";
+            res2 += retrace(U[n_dims * i + mu] * U[i_xpmu + nu] *
+                            U[i_xpnu + mu].dagger() * U[n_dims * i + nu]);
+          }
+        }
+      }
+      std::cout << "compare " << res << "  " << res2 << "\n";
+      std::abort();
     }
     // 2n option - anisotropic lattice present
     if (anisotropic) {
@@ -75,7 +98,7 @@ namespace flat_spacetime {
                   xplusmu[mu] += 1;
                   xplusnu[nu] += 1;
                   double eta = xi;
-                  if ((mu==0) ^ (nu==0)) {
+                  if ((mu == 0) ^ (nu == 0)) {
                     // at least one direction is temporal (but not both)
                     eta = 1.0 / xi;
                   }

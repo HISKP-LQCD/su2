@@ -133,7 +133,7 @@ namespace global_parameters {
     bool smear_temporal_only = false; // should smearing be done only for temporal links?
 
     std::string conf_basename = "conf"; // root of the output files names
-    bool lenghty_conf_name = false; // add ensemble information in configuration name
+    bool lengthy_conf_name = false; // add ensemble information in configuration name
     size_t beta_str_width = g_beta_str_width; // length of the beta value config filename
 
     bool pion_staggered = false; // true when measuring the staggered pion correlator
@@ -183,7 +183,7 @@ namespace global_parameters {
     // configurations filenames
     std::string conf_dir = "."; // Output directory
     std::string conf_basename = "conf"; // root of the output files names
-    bool lenghty_conf_name = true; // add ensemble information in configuration name
+    bool lengthy_conf_name = true; // add ensemble information in configuration name
     size_t beta_str_width = g_beta_str_width; // length of the beta value config filename
 
     // online measurements
@@ -210,7 +210,7 @@ namespace global_parameters {
     std::string configfilename = ""; // configuration filename used in case of restart
     std::string conf_dir = "./"; // directory where gauge configurations are stored
     std::string conf_basename = "conf"; // root of the output files names
-    bool lenghty_conf_name = true; // add ensemble information in configuration name
+    bool lengthy_conf_name = true; // add ensemble information in configuration name
     size_t beta_str_width = g_beta_str_width; // length of the beta value config filename
 
     size_t N_hit = 10; // N_hit updates are performed on each link during one sweep
@@ -242,7 +242,7 @@ namespace global_parameters {
     std::string configfilename = ""; // configuration filename used in case of restart
     std::string conf_dir = "./"; // directory where gauge configurations are stored
     std::string conf_basename = "conf"; // root of the output files names
-    bool lenghty_conf_name = true; // add ensemble information in configuration name
+    bool lengthy_conf_name = true; // add ensemble information in configuration name
     size_t beta_str_width = g_beta_str_width; // length of the beta value config filename
 
     std::string restart_condition = "hot"; // restart condition: hot, cold, read
@@ -272,7 +272,7 @@ namespace global_parameters {
 
     std::string conf_dir = "./"; // directory where gauge configurations are stored
     std::string conf_basename = "conf"; // root of the output files names
-    bool lenghty_conf_name = false; // add ensemble information in configuration name
+    bool lengthy_conf_name = false; // add ensemble information in configuration name
     size_t beta_str_width = g_beta_str_width; // length of the beta value config filename
 
     bool use_NS = true; // sample confs. with NS, measure them, or both

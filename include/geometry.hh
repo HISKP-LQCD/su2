@@ -126,6 +126,8 @@ public:
   size_t getLy() const { return L[2]; }
   size_t getLz() const { return L[3]; }
 
+  size_t get_n_dims() const { return L.size(); }
+
   size_t get_N_pts() const { return N_pts; }
   // std::vector<size_t> get_idx_x() const { return idx_x; }
   std::vector<std::vector<size_t>> get_idx_xplus_mu() const { return idx_xplus_mu; }

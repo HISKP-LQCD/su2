@@ -27,7 +27,7 @@ metropolis:
   N_hit: 250
   delta: 0.01
   restart_condition: hot
-  lenghty_conf_name: false  
+  lengthy_conf_name: false  
 
 hmc:
   do_mcmc: false
@@ -36,7 +36,7 @@ hmc:
   n_meas: 20
   restart_condition: hot
   configname: ""
-  lenghty_conf_name: false
+  lengthy_conf_name: false
   conf_dir: "./confs/"
 
 integrator:

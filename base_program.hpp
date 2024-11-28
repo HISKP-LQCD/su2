@@ -361,6 +361,9 @@ public:
     random_gauge_trafo(U, 654321);
     // plaquette = flat_spacetime::gauge_energy(U);
     plaquette = omeasurements::get_retr_plaquette_density((*this).U, (*this).pparams.bc);
+
+    double foo = flat_spacetime::retr_sum_Wplaquettes(U, 0.4, true, false);
+
     std::cout << "## Plaquette after rnd trafo: " << plaquette << std::endl;
   }
 

@@ -300,7 +300,7 @@ namespace input_file_parsing {
     if (!mparams.do_mcmc) { // if offline, need these parameters
       in.read_verb<std::string>(mparams.conf_dir, {"offline", "conf_dir"});
       in.read_opt_verb<std::string>(mparams.conf_basename, {"offline", "conf_basename"});
-      in.read_opt_verb<bool>(mparams.lenghty_conf_name, {"offline", "lenghty_conf_name"});
+      in.read_opt_verb<bool>(mparams.lengthy_conf_name, {"offline", "lengthy_conf_name"});
       in.read_opt_verb<size_t>(mparams.beta_str_width, {"offline", "beta_str_width"});
       validate_beta_str_width(mparams.beta_str_width);
     }
@@ -383,7 +383,7 @@ namespace input_file_parsing {
 
     in.read_opt_verb<std::string>(mcparams.conf_dir, {"conf_dir"});
     in.read_opt_verb<std::string>(mcparams.conf_basename, {"conf_basename"});
-    in.read_opt_verb<bool>(mcparams.lenghty_conf_name, {"lenghty_conf_name"});
+    in.read_opt_verb<bool>(mcparams.lengthy_conf_name, {"lengthy_conf_name"});
     in.read_opt_verb<size_t>(mcparams.beta_str_width, {"beta_str_width"});
     validate_beta_str_width(mcparams.beta_str_width);
 
@@ -425,7 +425,7 @@ namespace input_file_parsing {
 
     in.read_opt_verb<std::string>(mcparams.conf_dir, {"conf_dir"});
     in.read_opt_verb<std::string>(mcparams.conf_basename, {"conf_basename"});
-    in.read_opt_verb<bool>(mcparams.lenghty_conf_name, {"lenghty_conf_name"});
+    in.read_opt_verb<bool>(mcparams.lengthy_conf_name, {"lengthy_conf_name"});
     in.read_opt_verb<size_t>(mcparams.beta_str_width, {"beta_str_width"});
     validate_beta_str_width(mcparams.beta_str_width);
 
@@ -456,7 +456,7 @@ namespace input_file_parsing {
 
     in.read_opt_verb<std::string>(mcparams.conf_dir, {"conf_dir"});
     in.read_opt_verb<std::string>(mcparams.conf_basename, {"conf_basename"});
-    in.read_opt_verb<bool>(mcparams.lenghty_conf_name, {"lenghty_conf_name"});
+    in.read_opt_verb<bool>(mcparams.lengthy_conf_name, {"lengthy_conf_name"});
 
     in.read_verb<std::string>(mcparams.restart_condition, {"restart_condition"});
     check_restart_condition(mcparams.restart_condition);
@@ -492,7 +492,7 @@ namespace input_file_parsing {
     in.read_opt_verb<std::string>(hparams.configfilename, {"configname"});
     in.read_opt_verb<std::string>(hparams.conf_dir, {"conf_dir"});
     in.read_opt_verb<std::string>(hparams.conf_basename, {"conf_basename"});
-    in.read_opt_verb<bool>(hparams.lenghty_conf_name, {"lenghty_conf_name"});
+    in.read_opt_verb<bool>(hparams.lengthy_conf_name, {"lengthy_conf_name"});
 
     in.read_opt_verb<size_t>(hparams.beta_str_width, {"beta_str_width"});
     validate_beta_str_width(hparams.beta_str_width);

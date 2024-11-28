@@ -47,7 +47,7 @@ namespace io {
     const std::string conf_basename = sparams.conf_basename;
     std::stringstream ss;
     ss << sparams.conf_basename;
-    if (sparams.lenghty_conf_name) {
+    if (sparams.lengthy_conf_name) {
       ss << "." << pparams.Lx << "." << pparams.Ly << "." << pparams.Lz << "."
          << pparams.Lt;
       if (pparams.rotating_frame) {

@@ -31,10 +31,29 @@
 
 template <class T> class gaugeconfig {
   template <class iT> using nd_max_arr = spacetime_lattice::nd_max_arr<iT>;
-
-public:
   using value_type = T;
 
+private:
+  size_t Lx, Ly, Lz, Lt, volume, ndims;
+  double beta;
+  geometry Geom; // geometry of the lattice
+
+  std::vector<value_type> data;
+
+  size_t getIndex(const size_t t,
+                  const size_t x,
+                  const size_t y,
+                  const size_t z,
+                  const size_t _mu) const {
+    size_t y0 = (t + Lt) % Lt;
+    size_t y1 = (x + Lx) % Lx;
+    size_t y2 = (y + Ly) % Ly;
+    size_t y3 = (z + Lz) % Lz;
+    size_t mu = (_mu + ndims) % ndims;
+    return ((((y0 * Lx + y1) * Ly + y2) * Lz + y3) * ndims + mu);
+  }
+
+public:
   gaugeconfig() {}
   ~gaugeconfig() {}
 
@@ -51,28 +70,20 @@ public:
       volume(Lx * Ly * Lz * Lt),
       beta(beta),
       ndims(ndims) {
+    const std::vector<size_t> L_all = {Lt, Lx, Ly, Lz};
+    const std::vector<size_t> L(L_all.begin(), L_all.begin() + ndims);
+    geometry _G(L);
+    Geom = _G;
     data.resize(volume * ndims);
   }
 
-  gaugeconfig(const gaugeconfig &U)
-    : Lx(U.getLx()),
-      Ly(U.getLy()),
-      Lz(U.getLz()),
-      Lt(U.getLt()),
-      volume(U.getVolume()),
-      beta(U.getBeta()),
-      ndims(U.getndims()) {
-    data.resize(volume * ndims);
-#pragma omp parallel for
-    for (size_t i = 0; i < getSize(); i++) {
-      data[i] = U[i];
-    }
-  }
+  gaugeconfig(const gaugeconfig &U) { (*this) = U; }
 
   size_t storage_size() const { return data.size() * sizeof(value_type); }
 
   std::vector<value_type> get_data() const { return data; }
 
+  geometry get_geometry() const { return Geom; }
   size_t getLx() const { return (Lx); }
   size_t getLy() const { return (Ly); }
   size_t getLz() const { return (Lz); }
@@ -98,6 +109,7 @@ public:
     Lt = U.getLt();
     ndims = U.getndims();
     beta = U.getBeta();
+    Geom = U.get_geometry();
     data.resize(U.getSize());
 #pragma omp parallel for
     for (size_t i = 0; i < U.getSize(); i++) {
@@ -170,25 +182,6 @@ public:
   int load(std::string const &path,
            const bool &verbose = true,
            const bool &exists_check = false);
-
-private:
-  size_t Lx, Ly, Lz, Lt, volume, ndims;
-  double beta;
-
-  std::vector<value_type> data;
-
-  size_t getIndex(const size_t t,
-                  const size_t x,
-                  const size_t y,
-                  const size_t z,
-                  const size_t _mu) const {
-    size_t y0 = (t + Lt) % Lt;
-    size_t y1 = (x + Lx) % Lx;
-    size_t y2 = (y + Ly) % Ly;
-    size_t y3 = (z + Lz) % Lz;
-    size_t mu = (_mu + ndims) % ndims;
-    return ((((y0 * Lx + y1) * Ly + y2) * Lz + y3) * ndims + mu);
-  }
 };
 
 template <class T> void gaugeconfig<T>::save(std::string const &path) const {

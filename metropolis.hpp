@@ -9,8 +9,8 @@
  *
  */
 
-#include "errors.hpp"
 #include "base_program.hpp"
+#include "errors.hpp"
 
 template <class Group>
 class metropolis_algo : public base_program<Group, gp::metropolis> {
@@ -21,9 +21,7 @@ public:
   metropolis_algo() { (*this).algo_name = "metropolis"; }
   ~metropolis_algo() {}
 
-  void print_program_info() const {
-    std::cout << "## Metropolis Algorithm\n";
-  }
+  void print_program_info() const { std::cout << "## Metropolis Algorithm\n"; }
 
   void parse_input_file(const YAML::Node &nd) {
     namespace in_metropolis = input_file_parsing::metropolis;
@@ -130,8 +128,8 @@ public:
                               << rate[1] / double((*this).sparams.n_meas) << " "
                               << (*this).pparams.beta << " " << (*this).pparams.Lx << " "
                               << (*this).pparams.Lt << " " << (*this).pparams.xi << " "
-                              << (*this).sparams.delta << " " << (*this).g_heat
-                              << " " << n_threads << " " << (*this).sparams.N_hit << " "
+                              << (*this).sparams.delta << " " << (*this).g_heat << " "
+                              << n_threads << " " << (*this).sparams.N_hit << " "
                               << (*this).sparams.n_meas << " " << (*this).sparams.seed
                               << " " << std::endl;
       (*this).acceptancerates.close();

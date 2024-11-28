@@ -49,7 +49,7 @@ The parameters parsed in the `hmc` block are the following. Further details are 
 - `configname`
 - `conf_dir`
 - `conf_basename`
-- `lenghty_conf_name`
+- `lengthy_conf_name`
 - `beta_str_width`
 
 ### `integrator`

@@ -61,22 +61,22 @@ namespace flat_spacetime {
       }
 
       double res2 = 0.0;
-      std::vector<size_t> L_values = {U.getLt(), U.getLx(), U.getLy(), 1};
+      std::vector<size_t> L_values = {U.getLt(), U.getLx(), U.getLy()};
       geometry G1(L_values);
-      G1.set_xpmu_idx_pbc();
+      // const std::vector<size_t> idx_x = G1.get_idx_x();
       const std::vector<std::vector<size_t>> idx_xplus_mu = G1.get_idx_xplus_mu();
-      size_t n_dims = U.getndims();
-      std::cout << "ciao  " << idx_xplus_mu[0].size() << "\n";
+      // size_t n_dims = U.getndims();
+      size_t n_dims = L_values.size();
 
-      for (size_t i = 0; i < G1.get_N_pts(); i++) {
+      size_t N_pts = G1.get_N_pts();
+      for (size_t i = 0; i < N_pts; i++) {
         for (size_t mu = startmu; mu < U.getndims() - 1; mu++) {
           const size_t i_xpmu = n_dims * idx_xplus_mu[mu][i];
           for (size_t nu = mu + 1; nu < n_dims; nu++) {
+            const size_t i_x = n_dims * i;
             const size_t i_xpnu = n_dims * idx_xplus_mu[nu][i];
-            std::cout << U.getSize() << " " << n_dims * i + mu << " " << i_xpmu + nu
-                      << " " << i_xpnu + mu << " " << n_dims * i + nu << "\n";
-            res2 += retrace(U[n_dims * i + mu] * U[i_xpmu + nu] *
-                            U[i_xpnu + mu].dagger() * U[n_dims * i + nu]);
+            res2 += retrace(U[i_x + mu] * U[i_xpmu + nu] * U[i_xpnu + mu].dagger() *
+                            U[i_x + nu].dagger());
           }
         }
       }

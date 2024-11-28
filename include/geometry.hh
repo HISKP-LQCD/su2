@@ -83,7 +83,22 @@ private:
   std::vector<size_t> L; // lattice sizes, e.g. Lt, Lx, Ly, Lz in 4 dimensions
   size_t n_dims = 0; // number of dimensions
   size_t N_pts = 0; // number of points of the lattice
-  std::vector<std::vector<size_t>> idx_xplus_mu; // checkerboard indices of x+\mu
+  // std::vector<size_t> idx_x = {}; // checkerboard indices of "x"
+  std::vector<std::vector<size_t>> idx_xplus_mu = {}; // checkerboard indices of x+\mu
+
+  // set the arrays of indices for x + \mu, with periodic boundary conditions
+  void set_xpmu_idx_pbc() {
+    idx_xplus_mu.resize(n_dims);
+    for (size_t i = 0; i < N_pts; i++) {
+      std::vector<size_t> x = spacetime_lattice::index_to_x(i, (*this).L);
+      // idx_x.push_back(i);
+      for (size_t mu = 0; mu < n_dims; mu++) {
+        x[mu] = (x[mu] + 1) % L[mu];
+        idx_xplus_mu[mu].push_back(spacetime_lattice::x_to_index(x, L));
+        x[mu] = (x[mu] - 1 + L[mu]) % L[mu];
+      }
+    }
+  }
 
 public:
   geometry() {}
@@ -102,8 +117,8 @@ public:
   explicit geometry(const std::vector<size_t> &_L) {
     L = _L;
     n_dims = L.size();
-    idx_xplus_mu.resize(n_dims);
     N_pts = std::accumulate(L.begin(), L.end(), 1.0, std::multiplies<double>());
+    this->set_xpmu_idx_pbc();
   }
 
   size_t getLt() const { return L[0]; }
@@ -112,6 +127,7 @@ public:
   size_t getLz() const { return L[3]; }
 
   size_t get_N_pts() const { return N_pts; }
+  // std::vector<size_t> get_idx_x() const { return idx_x; }
   std::vector<std::vector<size_t>> get_idx_xplus_mu() const { return idx_xplus_mu; }
 
   size_t getIndex(const int t, const int x, const int y, const int z) const {
@@ -126,15 +142,4 @@ public:
     return (((y0 * Lx + y1) * Ly + y2) * Lz + y3);
   }
 
-  // set the arrays of indices for x + \mu, with periodic boundary conditions
-  void set_xpmu_idx_pbc() {
-    for (size_t i = 0; i < N_pts; i++) {
-      std::vector<size_t> x = spacetime_lattice::index_to_x(i, (*this).L);
-      for (size_t mu = 0; mu < n_dims; mu++) {
-        x[mu] = (x[mu] + 1) % L[mu];
-        idx_xplus_mu[mu].push_back(spacetime_lattice::x_to_index(x, L));
-        x[mu] = (x[mu] - 1 + L[mu]) % L[mu];
-      }
-    }
-  }
 };

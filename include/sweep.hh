@@ -1,5 +1,5 @@
 /**
- * @file flat-sweep.hpp
+ * @file sweep.hpp
  * @author Carsten Urbach (urbach@hiskp.uni-bonn.de)
  * @author Simone Romiti (simone.romiti.1994@gmail.com)
  * @brief
@@ -24,7 +24,7 @@
 #include <random>
 #include <vector>
 
-namespace flat_spacetime {
+
 
   /**
    * @brief N_hit Metropolis-Updates
@@ -233,4 +233,3 @@ namespace flat_spacetime {
     return res;
   }
 
-} // namespace flat_spacetime

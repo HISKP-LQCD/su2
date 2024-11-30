@@ -25,7 +25,7 @@ private:
 
   std::list<monomial<double, Group> *> monomial_list; // list of monomials in the action
 
-  flat_spacetime::gaugemonomial<double, Group> *gm = nullptr; // gauge monomial
+  gaugemonomial<double, Group> *gm = nullptr; // gauge monomial
 
   // gauge monomial with other (i.e. not periodic)
   // boundary conditions, e.g. "spatial_open"
@@ -88,7 +88,7 @@ public:
           (*this).monomial_list.push_back(obc_gm);
         } else {
           (*this).gm =
-            new flat_spacetime::gaugemonomial<double, Group>(0, (*this).pparams.xi);
+            new gaugemonomial<double, Group>(0, (*this).pparams.xi);
           (*this).monomial_list.push_back(gm);
         }
       }
@@ -117,7 +117,7 @@ public:
       md_update((*this).U, engine, mdparams, monomial_list, *md_integ);
 
       double E = 0., Q = 0.;
-      flat_spacetime::energy_density((*this).U, E, Q);
+      energy_density((*this).U, E, Q);
 
       rate += mdparams.getaccept();
 

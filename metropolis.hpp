@@ -61,7 +61,7 @@ public:
   }
 
   template <class URNG>
-  std::vector<double> sweep(const gp::physics &pparams,
+  std::vector<double> metropolis_sweep(const gp::physics &pparams,
                             gaugeconfig<Group> &U,
                             std::vector<URNG> engines,
                             const double &delta,
@@ -69,20 +69,14 @@ public:
                             const double &beta,
                             const double &xi = 1.0,
                             const bool &anisotropic = false) {
-    if (pparams.flat_metric) {
-      return flat_spacetime::sweep(U, engines, delta, N_hit, pparams.beta, pparams.xi,
-                                   pparams.anisotropic);
-    }
     if (pparams.rotating_frame) {
       fatal_error("Rotating metric not supported yet.", __func__);
       return {};
       // return rotating_spacetime::sweep(U, pparams.Omega, engines, delta, N_hit,
       //                                  pparams.beta, pparams.xi,
       //                                  pparams.anisotropic);
-    } else {
-      fatal_error("Invalid metric.", __func__);
-      return {};
-    }
+    } 
+      return sweep(U, engines, delta, N_hit, pparams.beta, pparams.xi, pparams.anisotropic);
   }
 
   /**
@@ -101,7 +95,7 @@ public:
 
       this->output_line(i);
 
-      rate += this->sweep((*this).pparams, (*this).U, engines, (*this).sparams.delta,
+      rate += this->metropolis_sweep((*this).pparams, (*this).U, engines, (*this).sparams.delta,
                           (*this).sparams.N_hit, (*this).pparams.beta, (*this).pparams.xi,
                           (*this).pparams.anisotropic);
 

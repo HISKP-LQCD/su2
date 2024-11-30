@@ -90,15 +90,15 @@ int main(int ac, char *av[]) {
   const double norm_factor =
     1.0 / U.getVolume() / double(U.getNc()) / dims_fact; // normalization factor
 
-  double plaquette = flat_spacetime::gauge_energy(U);
+  double plaquette = gauge_energy(U);
   cout << "## Initital Plaquette: " << plaquette * norm_factor << endl;
 
   random_gauge_trafo(U, 654321);
-  plaquette = flat_spacetime::gauge_energy(U);
+  plaquette = gauge_energy(U);
   cout << "## Plaquette after rnd trafo: " << plaquette * norm_factor << endl;
 
   // generate list of monomials
-  flat_spacetime::gaugemonomial<double, su2> gm(0);
+  gaugemonomial<double, su2> gm(0);
   kineticmonomial<double, su2> km(0);
   km.setmdpassive();
 
@@ -127,7 +127,7 @@ int main(int ac, char *av[]) {
     // perform the MD update
     kramers_md_update(U, engine, mdparams, monomial_list, *md_integ);
 
-    double energy = flat_spacetime::gauge_energy(U);
+    double energy = gauge_energy(U);
     rate += mdparams.getaccept();
     cout << i << " " << mdparams.getaccept() << " " << std::scientific << std::setw(18)
          << std::setprecision(15) << energy * norm_factor << " " << std::setw(15)

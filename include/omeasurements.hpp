@@ -53,7 +53,7 @@ namespace omeasurements {
     double den = ndims_fact * double(U.getNc());
 
     if (bc == "periodic") {
-      P = flat_spacetime::retr_sum_Wplaquettes(U, /*xi=*/1.0, /*anisotropic=*/false,
+      P = retr_sum_Wplaquettes(U, /*xi=*/1.0, /*anisotropic=*/false,
                                                /*spatial=*/spatial);
       den *= U.getVolume();
     } else if (bc == "spatial_open") {
@@ -204,7 +204,7 @@ namespace omeasurements {
     if (tstart > eps) {
       V.load(os.str() + "_t" + std::to_string(tstart) + ".conf");
     }
-    flat_spacetime::gradient_flow(V, os.str(), tmax, eps, pparams.xi, tstart, save_conf);
+    gradient_flow(V, os.str(), tmax, eps, pparams.xi, tstart, save_conf);
 
     return;
   }

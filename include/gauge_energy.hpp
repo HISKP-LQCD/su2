@@ -20,7 +20,7 @@
 
 // template <class T>
 // double gauge_energy_g<T, metric::flat>(const gaugeconfig<T> &U, bool spatial_only = false) {
-//   return flat_spacetime::gauge_energy(U, spatial_only);
+//   return gauge_energy(U, spatial_only);
 // }
 
 // template <class T>
@@ -28,8 +28,8 @@
 //   return gauge_energy_g(U, spatial_only);
 // }
 
-// for the moment only the flat spacetime version is supported
-template <class T>
-double gauge_energy(const gaugeconfig<T> &U, bool spatial_only = false) {
-  return flat_spacetime::gauge_energy(U, spatial_only);
-}
+// // for the moment only the flat spacetime version is supported
+// template <class T>
+// double gauge_energy(const gaugeconfig<T> &U, bool spatial_only = false) {
+//   return gauge_energy(U, spatial_only);
+// }

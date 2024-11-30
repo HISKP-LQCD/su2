@@ -5,7 +5,7 @@
 #include"gauge_energy.hpp"
 #include"random_gauge_trafo.hh"
 #include"parse_commandline.hh"
-#include"flat-energy_density.hh"
+#include"energy_density.hh"
 
 #include<iostream>
 #include<vector>
@@ -69,12 +69,12 @@ int main() {
 
   hotstart(cU, 124665, 0.);
 
-  double plaquette = flat_spacetime::gauge_energy(cU);
+  double plaquette = gauge_energy(cU);
   double res = 0., Q = 0.;
   std::cout << "Initital Plaquette: " << plaquette/cU.getVolume()/6. << std::endl; 
   
   random_gauge_trafo(cU, 654321);
-  plaquette = flat_spacetime::gauge_energy(cU);
+  plaquette = gauge_energy(cU);
   std::cout << "Plaquette after rnd trafo: " << plaquette/cU.getVolume()/6. << std::endl; 
 
   // set all links to 1
@@ -99,13 +99,13 @@ int main() {
   xz = {1, 1, 1, 0};
   cU(xz, 3).set(pi()/2);
 
-  flat_spacetime::energy_density(cU, res, Q);
+  energy_density(cU, res, Q);
 
   std::cout << "charge: " << Q << std::endl;
   std::cout << "should be: 0.0126651" << std::endl;
   random_gauge_trafo(cU, 654321);
   Q = 0;
-  flat_spacetime::energy_density(cU, res, Q);
+  energy_density(cU, res, Q);
   std::cout << "Charge after random gauge trafo: " << Q << std::endl;
   return(0);
 }

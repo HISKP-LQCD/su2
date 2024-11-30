@@ -12,8 +12,8 @@
 #pragma once
 
 #include "errors.hpp"
-#include "flat-energy_density.hh"
-#include "flat-sweep.hh" // flat spacetime
+#include "energy_density.hh"
+#include "sweep.hh" // flat spacetime
 #include "gauge_energy.hh"
 #include "gaugeconfig.hh"
 #include "io.hh"
@@ -274,7 +274,7 @@ public:
                       const gaugeconfig<Group> &U,
                       const bool spatial_only = false) {
     if (pparams.flat_metric) {
-      return flat_spacetime::gauge_energy(U, spatial_only);
+      return gauge_energy(U, spatial_only);
     }
     if (pparams.rotating_frame) {
       fatal_error("Rotating metric not supported yet.", __func__);
@@ -286,14 +286,14 @@ public:
   }
 
   template <class T>
-  void energy_density(const gp::physics &pparams,
+  void get_energy_density(const gp::physics &pparams,
                       const gaugeconfig<T> &U,
                       double &E,
                       double &Q,
                       const bool &cloverdef = true,
                       const bool &ss = false) {
     if (pparams.flat_metric) {
-      flat_spacetime::energy_density(U, E, Q, cloverdef, ss);
+      energy_density(U, E, Q, cloverdef, ss);
     }
     if (pparams.rotating_frame) {
       fatal_error("Rotating metric not supported yet.", __func__);
@@ -345,7 +345,7 @@ public:
       hotstart(U, sparams.seed, g_heat);
     }
 
-    // double plaquette = flat_spacetime::gauge_energy(U);
+    // double plaquette = gauge_energy(U);
     double plaquette =
       omeasurements::get_retr_plaquette_density((*this).U, (*this).pparams.bc);
     double fac = 2.0 / U.getndims() / (U.getndims() - 1.0);
@@ -359,10 +359,10 @@ public:
     std::cout << "## Initial Plaquette P: " << plaquette << std::endl;
 
     random_gauge_trafo(U, 654321);
-    // plaquette = flat_spacetime::gauge_energy(U);
+    // plaquette = gauge_energy(U);
     plaquette = omeasurements::get_retr_plaquette_density((*this).U, (*this).pparams.bc);
 
-    double foo = flat_spacetime::retr_sum_Wplaquettes(U, 0.4, true, false);
+    double foo = retr_sum_Wplaquettes(U, 0.4, true, false);
 
     std::cout << "## Plaquette after rnd trafo: " << plaquette << std::endl;
   }
@@ -388,7 +388,7 @@ public:
     std::cout << i;
     (*this).os << i;
     for (bool ss : {false, true}) {
-      this->energy_density((*this).pparams, (*this).U, E, Q, false, ss);
+      this->get_energy_density((*this).pparams, (*this).U, E, Q, false, ss);
       std::cout << " " << std::scientific << std::setprecision(15) << E << " " << Q;
       (*this).os << " " << std::scientific << std::setprecision(15) << E << " " << Q;
     }

@@ -1,5 +1,5 @@
-#include "flat-energy_density.hh"
-#include "flat-sweep.hh"
+#include "energy_density.hh"
+#include "sweep.hh"
 #include "gauge_energy.hh"
 #include "gaugeconfig.hh"
 #include "parse_commandline.hh"
@@ -146,22 +146,22 @@ int main(int ac, char *av[]) {
           for (size_t engine = 0; engine < thread; engine += 1) {
             engines[engine].seed(gparams.seed + i + engine);
           }
-          rate += flat_spacetime::sweep(U, engines, delta, N_hit, gparams.beta,
+          rate += sweep(U, engines, delta, N_hit, gparams.beta,
                                         gparams.xi, gparams.anisotropic);
         }
         if (oneengine) {
           blankrng.seed(gparams.seed + i);
-          rate += flat_spacetime::sweepone(U, blankrng, delta, N_hit, gparams.beta,
+          rate += sweepone(U, blankrng, delta, N_hit, gparams.beta,
                                            gparams.xi, gparams.anisotropic);
         }
         // inew counts loops, loop-variable needed to have one RNG per thread with
         // different seeds for every measurement
         size_t inew = (i - gparams.icounter) / thread + gparams.icounter;
 
-        double energy = flat_spacetime::gauge_energy(U, true);
+        double energy = gauge_energy(U, true);
 
         double E = 0., Q = 0.;
-        flat_spacetime::energy_density(U, E, Q);
+        energy_density(U, E, Q);
         // measuring spatial plaquettes only means only (ndims-1)/ndims of all plaquettes
         // are measured, so need facnorm for normalization to 1
         cout << inew << " " << std::scientific << std::setw(18) << std::setprecision(15)

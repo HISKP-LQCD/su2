@@ -1,6 +1,7 @@
 #pragma once
 
 #include "gaugeconfig.hh"
+#include "geometry.hh"
 
 /**
  * @brief staple attached to the link U_{\mu}(x) in the nu>0 part of the plane (mu, nu)
@@ -94,19 +95,21 @@ RetType get_staples_down(gaugeconfig<Group> &U, const Arr &x, const size_t &mu) 
  * @param anisotropic boolean flag: true when considering anisotropy
  * @param spatial_only boolean flag: true when summing over spatial staples only
  */
-template <class T, class Group, class Arr>
+template <class T, class Group>
 void get_staples_MCMC_step(T &K,
                            gaugeconfig<Group> &U,
-                           Arr const x,
-                           const size_t mu,
-                           const double xi = 1.0,
-                           bool anisotropic = false,
-                           bool spatial_only = false) {
+                           const size_t& i,
+                           const size_t& mu,
+                           const double& xi = 1.0,
+                           const bool& anisotropic = false,
+                           const bool& spatial_only = false) {
+  geometry Geom = U.get_geometry();         
+  std::vector<int> x = spacetime_lattice::index_to_x<int>(i, Geom.get_L());                          
   size_t startnu = 0;
   if (spatial_only) {
     startnu = 1;
   }
-  Arr x1 = x, x2 = x;
+  std::vector<int> x1 = x, x2 = x;
   x1[mu] += 1;
   if (!anisotropic) {
     for (size_t nu = startnu; nu < U.getndims(); nu++) {
@@ -148,6 +151,69 @@ void get_staples_MCMC_step(T &K,
       }
     }
   }
+}
+
+template <class T, class Group>
+void get_staples_MCMC_step(T &K,
+                           gaugeconfig<Group> &U,
+                           const std::vector<int>& x,
+                           const size_t mu,
+                           const double xi = 1.0,
+                           bool anisotropic = false,
+                           bool spatial_only = false) {
+  // geometry Geom = U.get_geometry();
+  // size_t i_x = spacetime_lattice::index_to_x(i_x, Geom.get_L());
+  // get_staples_MCMC_step(K, U, i_x, mu, xi, anisotropic, spatial_only);
+
+
+    size_t startnu = 0;
+  if (spatial_only) {
+    startnu = 1;
+  }
+  std::vector<int> x1 = x, x2 = x;
+  x1[mu] += 1;
+  if (!anisotropic) {
+    for (size_t nu = startnu; nu < U.getndims(); nu++) {
+      if (nu != mu) {
+        x2[nu]++;
+        K += U(x1, nu) * U(x2, mu).dagger() * U(x, nu).dagger();
+        x2[nu]--;
+      }
+    }
+    for (size_t nu = startnu; nu < U.getndims(); nu++) {
+      if (nu != mu) {
+        x1[nu]--;
+        x2[nu]--;
+        K += U(x1, nu).dagger() * U(x2, mu).dagger() * U(x2, nu);
+        x2[nu]++;
+        x1[nu]++;
+      }
+    }
+  }
+  if (anisotropic) {
+    double factor;
+    for (size_t nu = startnu; nu < U.getndims(); nu++) {
+      if (nu != mu) {
+        factor = (((nu == 0) || (mu == 0)) ? 1.0 / xi : xi);
+        x2[nu]++;
+        K += factor * U(x1, nu) * U(x2, mu).dagger() * U(x, nu).dagger();
+        x2[nu]--;
+      }
+    }
+    // Maybe put both loops together so only one ?: operator is needed?
+    for (size_t nu = startnu; nu < U.getndims(); nu++) {
+      if (nu != mu) {
+        factor = (((nu == 0) || (mu == 0)) ? 1.0 / xi : xi);
+        x1[nu]--;
+        x2[nu]--;
+        K += factor * U(x1, nu).dagger() * U(x2, mu).dagger() * U(x2, nu);
+        x2[nu]++;
+        x1[nu]++;
+      }
+    }
+  }
+
+  return;
 }
 
 /**

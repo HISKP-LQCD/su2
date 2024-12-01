@@ -138,6 +138,14 @@ public:
     return data[getIndex(coords[0], coords[1], coords[2], coords[3], mu)];
   }
 
+  value_type &operator()(std::vector<int> const &coords, size_t const mu) {
+    return data[getIndex(coords[0], coords[1], coords[2], coords[3], mu)];
+  }
+
+  value_type operator()(std::vector<int> const &coords, size_t const mu) const {
+    return data[getIndex(coords[0], coords[1], coords[2], coords[3], mu)];
+  }
+
   /**
    * access elements according to the convention of
    * https://link.springer.com/book/10.1007/978-3-642-01850-3, eq. (2.34)

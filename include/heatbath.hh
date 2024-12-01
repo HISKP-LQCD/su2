@@ -108,12 +108,12 @@ std::vector<double> heatbath(gaugeconfig<u1> &U,
 
   for (size_t x0_start = 0; x0_start < 2; x0_start++) {
 #pragma omp parallel for reduction (+: rate, rate_time, total_attempts)
-    for (size_t x0 = x0_start; x0 < U.getLt(); x0 += 2) {
+    for (int x0 = x0_start; x0 < U.getLt(); x0 += 2) {
       size_t thread_num = omp_get_thread_num();
-      for (size_t x1 = 0; x1 < U.getLx(); x1++) {
-        for (size_t x2 = 0; x2 < U.getLy(); x2++) {
-          for (size_t x3 = 0; x3 < U.getLz(); x3++) {
-            const std::vector<size_t> x = {x0, x1, x2, x3};
+      for (int x1 = 0; x1 < U.getLx(); x1++) {
+        for (int x2 = 0; x2 < U.getLy(); x2++) {
+          for (int x3 = 0; x3 < U.getLz(); x3++) {
+            const std::vector<int> x = {x0, x1, x2, x3};
             for (size_t mu = 0; mu < endmu; mu++) {
               accum K;
               get_staples_MCMC_step(K, U, x, mu, xi, anisotropic);
@@ -163,12 +163,12 @@ std::vector<double> heatbath_legacy(gaugeconfig<u1> &U,
 
   for (size_t x0_start = 0; x0_start < 2; x0_start++) {
 #pragma omp parallel for
-    for (size_t x0 = x0_start; x0 < U.getLt(); x0 += 2) {
+    for (int x0 = x0_start; x0 < U.getLt(); x0 += 2) {
       size_t thread_num = omp_get_thread_num();
-      for (size_t x1 = 0; x1 < U.getLx(); x1++) {
-        for (size_t x2 = 0; x2 < U.getLy(); x2++) {
-          for (size_t x3 = 0; x3 < U.getLz(); x3++) {
-            const std::vector<size_t> x = {x0, x1, x2, x3};
+      for (int x1 = 0; x1 < U.getLx(); x1++) {
+        for (int x2 = 0; x2 < U.getLy(); x2++) {
+          for (int x3 = 0; x3 < U.getLz(); x3++) {
+            const std::vector<int> x = {x0, x1, x2, x3};
             for (size_t mu = 0; mu < U.getndims(); mu++) {
               accum K;
               get_staples_MCMC_step(K, U, x, mu, xi, anisotropic);

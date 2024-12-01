@@ -48,7 +48,8 @@ namespace spacetime_lattice {
    * NOTE: The routine is general, it works for all dimensions.
    *       The user needs to pass the vector of sized
    */
-  inline size_t x_to_index(const std::vector<size_t> &x, const std::vector<size_t> &L) {
+  template<class T=size_t>
+  inline size_t x_to_index(const std::vector<T> &x, const std::vector<size_t> &L) {
     size_t idx = x[0];
     size_t n_dims = L.size();
     for (size_t i = 1; i < n_dims; i++) {
@@ -62,9 +63,10 @@ namespace spacetime_lattice {
    * where the convention is the same as for the inverse function x_to_index()
    *
    */
-  inline std::vector<size_t> index_to_x(const size_t &i, std::vector<size_t> L) {
+  template<class T>
+  inline std::vector<T> index_to_x(const size_t &i, std::vector<size_t> L) {
     size_t n_dims = L.size(); // number of dimensions
-    std::vector<size_t> x(n_dims, 0);
+    std::vector<T> x(n_dims, 0);
     size_t i_sub = i;
     size_t den = 1;
     for (size_t mu = 0; mu < n_dims; mu++) {
@@ -90,7 +92,7 @@ private:
   void set_xpmu_idx_pbc() {
     idx_xplus_mu.resize(n_dims);
     for (size_t i = 0; i < N_pts; i++) {
-      std::vector<size_t> x = spacetime_lattice::index_to_x(i, (*this).L);
+      std::vector<size_t> x = spacetime_lattice::index_to_x<size_t>(i, (*this).L);
       // idx_x.push_back(i);
       for (size_t mu = 0; mu < n_dims; mu++) {
         x[mu] = (x[mu] + 1) % L[mu];
@@ -125,6 +127,7 @@ public:
   size_t getLx() const { return L[1]; }
   size_t getLy() const { return L[2]; }
   size_t getLz() const { return L[3]; }
+  std::vector<size_t> get_L() const { return (*this).L; }
 
   size_t get_n_dims() const { return L.size(); }
 
@@ -143,5 +146,4 @@ public:
     size_t y3 = (z + Lz) % Lz;
     return (((y0 * Lx + y1) * Ly + y2) * Lz + y3);
   }
-
 };

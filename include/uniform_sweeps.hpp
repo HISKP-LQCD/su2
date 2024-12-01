@@ -38,11 +38,11 @@ void uniform_sweeps(gaugeconfig<Group> &U,
   bool changed = false; // true when configuration has changed
   size_t i_sweep = 0;
   while ((!changed) || (changed && (i_sweep < n_sweeps))) {
-    for (size_t x0 = 0; x0 < U.getLt(); x0++) {
-      for (size_t x1 = 0; x1 < U.getLx(); x1++) {
-        for (size_t x2 = 0; x2 < U.getLy(); x2++) {
-          for (size_t x3 = 0; x3 < U.getLz(); x3++) {
-            std::vector<size_t> x = {x0, x1, x2, x3};
+    for (int x0 = 0; x0 < U.getLt(); x0++) {
+      for (int x1 = 0; x1 < U.getLx(); x1++) {
+        for (int x2 = 0; x2 < U.getLy(); x2++) {
+          for (int x3 = 0; x3 < U.getLz(); x3++) {
+            std::vector<int> x = {x0, x1, x2, x3};
             for (size_t mu = 0; mu < U.getndims(); mu++) {
               Group R;
               accum K;

@@ -106,6 +106,15 @@ public:
     return data[getIndex(coords[0], coords[1], coords[2], coords[3], mu)];
   }
 
+  value_type &operator()(std::vector<int> const &coords, size_t const mu) {
+    return data[getIndex(coords[0], coords[1], coords[2], coords[3], mu)];
+  }
+
+  const value_type &operator()(std::vector<int> const &coords, size_t const mu) const {
+    return data[getIndex(coords[0], coords[1], coords[2], coords[3], mu)];
+  }
+
+
   template <class Type>
   value_type &operator()(const nd_max_arr<Type> &x, const size_t &mu) {
     return data[getIndex(x[0], x[1], x[2], x[3], mu)];

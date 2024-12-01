@@ -63,9 +63,6 @@ namespace staggered {
         eta_exp_mu += (x[mu] % 2);
         const int eta_mu = std::pow(-1.0, eta_exp_mu);
 
-        std::cout << x[0] << " " << x[1] << " " << x[2] << " | n_dims=" << n_dims << "\n";
-        std::cout << eta_exp_mu << " " << eta_mu << "\n";
-
         // hopping terms
         col_idx[3 * i_g] = (i_g + 1) % N;
         D[3 * i_g] = eta_mu * accum(U(x, mu));

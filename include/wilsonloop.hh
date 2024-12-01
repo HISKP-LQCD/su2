@@ -54,38 +54,37 @@ double planar_wilsonloop_dir(const gaugeconfig<Group> &U,
                              const size_t t,
                              const size_t mu,
                              const size_t nu) {
-  double loop = 0.;
+  double loop = 0.0;
   typedef typename accum_type<Group>::type accum;
 
-  std::vector<size_t> x = {0, 0, 0, 0};
-  for (x[0] = 0; x[0] < U.getLt(); x[0]++) {
-    for (x[1] = 0; x[1] < U.getLx(); x[1]++) {
-      for (x[2] = 0; x[2] < U.getLy(); x[2]++) {
-        for (x[3] = 0; x[3] < U.getLz(); x[3]++) {
-          std::vector<size_t> xrun = x;
-          Group L;
-          L.set_to_identity(); // L = 1.0
-          for (size_t _t = 0; _t < t; _t++) {
-            L *= U(xrun, nu);
-            xrun[nu] += 1;
-          }
-          for (size_t s = 0; s < r; s++) {
-            L *= U(xrun, mu);
-            xrun[mu] += 1;
-          }
-          for (size_t _t = 0; _t < t; _t++) {
-            xrun[nu] -= 1;
-            L *= U(xrun, nu).dagger();
-          }
-          for (size_t s = 0; s < r; s++) {
-            xrun[mu] -= 1;
-            L *= U(xrun, mu).dagger();
-          }
-          loop += retrace(L); // taking the real part averages over the 2 orientations
-        }
-      }
+  geometry Geom = U.get_geometry(); // geometry of the lattice
+  std::vector<size_t> L = Geom.get_L(); // lattice sizes
+  size_t n_dims = Geom.get_n_dims(); // number of dimensions
+  size_t N_pts = Geom.get_N_pts(); // number of points
+  for (size_t i = 0; i < N_pts; i++) {
+    // size_t i_x = n_dims * i;
+    std::vector<int> xrun = spacetime_lattice::index_to_x<int>(i, L);
+    Group L;
+    L.set_to_identity(); // L = 1.0
+    for (size_t _t = 0; _t < t; _t++) {
+      L *= U(xrun, nu);
+      xrun[nu] += 1;
     }
+    for (size_t s = 0; s < r; s++) {
+      L *= U(xrun, mu);
+      xrun[mu] += 1;
+    }
+    for (size_t _t = 0; _t < t; _t++) {
+      xrun[nu] -= 1;
+      L *= U(xrun, nu).dagger();
+    }
+    for (size_t s = 0; s < r; s++) {
+      xrun[mu] -= 1;
+      L *= U(xrun, mu).dagger();
+    }
+    loop += retrace(L); // taking the real part averages over the 2 orientations
   }
+
   return loop;
 }
 

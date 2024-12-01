@@ -4,8 +4,8 @@
 #include <iostream>
 #include <string>
 
-#include "include/gaugeconfig.hh"
 #include "fermions/memory.hpp"
+#include "include/gaugeconfig.hh"
 
 namespace staggered {
 
@@ -21,7 +21,8 @@ namespace staggered {
    * Like so, the non-vanishing matrix elements are:
    * (row_idx[j], col_idx[j]) : D[j] for all "0 <= j < 3*N"
    *
-   * Ref: eq. 6.47 of Degrand's book
+   * Ref: eq. 6.47 of Degrand's book:
+   * https://www.worldscientific.com/worldscibooks/10.1142/6065?srsltid=AfmBOopLT5inz0mksWaaeXm_5YTYw8dI3gLXDYNTZfVZw39SDivh9opG#t=aboutBook
    */
   template <class Float, class Group>
   std::pair<Float *, size_t *> *dirac_op_ptr(const gaugeconfig<Group> &U,
@@ -45,38 +46,41 @@ namespace staggered {
     size_t *col_idx; // column indices
     col_idx = (size_t *)(calloc(3 * N, sizeof(size_t)));
 
-    int i = 0;
-    std::vector<int> eta = {1, 1, 1, 1};
-    for (size_t x0 = 0; x0 < U.getLt(); x0++) {
-      for (size_t x1 = 0; x1 < U.getLx(); x1++) {
-        for (size_t x2 = 0; x2 < U.getLy(); x2++) {
-          for (size_t x3 = 0; x3 < U.getLz(); x3++) {
-            std::vector<size_t> x = {x0, x1, x2, x3};
-            for (size_t mu = 0; mu < U.getndims(); mu++) {
-              const int eta_mu =
-                std::accumulate(eta.begin(), eta.begin() + mu, 1, std::multiplies<int>());
-              // hopping terms
-              col_idx[3 * i] = (i + 1) % N;
-              D[3 * i] = eta_mu * accum(U(x, mu));
+    geometry Geom = U.get_geometry(); // geometry of the lattice
+    std::vector<size_t> L = Geom.get_L(); // lattice sizes
+    size_t n_dims = Geom.get_n_dims(); // number of dimensions
+    size_t N_pts = Geom.get_N_pts(); // number of points
 
-              x[mu] = (x[mu] - 1 + N) % N; // x - mu
-              col_idx[3 * i + 1] = (i - 1 + N) % N;
-              D[3 * i + 1] = -eta_mu * accum(U(x, mu));
-              x[mu] = (x[mu] + 1) % N; // x
+    // std::vector<int> eta_exp(n_dims, 0); // exponents of \eta_\mu
 
-              // mass term
-              col_idx[3 * i + 2] = i;
-              D[3 * i + 2] = +m * accum(U(x, mu));
+    for (size_t i = 0; i < N_pts; i++) {
+      std::vector<int> x = spacetime_lattice::index_to_x<int>(i, L);
+      const size_t i_x = n_dims * i;
+      int eta_exp_mu = 0;
+      for (size_t mu = 0; mu < n_dims; mu++) {
+        size_t i_g = i_x + mu; // global index
+        // (-1)^{x_0+x_1+...+x_{\mu-1}}
+        eta_exp_mu += (x[mu] % 2);
+        const int eta_mu = std::pow(-1.0, eta_exp_mu);
 
-              i++;
-            }
-            eta[3] *= -1;
-          }
-          eta[2] *= -1;
-        }
-        eta[1] *= -1;
+        std::cout << x[0] << " " << x[1] << " " << x[2] << " | n_dims=" << n_dims << "\n";
+        std::cout << eta_exp_mu << " " << eta_mu << "\n";
+
+        // hopping terms
+        col_idx[3 * i_g] = (i_g + 1) % N;
+        D[3 * i_g] = eta_mu * accum(U(x, mu));
+
+        x[mu] = (x[mu] - 1 + N) % N; // x - mu
+        col_idx[3 * i_g + 1] = (i_g - 1 + N) % N;
+        D[3 * i_g + 1] = -eta_mu * accum(U(x, mu));
+        x[mu] = (x[mu] + 1) % N; // x
+
+        // mass term
+        col_idx[3 * i_g + 2] = i_g;
+        D[3 * i_g + 2] = +m * accum(U(x, mu));
+
+        // i_g++;
       }
-      eta[0] *= -1;
     }
     return std::pair(D, col_idx);
   }

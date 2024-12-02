@@ -70,10 +70,10 @@ std::vector<double> sweep(gaugeconfig<Group> &U,
                           const bool &anisotropic = false) {
   const geometry Geom = U.get_geometry(); // geometry of the lattice
   const size_t n_dims = Geom.get_n_dims(); // number of dimensions
+  const size_t N_pts = Geom.get_N_pts(); // number of dimensions
+  std::array<std::vector<std::vector<size_t>>, 2> idx_sweeps = Geom.get_idx_sweeps();
+
   const std::vector<size_t> L = Geom.get_L(); // lattice sizes
-  // const size_t N_pts = Geom.get_N_pts(); // number of points
-  const size_t T_ext = L[0]; // time extent of the lattice
-  const size_t N_pts_spatial = Geom.get_N_pts() / T_ext; // number of spatial points
   const double A = beta / static_cast<double>(U.getNc()); // \beta/N_c
 
   // uniform distribution for exp(-\Delta S) condition
@@ -82,46 +82,44 @@ std::vector<double> sweep(gaugeconfig<Group> &U,
   double rate = 0.0; // global acceptance rate
   double rate_time = 0.0; // acceptance rate of temporal links updates
 
-#ifdef _USE_OMP_
-  size_t thread_num = omp_get_thread_num();
-#else
-  size_t thread_num = 0;
-#endif
-
-  // links can be updated in parallel on timeslices separated by 2 lattice spacings
-  // NOTE: the trick is to think the list of links as a stack of lists at fixed time
-  for (size_t x0_start = 0; x0_start < 2; x0_start++) {
+  for (size_t i_off = 0; i_off < 2; i_off++) {
+    for (size_t mu = 0; mu < n_dims; mu++) {
+      size_t N_off = idx_sweeps[i_off][mu].size();
 #pragma omp parallel for reduction(+ : rate, rate_time)
-    for (size_t x0 = x0_start; x0 < T_ext; x0 += 2) {
-      Group R;
-      const size_t i0 = N_pts_spatial * x0;
-      for (size_t i_s = 0; i_s < N_pts_spatial; i_s++) {
-        const size_t i = (i0 + i_s);
+      for (size_t k = 0; k < N_off; k++) {
+        size_t thread_num = omp_get_thread_num(); // number of OMP thread
+        Group R; // random group element
+
+        size_t i = idx_sweeps[i_off][mu][k];
         std::vector<int> x = spacetime_lattice::index_to_x<int>(i, L);
         const size_t i_x = n_dims * i;
-        for (size_t mu = 0; mu < n_dims; mu++) {
-          accum K;
-          get_staples_MCMC_step(K, U, i, mu, xi, anisotropic);
-          for (size_t n = 0; n < N_hit; n++) {
-            random_element(R, engine[thread_num], delta);
-            double deltaS = A * (retrace(U[i_x + mu] * K) - retrace(U[i_x + mu] * R * K));
 
-            bool accept = (deltaS < 0);
-            if (!accept) {
-              accept = (uniform(engine[thread_num]) < exp(-deltaS));
-            }
-            if (accept) {
-              U[i_x + mu] = U[i_x + mu] * R;
-              U[i_x + mu].restoreSU();
+        accum K;
+        get_staples_MCMC_step(K, U, x, mu, xi, anisotropic);
 
-              rate += 1; // accepted configuration
-              rate_time += (mu == 0); // increasing only if mu==0
-            }
+        for (size_t n = 0; n < N_hit; n++) {
+          random_element(R, engine[thread_num], delta);
+          double deltaS = A * (retrace(U[i_x + mu] * K) - retrace(U[i_x + mu] * R * K));
+
+          bool accept = (deltaS < 0);
+          if (!accept) {
+            accept = (uniform(engine[thread_num]) < exp(-deltaS));
+          }
+          if (accept) {
+            U[i_x + mu] = U[i_x + mu] * R;
+            U[i_x + mu].restoreSU();
+
+            rate += 1; // accepted configuration
+            rate_time += (mu == 0); // increasing only if mu==0
           }
         }
       }
     }
   }
+
+
+std::cout << "check " << retr_sum_Wplaquettes(U, xi, anisotropic, false) << "\n";
+std::abort();
 
   rate /= (double(N_hit) * double(U.getSize()));
   rate_time /= (double(N_hit) * double(U.getVolume()));

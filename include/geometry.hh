@@ -48,7 +48,7 @@ namespace spacetime_lattice {
    * NOTE: The routine is general, it works for all dimensions.
    *       The user needs to pass the vector of sized
    */
-  template<class T=size_t>
+  template <class T = size_t>
   inline size_t x_to_index(const std::vector<T> &x, const std::vector<size_t> &L) {
     size_t idx = x[0];
     size_t n_dims = L.size();
@@ -63,7 +63,7 @@ namespace spacetime_lattice {
    * where the convention is the same as for the inverse function x_to_index()
    *
    */
-  template<class T>
+  template <class T>
   inline std::vector<T> index_to_x(const size_t &i, std::vector<size_t> L) {
     size_t n_dims = L.size(); // number of dimensions
     std::vector<T> x(n_dims, 0);
@@ -87,6 +87,8 @@ private:
   size_t N_pts = 0; // number of points of the lattice
   // std::vector<size_t> idx_x = {}; // checkerboard indices of "x"
   std::vector<std::vector<size_t>> idx_xplus_mu = {}; // checkerboard indices of x+\mu
+  std::array<std::vector<std::vector<size_t>>, 2> idx_sweeps =
+    {}; // indices for parallelized sweeps
 
   // set the arrays of indices for x + \mu, with periodic boundary conditions
   void set_xpmu_idx_pbc() {
@@ -98,6 +100,32 @@ private:
         x[mu] = (x[mu] + 1) % L[mu];
         idx_xplus_mu[mu].push_back(spacetime_lattice::x_to_index(x, L));
         x[mu] = (x[mu] - 1 + L[mu]) % L[mu];
+      }
+    }
+  }
+
+  // set the indices of points to be used in parallelized sweeps
+  void set_idx_sweeps_pbc() {
+    for (size_t i_off = 0; i_off < 2; i_off++) { // loop over the offset value
+      idx_sweeps[i_off].resize(n_dims);
+      for (size_t mu = 0; mu < n_dims; mu++) {
+        for (size_t i = 0; i < N_pts; i++) {
+          const std::vector<size_t> x =
+            spacetime_lattice::index_to_x<size_t>(i, (*this).L);
+
+
+          for (size_t nu1 = 0; nu1 < n_dims; nu1++) {
+            for (size_t nu2 = 0; nu2 < nu1; nu2++) {
+              if (mu == nu1 || mu == nu2) {
+                continue;
+              }
+              if ((x[nu1] + x[nu2]) % 2 == i_off) {
+                idx_sweeps[i_off][mu].push_back(i);
+              }
+            }
+          }
+
+        }
       }
     }
   }
@@ -121,6 +149,7 @@ public:
     n_dims = L.size();
     N_pts = std::accumulate(L.begin(), L.end(), 1.0, std::multiplies<double>());
     this->set_xpmu_idx_pbc();
+    this->set_idx_sweeps_pbc();
   }
 
   size_t getLt() const { return L[0]; }
@@ -134,6 +163,9 @@ public:
   size_t get_N_pts() const { return N_pts; }
   // std::vector<size_t> get_idx_x() const { return idx_x; }
   std::vector<std::vector<size_t>> get_idx_xplus_mu() const { return idx_xplus_mu; }
+  std::array<std::vector<std::vector<size_t>>, 2> get_idx_sweeps() const {
+    return idx_sweeps;
+  }
 
   size_t getIndex(const int t, const int x, const int y, const int z) const {
     size_t Lt = L[0];

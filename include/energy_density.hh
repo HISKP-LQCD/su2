@@ -1,6 +1,8 @@
 #pragma once
+
 #include "accum_type.hh"
 #include "gaugeconfig.hh"
+#include "geometry.hh"
 #include "tensors.hh"
 
 #ifndef M_PI
@@ -61,90 +63,90 @@ void energy_density(const gaugeconfig<T> &U,
   const size_t mu_start = bool(ss);
   const double ndims_fact = spacetime_lattice::num_pLloops_half(U.getndims() - mu_start);
 
-  res = 0.;
-  Q = 0.;
+  res = 0.0;
+  Q = 0.0;
 
   typedef typename accum_type<T>::type accum;
-  // Euclidean 4D totally anti-symemtric tensor
+  // Euclidean 4D totally anti-symmetric tensor
   static epsilon4_t eps4 = new_epsilon4();
 
-  std::vector<size_t> x = {0, 0, 0, 0};
-  for (x[0] = 0; x[0] < U.getLt(); x[0]++) {
-    for (x[1] = 0; x[1] < U.getLx(); x[1]++) {
-      for (x[2] = 0; x[2] < U.getLy(); x[2]++) {
-        for (x[3] = 0; x[3] < U.getLz(); x[3]++) {
-          std::vector<size_t> x1 = x;
-          std::vector<size_t> x2 = x;
-          std::vector<size_t> x3 = x;
-          accum G[4][4];
-          for (size_t mu = mu_start; mu < U.getndims() - 1; mu++) {
-            for (size_t nu = mu + 1; nu < U.getndims(); nu++) {
-              x1[mu] += 1; // x + mu
-              x2[nu] += 1; // x + nu
-              accum leaf = U(x, mu) * U(x1, nu) * U(x2, mu).dagger() * U(x, nu).dagger();
-              x1[mu] -= 1; // x
-              x2[nu] -= 1; // x
+  geometry Geom = U.get_geometry();
+  const std::vector<size_t> L = Geom.get_L();
+  size_t n_dims = Geom.get_n_dims();
+  size_t N_pts = Geom.get_N_pts();
 
-              if (cloverdef) {
-                x1[mu] -= 1; // x - mu
-                x1[nu] += 1; // x - mu + nu
-                x2[mu] -= 1; // x - mu
-                leaf += U(x, nu) * U(x1, mu).dagger() * U(x2, nu).dagger() * U(x2, mu);
-                x1[mu] += 1; // x + nu
-                x1[nu] -= 1; // x
-                x2[mu] += 1; // x
+  for (size_t i = 0; i < N_pts; i++) {
+    std::vector<size_t> x = spacetime_lattice::index_to_x<size_t>(i, L);
 
-                x1[mu] -= 1; // x - mu
-                x2[mu] -= 1; // x - mu
-                x2[nu] -= 1; // x - mu -nu
-                x3[nu] -= 1; // x - nu
-                leaf += U(x1, mu).dagger() * U(x2, nu).dagger() * U(x2, mu) * U(x3, nu);
-                x1[mu] += 1; // x
-                x2[mu] += 1; // x + nu
-                x2[nu] += 1; // x
-                x3[nu] += 1; // x
+    std::vector<size_t> x1 = x;
+    std::vector<size_t> x2 = x;
+    std::vector<size_t> x3 = x;
+    accum G[4][4];
+    for (size_t mu = mu_start; mu < U.getndims() - 1; mu++) {
+      for (size_t nu = mu + 1; nu < U.getndims(); nu++) {
+        x1[mu] += 1; // x + mu
+        x2[nu] += 1; // x + nu
+        accum leaf = U(x, mu) * U(x1, nu) * U(x2, mu).dagger() * U(x, nu).dagger();
+        x1[mu] -= 1; // x
+        x2[nu] -= 1; // x
 
-                x1[nu] -= 1; // x - nu
-                x2[nu] -= 1; // x - nu
-                x2[mu] += 1; // x + mu -nu
-                leaf += U(x1, nu).dagger() * U(x1, mu) * U(x2, nu) * U(x, mu).dagger();
-                x1[nu] += 1; // x
-                x2[nu] += 1; // x + mu
-                x2[mu] -= 1; // x
-              }
-              // traceless and anti-hermitian
-              // here we include a factor 1/2 already
-              G[mu][nu] = traceless_antiherm(leaf);
-              // trace(G_{mu,nu}^a G_{mu,nu}^a)
-              res += retrace(G[mu][nu] * G[mu][nu]);
-            }
-          }
+        if (cloverdef) {
+          x1[mu] -= 1; // x - mu
+          x1[nu] += 1; // x - mu + nu
+          x2[mu] -= 1; // x - mu
+          leaf += U(x, nu) * U(x1, mu).dagger() * U(x2, nu).dagger() * U(x2, mu);
+          x1[mu] += 1; // x + nu
+          x1[nu] -= 1; // x
+          x2[mu] += 1; // x
 
-          if (U.getndims() == 4) {
-            // sum up the topological charge contribution now
-            for (int i = 0; i < eps4.N; i++) {
-              int i1 = eps4.eps_idx[i][0];
-              int i2 = eps4.eps_idx[i][1];
-              int i3 = eps4.eps_idx[i][2];
-              int i4 = eps4.eps_idx[i][3];
+          x1[mu] -= 1; // x - mu
+          x2[mu] -= 1; // x - mu
+          x2[nu] -= 1; // x - mu -nu
+          x3[nu] -= 1; // x - nu
+          leaf += U(x1, mu).dagger() * U(x2, nu).dagger() * U(x2, mu) * U(x3, nu);
+          x1[mu] += 1; // x
+          x2[mu] += 1; // x + nu
+          x2[nu] += 1; // x
+          x3[nu] += 1; // x
 
-              // when Gmunu components from the lower triangle are to be used,
-              // we can simply skip them and multiply our normalisation by a factor of
-              // four in total
-              if (i2 < i1) {
-                continue;
-              }
-              if (i4 < i3) {
-                continue;
-              }
-              Q += eps4.eps_val[i] * retrace(G[i1][i2] * G[i3][i4]);
-            }
-          }
-          if (U.getndims() == 2) {
-            Q += -std::imag(trace((G[0][1] - G[1][0])));
-          }
+          x1[nu] -= 1; // x - nu
+          x2[nu] -= 1; // x - nu
+          x2[mu] += 1; // x + mu -nu
+          leaf += U(x1, nu).dagger() * U(x1, mu) * U(x2, nu) * U(x, mu).dagger();
+          x1[nu] += 1; // x
+          x2[nu] += 1; // x + mu
+          x2[mu] -= 1; // x
         }
+        // traceless and anti-hermitian
+        // here we include a factor 1/2 already
+        G[mu][nu] = traceless_antiherm(leaf);
+        // trace(G_{mu,nu}^a G_{mu,nu}^a)
+        res += retrace(G[mu][nu] * G[mu][nu]);
       }
+    }
+
+    if (U.getndims() == 4) {
+      // sum up the topological charge contribution now
+      for (int i = 0; i < eps4.N; i++) {
+        int i1 = eps4.eps_idx[i][0];
+        int i2 = eps4.eps_idx[i][1];
+        int i3 = eps4.eps_idx[i][2];
+        int i4 = eps4.eps_idx[i][3];
+
+        // when Gmunu components from the lower triangle are to be used,
+        // we can simply skip them and multiply our normalisation by a factor of
+        // four in total
+        if (i2 < i1) {
+          continue;
+        }
+        if (i4 < i3) {
+          continue;
+        }
+        Q += eps4.eps_val[i] * retrace(G[i1][i2] * G[i3][i4]);
+      }
+    }
+    if (U.getndims() == 2) {
+      Q += -std::imag(trace((G[0][1] - G[1][0])));
     }
   }
   // now we need to devide by 2, but we get a factor of two since we only
@@ -157,6 +159,9 @@ void energy_density(const gaugeconfig<T> &U,
   // factor 4 from summing only mu < nu and rho < sigma
   Q = -4. * Q / (32.0 * M_PI * M_PI);
   // factor 1/16 from G_\mu\nu with clover definition
-  if (cloverdef)
+  if (cloverdef) {
     Q /= 16.;
+  }
+
+  return;
 }

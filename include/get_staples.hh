@@ -98,13 +98,14 @@ RetType get_staples_down(gaugeconfig<Group> &U, const Arr &x, const size_t &mu) 
 template <class T, class Group>
 void get_staples_MCMC_step(T &K,
                            gaugeconfig<Group> &U,
-                           const size_t& i,
-                           const size_t& mu,
-                           const double& xi = 1.0,
-                           const bool& anisotropic = false,
-                           const bool& spatial_only = false) {
-  geometry Geom = U.get_geometry();         
-  std::vector<int> x = spacetime_lattice::index_to_x<int>(i, Geom.get_L());                          
+                           const size_t &i,
+                           const size_t &mu,
+                           const double &xi = 1.0,
+                           const bool &anisotropic = false,
+                           const bool &spatial_only = false) {
+  geometry Geom = U.get_geometry();
+  std::vector<int> x = spacetime_lattice::index_to_x<int>(i, Geom.get_L());
+
   size_t startnu = 0;
   if (spatial_only) {
     startnu = 1;
@@ -156,7 +157,7 @@ void get_staples_MCMC_step(T &K,
 template <class T, class Group>
 void get_staples_MCMC_step(T &K,
                            gaugeconfig<Group> &U,
-                           const std::vector<int>& x,
+                           const std::vector<int> &x,
                            const size_t mu,
                            const double xi = 1.0,
                            bool anisotropic = false,
@@ -164,9 +165,9 @@ void get_staples_MCMC_step(T &K,
   // geometry Geom = U.get_geometry();
   // size_t i_x = spacetime_lattice::index_to_x(i_x, Geom.get_L());
   // get_staples_MCMC_step(K, U, i_x, mu, xi, anisotropic, spatial_only);
+  // std::cout << x[0] << " " << x[1] << " " << x[2] << "\n";
 
-
-    size_t startnu = 0;
+  size_t startnu = 0;
   if (spatial_only) {
     startnu = 1;
   }

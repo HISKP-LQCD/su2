@@ -1,33 +1,32 @@
 #pragma once
 
-#include"su2.hh"
-#include"random_element.hh"
+#include <random>
+
 #include "gaugeconfig.hh"
+#include "random_element.hh"
+#include "su2.hh"
 
-#include<random>
-
-
-template<class T> void random_gauge_trafo(gaugeconfig<T> &U, const int seed) {
+template <class T> void random_gauge_trafo(gaugeconfig<T> &U, const int seed) {
   std::mt19937 engine(seed);
-  
-  T rU, tmp;
-  std::vector<size_t> x = {0, 0, 0, 0};
-  for(x[0] = 0; x[0] < U.getLt(); x[0]++) {
-    for(x[1] = 0; x[1] < U.getLx(); x[1]++) {
-      for(x[2] = 0; x[2] < U.getLy(); x[2]++) {
-        for(x[3] = 0; x[3] < U.getLz(); x[3]++) {
-          std::vector<size_t> xminusmu = x;
-          random_element(rU, engine, 1);
-          for(size_t mu = 0; mu < U.getndims(); mu++) {
-            U(x, mu) = rU * U(x, mu);
 
-            xminusmu[mu] -= 1;
-            U(xminusmu, mu) = U(xminusmu, mu) * rU.dagger();
-            xminusmu[mu] += 1;
-          }
-        }
-      }
+  T rU, tmp;
+
+  geometry Geom = U.get_geometry(); // geometry of the lattice
+  const std::vector<size_t> L = Geom.get_L();
+  const size_t n_dims = Geom.get_n_dims(); // number of dimensions
+  const size_t N_pts = Geom.get_N_pts(); // number of dimensions
+  for (size_t i = 0; i < N_pts; i++) {
+    std::vector<size_t> x = spacetime_lattice::index_to_x<size_t>(i, L);
+    std::vector<size_t> xminusmu = x;
+    random_element(rU, engine, 1);
+    for (size_t mu = 0; mu < n_dims; mu++) {
+      U(x, mu) = rU * U(x, mu);
+
+      xminusmu[mu] -= 1;
+      U(xminusmu, mu) = U(xminusmu, mu) * rU.dagger();
+      xminusmu[mu] += 1;
     }
   }
+
   return;
 }

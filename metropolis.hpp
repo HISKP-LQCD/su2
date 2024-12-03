@@ -99,9 +99,11 @@ public:
 
       this->output_line(i);
 
+  // std::cout << "hello Simone\n";
       rate += this->metropolis_sweep(
         (*this).pparams, (*this).U, engines, (*this).sparams.delta, (*this).sparams.N_hit,
         (*this).pparams.beta, (*this).pparams.xi, (*this).pparams.anisotropic);
+  // std::cout << "hello Simone2\n";
 
       if (i > 0 && (i % (*this).sparams.N_save) == 0) {
         std::ostringstream oss_i;
@@ -160,7 +162,9 @@ public:
      * and write to stdout and output-file save every nave configuration
      * */
     for (size_t i = i_min; i < i_max; i++) {
+    // std::cout << "ciao Simone\n";
       this->do_sweep(i);
+    // std::cout << "ciao Simone2\n";
       bool do_omeas =
         ((*this).sparams.do_omeas && i != 0 && (i % (*this).sparams.N_save) == 0);
       this->after_MCMC_step(i, do_omeas);

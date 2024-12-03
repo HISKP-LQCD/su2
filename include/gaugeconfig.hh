@@ -53,6 +53,11 @@ private:
     return ((((y0 * Lx + y1) * Ly + y2) * Lz + y3) * ndims + mu);
   }
 
+  template <class T1, class T2>
+  size_t getIndex(const std::vector<T1> &x, const T2 &mu) const {
+    return spacetime_lattice::x_to_index(x, Geom.get_L());
+  }
+
 public:
   gaugeconfig() {}
   ~gaugeconfig() {}
@@ -83,6 +88,7 @@ public:
 
   std::vector<value_type> get_data() const { return data; }
 
+  void init_geometry()  { Geom.init(); }
   geometry get_geometry() const { return Geom; }
   size_t getLx() const { return (Lx); }
   size_t getLy() const { return (Ly); }
@@ -92,7 +98,7 @@ public:
   size_t getVolume() const { return (volume); }
   size_t getSize() const { return (volume * ndims); }
   double getBeta() const { return beta; }
-  void setBeta(const double _beta) { beta = _beta; }
+  // void setBeta(const double _beta) { beta = _beta; }
   int getNc() const { return (data[0].N_c); }
   void restoreSU() {
 #pragma omp parallel for
@@ -130,21 +136,25 @@ public:
     return data[getIndex(t, x, y, z, mu)];
   }
 
-  value_type &operator()(std::vector<size_t> const &coords, size_t const mu) {
-    return data[getIndex(coords[0], coords[1], coords[2], coords[3], mu)];
+  template <class T1, class T2>
+  value_type &operator()(std::vector<T1> const &coords, T2 const mu) {
+    return data[getIndex(coords, mu)];
+    // return data[getIndex(coords[0], coords[1], coords[2], coords[3], mu)];
   }
 
-  value_type operator()(std::vector<size_t> const &coords, size_t const mu) const {
-    return data[getIndex(coords[0], coords[1], coords[2], coords[3], mu)];
+  template <class T1, class T2>
+  value_type operator()(std::vector<T1> const &coords, T2 const mu) const {
+    return data[getIndex(coords, mu)];
+    // return data[getIndex(coords[0], coords[1], coords[2], coords[3], mu)];
   }
 
-  value_type &operator()(std::vector<int> const &coords, size_t const mu) {
-    return data[getIndex(coords[0], coords[1], coords[2], coords[3], mu)];
-  }
+  // value_type &operator()(std::vector<int> const &coords, size_t const mu) {
+  //   return data[getIndex(coords[0], coords[1], coords[2], coords[3], mu)];
+  // }
 
-  value_type operator()(std::vector<int> const &coords, size_t const mu) const {
-    return data[getIndex(coords[0], coords[1], coords[2], coords[3], mu)];
-  }
+  // value_type operator()(std::vector<int> const &coords, size_t const mu) const {
+  //   return data[getIndex(coords[0], coords[1], coords[2], coords[3], mu)];
+  // }
 
   /**
    * access elements according to the convention of

@@ -359,6 +359,7 @@ public:
     std::cout << "## Initial Plaquette P: " << plaquette << std::endl;
 
     random_gauge_trafo(U, 654321);
+    // U.init_geometry();
     // plaquette = gauge_energy(U);
     plaquette = omeasurements::get_retr_plaquette_density((*this).U, (*this).pparams.bc);
 

@@ -59,10 +59,10 @@ std::vector<double> sweep(gaugeconfig<Group> &U,
   std::array<std::vector<std::vector<size_t>>, 2> idx_sweeps = Geom.get_idx_sweeps();
 
   const std::vector<size_t> L = Geom.get_L(); // lattice sizes
-  const double A = beta / static_cast<double>(U.getNc()); // \beta/N_c
+  const double A = beta / double(U.getNc()); // \beta/N_c
 
   // uniform distribution for exp(-\Delta S) condition
-  std::uniform_real_distribution<double> uniform(0., 1.);
+  std::uniform_real_distribution<double> uniform(0.0, 1.0);
   typedef typename accum_type<Group>::type accum; // accumulation of staples
   double rate = 0.0; // global acceptance rate
   double rate_time = 0.0; // acceptance rate of temporal links updates
@@ -79,11 +79,16 @@ std::vector<double> sweep(gaugeconfig<Group> &U,
         Group R; // random group element
 
         const size_t i = idx_sweeps[i_off][mu][k];
-        const std::vector<int> x = spacetime_lattice::index_to_x<int>(i, L);
+        // const std::vector<int> x = spacetime_lattice::index_to_x<int>(i, L);
         const size_t i_x = n_dims * i;
 
+        if (i  != spacetime_lattice::x_to_index(spacetime_lattice::index_to_x<int>(i, L), L)){
+          std::cout << "something went wrong!\n";
+          std::abort();
+        }
+
         accum K;
-        get_staples_MCMC_step(K, U, x, mu, xi, anisotropic);
+        get_staples_MCMC_step(K, U, i, mu, xi, anisotropic);
 
         for (size_t n = 0; n < N_hit; n++) {
           random_element(R, engine[thread_num], delta);
@@ -101,10 +106,11 @@ std::vector<double> sweep(gaugeconfig<Group> &U,
             rate_time += (mu == 0); // increasing only if mu==0
           }
         }
-
       }
     }
+    // std::cout << "i_off=" << i_off << "\n";
   }
+  // std::abort();
 
   rate /= (double(N_hit) * double(U.getSize()));
   rate_time /= (double(N_hit) * double(U.getVolume()));

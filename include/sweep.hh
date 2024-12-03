@@ -101,6 +101,7 @@ std::vector<double> sweep(gaugeconfig<Group> &U,
             rate_time += (mu == 0); // increasing only if mu==0
           }
         }
+
       }
     }
   }

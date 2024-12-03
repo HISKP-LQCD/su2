@@ -25,40 +25,25 @@
 #include <vector>
 
 /**
- * @brief N_hit Metropolis-Updates
- * does N_hit Metropolis updates of every link (U -> R*U, where R is a random element):
- * - picks a point 'x' and direction '\mu'
- * - updates the link U_{\mu}(x) (not the surrounding ones)
- * - sums up the unchanged part in staples (be calculated once for every link) --> get
- * \Delta S
- * - picks the next point and direction, and repat until has gone through the entire
- * lattice repa
+ * @brief Updating the gauge configuration with Metropolis sweeps
  *
- * Notes:
- * - For the update, the nearest neighbour links have to be constant, hence
- * parallelization is not trivial. It is done by first updating all even time slices and
- * then all odd time slices.
- * - The acceptance rate can be tuned with delta, which determines the possible regions
- * from which R is drawn.
- * - For the normalization of the temporal rate: There is only one temporal link for
- * each lattice point, so the normalization is done with U.getVolume() With this
- * definition, for xi=1 the acceptance rates only differ in the third significant digit,
- * so this is correct
- *
+ * For every link, does N_hit Metropolis updates: U -> R*U, where R is a random element.
+ * The acceptance of R depends on the change in the action \Delta S.
  * The change in the action \Delta S accepted with probability min(1, exp(-\Delta S)).
- * @tparam URNG
- * @tparam Group
- * @param U
- * @param engine
- * @param delta
- * @param N_hit
- * @param beta
+ * This is computed by summing over the staples attached to the link.
+ *
+ * NOTE: the parallelization is thread safe.
+ *
+ * @tparam URNG : uniform rangom number generator
+ * @tparam Group : gauge group
+ * @param U : gauge configuration
+ * @param engine : vector of engines (ensures safe OMP threading)
+ * @param delta : parameter determining how R is far from the identity
+ * @param N_hit : number of hits applied to an individual link
+ * @param beta ; Yang-Mills coupling \beta
  * @param xi bare anisotropy
- * @param anisotropic bool flag, true when considering an anisotropic lattice. In this
- * case the action weights the temporal (including links in direction 0) and spatial
- * links differently
- * @return std::vector<double> vector of links acceptance rate: {overall, only temporal
- * ones}
+ * @param anisotropic bool flag, true when considering an anisotropic lattice.
+ * @return std::vector<double> vector of links acceptance rate: {all, temporal ones}
  */
 template <class URNG, class Group>
 std::vector<double> sweep(gaugeconfig<Group> &U,
@@ -82,16 +67,19 @@ std::vector<double> sweep(gaugeconfig<Group> &U,
   double rate = 0.0; // global acceptance rate
   double rate_time = 0.0; // acceptance rate of temporal links updates
 
+  const size_t n_engines = engine.size();
+
   for (size_t i_off = 0; i_off < 2; i_off++) {
     for (size_t mu = 0; mu < n_dims; mu++) {
-      size_t N_off = idx_sweeps[i_off][mu].size();
+      const size_t N_off = idx_sweeps[i_off][mu].size();
+      // std::vector<URNG> engine(N_off);
 #pragma omp parallel for reduction(+ : rate, rate_time)
       for (size_t k = 0; k < N_off; k++) {
-        size_t thread_num = omp_get_thread_num(); // number of OMP thread
+        const size_t thread_num = k; // omp_get_thread_num(); // number of OMP thread
         Group R; // random group element
 
-        size_t i = idx_sweeps[i_off][mu][k];
-        std::vector<int> x = spacetime_lattice::index_to_x<int>(i, L);
+        const size_t i = idx_sweeps[i_off][mu][k];
+        const std::vector<int> x = spacetime_lattice::index_to_x<int>(i, L);
         const size_t i_x = n_dims * i;
 
         accum K;
@@ -116,10 +104,6 @@ std::vector<double> sweep(gaugeconfig<Group> &U,
       }
     }
   }
-
-
-std::cout << "check " << retr_sum_Wplaquettes(U, xi, anisotropic, false) << "\n";
-std::abort();
 
   rate /= (double(N_hit) * double(U.getSize()));
   rate_time /= (double(N_hit) * double(U.getVolume()));

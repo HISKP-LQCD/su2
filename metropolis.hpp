@@ -62,21 +62,21 @@ public:
 
   template <class URNG>
   std::vector<double> metropolis_sweep(const gp::physics &pparams,
-                            gaugeconfig<Group> &U,
-                            std::vector<URNG> engines,
-                            const double &delta,
-                            const size_t &N_hit,
-                            const double &beta,
-                            const double &xi = 1.0,
-                            const bool &anisotropic = false) {
+                                       gaugeconfig<Group> &U,
+                                       std::vector<URNG> engines,
+                                       const double &delta,
+                                       const size_t &N_hit,
+                                       const double &beta,
+                                       const double &xi = 1.0,
+                                       const bool &anisotropic = false) {
     if (pparams.rotating_frame) {
       fatal_error("Rotating metric not supported yet.", __func__);
       return {};
       // return rotating_spacetime::sweep(U, pparams.Omega, engines, delta, N_hit,
       //                                  pparams.beta, pparams.xi,
       //                                  pparams.anisotropic);
-    } 
-      return sweep(U, engines, delta, N_hit, pparams.beta, pparams.xi, pparams.anisotropic);
+    }
+    return sweep(U, engines, delta, N_hit, pparams.beta, pparams.xi, pparams.anisotropic);
   }
 
   /**
@@ -86,18 +86,22 @@ public:
    * set random engine such that an overlap and double use of seeds cannot occur
    */
   void do_sweep(const size_t &i) {
-    const size_t n_threads = (*this).threads;
+    // const size_t n_threads = (*this).threads;
+
+    // maximum number of links that can be updated simultaneously:
+    // for a fixed direction mu, n_thr="number of links separated by 2 staples
+    const size_t n_thr = (*this).U.getVolume()/2; 
     if ((*this).sparams.do_mcmc) {
-      std::vector<std::mt19937> engines(n_threads);
-      for (size_t i_engine = 0; i_engine < n_threads; i_engine++) {
-        engines[i_engine].seed((*this).sparams.seed + i * (*this).pparams.Lt + i_engine);
+      std::vector<std::mt19937> engines(n_thr);
+      for (size_t i_engine = 0; i_engine < n_thr; i_engine++) {
+        engines[i_engine].seed((*this).sparams.seed + i_engine);
       }
 
       this->output_line(i);
 
-      rate += this->metropolis_sweep((*this).pparams, (*this).U, engines, (*this).sparams.delta,
-                          (*this).sparams.N_hit, (*this).pparams.beta, (*this).pparams.xi,
-                          (*this).pparams.anisotropic);
+      rate += this->metropolis_sweep(
+        (*this).pparams, (*this).U, engines, (*this).sparams.delta, (*this).sparams.N_hit,
+        (*this).pparams.beta, (*this).pparams.xi, (*this).pparams.anisotropic);
 
       if (i > 0 && (i % (*this).sparams.N_save) == 0) {
         std::ostringstream oss_i;

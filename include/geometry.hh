@@ -113,21 +113,24 @@ private:
           const std::vector<size_t> x =
             spacetime_lattice::index_to_x<size_t>(i, (*this).L);
 
-
           for (size_t nu1 = 0; nu1 < n_dims; nu1++) {
             for (size_t nu2 = 0; nu2 < nu1; nu2++) {
               if (mu == nu1 || mu == nu2) {
                 continue;
               }
-              if ((x[nu1] + x[nu2]) % 2 == i_off) {
+              if (((x[nu1] + x[nu2]) % 2) == i_off) {
                 idx_sweeps[i_off][mu].push_back(i);
+
+                // std::cout << i_off << " | mu=" << mu << " x=" << x[0] << " " << x[1]
+                //           << " " << x[2] << "\n";
               }
             }
           }
-
         }
       }
     }
+    // std::abort();
+    return;
   }
 
 public:

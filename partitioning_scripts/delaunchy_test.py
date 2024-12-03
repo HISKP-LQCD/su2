@@ -49,9 +49,16 @@ if np.logical_and(weights_included, wanted_partitioning != "linear"):
     weights = ho.getSU2TriangulatedIntegrationWeights(points=partitioning)
 elif np.logical_and(weights_included, wanted_partitioning == "linear"):
     print("hello there")
-    partitioning = partitioning_unnormalized / np.linalg.norm(partitioning_unnormalized, axis=1)[:, np.newaxis]
-    weights = (np.sqrt(2)/np.linalg.norm(partitioning, axis=1)[:, np.newaxis])**3
+    weights = (np.sqrt(2)/np.linalg.norm(partitioning_unnormalized, axis=1)[:, np.newaxis])**3
     weights = weights.flatten()
+    
+elif np.logical_and(np.logical_not(weights_included), wanted_partitioning == "linear"):
+    weights = np.ones(shape = len(partitioning_unnormalized))
+else:
+    weights = np.ones(shape = len(partitioning))
+    
+if (wanted_partitioning == "linear"):
+    partitioning = partitioning_unnormalized / np.linalg.norm(partitioning_unnormalized, axis=1)[:, np.newaxis]
     neighborlist = []
     jetanothercounter = 0
     print(len(partitioning_unnormalized))
@@ -61,15 +68,14 @@ elif np.logical_and(weights_included, wanted_partitioning == "linear"):
         jetanothercounter2 = 0
         while jetanothercounter2 < len(partitioning_unnormalized):
             if ((np.abs(partitioning_unnormalized[jetanothercounter, 0]) - np.abs(partitioning_unnormalized[jetanothercounter2, 0]))**2 + (np.abs(partitioning_unnormalized[jetanothercounter, 1]) - np.abs(partitioning_unnormalized[jetanothercounter2, 1]))**2 + (np.abs(partitioning_unnormalized[jetanothercounter, 2]) - np.abs(partitioning_unnormalized[jetanothercounter2, 2]))**2 + (np.abs(partitioning_unnormalized[jetanothercounter, 3]) - np.abs(partitioning_unnormalized[jetanothercounter2, 3]))**2 == 2):
-                #print(partitioning_unnormalized[jetanothercounter2, ])
+                print(partitioning_unnormalized[jetanothercounter2, ])
                 helplist.append(jetanothercounter2)
             jetanothercounter2 += 1
+        print(helplist)
         neighborlist.append(helplist)
         #print(helplist)
         jetanothercounter += 1
-    print(neighborlist)
-else:
-    weights = np.ones(shape = len(partitioning))
+    #print(neighborlist)
 ### setup the Delaunay triangulation ###
 Delaunchy = scipy.spatial.Delaunay(points = partitioning)
 helpresult = Delaunchy.vertex_neighbor_vertices

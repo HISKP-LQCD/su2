@@ -1,8 +1,8 @@
 #pragma once
 
 #include "adjointfield.hh"
-#include "flat-energy_density.hh"
-#include "gauge_energy.hpp"
+#include "clover.hh"
+#include "gauge_energy.hh"
 #include "gaugeconfig.hh"
 #include "gaugemonomial.hh"
 #include "hamiltonian_field.hh"
@@ -95,11 +95,11 @@ namespace flat_spacetime {
 
     const double den_common = U.getVolume() * double(U.getNc());
 
-    P[2] = flat_spacetime::gauge_energy(U) / den_common;
-    P_ss[2] = flat_spacetime::gauge_energy(U, true) / den_common;
-    flat_spacetime::energy_density(U, density, topQ);
+    P[2] = flat_spacetime::retr_sum_Wplaquettes(U) / den_common;
+    P_ss[2] = flat_spacetime::retr_sum_Wplaquettes(U, true) / den_common;
+    flat_spacetime::leafs_and_Qtop(U, density, topQ);
     E[2] = density;
-    flat_spacetime::energy_density(U, density_ss, topQ_ss, true, true);
+    flat_spacetime::leafs_and_Qtop(U, density_ss, topQ_ss, true, true);
     E_ss[2] = density_ss;
 
     // definine a fictitious gauge configuration Vt, momenta and hamiltonian field to
@@ -134,12 +134,12 @@ namespace flat_spacetime {
       for (unsigned int x0 = 1; x0 < 3; x0++) {
         t[x0] = t[x0 - 1] + eps;
         runge_kutta(h, SW, eps); // apply Runge-Kutta integration method
-        P[x0] = flat_spacetime::gauge_energy(Vt) / den_common;
-        P_ss[x0] = flat_spacetime::gauge_energy(Vt, true) / den_common;
-        flat_spacetime::energy_density(Vt, density, topQ, true);
+        P[x0] = flat_spacetime::retr_sum_Wplaquettes(Vt) / den_common;
+        P_ss[x0] = flat_spacetime::retr_sum_Wplaquettes(Vt, true) / den_common;
+        flat_spacetime::leafs_and_Qtop(Vt, density, topQ, true);
         E[x0] = density;
         Q[x0] = topQ;
-        flat_spacetime::energy_density(Vt, density_ss, topQ_ss, true, true);
+        flat_spacetime::leafs_and_Qtop(Vt, density_ss, topQ_ss, true, true);
         E_ss[x0] = density_ss;
       }
 

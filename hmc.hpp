@@ -117,7 +117,7 @@ public:
       md_update((*this).U, engine, mdparams, monomial_list, *md_integ);
 
       double E = 0., Q = 0.;
-      flat_spacetime::energy_density((*this).U, E, Q);
+      flat_spacetime::leafs_and_Qtop((*this).U, E, Q);
 
       rate += mdparams.getaccept();
 

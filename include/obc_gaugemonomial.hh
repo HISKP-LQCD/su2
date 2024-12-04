@@ -11,7 +11,7 @@
 
 #pragma once
 #include "adjointfield.hh"
-#include "gauge_energy.hpp"
+#include "gauge_energy.hh"
 #include "gaugeconfig.hh"
 #include "geometry.hh"
 #include "get_staples.hh"

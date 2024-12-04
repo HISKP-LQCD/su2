@@ -13,6 +13,7 @@
 #pragma once
 
 #include "accum_type.hh"
+#include "gauge_energy.hh"
 #include "gaugeconfig.hh"
 #include "get_staples.hh"
 #include "random_element.hh"
@@ -133,6 +134,7 @@ namespace flat_spacetime {
 #ifdef _USE_OMP_
     }
 #endif
+
     std::vector<double> res = {double(rate) / double(N_hit) / double(U.getSize()),
                                double(rate_time) / double(N_hit) / double(U.getVolume())};
     return res;

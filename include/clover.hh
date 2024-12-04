@@ -55,7 +55,7 @@ namespace flat_spacetime {
    * eq. 3.1 of https://arxiv.org/pdf/1205.0781.pdf)
    */
   template <class T>
-  void energy_density(const gaugeconfig<T> &U,
+  void leafs_and_Qtop(const gaugeconfig<T> &U,
                       double &res,
                       double &Q,
                       bool cloverdef = true,

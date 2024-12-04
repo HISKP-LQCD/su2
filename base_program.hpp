@@ -11,8 +11,8 @@
 
 #pragma once
 
+#include "clover.hh"
 #include "errors.hpp"
-#include "flat-energy_density.hh"
 #include "flat-sweep.hh" // flat spacetime
 #include "gauge_energy.hh"
 #include "gaugeconfig.hh"
@@ -20,9 +20,6 @@
 #include "omeasurements.hpp"
 #include "parse_input_file.hh"
 #include "random_gauge_trafo.hh"
-// #include "rotating-energy_density.hpp" // rotating spacetime
-// #include "rotating-gauge_energy.hpp" // rotating spacetime
-// #include "rotating-sweep.hpp" // rotating spacetime
 #include "su2.hh"
 #include "u1.hh"
 #include "vectorfunctions.hh"
@@ -270,15 +267,15 @@ public:
     return;
   }
 
-  double gauge_energy(const gp::physics &pparams,
-                      const gaugeconfig<Group> &U,
-                      const bool spatial_only = false) {
+  double retr_sum_Wplaquettes(const gp::physics &pparams,
+                              const gaugeconfig<Group> &U,
+                              const bool spatial_only = false) {
     if (pparams.flat_metric) {
-      return flat_spacetime::gauge_energy(U, spatial_only);
+      return flat_spacetime::retr_sum_Wplaquettes(U, spatial_only);
     }
     if (pparams.rotating_frame) {
       fatal_error("Rotating metric not supported yet.", __func__);
-      // return rotating_spacetime::gauge_energy(U, pparams.Omega, spatial_only);
+      // return rotating_spacetime::retr_sum_Wplaquettes(U, pparams.Omega, spatial_only);
     } else {
       fatal_error("Invalid metric when calling: ", __func__);
       return {};
@@ -286,18 +283,17 @@ public:
   }
 
   template <class T>
-  void energy_density(const gp::physics &pparams,
+  void leafs_and_Qtop(const gp::physics &pparams,
                       const gaugeconfig<T> &U,
                       double &E,
                       double &Q,
                       const bool &cloverdef = true,
                       const bool &ss = false) {
     if (pparams.flat_metric) {
-      flat_spacetime::energy_density(U, E, Q, cloverdef, ss);
+      flat_spacetime::leafs_and_Qtop(U, E, Q, cloverdef, ss);
     }
     if (pparams.rotating_frame) {
       fatal_error("Rotating metric not supported yet.", __func__);
-      // rotating_spacetime::energy_density(U, pparams.Omega, E, Q, cloverdef);
     }
     return;
   }
@@ -345,7 +341,7 @@ public:
       hotstart(U, sparams.seed, g_heat);
     }
 
-    // double plaquette = flat_spacetime::gauge_energy(U);
+    // double plaquette = flat_spacetime::retr_sum_Wplaquettes(U);
     double plaquette =
       omeasurements::get_retr_plaquette_density((*this).U, (*this).pparams.bc);
     double fac = 2.0 / U.getndims() / (U.getndims() - 1.0);
@@ -359,7 +355,7 @@ public:
     std::cout << "## Initial Plaquette P: " << plaquette << std::endl;
 
     random_gauge_trafo(U, 654321);
-    // plaquette = flat_spacetime::gauge_energy(U);
+    // plaquette = flat_spacetime::retr_sum_Wplaquettes(U);
     plaquette = omeasurements::get_retr_plaquette_density((*this).U, (*this).pparams.bc);
     std::cout << "## Plaquette after rnd trafo: " << plaquette << std::endl;
   }
@@ -381,14 +377,18 @@ public:
   }
 
   void output_line(const int &i) {
-    double E = 0., Q = 0.;
-    std::cout << i;
-    (*this).os << i;
+    double ImTr_P = 0., Q = 0.;
+    std::cout << i << std::scientific << std::setprecision(15);
+    (*this).os << i << std::scientific << std::setprecision(15);
     for (bool ss : {false, true}) {
-      this->energy_density((*this).pparams, (*this).U, E, Q, false, ss);
-      std::cout << " " << std::scientific << std::setprecision(15) << E << " " << Q;
-      (*this).os << " " << std::scientific << std::setprecision(15) << E << " " << Q;
+      this->leafs_and_Qtop((*this).pparams, (*this).U, ImTr_P, Q, false, ss);
+      const double ReTr_P =
+        omeasurements::get_retr_plaquette_density((*this).U, (*this).pparams.bc, ss);
+
+      std::cout << " " << ReTr_P << " " << ImTr_P << " " << Q;
+      (*this).os << " " << ReTr_P << " " << ImTr_P << " " << Q;
     }
+
     std::cout << "\n";
     (*this).os << "\n";
   }

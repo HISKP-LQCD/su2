@@ -33,7 +33,7 @@ namespace rotating_spacetime {
    * @param cloverdef
    */
   template <class T>
-  void energy_density(const gaugeconfig<T> &U,
+  void leafs_and_Qtop(const gaugeconfig<T> &U,
                       const double &Omega,
                       double &res,
                       double &Q,

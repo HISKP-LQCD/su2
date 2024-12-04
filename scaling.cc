@@ -1,4 +1,4 @@
-#include "flat-energy_density.hh"
+#include "clover.hh"
 #include "flat-sweep.hh"
 #include "gauge_energy.hh"
 #include "gaugeconfig.hh"
@@ -158,10 +158,10 @@ int main(int ac, char *av[]) {
         // different seeds for every measurement
         size_t inew = (i - gparams.icounter) / thread + gparams.icounter;
 
-        double energy = flat_spacetime::gauge_energy(U, true);
+        double energy = flat_spacetime::retr_sum_Wplaquettes(U, true);
 
         double E = 0., Q = 0.;
-        flat_spacetime::energy_density(U, E, Q);
+        flat_spacetime::leafs_and_Qtop(U, E, Q);
         // measuring spatial plaquettes only means only (ndims-1)/ndims of all plaquettes
         // are measured, so need facnorm for normalization to 1
         cout << inew << " " << std::scientific << std::setw(18) << std::setprecision(15)

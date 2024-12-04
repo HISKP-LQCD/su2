@@ -458,6 +458,13 @@ public:
       omeasurements::meas_realtrace(U, i, pparams, omeas);
     }
 
+    if (omeas.retrace2.measure_retrace2) {
+      if ((*this).omeas.verbosity > 0){
+        std::cout << "## online measuring : retrace2 \n";
+      }
+      omeasurements::meas_realtrace2(U, i, pparams, omeas);
+    }
+
     if (omeas.plaquette.measure_it) {
       if ((*this).omeas.verbosity > 0) {
         std::cout << "## online measuring: Plaquette\n";

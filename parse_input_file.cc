@@ -234,6 +234,24 @@ namespace input_file_parsing {
     in.set_InnerTree(state0); // reset to previous state
   }
 
+  void parse_retrace2_measure(Yp:: inspect_node &in,
+                            const std::vector <std::string> &inner_tree,
+                            gp::measure_retrace2 &mpparams){
+
+    const std::vector<std::string> state0 = in.get_InnerTree();
+    in.dig_deeper(inner_tree);
+    YAML::Node nd = in.get_outer_node();
+
+    mpparams.measure_retrace2 = true;
+    in.read_opt_verb<std::string>(mpparams.subdir, {"subdir"});
+    in.read_opt_verb<std::string>(mpparams.bc, {"bc"});
+
+    if (nd["bc"]) {
+      check_bc(mpparams.bc);
+    }
+    in.set_InnerTree(state0); // reset to previous state
+  }
+
   void parse_plaquette_measure(Yp::inspect_node &in,
                                const std::vector<std::string> &inner_tree,
                                gp::measure_plaquette &mpparams) {
@@ -361,6 +379,9 @@ namespace input_file_parsing {
 
     if (nd["retrace"]){
       parse_retrace_measure(in, {"retrace"}, mparams.retrace);
+    }
+    if (nd["retrace2"]){
+      parse_retrace2_measure(in, {"retrace2"}, mparams.retrace2);
     }
 
     if (nd["polypot"]){

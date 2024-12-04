@@ -69,8 +69,30 @@ namespace omeasurements {
   }
   double normalized_retrace =  (1./(2. * num_lattice_sites*ndims)) * realtrace; 
   return normalized_retrace;
-  //realtrace /= denuminator;
-  //return realtrace;
+  }
+
+  template <class Group>
+  double get_retr_realtrace_density2(const gaugeconfig<Group> &U, const std::string &bc){
+  //double denuminator = U.getVolume()*U.getndims();
+  //std::cout << "gaugemass in retrace" << gaugemass << "\n ";
+  obc::weights w(bc, U.getLx(), U.getLy(), U.getLz(), U.getLt(), U.getndims());
+  double realtrace2 = obc::retr_sum_realtrace2(U, w);
+  double num_lattice_sites = 1;
+  const size_t ndims = U.getndims();
+  if (ndims > 0) {
+    num_lattice_sites *= U.getLt();
+    if (ndims > 1) {
+      num_lattice_sites *= U.getLx();
+      if (ndims > 2){
+        num_lattice_sites *= U.getLy();
+        if (ndims > 3){
+          num_lattice_sites *= U.getLz();
+        }
+      }
+    }
+  }
+  double normalized_retrace2 =  (1./(2. * num_lattice_sites*ndims)) * realtrace2; 
+  return normalized_retrace2;
   }
 
   /**
@@ -149,6 +171,34 @@ void meas_realtrace(const gaugeconfig <Group> U,
 
   const double retrace = get_retr_realtrace_density(U, S.retrace.bc);
   ofs << i << std::scientific << std::setprecision(16) << " " << retrace << "\n";
+  ofs.close();
+
+  return;
+}
+
+template <class Group, class sparams>
+void meas_realtrace2(const gaugeconfig <Group> U,
+                    const size_t &i,
+                    const global_parameters::physics &pparams,
+                    const sparams &S){
+  std::ostringstream oss;
+  oss << S.res_dir +"/" + S.retrace2.subdir <<"/";
+  fsys::create_directories(fsys::absolute(oss.str()));
+
+  oss << "retrace2_";
+  auto prevw = oss.width(8);
+  auto prevf = oss.fill('0');
+  oss << i;
+  oss.width(prevw);
+  oss.fill(prevf);
+
+  const std::string path = oss.str();
+  std::ofstream ofs(path, std::ios::out);
+
+  ofs << "i retrace2 \n";
+
+  const double retrace2 = get_retr_realtrace_density2(U, S.retrace2.bc);
+  ofs << i << std::scientific << std::setprecision(16) << " " << retrace2 << "\n";
   ofs.close();
 
   return;

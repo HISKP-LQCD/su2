@@ -59,6 +59,12 @@ namespace global_parameters {
     std::string subdir = ""; //subdirectory to save the results to
   };
 
+  struct measure_retrace2{
+    bool measure_retrace2 = false; //bool to note, if the realtrace is measured or not
+    std::string bc = "periodic";
+    std::string subdir = ""; //subdirectory to save the results to
+  };
+
   struct measure_polypot{
     bool measure_polypot = false; // do the polyakov potential measurement
     std::string subdir = ""; //subdir to save results
@@ -161,6 +167,7 @@ namespace global_parameters {
 
     measure_polypot polypot; //struct to measure the potential via the polyakov loops
     measure_retrace retrace; //struct for the measure of the realtrace density
+    measure_retrace2 retrace2;
     measure_plaquette plaquette; // struct for the measure of the plaquette
     measure_glueball glueball; // struct for the measure of the glueball
     measure_gradient_flow gradient_flow; // struct for the measure of the gradient flow

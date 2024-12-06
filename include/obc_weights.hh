@@ -26,6 +26,15 @@
 
 namespace obc {
 
+
+  /**
+   * Class of weights implementing the open boudary conditions (one weight for each link: lattice point and direction)
+   * The idea is that we keep the configuration as is, and we multiply the links by the weights.
+   * These are 1 for all points except for the boundaries. 
+   * 
+   * Based on the boundary conditions specified in the constructor,
+   * the weights are automatically initialized
+   */
   class weights {
   public:
     weights() {}
@@ -41,7 +50,10 @@ namespace obc {
       data.resize(volume, 1.0); // default weight is 1 (no obc)
       const geometry geom1(Lx, Ly, Lz, Lt);
       Geom = geom1;
-      if (bc_type == "spatial_open") {
+      if(bc_type == "open"){
+        this->apply_obc();
+      }
+      else if (bc_type == "spatial_open") {
         this->apply_spatial_obc();
       }
     }
@@ -78,6 +90,31 @@ namespace obc {
               const bool b2 = (x2 == 0 && ndims > 2);
               const bool b3 = (x3 == 0 && ndims > 3);
               if (b1 || b2 || b3) {
+                (*this)(x) = 0.0;
+              }
+            }
+          }
+        }
+      }
+    }
+  };
+
+    /**
+     * @brief generalization of this->apply_spatial_obc() to have open boundary conditions also on the temporal dimension
+     */
+    void apply_obc() {
+#pragma omp parallel for
+      for (size_t x0 = 0; x0 < (*this).Lt; x0++) {
+        for (size_t x1 = 0; x1 < (*this).Lx; x1++) {
+          for (size_t x2 = 0; x2 < (*this).Ly; x2++) {
+            for (size_t x3 = 0; x3 < (*this).Lz; x3++) {
+              const std::vector<size_t> x = {x0, x1, x2, x3};
+
+              const bool b0 = (x1 == 0 && ndims > 0);
+              const bool b1 = (x1 == 0 && ndims > 1);
+              const bool b2 = (x2 == 0 && ndims > 2);
+              const bool b3 = (x3 == 0 && ndims > 3);
+              if (b0 || b1 || b2 || b3) {
                 (*this)(x) = 0.0;
               }
             }

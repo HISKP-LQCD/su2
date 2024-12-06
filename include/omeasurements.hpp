@@ -56,7 +56,7 @@ namespace omeasurements {
       P = flat_spacetime::retr_sum_Wplaquettes(U, /*xi=*/1.0, /*anisotropic=*/false,
                                                /*spatial=*/spatial);
       den *= U.getVolume();
-    } else if (bc == "spatial_open") {
+    } else if (bc == "open" || bc == "spatial_open") {
       const size_t ndims = U.getndims();
       obc::weights w(bc, U.getLx(), U.getLy(), U.getLz(), U.getLt(), ndims);
 

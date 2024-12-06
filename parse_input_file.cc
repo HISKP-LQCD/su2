@@ -52,7 +52,7 @@ namespace input_file_parsing {
   }
 
   void check_bc(const std::string &bc) {
-    const bool b1 = (bc == "periodic" || bc == "spatial_open");
+    const bool b1 = (bc == "periodic" || bc == "open" || bc == "spatial_open");
     if (!b1) {
       std::cerr << "Error. Unsupported periodic boundary condition: " << bc << "\n";
       std::cerr << "Aborting.\n";

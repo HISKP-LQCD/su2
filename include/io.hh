@@ -262,7 +262,9 @@ namespace io {
 
   std::string get_header_1(const std::string &sep = " ") {
     std::stringstream ss; // header: column names in the io
-    ss << "i" << sep << "E" << sep << "Q" << sep << "E_ss" << sep << "Q_ss" << sep
+    // i plaquette leaf(s) Qtop
+    // NOTE: leaf(s) = ImTr(U_{\mu\nu})
+    ss << "i" << sep << "P"<< sep << "L" << sep << "Q" << sep << "P_ss" << sep << "L_ss" << sep << "Q_ss" << sep
        << "\n";
     return ss.str();
   }

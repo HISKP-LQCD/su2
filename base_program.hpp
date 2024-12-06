@@ -381,9 +381,9 @@ public:
     std::cout << i << std::scientific << std::setprecision(15);
     (*this).os << i << std::scientific << std::setprecision(15);
     for (bool ss : {false, true}) {
-      this->leafs_and_Qtop((*this).pparams, (*this).U, ImTr_P, Q, false, ss);
       const double ReTr_P =
         omeasurements::get_retr_plaquette_density((*this).U, (*this).pparams.bc, ss);
+      this->leafs_and_Qtop((*this).pparams, (*this).U, ImTr_P, Q, false, ss);
 
       std::cout << " " << ReTr_P << " " << ImTr_P << " " << Q;
       (*this).os << " " << ReTr_P << " " << ImTr_P << " " << Q;

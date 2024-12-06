@@ -26,12 +26,12 @@
 
 namespace obc {
 
-
   /**
-   * Class of weights implementing the open boudary conditions (one weight for each link: lattice point and direction)
-   * The idea is that we keep the configuration as is, and we multiply the links by the weights.
-   * These are 1 for all points except for the boundaries. 
-   * 
+   * Class of weights implementing the open boudary conditions (one weight for each link:
+   * lattice point and direction) The idea is that we keep the configuration as is, and we
+   * multiply the links by the weights. These are 1 for all points except for the
+   * boundaries.
+   *
    * Based on the boundary conditions specified in the constructor,
    * the weights are automatically initialized
    */
@@ -50,10 +50,9 @@ namespace obc {
       data.resize(volume, 1.0); // default weight is 1 (no obc)
       const geometry geom1(Lx, Ly, Lz, Lt);
       Geom = geom1;
-      if(bc_type == "open"){
+      if (bc_type == "open") {
         this->apply_obc();
-      }
-      else if (bc_type == "spatial_open") {
+      } else if (bc_type == "spatial_open") {
         this->apply_spatial_obc();
       }
     }
@@ -97,10 +96,10 @@ namespace obc {
         }
       }
     }
-  };
 
     /**
-     * @brief generalization of this->apply_spatial_obc() to have open boundary conditions also on the temporal dimension
+     * @brief generalization of this->apply_spatial_obc() to have open boundary conditions
+     * also on the temporal dimension
      */
     void apply_obc() {
 #pragma omp parallel for

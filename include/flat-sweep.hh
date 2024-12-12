@@ -295,8 +295,9 @@ namespace flat_spacetime {
                       
                     #endif
                     #ifdef partinn
-                    bool accept = (uniform(engine[thread_num]) < exp(-deltaS))*(proposed_element.getweight()/U(x, mu).getweight());
-                    
+                    bool accept = uniform(engine[thread_num]) < (exp(-deltaS)*(partitioning_nn::weights[proposed_element.getindex()]/partitioning_nn::weights[U(x, mu).getindex()]));
+                    //std::cout << "this ran \n";
+                    //std::cout << U(x, mu).getweight() << "  new weight "  <<  proposed_element.getweight() << "\n";
                     #endif
                     if (accept) {
                       U(x, mu) = proposed_element;

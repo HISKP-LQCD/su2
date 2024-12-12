@@ -39,12 +39,13 @@ class _partitioning_nn {
     inline static std::vector<double> point2; // vector to save x2
     inline static std::vector<double> point3; // vector to save x3
     inline static std::vector<double> weights; // vector to save the weights of each element
+
     inline static std::vector< std::vector <size_t> > nn_lookup; // lookup table for the neighrest neighbor of each element (length of contained vectors may vary)
     size_t index; // index identifiying the elment of the partitioning
     explicit _partitioning_nn(): index(0){} // create a new instance with index 0
     explicit _partitioning_nn(size_t i): index(i){} // create a new instance with given index
     _partitioning_nn(const _partitioning_nn &U): index(U.index){} // copy an instance by copiny the index
-    inline double getweight() {return weights[index];} // get the weight of the element
+    inline double getweight() {return _partitioning_nn::weights[index];} // get the weight of the element
     inline std::vector <size_t> getneigborindeces() const {return _partitioning_nn::nn_lookup[index];} // get a vector with the neighrest neighbors
     inline su2 getsu2() const {return su2(Complex(point0[index], point1[index]), Complex(point2[index], point3[index]));} // get the su2 matrix of the partitioning
     friend inline su2 operator+(const _partitioning_nn &U1, const _partitioning_nn &U2);

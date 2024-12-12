@@ -106,6 +106,7 @@ void load_tables(){
   std::cout << "-------- weights ------ \n";
   for (auto i:partitioning_nn::weights){
     std::cout << "weight " <<  i << "\n";
+    std::cout << "len weights " << partitioning_nn::weights.size() << "\n";
   }
 }
 };

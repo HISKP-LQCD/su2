@@ -153,7 +153,7 @@ namespace io {
         << std::setprecision(mparams.beta_str_width) << pparams.beta << ".xi"
         << std::fixed << std::setprecision(mparams.beta_str_width) << pparams.xi
         << ".nape" << mparams.n_apesmear << ".alpha" << std::fixed << mparams.alpha
-        << "nonplanar" << std::ends;
+        << "nonplanar"; // << std::ends;
 
       return f.str();
     }
@@ -231,7 +231,7 @@ namespace io {
       }
 
       //~ print heads of columns
-      if (!mparams.append && (pparams.ndims == 3)) {
+      if (!mparams.append && (pparams.ndims == 3) && (pparams.bc == "periodic")) {
         resultfile.open(filename_nonplanar, std::ios::out);
         resultfile << "## ";
         for (size_t t = 0; t <= pparams.Lt * mparams.sizeWloops; t++) {
@@ -264,8 +264,8 @@ namespace io {
     std::stringstream ss; // header: column names in the io
     // i plaquette leaf(s) Qtop
     // NOTE: leaf(s) = ImTr(U_{\mu\nu})
-    ss << "i" << sep << "P"<< sep << "L" << sep << "Q" << sep << "P_ss" << sep << "L_ss" << sep << "Q_ss" << sep
-       << "\n";
+    ss << "i" << sep << "P" << sep << "L" << sep << "Q" << sep << "P_ss" << sep << "L_ss"
+       << sep << "Q_ss" << sep << "\n";
     return ss.str();
   }
 

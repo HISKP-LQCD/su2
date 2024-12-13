@@ -29,8 +29,12 @@
 namespace obc { // open boundary conditions
 
   /**
-   * @brief real part of the trace of the Wilson plaquette (with spatial open boundary
+   * @brief real part of the trace of the Wilson plaquette (with open boundary
    * conditions)
+   * 
+   * NOTE: 
+   * If the size is L, this function returns the retr_sum_Wplaquettes 
+   * with open boundary conditions for a system of size (L-1)
    *
    *
    * @tparam T gauge group

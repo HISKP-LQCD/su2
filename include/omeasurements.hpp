@@ -20,6 +20,7 @@
 #include "io.hh"
 #include "links.hpp"
 #include "obc_gaugemonomial.hh"
+#include "obc_wilsonloop.hh"
 #include "operators.hpp"
 #include "parameters.hh"
 #include "propagator.hpp"
@@ -35,7 +36,7 @@
 namespace omeasurements {
 
   namespace fsys = boost::filesystem;
-    using Complex = std::complex<double>;
+  using Complex = std::complex<double>;
 
   /**
    * @brief Get the retr plaquette density object
@@ -113,7 +114,6 @@ namespace omeasurements {
   // measure Polyakov loops
   template <class Group>
   Complex get_polyakov_loop(const gaugeconfig<Group> &U, const std::vector<size_t> &x_i) {
-
     std::vector<size_t> x = {0, x_i[0], x_i[1], x_i[2]};
 
     Group U0 = U(x, 0);
@@ -513,6 +513,7 @@ namespace omeasurements {
     double loop;
     std::ofstream resultfile;
     //~ //calculate wilsonloops for potential
+
     if (pparams.ndims == 4) {
       resultfile.open(filename_fine, std::ios::app);
       for (size_t t = 1; t <= pparams.Lt * sizeWloops; t++) {
@@ -582,21 +583,63 @@ namespace omeasurements {
                                 const double &sizeWloops,
                                 const std::string &filename_nonplanar,
                                 const size_t &i) {
-    double loop;
-    std::ofstream resultfile;
     size_t maxsizenonplanar = (pparams.Lx < 4) ? pparams.Lx : 4;
-    resultfile.open(filename_nonplanar, std::ios::app);
-    for (size_t t = 0; t <= pparams.Lt * sizeWloops; t++) {
-      for (size_t x = 0; x <= maxsizenonplanar; x++) {
-        for (size_t y = 0; y <= maxsizenonplanar; y++) {
-          loop = wilsonloop_non_planar(U, {t, x, y});
-          resultfile << std::setw(14) << std::scientific << loop / U.getVolume() << "  ";
+
+    if (pparams.bc == "periodic") {
+      std::ofstream resultfile;
+      resultfile.open(filename_nonplanar, std::ios::app);
+      for (size_t t = 0; t <= pparams.Lt * sizeWloops; t++) {
+        for (size_t x = 0; x <= maxsizenonplanar; x++) {
+          for (size_t y = 0; y <= maxsizenonplanar; y++) {
+            double loop = wilsonloop_non_planar(U, {t, x, y});
+            resultfile << std::setw(14) << std::scientific << loop / U.getVolume()
+                       << "  ";
+          }
         }
       }
+      resultfile << i;
+      resultfile << std::endl;
+      resultfile.close();
+    } else if (pparams.bc == "spatial_open") {
+      obc::weights w(pparams.bc, U.getLx(), U.getLy(), U.getLz(), U.getLt(),
+                     U.getndims());
+
+      for (size_t x1 = 0; x1 < U.getLx(); x1++) {
+        for (size_t x2 = 0; x2 < U.getLy(); x2++) {
+          for (size_t x3 = 0; x3 < U.getLz(); x3++) {
+            std::vector<size_t> point = {0, x1, x2, x3};
+            std::ostringstream oss;
+            oss << point[1];
+            for (size_t i = 2; i < point.size(); ++i) {
+              oss << "_" << point[i];
+            }
+            const std::string str_x0 = oss.str(); // appandix to file name
+
+            const std::string path = filename_nonplanar + "-" + pparams.bc + "-" + str_x0;
+            std::ofstream resultfile;
+            resultfile.open(path, std::ios::app);
+            for (size_t t = 0; t <= pparams.Lt * sizeWloops; t++) {
+              for (size_t x = 0; x <= maxsizenonplanar; x++) {
+                for (size_t y = 0; y <= maxsizenonplanar; y++) {
+                  double loop = 0.0;
+                  for (size_t x0 = 0; x0 < U.getLt(); x0++) {
+                    point[0] = x0;
+                    loop += obc::wilsonloop_non_planar(U, w, point, {t, x, y});
+                  }
+                  resultfile << std::setw(14) << std::scientific
+                             << loop / double(U.getLt()) << "  ";
+                }
+              }
+            }
+            resultfile.close();
+          }
+        }
+      }
+    } else {
+      fatal_error("Illegal boudary conditions" + pparams.bc, __func__);
     }
-    resultfile << i;
-    resultfile << std::endl;
-    resultfile.close();
+
+    return;
   }
 
 } // namespace omeasurements

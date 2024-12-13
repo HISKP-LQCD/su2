@@ -27,7 +27,7 @@
 namespace obc {
 
   /**
-   * Class of weights implementing the open boudary conditions (one weight for each link:
+   * Class of weights implementing the open boundary conditions (one weight for each link:
    * lattice point and direction) The idea is that we keep the configuration as is, and we
    * multiply the links by the weights. These are 1 for all points except for the
    * boundaries.
@@ -41,11 +41,11 @@ namespace obc {
     ~weights() {}
 
     weights(const std::string &bc_type,
-            const size_t Lx,
-            const size_t Ly,
-            const size_t Lz,
-            const size_t Lt,
-            const size_t ndims = spacetime_lattice::nd_max)
+            const size_t& Lx,
+            const size_t& Ly,
+            const size_t& Lz,
+            const size_t& Lt,
+            const size_t& ndims = spacetime_lattice::nd_max)
       : Lx(Lx), Ly(Ly), Lz(Lz), Lt(Lt), volume(Lx * Ly * Lz * Lt), ndims(ndims) {
       data.resize(volume, 1.0); // default weight is 1 (no obc)
       const geometry geom1(Lx, Ly, Lz, Lt);
@@ -109,7 +109,7 @@ namespace obc {
             for (size_t x3 = 0; x3 < (*this).Lz; x3++) {
               const std::vector<size_t> x = {x0, x1, x2, x3};
 
-              const bool b0 = (x1 == 0 && ndims > 0);
+              const bool b0 = (x0 == 0 && ndims > 0);
               const bool b1 = (x1 == 0 && ndims > 1);
               const bool b2 = (x2 == 0 && ndims > 2);
               const bool b3 = (x3 == 0 && ndims > 3);

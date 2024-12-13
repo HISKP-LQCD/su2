@@ -49,8 +49,9 @@ if np.logical_and(weights_included, wanted_partitioning != "linear"):
     weights = ho.getSU2TriangulatedIntegrationWeights(points=partitioning)
 elif np.logical_and(weights_included, wanted_partitioning == "linear"):
     print("hello there")
-    weights = (np.sqrt(2)/np.linalg.norm(partitioning_unnormalized, axis=1)[:, np.newaxis])**3
-    weights = weights.flatten()
+    weights = ho.getSU2TriangulatedIntegrationWeights(points=partitioning_unnormalized / np.linalg.norm(partitioning_unnormalized, axis=1)[:, np.newaxis])
+    #weights = (np.sqrt(2)**3/np.linalg.norm(partitioning_unnormalized, axis=1)[:, np.newaxis]**3)
+    #weights = weights.flatten()
     
 elif np.logical_and(np.logical_not(weights_included), wanted_partitioning == "linear"):
     weights = np.ones(shape = len(partitioning_unnormalized))

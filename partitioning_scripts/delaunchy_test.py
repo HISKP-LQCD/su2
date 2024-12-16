@@ -27,7 +27,7 @@ elif wanted_partitioning == "linear":
     linearLattice = np.array([
         c for c in itertools.product(allowedCoords, repeat=4)
         if (abs(c[0]) + abs(c[1]) + abs(c[2]) + abs(c[3])) == m
-    ])
+    ], dtype= np.float128)
     partitioning_unnormalized = linearLattice 
 elif wanted_partitioning == "Fibonacci":
     partitioning = ho.getSU2FibonacciPartitioning(N = m)
@@ -49,9 +49,9 @@ if np.logical_and(weights_included, wanted_partitioning != "linear"):
     weights = ho.getSU2TriangulatedIntegrationWeights(points=partitioning)
 elif np.logical_and(weights_included, wanted_partitioning == "linear"):
     print("hello there")
-    weights = ho.getSU2TriangulatedIntegrationWeights(points=partitioning_unnormalized / np.linalg.norm(partitioning_unnormalized, axis=1)[:, np.newaxis])
-    #weights = (np.sqrt(2)**3/np.linalg.norm(partitioning_unnormalized, axis=1)[:, np.newaxis]**3)
-    #weights = weights.flatten()
+    #weights = ho.getSU2TriangulatedIntegrationWeights(points=partitioning_unnormalized / np.linalg.norm(partitioning_unnormalized, axis=1)[:, np.newaxis])
+    weights = (np.sqrt(2)**3/np.linalg.norm(partitioning_unnormalized, axis=1)[:, np.newaxis]**3)
+    weights = weights.flatten()
     
 elif np.logical_and(np.logical_not(weights_included), wanted_partitioning == "linear"):
     weights = np.ones(shape = len(partitioning_unnormalized))
@@ -71,19 +71,19 @@ if (wanted_partitioning == "linear"):
             if ((np.abs(partitioning_unnormalized[jetanothercounter, 0]) - np.abs(partitioning_unnormalized[jetanothercounter2, 0]))**2 + (np.abs(partitioning_unnormalized[jetanothercounter, 1]) - np.abs(partitioning_unnormalized[jetanothercounter2, 1]))**2 + (np.abs(partitioning_unnormalized[jetanothercounter, 2]) - np.abs(partitioning_unnormalized[jetanothercounter2, 2]))**2 + (np.abs(partitioning_unnormalized[jetanothercounter, 3]) - np.abs(partitioning_unnormalized[jetanothercounter2, 3]))**2 == 2):
                 print(partitioning_unnormalized[jetanothercounter2, ])
                 helplist.append(jetanothercounter2)
-            jetanothercounter2 += 1
+            jetanothercounter2 = jetanothercounter2 +  1
         print(helplist)
         neighborlist.append(helplist)
         #print(helplist)
         jetanothercounter += 1
     #print(neighborlist)
 ### setup the Delaunay triangulation ###
-Delaunchy = scipy.spatial.Delaunay(points = partitioning)
-helpresult = Delaunchy.vertex_neighbor_vertices
-helpresult0 = np.copy(helpresult[0])
-helpresult1 = np.copy(helpresult[1])
+#Delaunchy = scipy.spatial.Delaunay(points = partitioning)
+#helpresult = Delaunchy.vertex_neighbor_vertices
+#helpresult0 = np.copy(helpresult[0])
+#helpresult1 = np.copy(helpresult[1])
 #print(Delaunchy.vertex_neighbor_vertices)
-Delaunchy.close()
+#Delaunchy.close()
 #print(partitioning)
 print("generated neighrest neighbors")
 
@@ -99,17 +99,17 @@ with open('lookuptable_nn.csv', 'x') as file: # note: produces an error, if the 
         file.write(str(weights[counter])) # writes the weights
         file.write(',')
         if wanted_partitioning != "linear":
-            neighborarray = helpresult1[helpresult0[counter]:helpresult0[counter+1]] # creates an array with indeces of neighrest neighbors
+            neighborarray = [] # helpresult1[helpresult0[counter]:helpresult0[counter+1]] # creates an array with indeces of neighrest neighbors
         else:
             neighborarray= np.array(neighborlist[counter])
             print(neighborarray)
         # loops through length of partitioning and writhe all indeces
-        anothercounter = 0 
-        while (anothercounter < len(weights)):
-            if (anothercounter < len(neighborarray)):
-                file.write(str(neighborarray[anothercounter]))
+        anothercounter3 = 0 
+        while (anothercounter3 < len(weights)):
+            if (anothercounter3 < len(neighborarray)):
+                file.write(str(neighborarray[anothercounter3]))
             file.write(',') # note: write this out to have a standartised file length
-            anothercounter += 1
+            anothercounter3 = anothercounter3 +  1
         file.write('\n') # begin next line
-        counter += 1
+        counter = counter +  1
     file.close()

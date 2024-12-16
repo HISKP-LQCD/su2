@@ -18,12 +18,14 @@
 #include <sstream>
 #include <vector>
 
-
 namespace read_partitionings_nn {
   
   std::string readFileIntoString(const std::string& path) {
   auto ss = std::ostringstream{};
+
   std::ifstream input_file(path);
+
+  std::cout << std::setprecision(20);
   std::cout << input_file.is_open() << std::endl;
   if (!input_file.is_open()) {
     std::cerr << "Could not open the file - '" << path << "'" << std::endl;

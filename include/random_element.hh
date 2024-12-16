@@ -67,20 +67,35 @@ void random_element(partitioning &U, URNG &engine, const double delta = 1.){
 #ifdef partinn
 template <class URNG>
 _partitioning_nn random_element(partitioning_nn &U, URNG &engine, const double delta = 1){
-  
-  if (delta > 0){
-    int delta_counter = static_cast<size_t> (delta) -1;
+  int delta_int = static_cast<size_t> (delta); 
+  //std::cout << delta << "delta ";
+  if (delta_int > 0){
+    int delta_counter = delta_int ;
     
     std::vector <size_t> neigborvector = U.getneigborindeces();
     delta_counter -= 1;
+    //std::cout << U.getindex() << "index \n";
+    //std::cout << " --- nn lookup from random element ---- \n";
+  //for (auto i: neigborvector){
+   // std::cout << " --- random element lookup table -- \n";
     
+   //   std::cout << i << "\n";
+    
+  //}
     while (delta_counter >  0){
-      for (auto ind : neigborvector){
-        neigborvector.reserve(partitioning_nn::nn_lookup[ind].size());
-        neigborvector.insert(std::end(neigborvector), std::begin(partitioning_nn::nn_lookup[ind]), std::end(partitioning_nn::nn_lookup[ind]));
+      int help_counter_random_element = 0;
+      int helpnum_random_number = neigborvector.size();
+      //for (size_t ind : neigborvector){
+      while (help_counter_random_element < helpnum_random_number +1){
+        int ind = neigborvector[help_counter_random_element];
+        //std::cout << ind << "ind \n";
+        //std::cout << "got here";
+        neigborvector.reserve(partitioning_nn::nn_lookup[ind].size() + 2);
+        neigborvector.insert(std::begin(neigborvector) +1, std::begin(partitioning_nn::nn_lookup[ind]), std::end(partitioning_nn::nn_lookup[ind]));
+        help_counter_random_element = help_counter_random_element +1;
       }
       
-
+      //std::cout << "not got here?";
       delta_counter -= 1;
     }
     //std::cout << "U index "<< U.getindex() << "\n";

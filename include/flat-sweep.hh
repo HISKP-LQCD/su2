@@ -247,7 +247,7 @@ namespace flat_spacetime {
                 std::vector<size_t> x = {x0, x1, x2, x3};
                 for (size_t mu = 0; mu < U.getndims(); mu++) {
                   accum K;
-                  //std::cout << "gaugeexponent" << gaugeexponent << "\n";
+                  //std::cout << "dela" << delta << "\n";
                   get_staples_MCMC_step(K, U, x, mu, xi, anisotropic);
                   for (size_t n = 0; n < N_hit; n++) {
                    #ifndef partinn
@@ -295,7 +295,7 @@ namespace flat_spacetime {
                       
                     #endif
                     #ifdef partinn
-                    bool accept = uniform(engine[thread_num]) < (exp(-deltaS)*(partitioning_nn::weights[proposed_element.getindex()]/partitioning_nn::weights[U(x, mu).getindex()]));
+                    bool accept = uniform(engine[thread_num]) < (exp(-deltaS)*(proposed_element.getweight()/U(x, mu).getweight()));
                     //std::cout << "this ran \n";
                     //std::cout << U(x, mu).getweight() << "  new weight "  <<  proposed_element.getweight() << "\n";
                     #endif

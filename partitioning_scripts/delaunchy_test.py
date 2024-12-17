@@ -60,22 +60,25 @@ else:
     
 if (wanted_partitioning == "linear"):
     partitioning = partitioning_unnormalized / np.linalg.norm(partitioning_unnormalized, axis=1)[:, np.newaxis]
-    neighborlist = []
-    jetanothercounter = 0
-    print(len(partitioning_unnormalized))
-    while jetanothercounter < len(partitioning_unnormalized):
-        helplist = []
-        print("another text", partitioning_unnormalized[jetanothercounter, ])
-        jetanothercounter2 = 0
-        while jetanothercounter2 < len(partitioning_unnormalized):
-            if ((np.abs(partitioning_unnormalized[jetanothercounter, 0]) - np.abs(partitioning_unnormalized[jetanothercounter2, 0]))**2 + (np.abs(partitioning_unnormalized[jetanothercounter, 1]) - np.abs(partitioning_unnormalized[jetanothercounter2, 1]))**2 + (np.abs(partitioning_unnormalized[jetanothercounter, 2]) - np.abs(partitioning_unnormalized[jetanothercounter2, 2]))**2 + (np.abs(partitioning_unnormalized[jetanothercounter, 3]) - np.abs(partitioning_unnormalized[jetanothercounter2, 3]))**2 == 2):
-                print(partitioning_unnormalized[jetanothercounter2, ])
-                helplist.append(jetanothercounter2)
-            jetanothercounter2 = jetanothercounter2 +  1
-        print(helplist)
-        neighborlist.append(helplist)
+M = ho.getSu2TriangulatedLsq(partitioning)
+indM = M.nonzero()
+neighborlist = []
+jetanothercounter = 0
+#print(len(partitioning_unnormalized))
+while jetanothercounter < len(partitioning):
+    #helplist = []
+    helplist = indM[0][indM[1] == jetanothercounter]
+        #print("another text", partitioning_unnormalized[jetanothercounter, ])
+        #jetanothercounter2 = 0
+        #while jetanothercounter2 < len(partitioning_unnormalized):
+        #    if ((np.abs(partitioning_unnormalized[jetanothercounter, 0]) - np.abs(partitioning_unnormalized[jetanothercounter2, 0]))**2 + (np.abs(partitioning_unnormalized[jetanothercounter, 1]) - np.abs(partitioning_unnormalized[jetanothercounter2, 1]))**2 + (np.abs(partitioning_unnormalized[jetanothercounter, 2]) - np.abs(partitioning_unnormalized[jetanothercounter2, 2]))**2 + (np.abs(partitioning_unnormalized[jetanothercounter, 3]) - np.abs(partitioning_unnormalized[jetanothercounter2, 3]))**2 == 2):
+        #        print(partitioning_unnormalized[jetanothercounter2, ])
+        #        helplist.append(jetanothercounter2)
+        #    jetanothercounter2 = jetanothercounter2 +  1
+    print(helplist)
+    neighborlist.append(helplist)
         #print(helplist)
-        jetanothercounter += 1
+    jetanothercounter += 1
     #print(neighborlist)
 ### setup the Delaunay triangulation ###
 #Delaunchy = scipy.spatial.Delaunay(points = partitioning)
@@ -98,11 +101,11 @@ with open('lookuptable_nn.csv', 'x') as file: # note: produces an error, if the 
             file.write(",")
         file.write(str(weights[counter])) # writes the weights
         file.write(',')
-        if wanted_partitioning != "linear":
-            neighborarray = [] # helpresult1[helpresult0[counter]:helpresult0[counter+1]] # creates an array with indeces of neighrest neighbors
-        else:
-            neighborarray= np.array(neighborlist[counter])
-            print(neighborarray)
+        #if wanted_partitioning != "linear":
+        #    neighborarray = [] # helpresult1[helpresult0[counter]:helpresult0[counter+1]] # creates an array with indeces of neighrest neighbors
+        #else:
+        neighborarray= np.array(neighborlist[counter])
+        print(neighborarray)
         # loops through length of partitioning and writhe all indeces
         anothercounter3 = 0 
         while (anothercounter3 < len(weights)):

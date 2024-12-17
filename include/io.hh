@@ -153,7 +153,7 @@ namespace io {
         << std::setprecision(mparams.beta_str_width) << pparams.beta << ".xi"
         << std::fixed << std::setprecision(mparams.beta_str_width) << pparams.xi
         << ".nape" << mparams.n_apesmear << ".alpha" << std::fixed << mparams.alpha
-        << "nonplanar"; // << std::ends;
+        << "nonplanar" << std::ends;
 
       return f.str();
     }
@@ -231,7 +231,7 @@ namespace io {
       }
 
       //~ print heads of columns
-      if (!mparams.append && (pparams.ndims == 3) && (pparams.bc == "periodic")) {
+      if (!mparams.append && (pparams.ndims == 3 || pparams.ndims == 4)) {
         resultfile.open(filename_nonplanar, std::ios::out);
         resultfile << "## ";
         for (size_t t = 0; t <= pparams.Lt * mparams.sizeWloops; t++) {

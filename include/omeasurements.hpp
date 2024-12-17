@@ -604,37 +604,28 @@ namespace omeasurements {
       obc::weights w(pparams.bc, U.getLx(), U.getLy(), U.getLz(), U.getLt(),
                      U.getndims());
 
-      for (size_t x1 = 0; x1 < U.getLx(); x1++) {
-        for (size_t x2 = 0; x2 < U.getLy(); x2++) {
-          for (size_t x3 = 0; x3 < U.getLz(); x3++) {
-            std::vector<size_t> point = {0, x1, x2, x3};
-            std::ostringstream oss;
-            oss << point[1];
-            for (size_t i = 2; i < point.size(); ++i) {
-              oss << "_" << point[i];
-            }
-            const std::string str_x0 = oss.str(); // appendix to file
+      std::vector<size_t> point = {0, 1, 1, 0};
 
-            const std::string path = filename_nonplanar + "-" + pparams.bc + "-" + str_x0;
-            std::ofstream resultfile;
-            resultfile.open(path, std::ios::app);
-            for (size_t t = 0; t <= pparams.Lt * sizeWloops; t++) {
-              for (size_t x = 0; x <= maxsizenonplanar; x++) {
-                for (size_t y = 0; y <= maxsizenonplanar; y++) {
-                  double loop = 0.0;
-                  for (size_t x0 = 0; x0 < U.getLt(); x0++) {
-                    point[0] = x0;
-                    loop += obc::wilsonloop_non_planar(U, w, point, {t, x, y});
-                  }
-                  resultfile << std::setw(14) << std::scientific
-                             << loop / double(U.getLt()) << "  ";
-                }
-              }
+      std::ofstream resultfile;
+      resultfile.open(filename_nonplanar, std::ios::app);
+
+      for (size_t t = 0; t <= pparams.Lt * sizeWloops; t++) {
+        for (size_t x = 0; x <= maxsizenonplanar; x++) {
+          for (size_t y = 0; y <= maxsizenonplanar; y++) {
+            double loop = 0.0;
+            for (size_t x0 = 0; x0 < U.getLt(); x0++) {
+              point[0] = x0;
+              loop += obc::wilsonloop_non_planar(U, w, point, {t, x, y});
             }
-            resultfile.close();
+            resultfile << std::setw(14) << std::scientific << loop / double(U.getLt())
+                       << "  ";
           }
         }
       }
+
+      resultfile << i;
+      resultfile << std::endl;
+      resultfile.close();
     } else {
       fatal_error("Illegal boudary conditions" + pparams.bc, __func__);
     }

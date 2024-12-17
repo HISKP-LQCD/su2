@@ -34,7 +34,8 @@ namespace obc { // open boundary conditions
    * 
    * NOTE: 
    * If the size is L, this function returns the retr_sum_Wplaquettes 
-   * with open boundary conditions for a system of size (L-1)
+   * with open boundary conditions for a system of size (L-1)*T for spatial_open
+   * and (L-1)*(T-1) for open.
    *
    *
    * @tparam T gauge group
@@ -82,7 +83,7 @@ namespace obc { // open boundary conditions
         }
       }
     }
-    // 2n option - anisotropic lattice present
+    // 2n option -xplusmu anisotropic lattice present
     if (anisotropic) {
 #pragma omp parallel for reduction(+ : res)
       for (size_t x0 = 0; x0 < U.getLt(); x0++) {

@@ -613,7 +613,7 @@ namespace omeasurements {
             for (size_t i = 2; i < point.size(); ++i) {
               oss << "_" << point[i];
             }
-            const std::string str_x0 = oss.str(); // appandix to file name
+            const std::string str_x0 = oss.str(); // appendix to file
 
             const std::string path = filename_nonplanar + "-" + pparams.bc + "-" + str_x0;
             std::ofstream resultfile;

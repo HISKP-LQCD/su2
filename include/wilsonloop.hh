@@ -94,7 +94,7 @@ double planar_wilsonloop_dir(const gaugeconfig<Group> &U,
  * r[0] steps are taken in direction 0, r[1] steps in direction 1 and so on, with r[n]
  * steps taken in direction n%ndims For each direction for each step, the corresponding
  * link is multiplied onto the loop (standard Wilson-Loop definition): loop *=
- * prod_{i=0}^{r[n]} U_{n%ndims} (x+i*e_{n%ndims}+shifts from eaarlier steps) If the path
+ * prod_{i=0}^{r[n]} U_{n%ndims} (x+i*e_{n%ndims}+shifts from earlier steps) If the path
  * is done, it is traced back in the same direction, this time using the daggered links
  * The loop is calculated for each lattice point and averaged over the entire lattice
  * parallelization trivial

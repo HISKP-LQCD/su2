@@ -604,7 +604,11 @@ namespace omeasurements {
       obc::weights w(pparams.bc, U.getLx(), U.getLy(), U.getLz(), U.getLt(),
                      U.getndims());
 
-      std::vector<size_t> point = {0, 1, 1, 0};
+      //for some reason this is a combination that works... im guessing that it is {t,x,z,y} or {t,y,z,x}
+      //definitely still needs debugging
+    
+
+      std::vector<size_t> point = {0, 1, 0, 1};
 
       std::ofstream resultfile;
       resultfile.open(filename_nonplanar, std::ios::app);

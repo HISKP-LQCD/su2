@@ -42,7 +42,7 @@ namespace obc {
     if (wx == 0.)
       flag = 0;
     for (size_t direction = 0; direction < r.size(); direction++) {
-      directionloop = (direction + U.getndims()) % U.getndims();
+      directionloop = direction;//(direction + U.getndims()) % U.getndims();
       if (wx == 0.)
         flag = 0;
       for (size_t length = 0; length < r[direction]; length++) {
@@ -56,7 +56,7 @@ namespace obc {
     if (wx == 0.)
       flag = 0;
     for (size_t direction = 0; direction < r.size(); direction++) {
-      directionloop = (direction + U.getndims()) % U.getndims();
+      directionloop = direction;//(direction + U.getndims()) % U.getndims();
       if (wx == 0.)
         flag = 0;
       for (size_t length = 0; length < r[direction]; length++) {

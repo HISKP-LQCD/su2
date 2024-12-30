@@ -7,6 +7,8 @@ import pandas as pd
 import argparse
 import scipy.spatial 
 import itertools
+
+
 ### read in given arguments for script ###
 parser = argparse.ArgumentParser(prog = "calculate_tables", description="""calulate the lookup tables for the partitionings""")
 parser.add_argument('-m', '--m',type=int,  help = "The m/N argument for the calculation of the partitoning")
@@ -50,7 +52,7 @@ if np.logical_and(weights_included, wanted_partitioning != "linear"):
 elif np.logical_and(weights_included, wanted_partitioning == "linear"):
     print("hello there")
     #weights = ho.getSU2TriangulatedIntegrationWeights(points=partitioning_unnormalized / np.linalg.norm(partitioning_unnormalized, axis=1)[:, np.newaxis])
-    weights = (np.sqrt(2)**3/np.linalg.norm(partitioning_unnormalized, axis=1)[:, np.newaxis]**3)
+    weights = ((np.sqrt(2)**3)/(np.linalg.norm(partitioning_unnormalized, axis=1)[:, np.newaxis]**3))
     weights = weights.flatten()
     
 elif np.logical_and(np.logical_not(weights_included), wanted_partitioning == "linear"):
@@ -66,16 +68,16 @@ neighborlist = []
 jetanothercounter = 0
 #print(len(partitioning_unnormalized))
 while jetanothercounter < len(partitioning):
-    #helplist = []
+    helplist = []
     helplist = indM[0][indM[1] == jetanothercounter]
         #print("another text", partitioning_unnormalized[jetanothercounter, ])
-        #jetanothercounter2 = 0
-        #while jetanothercounter2 < len(partitioning_unnormalized):
-        #    if ((np.abs(partitioning_unnormalized[jetanothercounter, 0]) - np.abs(partitioning_unnormalized[jetanothercounter2, 0]))**2 + (np.abs(partitioning_unnormalized[jetanothercounter, 1]) - np.abs(partitioning_unnormalized[jetanothercounter2, 1]))**2 + (np.abs(partitioning_unnormalized[jetanothercounter, 2]) - np.abs(partitioning_unnormalized[jetanothercounter2, 2]))**2 + (np.abs(partitioning_unnormalized[jetanothercounter, 3]) - np.abs(partitioning_unnormalized[jetanothercounter2, 3]))**2 == 2):
-        #        print(partitioning_unnormalized[jetanothercounter2, ])
-        #        helplist.append(jetanothercounter2)
-        #    jetanothercounter2 = jetanothercounter2 +  1
-    print(helplist)
+    #jetanothercounter2 = 0
+    #while jetanothercounter2 < len(partitioning_unnormalized):
+    #    if ((np.abs(partitioning_unnormalized[jetanothercounter, 0]) - np.abs(partitioning_unnormalized[jetanothercounter2, 0]))**2 + (np.abs(partitioning_unnormalized[jetanothercounter, 1]) - np.abs(partitioning_unnormalized[jetanothercounter2, 1]))**2 + (np.abs(partitioning_unnormalized[jetanothercounter, 2]) - np.abs(partitioning_unnormalized[jetanothercounter2, 2]))**2 + (np.abs(partitioning_unnormalized[jetanothercounter, 3]) - np.abs(partitioning_unnormalized[jetanothercounter2, 3]))**2 == 2):
+    #        print(partitioning_unnormalized[jetanothercounter2, ])
+    #        helplist.append(jetanothercounter2)
+    #    jetanothercounter2 = jetanothercounter2 +  1
+    #print(helplist)
     neighborlist.append(helplist)
         #print(helplist)
     jetanothercounter += 1

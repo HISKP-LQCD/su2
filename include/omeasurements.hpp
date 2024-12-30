@@ -240,12 +240,14 @@ void meas_realtrace2(const gaugeconfig <Group> U,
    * @param i configurationn index
    * @param conf_dir
    */
-  template <class Group>
+  template <class Group, class sparams>
   void meas_wilson_loop(const gaugeconfig<Group> &U,
                         const size_t &i,
-                        const std::string &res_dir) {
+                        const sparams &S) {
     std::ostringstream os;
-    os << res_dir + "/wilsonloop.";
+    os << S.res_dir + "/" + S.planar_Wilson_loops.subdir +  "/";//wilsonloop.";
+    fsys::create_directories(fsys::absolute(os.str())); // creating directory
+    os << "wilsonloop.";
     auto prevw = os.width(6);
     auto prevf = os.fill('0');
     os << i;

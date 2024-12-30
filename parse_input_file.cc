@@ -216,6 +216,20 @@ namespace input_file_parsing {
 
                               in.set_InnerTree(state0); 
                             }
+
+  void parse_planar_Wilson_measure(Yp:: inspect_node &in,
+                                    const std::vector <std::string> &inner_tree,
+                                    gp::measure_planar_Wilson_loops &mpparams){
+                                      const std::vector<std::string> state0 = in.get_InnerTree();
+                                      in.dig_deeper(inner_tree);
+                                      YAML::Node nd = in.get_outer_node();
+
+                                      mpparams.measure_it = true;
+                                      in.read_opt_verb<std::string>(mpparams.subdir, {"subdir"});
+                                      in.read_opt_verb<double>(mpparams.sizeWloops, {"sizeWloops"});
+
+                                      in.set_InnerTree(state0);
+                                    }
   void parse_retrace_measure(Yp:: inspect_node &in,
                             const std::vector <std::string> &inner_tree,
                             gp::measure_retrace &mpparams){
@@ -382,6 +396,10 @@ namespace input_file_parsing {
     }
     if (nd["retrace2"]){
       parse_retrace2_measure(in, {"retrace2"}, mparams.retrace2);
+    }
+
+    if (nd["Wloops"]){
+      parse_planar_Wilson_measure(in, {"Wloops"}, mparams.planar_Wilson_loops);
     }
 
     if (nd["polypot"]){

@@ -492,11 +492,11 @@ public:
       }
     }
 
-    if ((*this).omeas.Wloop) {
+    if ((*this).omeas.planar_Wilson_loops.measure_it) {
       if ((*this).omeas.verbosity > 0) {
         std::cout << "## online measuring: Wilson loop\n";
       }
-      omeasurements::meas_wilson_loop<Group>(U, i, omeas.res_dir);
+      omeasurements::meas_wilson_loop<Group>(U, i, (*this).omeas);
     }
     #ifndef parti
     #ifndef partinn

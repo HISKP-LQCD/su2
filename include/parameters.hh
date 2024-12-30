@@ -111,7 +111,11 @@ namespace global_parameters {
     double tstart = 0.0; // 1st value of the flow time
     bool save_conf = true; // save configuration at the end of the evolution
   };
-
+  struct measure_planar_Wilson_loops{
+    std::string subdir = "";
+    bool measure_it = false;
+    double sizeWloops = 0.5;
+  };
   /* optional parameters for the measure program the in U(1) theory */
   struct measure {
     // trivial parameters: needed only to generalize function working with the other
@@ -172,6 +176,7 @@ namespace global_parameters {
     measure_glueball glueball; // struct for the measure of the glueball
     measure_gradient_flow gradient_flow; // struct for the measure of the gradient flow
     measure_spatial_polyakov spatial_polyakov; //struct for the measure of the spatially averaged polyakov loop
+    measure_planar_Wilson_loops planar_Wilson_loops; //struct for the masure of the planar Wilson loops
   };
 
   /* Optional parameters for the hmc the in U(1) theory */

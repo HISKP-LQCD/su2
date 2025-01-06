@@ -36,48 +36,47 @@ public:
       io::get_conf_path_basename((*this).pparams, (*this).sparams);
   }
 
-  void set_omp_threads() {
-#ifdef _USE_OMP_
-    /**
-     * the parallelisation of the sweep-function first iterates over all odd points in t
-     * and then over all even points because the nearest neighbours must not change
-     * during the updates, this is not possible for an uneven number of points in T
-     * */
-    if ((*this).pparams.Lt % 2 != 0) {
-      std::cerr << "For parallel computing an even number of points in T is needed!"
-                << std::endl;
-      omp_set_num_threads(1);
-      std::cerr << "Continuing with one thread." << std::endl;
-    }
-    // set things up for parallel computing in sweep
-    (*this).threads = omp_get_max_threads();
-    // it does not make sense to have more threads than time slices
-    if ((*this).pparams.Lt < (*this).threads) {
-      std::cerr << "It does not make sense to have more threads than time slices!"
-                << std::endl;
-      omp_set_num_threads((*this).pparams.Lt);
-      (*this).threads = (*this).pparams.Lt;
-      std::cerr << "Setting number of threads to T." << std::endl;
-    }
-#else
-    (*this).threads = 1;
-#endif
-    std::cout << "threads " << (*this).threads << std::endl;
-  }
+//   void set_omp_threads() {
+// #ifdef _USE_OMP_
+//     /**
+//      * the parallelisation of the sweep-function first iterates over all odd points in t
+//      * and then over all even points because the nearest neighbours must not change
+//      * during the updates, this is not possible for an uneven number of points in T
+//      * */
+//     if ((*this).pparams.Lt % 2 != 0) {
+//       std::cerr << "For parallel computing an even number of points in T is needed!"
+//                 << std::endl;
+//       omp_set_num_threads(1);
+//       std::cerr << "Continuing with one thread." << std::endl;
+//     }
+//     // set things up for parallel computing in sweep
+//     (*this).threads = omp_get_max_threads();
+//     // it does not make sense to have more threads than time slices
+//     if ((*this).pparams.Lt < (*this).threads) {
+//       std::cerr << "It does not make sense to have more threads than time slices!"
+//                 << std::endl;
+//       omp_set_num_threads((*this).pparams.Lt);
+//       (*this).threads = (*this).pparams.Lt;
+//       std::cerr << "Setting number of threads to T." << std::endl;
+//     }
+// #else
+//     (*this).threads = 1;
+// #endif
+//     std::cout << "threads " << (*this).threads << std::endl;
+//   }
 
   /**
    * @brief do the i-th sweep of the heatbath_overrelaxation algorithm
    *
    * @param i trajectory index
    */
-  void do_heatbath(const size_t &i, const std::vector<std::mt19937> &engines) {
+  void do_heatbath(const std::vector<std::mt19937> &engines) {
     (*this).rate += heatbath((*this).U, engines, (*this).pparams.beta, (*this).pparams.xi,
                              (*this).pparams.anisotropic);
   }
 
-  void do_overrelaxation() {
-    overrelaxation((*this).U, (*this).pparams.xi,
-                   (*this).pparams.anisotropic);
+  void do_overrelaxation(const std::vector<std::mt19937> &engines) {
+    overrelaxation((*this).U, engines, (*this).pparams.xi, (*this).pparams.anisotropic);
   }
 
   // save acceptance rates to additional file to keep track of measurements
@@ -140,11 +139,11 @@ public:
           for (size_t i_engine = 0; i_engine < n_threads; i_engine++) {
             engines[i_engine].seed(seed + i * d2 * d3 + i_engine * d3 + i_hb);
           }
-          this->do_heatbath(i, engines);
+          this->do_heatbath(engines);
         }
 
         for (size_t over = 0; over < (*this).sparams.n_overrelax; over++) {
-          this->do_overrelaxation();
+          this->do_overrelaxation(engines);
         }
 
         if (i > 0 && (i % (*this).sparams.N_save) == 0) {

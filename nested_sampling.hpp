@@ -38,6 +38,8 @@ private:
   std::vector<size_t> indices; // list of configuration indices
   // std::vector<double> plaquettes; // list of plaquette expectation values
   std::mt19937 engine; // engine for random number generation
+  std::vector<std::mt19937> engines; // engines for exceptional overrelaxation updates
+
   std::ofstream os_nlive; // output stram for the configuration of the final n_live points
   std::string path_nlive_conf; // path to configuration of the final n_live points
   int i_last; // index of the last configuration saved
@@ -152,8 +154,15 @@ public:
       fsys::create_directories(fsys::absolute(out_dir)); // creating directory
 
       size_t i_orlx = 0;
-      while (i_orlx < (*this).sparams.n_overrelaxation + 1) {
-        overrelaxation(U_i, 1.0, false);
+      size_t N_overrelaxation = (*this).sparams.n_overrelaxation;
+      const int n_threads = (*this).threads;
+      while (i_orlx < N_overrelaxation + 1) {
+        // initializing the engines
+        for (size_t i_engine = 0; i_engine < n_threads; i_engine++) {
+          (*this).engines[i_engine].seed(i * N_overrelaxation + i_orlx);
+        }
+
+        overrelaxation(U_i, (*this).engines, 1.0, false);
 
         std::string output_file = out_dir + "/Ploops." +
                                   boost::lexical_cast<std::string>(i) + "-" +
@@ -266,6 +275,10 @@ public:
       std::mt19937 engine; // Random Number Generator (RNG)
       engine.seed(i_conf); // setting the seed of the RNG
 
+      this->set_omp_threads();
+      const int n_threads = (*this).threads;
+      engines.resize(n_threads);
+
       const size_t ii_rand = int_dist(engine);
       const double Prand = Pi[ii_rand]; // value of the plaquette
       const size_t i_rand = (*this).indices[ii_rand]; // index of the configuration
@@ -282,7 +295,7 @@ public:
       // saving the new configuration
       U_i.save(this->get_path_conf(i_conf));
 
-      //std::cout << "## Saving final configuration of n_live points\n";
+      // std::cout << "## Saving final configuration of n_live points\n";
       (*this).os_nlive.open(path_nlive_conf, std::ios::out);
       (*this).os_nlive << std::scientific << std::setprecision(16);
       (*this).os_nlive << "i P" << std::endl;

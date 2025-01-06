@@ -72,7 +72,10 @@ public:
   }
   inline _su2 dagger() const { return (_su2(std::conj(a), -b)); }
   inline double retrace() { return (2. * std::real(a)); }
-  Complex det() { return (a * std::conj(a) + b * std::conj(b)); }
+  Complex det() {
+    // for SU(2) the determinat is real
+    return (a * std::conj(a) + b * std::conj(b));
+  }
   void restoreSU() {
     double r = sqrt(std::abs(a) * std::abs(a) + std::abs(b) * std::abs(b));
     a /= r;

@@ -26,30 +26,16 @@
 #include <vector>
 
 /**
- * @brief overrelaxation step
- *
- * See eq. 7.34 of https://www.worldscientific.com/worldscibooks/10.1142/6065 for SU(N)
- *
- * The change in the action \Delta S accepted with probability min(1, exp(-\Delta S)).
- * @tparam URNG
- * @tparam Group
- * @param U gauge configuration
- * @param engine engine for random number generation
- * @param beta coupling beta in the action
- * @param xi bare anisotropy
- * @param anisotropic bool. flag, true when considering an anisotropic lattice
- * @return std::vector<double>: acceptance rates: {overall, only temporal ones}
- */
-template <class Group>
-void overrelaxation(gaugeconfig<Group> &U,
-                    const double &xi = 1.0,
-                    const bool &anisotropic = false);
-
-/**
  * @brief  eq. below (4.50) of https://link.springer.com/book/10.1007/978-3-642-01850-3
+ *
+ * NOTE: the `engines` arguments is not used for U(1),
+ * but is needed to have a consistent overflow with the other SU(N) groups
  */
-template <>
-void overrelaxation(gaugeconfig<u1> &U, const double &xi, const bool &anisotropic) {
+template<class URNG>
+void overrelaxation(gaugeconfig<u1> &U,
+                    std::vector<URNG> engines,
+                    const double &xi,
+                    const bool &anisotropic) {
   typedef typename accum_type<u1>::type accum;
 
   const size_t endmu = U.getndims();
@@ -74,23 +60,45 @@ void overrelaxation(gaugeconfig<u1> &U, const double &xi, const bool &anisotropi
   return;
 }
 
-template <>
-void overrelaxation(gaugeconfig<su2> &U, const double &xi, const bool &anisotropic) {
+/**
+ * @brief overrelaxation step
+ *
+ * See eq. 7.34 of https://www.worldscientific.com/worldscibooks/10.1142/6065 for SU(N)
+ */
+template<class URNG>
+void overrelaxation(gaugeconfig<su2> &U,
+                    std::vector<URNG> engines,
+                    const double &xi,
+                    const bool &anisotropic) {
   typedef typename accum_type<su2>::type accum;
 
   const size_t endmu = U.getndims();
   for (size_t x0_start = 0; x0_start < 2; x0_start++) {
 #pragma omp parallel for
     for (size_t x0 = x0_start; x0 < U.getLt(); x0 += 2) {
+      size_t thread_num = omp_get_thread_num();
       for (size_t x1 = 0; x1 < U.getLx(); x1++) {
         for (size_t x2 = 0; x2 < U.getLy(); x2++) {
           for (size_t x3 = 0; x3 < U.getLz(); x3++) {
             const std::vector<size_t> x = {x0, x1, x2, x3};
             for (size_t mu = 0; mu < endmu; mu++) {
-              accum K;
-              get_staples_MCMC_step(K, U, x, mu, xi, anisotropic);
-              K = (1.0 / sqrt(K.det())) * K;
-              U(x, mu).set(K.geta(), K.getb());
+              su2 V;
+              accum S;
+              get_staples_MCMC_step(S, U, x, mu, xi, anisotropic);
+              // NOTE: for SU(2) matrices the determinant is real
+              const double detS = S.det().real();
+              if (detS == 0.0) {
+                // random element in the group
+                random_element(V, engines[thread_num], 1.0);
+              } else {
+                // for SU(2) it is sufficient to generate V by normalizing the sum of
+                // staples
+                const double sqrt_det_S = sqrt(detS);
+                S = (1.0 / sqrt(S.det())) * S;
+                V.set(S.geta(), S.getb());
+                V = V.dagger();
+              }
+              U(x, mu) = V * U(x, mu) * V;
             }
           }
         }
@@ -101,8 +109,11 @@ void overrelaxation(gaugeconfig<su2> &U, const double &xi, const bool &anisotrop
   return;
 }
 
-template <>
-void overrelaxation(gaugeconfig<su3> &U, const double &xi, const bool &anisotropic) {
+template<class URNG>
+void overrelaxation(gaugeconfig<su3> &U,
+                    std::vector<URNG> engines,
+                    const double &xi,
+                    const bool &anisotropic) {
   fatal_error("overrelaxation not implemented for SU(3)!", __func__);
 
   return;

@@ -150,28 +150,27 @@ void overrelaxation(gaugeconfig<su3> &U,
                 // V and D such that: MdagM = V^\dagger*D*V
                 // NOTE: V^{-1}=V^\dagger because MdagM is hermitean
                 std::vector<accum> Vdag_D = MdagM.diagonalize();
-                su3 Vdag = Vdag_D[0].to_SU3(); // converto to a unitary matrix
+                su3 Vdag = Vdag_D[0].to_SU3(); // convert to to a unitary matrix
                 accum D = Vdag_D[1];
                 su3 V = Vdag.dagger();
 
-                accum H = Vdag * D.pow(+1.0 / 2.0) * V; // (M^\dagger M)^{+1/2}
-                accum H_inv = Vdag * D.pow(-1.0 / 2.0) * V; // (M^\dagger M)^{-1/2}
+                accum H = Vdag * D.pow_diagonal(+1.0 / 2.0) * V; // (M^\dagger M)^{+1/2}
+                accum H_inv = Vdag * D.pow_diagonal(-1.0 / 2.0) * V; // (M^\dagger M)^{-1/2}
                 accum O = M * H_inv; // M * (M^\dagger M)^{-1/2}
 
-                det_Odag = O.dagger().det(); // det(O^\dagger)
+                const std::complex<double> det_Odag = O.dagger().det(); // det(O^\dagger)
 
                 // I(\alpha) (in the ref. paper) is proportional to 1_{3 \times 3}
                 // if det(I(\alpha)) = x, then I(\alpha) =  x^{1/3} * 1_{3 \times 3}
-                const double Ialpha_fact = std::pow(det_Odag, 1.0 / 3.0);
+                const std::complex<double> Ialpha_fact = std::pow(det_Odag, 1.0 / 3.0);
 
                 su3 Otilde = (O * Ialpha_fact).to_SU3(); // now it is a unitary matrix
 
                 // building the reflected matrix
                 su3 U_reflected = V * U(x, mu) * Otilde * Vdag;
 
+                // apply one of the 3 reflections (chosen at random)
                 const int i_reflection = distribution(engines[thread_num]);
-                
-                // apply one of  the 3 reflections defined in the referencepaper
                 U_reflected.apply_reflection(i_reflection); 
 
                 // overrelaxing the link

@@ -15,6 +15,8 @@
 #include <complex>
 #include <iostream>
 
+#include <Eigen/Dense> // Include Eigen library
+
 #include "accum_type.hh"
 #include "dagger.hh"
 #include "su3.hh"
@@ -95,8 +97,8 @@ public:
     v = u;
     w = u;
   }
+
   inline _su3_accum dagger() const {
-    // vectors computed using sympy
     const std::array<Complex, 3> u2 = {std::conj(u[0]), std::conj(v[0]), std::conj(w[0])},
                                  v2 = {std::conj(u[1]), std::conj(v[1]), std::conj(w[1])},
                                  w2 = {std::conj(u[2]), std::conj(v[2]), std::conj(w[2])};
@@ -104,6 +106,59 @@ public:
   }
   inline Complex trace() const { return (u[0] + v[1] + w[2]); }
   inline double retrace() const { return std::real(this->trace()); }
+  inline Complex det() const {
+    Complex res = 0.0;
+    res += +u[0] * (v[1] * w[2] - v[2] * w[1]);
+    res += -u[1] * (v[0] * w[2] - v[2] * w[0]);
+    res += +u[2] * (v[0] * w[1] - v[1] * w[0]);
+    return res;
+  }
+
+  // returns V and D, where M is the original matrix and M=V*D*V^dagger
+  // NOTE: this method is well defined only if (*this) is a Hermitean matrix
+  inline std::vector<_su3_accum> diagonalize() {
+    // Convert the _su3_accum into an Eigen matrix
+    Eigen::Matrix3cd matrix;
+    matrix << u[0], u[1], u[2], v[0], v[1], v[2], w[0], w[1], w[2];
+
+    // Perform Eigen decomposition for Hermitian matrix
+    Eigen::SelfAdjointEigenSolver<Eigen::Matrix3cd> solver(matrix);
+
+    // Extract eigenvalues (diagonal elements of D) and eigenvectors (columns of V)
+    Eigen::Vector3d eigenvalues = solver.eigenvalues();
+    Eigen::Matrix3cd eigenvectors = solver.eigenvectors();
+
+    // Convert V and D back to _su3_accum
+    const std::array<Complex, 3> V1 = {eigenvectors(0, 0), eigenvectors(1, 0),
+                                       eigenvectors(2, 0)};
+    const std::array<Complex, 3> V2 = {eigenvectors(0, 1), eigenvectors(1, 1),
+                                       eigenvectors(2, 1)};
+    const std::array<Complex, 3> V3 = {eigenvectors(0, 2), eigenvectors(1, 2),
+                                       eigenvectors(2, 2)};
+    _su3_accum V(V3, V2, V3);
+
+    const std::array<Complex, 3> D1 = {eigenvalues(0), 0.0, 0.0};
+    const std::array<Complex, 3> D2 = {0.0, eigenvalues(1), 0.0};
+    const std::array<Complex, 3> D3 = {0.0, 0.0, eigenvalues(2)};
+
+    _su3_accum D(D1, D2, D3);
+
+    // Return a vector of _su3_accum: [V, D]
+    return {V, D};
+  }
+
+  // return the matrix with the diagonal elements D_{ii} raised to the power alpha
+  inline _su3_accum pow_diagonal(const double &alpha) const {
+    _su3_accum D_alpha = (*this);
+    D_alpha.set({std::pow(u[0], alpha), 0.0, 0.0}, {0.0, std::pow(v[1], alpha), 0.0},
+                {0.0, 0.0, std::pow(w[2], alpha)});
+    return D_alpha;
+  }
+
+  inline su3 to_SU3() const {
+    const su3 U(u, v);
+    return U;
+  }
 
   void print() const {
     std::cout << "----------------------------------\n";
@@ -195,8 +250,8 @@ inline su3 accum_to_Group(const su3_accum &x) {
  * @brief accumulation type for SU(3)
  *
  * when summing SU(3) matrices the result is not unitary anymore. This type serves to
- * define the sum of the plaquettes appearing in the action and monomial forces (covariant
- * derivatives)
+ * define the sum of the plaquettes appearing in the action and monomial forces
+ * (covariant derivatives)
  *
  */
 template <> struct accum_type<su3> {

@@ -66,7 +66,10 @@ configure_file(
   endif()
 
   find_package (Eigen3 3.3 REQUIRED NO_MODULE)
-  
+  include_directories(${EIGEN3_INCLUDE_DIR})
+
+
+
 # We could just have two `add_executable` blocks listing almost all source
 # files. However, CMake would then compile the source files twice, once for
 # each executable. The rationale is that different flags can be used for

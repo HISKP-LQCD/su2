@@ -113,8 +113,8 @@ void overrelaxation(gaugeconfig<su2> &U,
 overrelaxation steps according to
 https://www.sciencedirect.com/science/article/abs/pii/0370269390900322
 
-S is the sum of the staples for a given link U.
-In the rare case of det(S^\dagger S) == 0,
+M is the sum of the staples for a given link U.
+In the rare case of det(M^\dagger M) == 0,
 we overrelax the link with a random group element, like for SU(2):
 see section 4.3.2 of https://link.springer.com/book/10.1007/978-3-642-01850-3
 
@@ -183,8 +183,6 @@ void overrelaxation(gaugeconfig<su3> &U,
       }
     }
   }
-
-  return;
 
   return;
 }

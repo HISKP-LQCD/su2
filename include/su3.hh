@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include <cassert>
 #include <array>
 #include <complex>
 #include <iostream>
@@ -136,6 +137,31 @@ public:
 
     return res;
   }
+
+  /**
+   * Reflections i=1,2,3 according respectively to the eqs. (5),(6),(7) of
+   * https://www.sciencedirect.com/science/article/abs/pii/0370269390900322
+   * */
+  void apply_reflection(const size_t &i) {
+    if (i == 1) {
+      u[1] = -u[1]; // U_{12}
+      u[2] = -u[2]; // U_{13}
+      v[0] = -v[0]; // U_{21}
+      return;
+    } else if (i == 2) {
+      u[1] = -u[1]; // U_{12}
+      v[0] = -v[0]; // U_{21}
+      v[2] = -v[2]; // U_{23}
+      return;
+    } else if (i == 3) {
+      u[2] = -u[2]; // U_{13}
+      v[2] = -v[2]; // U_{23}
+      return;
+    }
+    assert(!(i == 0 || i > 3)); // it's more efficient to check at the end
+    return; 
+  }
+
   /**
    * @brief formula (4.27) of Gattringer&Lang
    * https://link.springer.com/book/10.1007/978-3-642-01850-3

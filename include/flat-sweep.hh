@@ -271,12 +271,21 @@ namespace flat_spacetime {
                     Group help_element = proposed_element;
                     #endif
                     //std::cout << "internal exponent " << internal_exponent << "\n";
-                    while (internal_exponent > 1){
+                    while (internal_exponent -1 > 0){
                      old_element =old_element * old_element;
                       help_element = help_element * proposed_element;
                       internal_exponent -= 1;
                     }
-                   //std::cout << "gaugemass " << gaugemass << "\n"; 
+                   //#ifdef su2pragma
+                   // std::cout << retrace2(saved_element) - retrace(old_element) << "print sweep" << "\n";
+                   // #endif
+                   //std::cout << delta << "delta in sweep \n";
+                    //std::cout << "internal exponent in sweep" << internal_exponent << "\n";
+                    //std::cout << "beta in sweep" << beta << "\n";
+                   //std::cout << "gaugemass in sweep" << gaugemass << "\n";
+                   //std::cout << " retrace and retrace 2 differenz old element" << retrace(saved_element) - retrace(old_element) << "\n";
+                   //std::cout << "retrace and retrace 2 differenz proposed element " << retrace(proposed_element ) - retrace(help_element) << "\n";
+                   //std::cout << "retrace2 update  old element" << retrace(help_element*help_element) << "retrace new element" << retrace(old_element*old_element) << "retrace diff " << retrace(old_element * old_element) - retrace(help_element * help_element) << "\n"; 
                     double deltaS = (beta / static_cast<double>(U.getNc())) *
                                     (retrace(saved_element * K) - retrace(proposed_element * K)) +  (gaugemass/static_cast<double>(U.getNc())) * (retrace(old_element) - retrace(help_element));
                     //std::cout <<" Delta S " <<  deltaS << "\n"; 

@@ -321,13 +321,17 @@ public:
     } else {
       if (sparams.restart_condition == "hot") {
         g_heat = 1.0;
+        g_icounter = 0;
+      hotstart(U, sparams.seed, g_heat);
       } else if (sparams.restart_condition == "cold") {
         g_heat = 0.0;
+        g_icounter = 0;
+        coldstart(U);
+        
       }
       //std::cout << g_heat << "g heat \n";
       g_icounter = 0;
       //std::cout << "oh no" << "\n";
-      hotstart(U, sparams.seed, g_heat);
     }
 
     // double plaquette = flat_spacetime::gauge_energy(U);
@@ -347,6 +351,16 @@ public:
     // plaquette = flat_spacetime::gauge_energy(U);
     plaquette = omeasurements::get_retr_plaquette_density((*this).U, (*this).pparams.bc);
     std::cout << "## Plaquette after rnd trafo: " << plaquette << std::endl;
+    if (sparams.restart_condition == "hot") {
+        g_heat = 1.0;
+        g_icounter = 0;
+      hotstart(U, sparams.seed, g_heat);
+      } else if (sparams.restart_condition == "cold") {
+        g_heat = 0.0;
+        g_icounter = 0;
+        coldstart(U);
+        
+      }
   }
 
   void open_output_data() {
@@ -545,6 +559,7 @@ public:
       }
 
       if (i > 0 && (i % (*this).sparams.N_trafo) == 0 && (*this).sparams.do_gaugetrafo){
+        std::cout << "did random gaugetrafo \n";
         random_gauge_trafo((*this).U, 654321); // doing a random gauge trafo after N_trafo sweeps
       }
 

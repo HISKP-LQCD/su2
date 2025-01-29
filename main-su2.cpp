@@ -9,6 +9,7 @@
  *
  */
 
+//#define su2pragma
 #include "run_program.hpp"
 
 int main(int argc, char *argv[]) {

@@ -240,16 +240,19 @@ template <class T> int gaugeconfig<T>::load(std::string const &path) {
 template <class T> void coldstart(gaugeconfig<T> &config) {
 #pragma omp parallel for
   for (size_t i = 0; i < config.getSize(); i++) {
-    config[i] = T(1., 0.);
+    T Thelp;
+    Thelp.set_to_identity();
+    config[i] = Thelp;
   }
 }
 
-template <class T> void coldstart(gaugeconfig<_u1> &config) {
-#pragma omp parallel for
-  for (size_t i = 0; i < config.getSize(); i++) {
-    config[i] = _u1(0.);
-  }
-}
+
+//template <class T> void coldstart(gaugeconfig<_u1> &config) {
+//#pragma omp parallel for
+//  for (size_t i = 0; i < config.getSize(); i++) {
+ //   config[i] = _u1(0.);
+//  }
+//}
 
 template <class T>
 void hotstart(gaugeconfig<T> &config, const int seed, const size_t _delta) {

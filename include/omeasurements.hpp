@@ -50,6 +50,7 @@ namespace omeasurements {
   template <class Group>
   double get_retr_realtrace_density(const gaugeconfig<Group> &U, const std::string &bc){
   //double denuminator = U.getVolume()*U.getndims();
+  
   //std::cout << "gaugemass in retrace" << gaugemass << "\n ";
   obc::weights w(bc, U.getLx(), U.getLy(), U.getLz(), U.getLt(), U.getndims());
   double realtrace = obc::retr_sum_realtrace(U, w);

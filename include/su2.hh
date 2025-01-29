@@ -79,7 +79,8 @@ public:
   inline double retrace() { return (2. * std::real(a)); }
   Complex det() { return (a * std::conj(a) + b * std::conj(b)); }
   void restoreSU() {
-    double r = sqrt(std::abs(a) * std::abs(a) + std::abs(b) * std::abs(b));
+    Complex r = (a * std::conj(a) + b * std::conj(b));
+    //double r = sqrt(std::abs(a) * std::abs(a) + std::abs(b) * std::abs(b));
     a /= r;
     b /= r;
   }
@@ -100,6 +101,10 @@ inline double retrace(_su2 const &U) {
   return (2 * a);
 }
 
+inline double retrace2(_su2 const &U){
+  Complex helpvar = U.geta() * U.geta() - Complex(2.0, 0.0)*U.getb()* std::conj(U.getb()) + std::conj(U.geta())* std::conj(U.geta());
+  return std::real(helpvar); 
+}
 inline Complex trace(_su2 const &U) {
   double a = std::real(U.geta());
   return (Complex(2 * a, 0.));

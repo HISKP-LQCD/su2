@@ -47,8 +47,8 @@ namespace obc { // open boundary conditions
           for (size_t x3 = 0; x3 < U.getLz(); x3++){
             const std::vector<size_t> x = {x0, x1, x2, x3};
             const double wx = w(x);
-            for(size_t mu = 0; mu < U.getndims() -1; mu++){
-              res += wx*retrace(U(x, mu));
+            for(size_t mu = 0; mu < U.getndims() ; mu++){
+              res += retrace(U(x, mu));
             }
           }
         }
@@ -65,10 +65,10 @@ template <class T>
       for (size_t x1 = 0; x1 < U.getLx(); x1++){
         for (size_t x2 = 0; x2 < U.getLy(); x2++){
           for (size_t x3 = 0; x3 < U.getLz(); x3++){
-            const std::vector<size_t> x = {x0, x1, x2, x3};
-            const double wx = w(x);
-            for(size_t mu = 0; mu < U.getndims() -1; mu++){
-              res += wx*retrace(U(x, mu)*U(x, mu));
+            std::vector<size_t> x = {x0, x1, x2, x3};
+            double wx = w(x);
+            for(size_t mu = 0; mu < U.getndims(); mu++){
+              res -= -retrace(U(x, mu) * U(x, mu));
             }
           }
         }

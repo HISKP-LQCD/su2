@@ -305,7 +305,7 @@ namespace input_file_parsing {
       validate_beta_str_width(mparams.beta_str_width);
     }
 
-    mparams.res_dir = mparams.conf_dir; // default
+    mparams.res_dir = "./"; // default
     in.read_opt_verb<std::string>(mparams.res_dir, {"res_dir"});
 
     in.read_opt_verb<size_t>(mparams.verbosity, {"verbosity"});

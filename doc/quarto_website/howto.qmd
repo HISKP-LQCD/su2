@@ -1,79 +1,46 @@
-## How to use the `su2` library
+---
+title: "How to use the library"
+author: Simone Romiti
+date: last-modified
+---
 
-The `main-u1.cpp` program works using an input file `main.input` as follows:
+With the installation,
+the following source code are generate executables.
 
+These are the main executables, and work by passing a `yaml` input file as an argument (see instructions later):
+
+- `main-u1.cpp` : $\mathrm{U}(1)$ gauge theory
+- `main-su2.cpp`: $\mathrm{SU}(2)$ gauge theory
+- `main-su3.cpp`: $\mathrm{SU}(3)$ gauge theory
+
+For the following please look at the files to understand what they do and how to pass the input parameters from the command line.
+
+- `kramers.cc`
+- `test.cc`
+- `tryreduce.cc`
+- `scaling.cc`
+
+
+# How to run the main programs for `u1`, `su2` and `su3`
+
+The `main-*.cpp` programs work as follows:
+
+```{.bash}
+<executable_name> -f <yaml_input_file>
 ```
-./u1-main -f main.input
-```
 
-This folder contains examples of input files with the extension `.input`.
-The program decides whether what to do (e.g. metropolis, hmc with online measurements, etc.) based on the parameters specified in the input file.
-
-The input file is parsed by the external library `yaml-cpp` (https://yaml.org/). The set of parameters is divided into blocks (parsed as YAML nodes) organized in a hierarchical tree structure.
+The input file is parsed by the external library [`yaml-cpp`](https://yaml.org/). The set of parameters is divided into blocks (parsed as YAML nodes) organized in a hierarchical tree structure.
 Each block corresponds to some set or characteristics of the simulation. 
-At present the supported blocks are:
 
-- `geometry`: geometrical properties of the lattice grid
-- `hmc`: Hybrid Monte Carlo parameters
-- `integrator`: integrator of the equations of motion (for the hmc)
-- `operators`: operators in the action acting on objects with Dirac structure
-- `monomials`: contributions to the action
-- `omeas`: information about the offline/online measurements
+The implementation of the input file parsing works according to the following paradigm: the library contains the definition of `struct`s for the blocks of parameters and of each algorithm.
+A function that parses the input file takes care of checking the consistency of the input file and of initializing the attributes of the `struct`s.
 
-One of the first things the program does is to check the correctness of the input file, i.e. if the user supplied the parameters in without causing any conflict, otherwise aborts the execution. 
-For further details on how this is done please see the comments in the source code.
+## Structure of the input file
+
+Please look at the following **pseudo input file**  in order to figure out how to write one that suits your application:
+
+```{.bash}
+{{< include pseudo_input_file.yaml >}}
+```
 
 
-## YAML nodes
-
-In this seciton we write details about the YAML input file structure. 
-The parsing function is defined in `parse_input_file.cc` and relies on the `struct`s defined in `include/parameters.hh`. For further details to the following documentation please take a look at the extensive comments on those files (and their included ones).
-
-### `geometry`
-
-Specified in the node `geometry`. Parameters:
-
-- `X`, `Y`, `Z`, `T`: spacetime dimensions (in lattice units): $L_x$, $L_y$, $L_z$, $L_t$
-- `L`: alternative to assigning individually `X`, `Y`, `Z` for when we want $L=L_x=L_y=L_z$
-- `ndims`: number of dimensions. Currently supported: $d=2,3,4$. 
-  If `ndims<4`, the extra spatial directions are flattened (e.g. `ndims=3` $\to$ `Z=1`).
-
-### `hmc`
-
-The parameters parsed in the `hmc` block are the following. Further details are given by the comments in the code.
-
-- `n_meas`
-- `do_mcmc`
-- `restart_condition`
-- `seed`
-- `configname`
-- `conf_dir`
-- `conf_basename`
-- `lenghty_conf_name`
-- `beta_str_width`
-
-### `integrator`
-
-WRITE DOCUMENTATION HERE
-
-### `operators`
-
-WRITE DOCUMENTATION HERE
-
-### `monomials`
-
-WRITE DOCUMENTATION HERE
-
-### `omeas`
-
-- `offline` block. This has to be included when doing offline measurements, otherwise commented out when they are done online. 
-  It specifies how to find the configurations files. When doing online measurements this is deduced from the algorithm parameters block.
-- `res_dir`
-- `verbosity`
-- `icounter`
-- `n_meas`
-- `pion_staggered` block. Pion correlator with staggered fermions.
-- `Wloop`
-- `potential` block. 
-- `glueball` block. The user can specify the interpolators and the APE smearing parameters      
-- `gradient_flow` block

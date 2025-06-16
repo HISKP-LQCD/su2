@@ -1,11 +1,60 @@
-## Installing `su2`
+---
+title: "Installing the library"
+author: Simone Romiti
+date: last-modified
+---
 
-The installation can be done by running the following scripts in a `bash` shell:
+# Dependencies
+
+The library has the following dependencies: 
+
+- [`xtensor`](https://github.com/xtensor-stack/xtensor) 
+- [`Eigen3`](https://eigen.tuxfamily.org/index.php?title=Main_Page)
+- [`yaml-cpp`](https://github.com/jbeder/yaml-cpp)
+- [`Boost`](https://www.boost.org/)
+
+# Installing on a Debian-based distribution
+
+On Debian and derived distributions (Ubuntu, Linux Mint, etc.) the library can be installed as follows.
+
+First, we install the dependencies:
+
+```{.bash}
+sudo apt-get install xtensor-dev
+sudo apt-get install libeigen3-dev
+sudo apt install libyaml-cpp-dev 
+sudo apt-get install libboost-all-dev
 
 ```
+
+And then install the library itself.
+
+```{.bash}
+bdir=/path/to/your/build/directory/
+
+cmake \
+    -B ${bdir} \
+    -S /path/to/your/source/directory/
+
+make -j$(nproc) install
+```
+
+
+# Installing on any machine
+
+The dependencies of the library are often available on most HPC machines with, e.g. with
+```{.bash}
+module load <name_of_library>
+```
+If that is not the case, the libraries have to be compiled from source. 
+An example of how to set this up for `xtensor` (and its dependency `xtl`) can be found [here](https://github.com/simone-romiti/software-stack/tree/qbig/build).
+
+Once the dependencies are installed, please proceed by creating a build directory and from there run the following scripts in a `{.bash}` shell:
+
+```{.bash}
 ./do_cmake.sh
 ./do_make.sh
 ```
 
-These can be found in the `installation_scripts/` folder.
+A template of the above two scripts can be found in the `doc/installation_scripts/` fo
 

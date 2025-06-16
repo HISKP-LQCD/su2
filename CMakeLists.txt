@@ -77,11 +77,12 @@ configure_file(
 # generated objects files or create a simple static library. The latter is done
 # here.
 set(${CMAKE_INSTALL_LIBDIR} ${CMAKE_INSTALL_PREFIX}/lib/)
+set(src_dir ./src/)
 add_library(${PROJECT_NAME}
-    exp_gauge.cc
-    print_program_options.cc
-    parse_commandline.cc
-    parse_input_file.cc
+    ${src_dir}/exp_gauge.cc
+    ${src_dir}/print_program_options.cc
+    ${src_dir}/parse_commandline.cc
+    ${src_dir}/parse_input_file.cc
 )
 
 # Create the main program.

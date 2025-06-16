@@ -1,10 +1,13 @@
 ## Available algorithms
 
-The gauge configurations can be generated with the following Markov Chain Monte Carlo algorithms (see @gattringer2009quantum for the theoretical background):
+The gauge configurations can be generated with the following Markov Chain Monte Carlo algorithms (see Refs.@gattringer2009quantum, @Ashton:2022grj for the theoretical background):
 
 - Metropolis
 - Hybrid Monte Carlo
 - Heatbath + Overrelaxation
+- Nested Sampling
+
+for the following gauge groups: $\mathrm{U}(1)$, $\mathrm{SU}(2)$, $\mathrm{SU}(3)$.
 
 The measurements can be generated either online (during the MCMC) or offline (on previously generated configurations). 
 At present the supported observables are:
@@ -15,19 +18,12 @@ At present the supported observables are:
 - Wilson loops and static potential among $\bar{q} q$ pairs
 - Wilson gradient flow
 
-## Programs
+# Continuing the runs
 
-- Programs: `main-u1.cpp`, `main-su2.cpp`, `main-su3.cpp`
-- Parameters parsing: `yaml` input file
-- Input file example: see [./main.input](main.input)
-  
-_Notes_:
-
-- Each run produces/updates a file named `nconf_counter.txt` in the directory storing the gauge configurations. This file contains a header line and the values below. An example:
-  ```
+- Each run produces/updates a file named `nconf_counter.txt` in the directory where the gauge configurations are stored. This file contains a header line and the values below. An example:
+  ```{.bash}
   heat i path_conf
   1 1140 ./confs/config_u1.4.4.1.16.b1.900000.1140
   ```
 
-- `restart_condition` can be either `hot`, `cold` or `read`. If equal to `read`, the last configuration id and path are read from the `nconf_counter.txt` file.
-- The program can do online and offline measurements
+- In the input file (see documentation on how to use the library), for each algorithm it is possible to apply a "restart_condition". This parameter determines if we start from a new configuration or if we continue from the last one (determined from the file `nconf_counter.txt`).

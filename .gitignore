@@ -47,7 +47,6 @@ su2hmc
 build*
 
 ## documentation
-doc/.quarto
-doc/_book
-doc/_freeze
-doc/*.html
+**/_site
+**/_book
+**/_freeze

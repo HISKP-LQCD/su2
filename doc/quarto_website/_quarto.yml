@@ -1,0 +1,60 @@
+project:
+  type: website
+
+website:
+  repo-url: https://github.com/urbach/su2
+  repo-actions: [edit, source, issue]
+  navbar:
+    left:
+      - text: Project
+        menu:
+          - text: Overview of the project
+            href: index.qmd
+          - text: "Installing the library"
+            href: install.qmd
+          - text: "How to use the library"
+            href: howto.qmd
+          - text: "Algorithms"
+            href: algorithms.qmd
+          - text: "Development"
+            href: development.qmd
+      - text: Theory
+        menu:
+          - text: "Theoretical background"
+            href: theor_background.qmd
+          - text: "Staggered fermions"
+            href: staggered_fermions.qmd
+      - text: Analysis
+        menu:
+          - text: "Analysis scripts"
+            href: analysis.qmd
+
+# citeproc: false
+bibliography: biblio.bib
+csl: 2d-materials.csl
+embed-resources: true
+
+execute:
+  freeze: auto  # re-render only when source changes
+
+title: "su2 code documentation"
+author: "C. Gross, S. Romiti, C. Urbach"
+date: last-modified
+
+format:
+  html:
+    theme: cosmo
+    fontsize: 16pt
+    embed-resources: true
+    html-math-method: mathjax # use the common latex commands
+    include-in-header: mathjax-config.html # equation numbering with sections
+    toc: true
+    toc-location: left
+    code-fold: true
+    code-summary: "Click to show the code block"
+  pdf:
+    documentclass: scrreprt
+    pdf-engine: pdflatex
+    keep-tex: false
+
+

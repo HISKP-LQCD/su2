@@ -34,33 +34,21 @@
 template <class Group>
 class nested_sampling_algo : public base_program<Group, gp::nested_sampling> {
 private:
+  double rate = 0.0; // acceptance rate of the internal Metropolis update
   std::vector<size_t> indices; // list of configuration indices
+  // std::vector<double> plaquettes; // list of plaquette expectation values
   std::mt19937 engine; // engine for random number generation
   std::vector<std::mt19937> engines; // engines for exceptional overrelaxation updates
 
-  std::ofstream os_nlive; // configuration of the final n_live points
+  std::ofstream os_nlive; // output stram for the configuration of the final n_live points
   std::string path_nlive_conf; // path to configuration of the final n_live points
-  int i_last_conf = 0; // index of the last configuration saved
-  int i_step = 0; // index of the last NS step
-  int i_dead = 0; // index of the dead point
-  std::string conf_counter_path;
-  std::string step_counter_path;
+  int i_last; // index of the last configuration saved
 
 public:
   nested_sampling_algo() { (*this).algo_name = "nested_sampling"; }
   ~nested_sampling_algo() { os_nlive.close(); }
 
   void print_program_info() const { std::cout << "## nested_sampling Algorithm\n"; }
-
-  void save_live_points_configuration(const std::vector<double> &Pi) {
-    // saving the configuration of the n_live points
-    for (size_t j = 0; j < Pi.size(); j++) {
-      (*this).os_nlive << " " << Pi[j];
-    }
-    (*this).os_nlive << std::endl;
-    (*this).os_nlive.flush();
-    return;
-  }
 
   void parse_input_file(const YAML::Node &nd) {
     namespace in_nested_sampling = input_file_parsing::nested_sampling;
@@ -70,31 +58,15 @@ public:
       io::get_conf_path_basename((*this).pparams, (*this).sparams);
   }
 
-  // read the single number stored in the file
-  size_t read_from_counter(const std::string &file) {
-    size_t i = 0;
-    // reading index of the last configuration
-    std::ifstream i_conf_counter(file);
-    i_conf_counter >> i_last_conf; // Read the number from the file
-    i_conf_counter.close(); // Close the input file
-    return i;
-  }
-
-  // write a single number in the file
-  void write_to_counter(const size_t &j, const std::string &file) {
-    std::ofstream i_conf_counter(file);
-    i_conf_counter << j;
-    i_conf_counter.close();
-    return;
-  }
-
   // unsorted list of plaquette values
   std::vector<double> init_nlive(const int &n_live, const int &seed) {
+    double p0 = 0.0; // minimum value of plaquette --> minimum of e^(-S/beta)
+    // finding the minimum value
     std::vector<double> Pi(n_live);
     (*this).indices.resize(n_live);
 
     const double delta = 1.0; //(*this).sparams.delta;
-    std::cout << "## Initial n_live values of the plaquette density (drawn at beta=0) \n";
+    std::cout << "## Initial n_live values of the plaquette\n";
     for (size_t i = 0; i < n_live; i++) {
       hotstart<Group>((*this).U, seed + i, delta);
       std::string path_i = (*this).conf_path_basename + "." + std::to_string(i);
@@ -105,36 +77,8 @@ public:
       Pi[i] = pi;
       (*this).indices[i] = i;
     }
-    auto P_min_element = std::min_element(Pi.begin(), Pi.end());
-    i_dead = std::distance(Pi.begin(), P_min_element); // conf. index of the minimum
-
-    this->save_live_points_configuration(Pi);
-
+    std::cout << "---" << std::endl;
     return Pi;
-  }
-
-  // readns the last line of the file with known number of lines, all of the same length
-  std::string read_last_line(const std::string &filename, const int &totalLines) {
-    check_file_exists(filename, __func__);
-
-    // Read the first line to determine its length including newline
-    std::streampos firstLineStart = file.tellg(); // usually 0
-    std::string firstLine;
-    std::getline(file, firstLine);
-    std::streampos afterFirstLine = file.tellg();
-
-    std::streamoff lineSize = afterFirstLine - firstLineStart; // includes newline
-
-    // Calculate position of last line
-    std::streampos lastLinePos = lineSize * (totalLines - 1);
-
-    file.seekg(lastLinePos);
-
-    std::string lastLine;
-    std::getline(file, lastLine);
-
-    std::cout << "Last line: " << lastLine << '\n';
-    return lastLine;
   }
 
   std::vector<double> read_nlive_conf() {
@@ -145,27 +89,16 @@ public:
     (*this).indices.resize(n_live);
     std::ifstream in_file;
     in_file.open(path_nlive_conf);
+    const char delim = ' ';
+    xt::xarray<double> conf_n_live = xt::load_csv<double>(in_file, delim, 1);
 
-    const int n_lines = this->read_from_counter(step_counter_path); // == NS steps
-    std::string lastLine = this->read_last_line(path_nlive_conf, n_lines);
-
-    std::vector<std::string> tokens;    
-    boost::split(tokens, lastLine, boost::is_any_of(" "));
+    std::cout << "Reading the following configuration" << std::endl;
+    std::cout << conf_n_live << std::endl;
     for (size_t i = 0; i < n_live; i++) {
       (*this).indices[i] = int(conf_n_live(i, 0));
       Pi[i] = conf_n_live(i, 1);
     }
-
-    // const char delim = ' ';
-    // xt::xarray<double> conf_n_live = xt::load_csv<double>(in_file, delim, 1);
-
-    // std::cout << "Reading the following configuration" << std::endl;
-    // std::cout << conf_n_live << std::endl;
-    // for (size_t i = 0; i < n_live; i++) {
-    //   (*this).indices[i] = int(conf_n_live(i, 0));
-    //   Pi[i] = conf_n_live(i, 1);
-    // }
-    // in_file.close();
+    in_file.close();
 
     return Pi;
   }
@@ -173,24 +106,22 @@ public:
   void open_output_data() {
     const std::string output_file =
       (*this).sparams.conf_dir + "/output." + (*this).algo_name + ".data";
-    // std::ofstream os_nlive;
+    std::ofstream os_nlive;
 
     if ((*this).sparams.continue_run == true) {
       (*this).os.open(output_file, std::ios::app);
-      (*this).os_nlive.open(path_nlive_conf, std::ios::app);
-
       // check if there is a saved configuration for the n_live points
       check_file_exists(path_nlive_conf, __func__);
     } else {
       (*this).os.open(output_file, std::ios::out);
 
       // opening the file for the last n_live points
-      (*this).os_nlive.open(path_nlive_conf, std::ios::out);
+      //(*this).os_nlive.open(path_nlive_conf, std::ios::out);
     }
 
     // scientific notation's precision
     (*this).os << std::scientific << std::setprecision(16);
-    (*this).os_nlive << std::scientific << std::setprecision(16);
+    // (*this).os_nlive << std::scientific << std::setprecision(16);
   }
 
   std::string get_path_conf(const int &i) const {
@@ -270,39 +201,36 @@ public:
   }
 
   void run(const YAML::Node &nd) {
-    this->pre_run(nd); // prepare the algorithm
-    path_nlive_conf = (*this).sparams.conf_dir + "/nlive_conf.data";
-    conf_counter_path = (*this).sparams.conf_dir + "/conf_counter.txt";
-    step_counter_path = (*this).sparams.conf_dir + "/step_counter.txt";
+    this->pre_run(nd);
 
     bool do_omeas = (*this).sparams.do_omeas;
     bool do_mcmc = nd["nested_sampling"]["do_mcmc"].as<bool>();
-    if (do_omeas && (!do_mcmc)) {
+    if (!do_mcmc) {
       this->offline_measurements();
-      return; // do not run the algorithm, just measure observables
+      return;
     }
-
-    this->open_output_data(); // opening output files
 
     const size_t n_live = (*this).sparams.n_live;
     const size_t n_samples = (*this).sparams.n_samples;
     const size_t seed = (*this).sparams.seed;
     const double delta = (*this).sparams.delta;
-    // number of sweeps per link, i.e. a multiple of the number of links
+    // number of sweeps over the entire lattice: e.g 1,2,3
     const size_t n_sweeps_tot = ((*this).sparams.n_sweeps) * (*this).U.getSize();
 
+    path_nlive_conf = (*this).sparams.conf_dir + "/nlive_conf.data";
     std::vector<double> Pi;
     if ((*this).sparams.continue_run) {
-      i_step = 1 + this->read_from_counter(step_counter_path); // new step index
       Pi = read_nlive_conf();
-      // index of the last configuration
-      i_last_conf = this->read_from_counter(
-        conf_counter_path); // index of the last configuration saved
+
+      // reading index of the last configuration
+      std::ifstream icounter((*this).sparams.conf_dir + "/icounter.txt");
+      icounter >> i_last; // Read the number from the file
+      icounter.close(); // Close the input file
+
     } else {
       std::cout << "## Initializing n_live points\n";
       Pi = init_nlive(n_live, seed);
-      i_last_conf = n_live; // index of the last configuration saved
-      i_step = 0; // index of the last step. It is 0 because we start now.
+      i_last = n_live;
     }
 
     if (do_omeas && !(*this).sparams.continue_run) {
@@ -310,6 +238,8 @@ public:
         this->do_omeas_i((*this).indices[j]);
       }
     }
+
+    this->open_output_data();
 
     // distribution of indices after the removal of one of the n_live points
     // ACHTUNG! right bound is included (it is the c++ syntax)
@@ -319,23 +249,22 @@ public:
 
     // sampling n_samples points in the phase space
     for (size_t i = 0; i < n_samples; i++) {
-      const int i_conf = i_last_conf + i; // configuration index
-
+      const int i_conf = i_last + i; // configuration index
       // finding the minimum plaquette and appending it to the list
       auto P_min_element = std::min_element(Pi.begin(), Pi.end());
-      i_dead = std::distance(Pi.begin(), P_min_element);
-      const double Pmin = Pi[i_dead]; // minimum plaquette value
+      const size_t i_min = std::distance(Pi.begin(), P_min_element);
+      const double Pmin = Pi[i_min];
 
       // index of dead configuration
-      const int i_dead_conf = (*this).indices[i_dead];
+      const int i_dead_conf = (*this).indices[i_min];
       ((*this).os) << i_dead_conf << " ";
       ((*this).os) << std::scientific << std::setprecision(16) << Pmin << std::endl;
       std::cout << i_dead_conf << " ";
       std::cout << std::scientific << std::setprecision(16) << Pmin << std::endl;
 
       // removing that element
-      Pi.erase(Pi.begin() + i_dead);
-      (*this).indices.erase((*this).indices.begin() + i_dead);
+      Pi.erase(Pi.begin() + i_min);
+      (*this).indices.erase((*this).indices.begin() + i_min);
 
       if ((*this).sparams.delete_dead_confs) {
         // removing dead configuration
@@ -362,20 +291,26 @@ public:
       const double P_new = omeasurements::get_retr_plaquette_density(U_i, "periodic");
       Pi.push_back(P_new);
 
-      this->save_live_points_configuration(Pi); // saving new configuration
-
       (*this).indices.push_back(i_conf);
       // saving the new configuration
       U_i.save(this->get_path_conf(i_conf));
 
-      this->write_to_counter(i_last_conf + i, conf_counter_path);
-      i_step++; // incrementing the step counter
-      this->write_to_counter(i_step, step_counter_path);
+      // std::cout << "## Saving final configuration of n_live points\n";
+      (*this).os_nlive.open(path_nlive_conf, std::ios::out);
+      (*this).os_nlive << std::scientific << std::setprecision(16);
+      (*this).os_nlive << "i P" << std::endl;
+      for (size_t k = 0; k < n_live; k++) {
+        (*this).os_nlive << (*this).indices[k] << " " << Pi[k] << std::endl;
+      }
+      (*this).os_nlive.close();
+
+      std::ofstream icounter((*this).sparams.conf_dir + "/icounter.txt");
+      icounter << (i_last + i);
+      icounter.close();
 
       if (do_omeas) {
         this->do_omeas_i(i_conf);
       }
     }
-    (*this).os_nlive.close();
   }
 };

@@ -244,7 +244,7 @@ public:
 #else
     threads = 1;
 #endif
-    std::cout << "threads " << threads << std::endl;
+    // std::cout << "threads " << threads << std::endl;
   }
 
   /**

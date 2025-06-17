@@ -1,11 +1,54 @@
-# Input file example for the u1 runs
+# =======================================
+# Pseudo input file for the main programs
+# =======================================
+#
+# This file is a pseudo input file for the main programs of the library.
+# By reading it you should be able to create an input file that suits your needs
+#
+# For advanced features you should look at the code: see the `parameters*` include headers. 
+# Each YAML branch corresponds to a `struct` whose attributes are documented in the code. 
+# Hint: search for keywords appearing in the trees of this YAML file.
+# ----------
 
+# Geometry of the lattice. The geometry section is mandatory.
+# The number of dimensions is given by 2 <= ndims <= 4.
+# The sizes can be given as either:
+# - T, X, Y, Z
+# - T, L (this assumes that the lattice is of size T \times L^3)
 geometry:
   L : 8
   T : 16
   ndims : 3
 
+# HMC integrator
+integrator:
+  name: leapfrog
+  N_rev: 0
+  n_steps: 50
+  tau: 1.0
+  exponent: 0
 
+# Contributions to the action: YM gauge action, fermionic action, etc.
+# In order to not include a monomial, simply remove it from the input file.
+monomials:
+  gauge:
+    beta: 2.2
+    anisotropic:
+      xi: 1.0
+  staggered_det_DDdag:
+    solver: "CG"
+    tolerance_cg: 1e-10
+    solver_verbosity: 0
+    seed_pf: 123456
+
+# ==========
+# ALGORITHMS
+# ==========
+# No more than one algorithm can be used per run. If all of them are switched off, offline measurements will be performed.
+# How to switch one off: remove it from the input file or keep it with the flag `do_mcmc` set to `false`
+# How to switch them on: set `do_mcmc` to `true` and set the other parameters as needed.
+
+# Nested Sampling algorithm
 nested_sampling:
   do_mcmc: true
   continue_run: false
@@ -17,8 +60,8 @@ nested_sampling:
   delta: 1.0
   seed: 1
   conf_dir: ./confs
-##
 
+# Metropolis algorithm
 metropolis:
   do_mcmc: true
   conf_dir: "./confs/"
@@ -29,6 +72,7 @@ metropolis:
   restart_condition: hot
   lenghty_conf_name: false  
 
+# Hybrid Monte Carlo (HMC) algorithm
 hmc:
   do_mcmc: false
   seed: 93746
@@ -39,19 +83,24 @@ hmc:
   lenghty_conf_name: false
   conf_dir: "./confs/"
 
-integrator:
-  name: leapfrog
-  N_rev: 0
-  n_steps: 50
-  tau: 1.0
-  exponent: 0
 
-monomials:
-  gauge:
-    beta: 2.2
-    anisotropic:
-      xi: 1.0
+# heatbath-overrelaxation algorithm
+heatbath_overrelaxation:
+  do_mcmc: true
+  n_meas: 10
+  N_save: 100
+  n_heatbath: 1
+  n_overrelax: 1
+  seed: 12345
+  conf_dir: "./confs/"
+  conf_basename: "conf"
+  lenghty_conf_name: false
+  restart_condition: cold
 
+# ==========
+# MEASUREMENTS
+# ==========
+# online (or offline) measurements. They can run independently of the algorithms.
 omeas:
   res_dir: ./omeas/
   verbosity: 1

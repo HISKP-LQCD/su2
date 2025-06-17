@@ -14,6 +14,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 namespace global_parameters {
 
@@ -48,7 +49,7 @@ namespace global_parameters {
   };
 
   struct measure_polyakov {
-    bool measure_it = false; // whether to measure the plaquette or not
+    bool measure_it = false; // whether to measure the Polyakov loop or not
 
     std::string subdir = ""; // subdirectory of the online measurements directory
   };

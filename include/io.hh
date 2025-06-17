@@ -101,6 +101,88 @@ namespace io {
     return;
   }
 
+  // read the single value stored in the file
+  template<class T>
+  T read_single_value(const std::string &file) {
+    T x;
+    std::ifstream in(file);
+    in >> x; // Read the number from the file
+    in.close(); // Close the input file
+    return x;
+  }
+
+  // write a single number in the file
+  template<class T>
+  void write_single_value(const T &x, const std::string &file) {
+    std::ofstream os(file);
+    os << x;
+    os.close();
+    return;
+  }
+
+
+  // read the last line of a file
+  std::string read_last_line(std::string &path) {
+    std::ifstream in;
+    in.open(path);
+
+    std::string line;
+
+    // Go to the end of the file
+    in.seekg(0, std::ios_base::end);
+
+    // Keep moving backward until we find the start of the last line
+    int length = in.tellg();
+    for (int i = length - 2; i > 0; i--) {
+      in.seekg(i, std::ios_base::beg);
+      char c;
+      in.get(c);
+      if (c == '\n') {
+        // We found the newline character that precedes the last line
+        in.seekg(i + 1, std::ios_base::beg);
+        std::getline(in, line);
+        return line;
+      }
+    }
+
+    // If we didn't find any newlines, return the entire file contents
+    in.seekg(0, std::ios_base::beg);
+    std::getline(in, line);
+
+    in.close();
+    return line;
+  }
+
+  template <class T>
+  std::vector<T> string_to_vector(const std::string &s, const std::string &delim = " ") {
+    std::vector<T> v;
+    std::istringstream ss(s);
+    std::string token;
+    while (std::getline(ss, token, delim[0])) {
+      if (!token.empty()) {
+        v.push_back(boost::lexical_cast<T>(token));
+      }
+    }
+    return v;
+  }
+
+  template <class T>
+  void vector_to_stream(const std::vector<T> &v,
+                        std::ofstream &os,
+                        const std::string &delim = " ") {
+    size_t n = v.size();
+    for (size_t i = 0; i < n; i++) {
+      os << v[i];
+      if (i < (n - 1)) {
+        os << delim;
+      }
+    }
+    os << std::endl;
+    os.flush();
+
+    return;
+  }
+
   namespace measure {
 
     /**

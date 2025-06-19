@@ -45,19 +45,17 @@ configure_file(
   
   # openMP threads parallelization
   find_package(OpenMP)
-  
-  
+
   # setting C and CXX compilation flags
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS} -D_USE_OMP_")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS} -D_USE_OMP_")
   
-  find_package(yaml-cpp)
-  include_directories(${YAML_CPP_INCLUDE_DIR} ${YAML_CPP_INCLUDE_DIR}/yaml-cpp/)
+  find_package(yaml-cpp REQUIRED)
+  find_package(xtl REQUIRED)
 
-  find_package(xtl)
   include_directories(${xtl_INCLUDE_DIRS} ${xtl_INCLUDE_DIRS}/xtl/)
 
-  find_package(xtensor)
+  find_package(xtensor REQUIRED)
   include_directories(${xtensor_INCLUDE_DIRS} ${xtensor_INCLUDE_DIRS}/xtensor/)
 
 
@@ -69,7 +67,6 @@ configure_file(
   include_directories(${EIGEN3_INCLUDE_DIR})
 
 
-
 # We could just have two `add_executable` blocks listing almost all source
 # files. However, CMake would then compile the source files twice, once for
 # each executable. The rationale is that different flags can be used for
@@ -78,12 +75,15 @@ configure_file(
 # here.
 set(${CMAKE_INSTALL_LIBDIR} ${CMAKE_INSTALL_PREFIX}/lib/)
 set(src_dir ./src/)
-add_library(${PROJECT_NAME}
-    ${src_dir}/exp_gauge.cc
-    ${src_dir}/print_program_options.cc
-    ${src_dir}/parse_commandline.cc
-    ${src_dir}/parse_input_file.cc
+
+set(cc_libs
+  ${src_dir}/exp_gauge.cc
+  ${src_dir}/print_program_options.cc
+  ${src_dir}/parse_commandline.cc
+  ${src_dir}/parse_input_file.cc
 )
+add_library(${PROJECT_NAME} STATIC ${cc_libs})
+target_link_libraries(${PROJECT_NAME} PUBLIC yaml-cpp)
 
 # Create the main program.
 find_package(Boost COMPONENTS program_options filesystem system)
@@ -115,7 +115,7 @@ foreach(target ${test_progs})
 endforeach(target)
 
 
-target_link_libraries(test-yaml.exe ${YAML_CPP_LIBRARIES})
+target_link_libraries(test-yaml.exe yaml-cpp)
 
 foreach(target ${test_progs_fullname})
   if(${HIGHFIVE_FORMAT})
@@ -127,8 +127,7 @@ endforeach(target)
 target_link_directories(${CMAKE_PROJECT_NAME} PUBLIC ${YAML_CPP_LIBRARY_DIR})
 
 foreach(target u1-main su2-main su3-main su2-kramers test-groups scaling try ${test_progs_fullname})
-  target_link_libraries(${target} su2 ${YAML_CPP_LIBRARIES})
-  target_link_libraries(${target} su2 ${YAML_CPP_LIBRARIES})
+  target_link_libraries(${target} su2 yaml-cpp)
 
   if(Boost_FOUND)
     target_link_libraries(${target} su2 ${Boost_LIBRARIES})

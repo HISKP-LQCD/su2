@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-#include "yaml.h"
+#include "yaml-cpp/yaml.h"
 
 void find_all(const YAML::Node &node) {
   for (YAML::const_iterator it = node.begin(); it != node.end(); ++it) {

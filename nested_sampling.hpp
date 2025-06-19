@@ -161,7 +161,7 @@ public:
   void do_omeas_i(const size_t &i) {
     namespace fsys = boost::filesystem;
 
-    gaugeconfig<Group> U_i = (*this).U;
+    gaugeconfig<Group>& U_i = (*this).U;
 
     if (!(*this).sparams.do_mcmc) { // doing only offline measurements
       const std::string path_i = get_path_conf(i);
@@ -262,11 +262,11 @@ public:
       init_nlive(n_live, seed);
     }
 
-    if (do_omeas && !(*this).sparams.continue_run) {
-      for (size_t j = 0; j < n_live; j++) {
-        this->do_omeas_i((*this).indices[j]);
-      }
-    }
+    // if (do_omeas && !(*this).sparams.continue_run) {
+    //   for (size_t j = 0; j < n_live; j++) {
+    //     this->do_omeas_i((*this).indices[j]);
+    //   }
+    // }
 
     // distribution of indices after the removal of one of the n_live points
     // ACHTUNG! right bound is included (it is the c++ syntax)
@@ -294,16 +294,11 @@ public:
       Pi.erase(Pi.begin() + i_dead);
       (*this).indices.erase((*this).indices.begin() + i_dead);
 
-      // // Print indices and abort
-      // std::cout << "i_dead_conf: " << i_dead_conf << std::endl;
-      // std::cout << "i_last_conf: " << i_last_conf << std::endl;
-      // std::cout << "i_conf: " << i_conf << std::endl;
-      // std::cout << "Current indices: ";
-      // for (const auto &idx : (*this).indices) {
-      //   std::cout << idx << " ";
-      // }
-      // std::cout << std::endl;
-      // std::abort();
+      if (do_omeas) {
+        this->do_omeas_i(i_dead);
+      }
+      std::cout << "ciao " << std::endl;
+      std::abort();
 
       if ((*this).sparams.delete_dead_confs) {
         // removing dead configuration
@@ -338,13 +333,6 @@ public:
       io::write_single_value<int>(i_conf, conf_counter_file);
 
       this->save_nlive_status(); // saving new configuration
-      // this->write_to_counter(i_last_conf + i, conf_counter_path);
-      // i_step++; // incrementing the step counter
-      // this->write_to_counter(i_step, step_counter_path);
-
-      if (do_omeas) {
-        this->do_omeas_i(i_conf);
-      }
     }
 
     (*this).os_nlive_conf.close();

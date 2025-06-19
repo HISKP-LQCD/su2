@@ -16,7 +16,7 @@
 #include <string>
 
 #include "parameters.hh"
-#include "yaml.h"
+#include "yaml-cpp/yaml.h"
 
 /**
  * @brief namespace of yaml parsing functions

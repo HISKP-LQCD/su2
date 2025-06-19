@@ -158,6 +158,20 @@ public:
     return (*this).conf_path_basename + "." + std::to_string(i);
   }
 
+  void clear_omeas() {
+    size_t N_overrelaxation = (*this).sparams.n_overrelaxation;
+    for (size_t i_orlx = 0; i_orlx <= N_overrelaxation; i_orlx++) {
+      // clearing output files for the Polyakov loop
+      std::ostringstream oss;
+      oss << (*this).omeas.res_dir + "/" + (*this).omeas.polyakov.subdir << "/";
+      std::string out_dir = oss.str();
+      std::string output_polyakov =
+        out_dir + "/Ploops-orlx_" + boost::lexical_cast<std::string>(i_orlx);
+      io::clear_file(output_polyakov);
+    }
+    return;
+  }
+
   void do_omeas_i(const size_t &i) {
     namespace fsys = boost::filesystem;
 
@@ -194,9 +208,8 @@ public:
 
         overrelaxation(U_i, (*this).engines, 1.0, false);
 
-        std::string output_polyakov = out_dir + "/Ploops." +
-                                      boost::lexical_cast<std::string>(i) + "-" +
-                                      boost::lexical_cast<std::string>(i_orlx);
+        std::string output_polyakov =
+          out_dir + "/Ploops-orlx_" + boost::lexical_cast<std::string>(i_orlx);
 
         std::ofstream ofs(output_polyakov, std::ios::app);
         omeasurements::meas_polyakov(U_i, ofs);
@@ -260,7 +273,8 @@ public:
       read_nlive_conf();
     } else {
       std::cout << "## Initializing n_live points\n";
-      init_nlive(n_live, seed);
+      this->init_nlive(n_live, seed);
+      this->clear_omeas();
     }
 
     // distribution of indices after the removal of one of the n_live points
@@ -290,7 +304,11 @@ public:
       (*this).indices.erase((*this).indices.begin() + i_dead);
 
       if (do_omeas) {
+        if (i == 0 and (*this).sparams.continue_run) {
+          U_i.load(get_path_conf(i_dead_conf)); // configuration not already in memory
+        }
         this->do_omeas_i(i_dead_conf);
+        std::cout << i_dead_conf << "ciao \n";
       }
 
       if ((*this).sparams.delete_dead_confs) {

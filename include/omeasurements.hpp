@@ -138,7 +138,9 @@ namespace omeasurements {
           const Complex Ploop = get_polyakov_loop(U, x_i);
 
           ofs << Ploop;
-          // std::cout << Ploop;
+          if (i_g == 0) {
+            std::cout << Ploop;
+          }
 
           i_g++;
           if (i_g < N_spatial) {

@@ -101,6 +101,12 @@ namespace io {
     return;
   }
 
+  void clear_file(const std::string& path) {
+    std::ofstream ofs(path, std::ofstream::out | std::ofstream::trunc);
+    ofs.close();
+    return;
+  }
+
   // read the single value stored in the file
   template<class T>
   T read_single_value(const std::string &file) {

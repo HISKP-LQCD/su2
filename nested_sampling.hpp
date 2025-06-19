@@ -161,7 +161,7 @@ public:
   void do_omeas_i(const size_t &i) {
     namespace fsys = boost::filesystem;
 
-    gaugeconfig<Group>& U_i = (*this).U;
+    gaugeconfig<Group> &U_i = (*this).U;
 
     if (!(*this).sparams.do_mcmc) { // doing only offline measurements
       const std::string path_i = get_path_conf(i);
@@ -194,10 +194,14 @@ public:
 
         overrelaxation(U_i, (*this).engines, 1.0, false);
 
-        std::string output_data_file = out_dir + "/Ploops." +
-                                       boost::lexical_cast<std::string>(i) + "-" +
-                                       boost::lexical_cast<std::string>(i_orlx);
-        omeasurements::meas_polyakov(U_i, output_data_file);
+        std::string output_polyakov = out_dir + "/Ploops." +
+                                      boost::lexical_cast<std::string>(i) + "-" +
+                                      boost::lexical_cast<std::string>(i_orlx);
+
+        std::ofstream ofs(output_polyakov, std::ios::app);
+        omeasurements::meas_polyakov(U_i, ofs);
+        ofs.close();
+
         i_orlx++;
       }
     }
@@ -235,8 +239,7 @@ public:
 
     path_nlive_conf = (*this).sparams.conf_dir + "/nlive_conf.dat";
     path_nlive_idx = (*this).sparams.conf_dir + "/nlive_idx.dat";
-    // conf_counter_path = (*this).sparams.conf_dir + "/conf_counter.txt";
-    // step_counter_path = (*this).sparams.conf_dir + "/step_counter.txt";
+    this->open_output_data(); // opening output files
 
     bool do_omeas = (*this).sparams.do_omeas;
     bool do_mcmc = nd["nested_sampling"]["do_mcmc"].as<bool>();
@@ -244,8 +247,6 @@ public:
       this->offline_measurements();
       return; // do not run the algorithm, just measure observables
     }
-
-    this->open_output_data(); // opening output files
 
     const size_t n_live = (*this).sparams.n_live;
     const size_t n_samples = (*this).sparams.n_samples;
@@ -261,12 +262,6 @@ public:
       std::cout << "## Initializing n_live points\n";
       init_nlive(n_live, seed);
     }
-
-    // if (do_omeas && !(*this).sparams.continue_run) {
-    //   for (size_t j = 0; j < n_live; j++) {
-    //     this->do_omeas_i((*this).indices[j]);
-    //   }
-    // }
 
     // distribution of indices after the removal of one of the n_live points
     // ACHTUNG! right bound is included (it is the c++ syntax)
@@ -295,10 +290,8 @@ public:
       (*this).indices.erase((*this).indices.begin() + i_dead);
 
       if (do_omeas) {
-        this->do_omeas_i(i_dead);
+        this->do_omeas_i(i_dead_conf);
       }
-      std::cout << "ciao " << std::endl;
-      std::abort();
 
       if ((*this).sparams.delete_dead_confs) {
         // removing dead configuration

@@ -128,19 +128,27 @@ namespace omeasurements {
 
   // measure Polyakov loops
   template <class Group>
-  void meas_polyakov(const gaugeconfig<Group> &U, const std::string &output_file) {
-    std::ofstream ofs(output_file, std::ios::out);
-
+  void meas_polyakov(const gaugeconfig<Group> &U, std::ofstream &ofs) {
+    int i_g = 0;
+    int N_spatial = U.getVolume() / U.getLt(); // number of spatial sites of the lattice
     for (size_t x1 = 0; x1 < U.getLx(); x1++) {
       for (size_t x2 = 0; x2 < U.getLy(); x2++) {
         for (size_t x3 = 0; x3 < U.getLz(); x3++) {
           std::vector<size_t> x_i = {x1, x2, x3};
           const Complex Ploop = get_polyakov_loop(U, x_i);
-          ofs << x1 << " " << x2 << " " << x3 << " " << Ploop << std::endl;
+
+          ofs << Ploop;
+          // std::cout << Ploop;
+
+          i_g++;
+          if (i_g < N_spatial) {
+            ofs << " ";
+            // std::cout << " ";
+          }
         }
       }
     }
-    ofs.close();
+    ofs << std::endl;
 
     return;
   }

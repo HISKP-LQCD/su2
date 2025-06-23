@@ -309,7 +309,6 @@ public:
           U_i.load(get_path_conf(i_dead_conf)); // configuration not already in memory
         }
         this->do_omeas_i(i_dead_conf);
-        std::cout << i_dead_conf << "ciao \n";
       }
 
       if ((*this).sparams.delete_dead_confs) {

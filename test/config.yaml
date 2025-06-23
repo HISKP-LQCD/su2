@@ -1,6 +1,6 @@
 p1: 3.4
 
-p2: "ciao"
+p2: "a string of text"
 
 n1:
   x: -3.1

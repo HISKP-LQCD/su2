@@ -212,6 +212,7 @@ public:
           out_dir + "/Ploops-orlx_" + boost::lexical_cast<std::string>(i_orlx);
 
         std::ofstream ofs(output_polyakov, std::ios::app);
+        ofs << std::scientific << std::setprecision(16);
         omeasurements::meas_polyakov(U_i, ofs);
         ofs.close();
 

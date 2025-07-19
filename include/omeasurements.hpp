@@ -139,7 +139,7 @@ namespace omeasurements {
       }
     }
 
-    Ploop_vol_avg = Ploop_vol_avg / double(U.getVolume());
+    Ploop_vol_avg = Ploop_vol_avg / double(N_spatial);
     ofs << Ploop_vol_avg.real() << " " << Ploop_vol_avg.imag() << std::endl;
 
     return;

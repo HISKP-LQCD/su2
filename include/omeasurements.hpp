@@ -121,9 +121,7 @@ namespace omeasurements {
       x[0] = t;
       U0 = U0 * U(x, 0);
     }
-    Complex res = trace(U0);
-
-    return res;
+    return trace(U0);
   }
 
   // measure Polyakov loops
@@ -131,26 +129,18 @@ namespace omeasurements {
   void meas_polyakov(const gaugeconfig<Group> &U, std::ofstream &ofs) {
     int i_g = 0;
     int N_spatial = U.getVolume() / U.getLt(); // number of spatial sites of the lattice
+    Complex Ploop_vol_avg = 0.0;
     for (size_t x1 = 0; x1 < U.getLx(); x1++) {
       for (size_t x2 = 0; x2 < U.getLy(); x2++) {
         for (size_t x3 = 0; x3 < U.getLz(); x3++) {
-          std::vector<size_t> x_i = {x1, x2, x3};
-          const Complex Ploop = get_polyakov_loop(U, x_i);
-
-          ofs << Ploop;
-          if (i_g == 0) {
-            std::cout << Ploop;
-          }
-
-          i_g++;
-          if (i_g < N_spatial) {
-            ofs << " ";
-            // std::cout << " ";
-          }
+          const std::vector<size_t> x_i = {x1, x2, x3};
+          Ploop_vol_avg += get_polyakov_loop(U, x_i);
         }
       }
     }
-    ofs << std::endl;
+
+    Ploop_vol_avg = Ploop_vol_avg / double(U.getVolume());
+    ofs << Ploop_vol_avg.real() << " " << Ploop_vol_avg.imag() << std::endl;
 
     return;
   }

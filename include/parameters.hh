@@ -286,10 +286,13 @@ namespace global_parameters {
 
     bool do_omeas = false; // true when omeasurements are done
 
+    // number of overrelaxation steps during the configuration sampling
+    // NOTE: the overrelaxation steps allow to a faster decorrelation
+    size_t N_overrelaxation_run = 0; 
     // number of overrelaxation steps when measuring over each configuration
     // NOTE: each configuration corresponds to an isocontour of the action value in phase space
     // overrelaxation steps are gauge transformations that make us move along the isocontour
-    size_t n_overrelaxation = 0; 
+    size_t N_overrelaxation_measure = 0; 
     measure omeas; // struct for online measurements
   };
 

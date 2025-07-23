@@ -159,7 +159,7 @@ public:
   }
 
   void clear_omeas() {
-    size_t N_overrelaxation = (*this).sparams.n_overrelaxation;
+    size_t N_overrelaxation = (*this).sparams.N_overrelaxation_measure;
     for (size_t i_orlx = 0; i_orlx <= N_overrelaxation; i_orlx++) {
       // clearing output files for the Polyakov loop
       std::ostringstream oss;
@@ -198,7 +198,7 @@ public:
       fsys::create_directories(fsys::absolute(out_dir)); // creating directory
 
       size_t i_orlx = 0;
-      size_t N_overrelaxation = (*this).sparams.n_overrelaxation;
+      size_t N_overrelaxation = (*this).sparams.N_overrelaxation_measure;
       const int n_threads = (*this).threads;
       while (i_orlx < N_overrelaxation + 1) {
         // initializing the engines
@@ -333,6 +333,20 @@ public:
       // applying a minimum of "n_sweeps_tot" sweeps to this configuration
       // to draw another one sampled from the constrained prior
       uniform_sweeps(U_i, Prand, Pmin, engine, delta, n_sweeps_tot);
+      // applying N_overrelaxation steps to improve the sampling
+     const  size_t N_overrelaxation = (*this).sparams.N_overrelaxation_run;
+      for (size_t i_orlx = 0; i_orlx < N_overrelaxation; i_orlx++)
+      {
+        for (size_t i_engine = 0; i_engine < n_threads; i_engine++) {
+          (*this).engines[i_engine].seed(i * N_overrelaxation + i_orlx);
+        }
+        overrelaxation(U_i, (*this).engines, 1.0, false);
+      }
+      
+
+
+
+
       const double P_new = omeasurements::get_retr_plaquette_density(U_i, "periodic");
 
       // saving the new configuration of n_live points

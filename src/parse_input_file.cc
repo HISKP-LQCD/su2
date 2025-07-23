@@ -421,7 +421,8 @@ namespace input_file_parsing {
     in.read_verb<size_t>(mcparams.n_samples, {"n_samples"});
     in.read_opt_verb<size_t>(mcparams.n_sweeps, {"n_sweeps"});
     in.read_opt_verb<double>(mcparams.delta, {"delta"});
-    in.read_opt_verb<size_t>(mcparams.n_overrelaxation, {"n_overrelaxation"});
+    in.read_opt_verb<size_t>(mcparams.N_overrelaxation_run, {"N_overrelaxation_run"});
+    in.read_opt_verb<size_t>(mcparams.N_overrelaxation_measure, {"N_overrelaxation_measure"});
 
     in.read_opt_verb<std::string>(mcparams.conf_dir, {"conf_dir"});
     in.read_opt_verb<std::string>(mcparams.conf_basename, {"conf_basename"});

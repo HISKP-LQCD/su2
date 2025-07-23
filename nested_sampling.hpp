@@ -48,11 +48,17 @@ private:
   std::ofstream os_nlive_idx; // configuration indices of the n_live points
   std::string path_nlive_idx; // path of os_nlive_idx
 
+  std::ofstream os_sampling_info; // information about sampling: delta, acc. rate
+  std::string path_sampling_info; // path of os_sampling_info
+
   int i_last_conf = 0; // index of the last configuration saved
   int i_step = 0; // index of the last NS step
   int i_dead = 0; // index of the dead point
   std::string conf_counter_path;
   std::string step_counter_path;
+
+  bool adaptive_delta = false; // flag for adaptive delta in uniform_sweeps
+  double delta = 1.0; // delta parameter for uniform_sweeps
 
 public:
   nested_sampling_algo() { (*this).algo_name = "nested_sampling"; }
@@ -152,6 +158,8 @@ public:
 
     // list of n_live configuration indices
     (*this).os_nlive_idx.open(path_nlive_idx, write_mode);
+
+    (*this).os_sampling_info.open(path_sampling_info, write_mode);
   }
 
   std::string get_path_conf(const int &i) const {
@@ -253,6 +261,7 @@ public:
 
     path_nlive_conf = (*this).sparams.conf_dir + "/nlive_conf.dat";
     path_nlive_idx = (*this).sparams.conf_dir + "/nlive_idx.dat";
+    path_sampling_info = (*this).sparams.conf_dir + "/sampling_info.dat";
     this->open_output_data(); // opening output files
 
     bool do_omeas = (*this).sparams.do_omeas;
@@ -265,7 +274,17 @@ public:
     const size_t n_live = (*this).sparams.n_live;
     const size_t n_samples = (*this).sparams.n_samples;
     const size_t seed = (*this).sparams.seed;
-    const double delta = (*this).sparams.delta;
+
+    const std::string delta_str = (*this).sparams.delta;
+    if (delta_str == "adaptive") {
+      std::cout << "## Using adaptive delta for uniform_sweeps\n";
+      (*this).adaptive_delta = true; // set adaptive delta flag
+      (*this).delta = 1.0;
+    } else {
+      std::cout << "## Using fixed delta = " << delta_str << " for uniform_sweeps\n";
+      (*this).adaptive_delta = false; // set adaptive delta flag
+      (*this).delta = boost::lexical_cast<double>(delta_str);
+    }
     // number of sweeps per link, i.e. a multiple of the number of links
     const size_t n_sweeps_tot = ((*this).sparams.n_sweeps) * (*this).U.getSize();
 
@@ -332,20 +351,27 @@ public:
 
       // applying a minimum of "n_sweeps_tot" sweeps to this configuration
       // to draw another one sampled from the constrained prior
-      uniform_sweeps(U_i, Prand, Pmin, engine, delta, n_sweeps_tot);
+      double acc_rate =
+        uniform_sweeps(U_i, Prand, Pmin, engine, (*this).delta, n_sweeps_tot);
+      if ((*this).adaptive_delta) {
+        os_sampling_info << std::scientific << std::setprecision(16);
+        double rej_rate = 1.0 - acc_rate; // rejection rate
+        os_sampling_info << (*this).delta << " " << acc_rate << std::endl;
+        // Empirical refining of step-size to let acceptance ratio converge around 50%
+        if ((acc_rate > rej_rate) && (*this).delta < 1.0) {
+          (*this).delta *= (0.5 + acc_rate);
+        } else if (acc_rate < rej_rate) {
+          (*this).delta *= (0.5 + acc_rate);
+        }
+      }
       // applying N_overrelaxation steps to improve the sampling
-     const  size_t N_overrelaxation = (*this).sparams.N_overrelaxation_run;
-      for (size_t i_orlx = 0; i_orlx < N_overrelaxation; i_orlx++)
-      {
+      const size_t N_overrelaxation = (*this).sparams.N_overrelaxation_run;
+      for (size_t i_orlx = 0; i_orlx < N_overrelaxation; i_orlx++) {
         for (size_t i_engine = 0; i_engine < n_threads; i_engine++) {
           (*this).engines[i_engine].seed(i * N_overrelaxation + i_orlx);
         }
         overrelaxation(U_i, (*this).engines, 1.0, false);
       }
-      
-
-
-
 
       const double P_new = omeasurements::get_retr_plaquette_density(U_i, "periodic");
 

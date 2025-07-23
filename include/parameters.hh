@@ -268,8 +268,11 @@ namespace global_parameters {
     size_t seed = 8723659; // PRNG seed
     // std::string restart_condition = "cold"; // restart condition: hot, cold, read
     size_t n_sweeps = 100; // number of sweeps of each internal update
-    double delta = 0.1; // parameter for random gauge conf. generation
-
+    
+    // delta-parameter for random gauge conf. generation
+    // the user can also specify a floating point number in the input file, 
+    // the nested_sampling code handles it
+    std::string delta = "adaptive"; 
 
     std::string conf_dir = "./"; // directory where gauge configurations are stored
     std::string conf_basename = "conf"; // root of the output files names

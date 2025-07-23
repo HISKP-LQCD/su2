@@ -21,7 +21,7 @@
 
 // apply n_sweeps sweeps drawing elements uniformly with the constraint of P > Pmin
 template <class URNG, class Group>
-void uniform_sweeps(gaugeconfig<Group> &U,
+double uniform_sweeps(gaugeconfig<Group> &U,
                     const double &P0,
                     const double &Pmin,
                     URNG engine,
@@ -36,6 +36,7 @@ void uniform_sweeps(gaugeconfig<Group> &U,
   double P_in = P0; // initial value of plaquette average
 
   bool changed = false; // true when configuration has changed
+  int accepted = 0; // number of accepted sweeps
   size_t i_sweep = 0;
   while ((!changed) || (changed && (i_sweep < n_sweeps))) {
     for (size_t x0 = 0; x0 < U.getLt(); x0++) {
@@ -54,6 +55,7 @@ void uniform_sweeps(gaugeconfig<Group> &U,
                 changed = true;
                 U(x, mu) = U(x, mu) * R;
                 P_in = P_new;
+                ++accepted; // increment the number of accepted sweeps
               }
               ++i_sweep;
             }
@@ -62,5 +64,7 @@ void uniform_sweeps(gaugeconfig<Group> &U,
       }
     }
   }
-  return;
+
+  const double acc_rate = accepted / double(i_sweep); // acceptance rate
+  return acc_rate;
 }

@@ -1,0 +1,166 @@
+# if you run `u1-main` with this input file, i.e. by calling `u1-main -f main.input`, 
+# you should get an output similar to what reported at the end of this document
+
+geometry:
+  X: 3
+  Y: 3
+  Z: 1
+  T: 3
+  ndims: 3
+
+monomials:
+  gauge:
+    beta: 1.650000
+    anisotropic:
+      xi: 1
+
+metropolis:
+  do_mcmc: true
+  conf_dir: ./conf
+  conf_basename: config_u1
+  n_meas: 30
+  N_save: 10
+  delta: 0.606061
+  restart_condition: hot
+  lenghty_conf_name: true
+
+omeas:
+  offline:
+    conf_dir: ./conf
+    lenghty_conf_name: true
+
+  res_dir: .
+  icounter: 0
+  n_meas: 30
+  nstep: 10
+  potential:
+    potentialplanar: false 
+    potentialnonplanar: true
+    sizeWloops: 0.5
+    n_apesmear: 0
+    alpha: 1
+    append: true
+
+
+
+# ## Output: 
+# ## Parsing input file: test_input
+# ## metropolis:do_mcmc=1
+# ## Metropolis Algorithm for U(1) gauge theory
+# ## GIT branch su3 on commit 0bcdb4b
+# ## Cleaned yaml node:
+# geometry:
+#   X: 3
+#   Y: 3
+#   Z: 1
+#   T: 3
+#   ndims: 3
+# monomials:
+#   gauge:
+#     beta: 1.650000
+#     anisotropic:
+#       xi: 1
+# metropolis:
+#   do_mcmc: true
+#   conf_dir: ./conf
+#   conf_basename: config_u1
+#   n_meas: 30
+#   N_save: 10
+#   delta: 0.606061
+#   restart_condition: hot
+#   lenghty_conf_name: true
+# omeas:
+#   offline:
+#     conf_dir: ./conf
+#     lenghty_conf_name: true
+#   res_dir: .
+#   icounter: 0
+#   n_meas: 30
+#   nstep: 10
+#   potential:
+#     potentialplanar: false
+#     potentialnonplanar: true
+#     sizeWloops: 0.5
+#     n_apesmear: 0
+#     alpha: 1
+#     append: true
+# ## geometry:X=3
+# ## geometry:Y=3
+# ## geometry:Z=1
+# ## geometry:T=3
+# ## geometry:ndims=3
+# ## geometry:bc=periodic (default)
+# ## Warning: ndims==3 --> flattening the 'z' direction
+# ## monomials:gauge:beta=1.65
+# ## monomials:gauge:anisotropic:xi=1
+# ## metropolis:do_mcmc=1
+# ## metropolis:n_meas=30
+# ## metropolis:N_save=10
+# ## metropolis:seed=13526463 (default)
+# ## metropolis:conf_dir=./conf
+# ## metropolis:conf_basename=config_u1
+# ## metropolis:lenghty_conf_name=1
+# ## metropolis:beta_str_width=6 (default)
+# ## metropolis:restart_condition=hot
+# ## metropolis:delta=0.606061
+# ## metropolis:N_hit=10 (default)
+# ## omeas:offline:conf_dir=./conf
+# ## omeas:offline:conf_basename=conf (default)
+# ## omeas:offline:lenghty_conf_name=1
+# ## omeas:offline:beta_str_width=6 (default)
+# ## omeas:res_dir=.
+# ## omeas:verbosity=0 (default)
+# ## omeas:restart=0 (default)
+# ## omeas:icounter=0
+# ## omeas:nstep=10
+# ## omeas:n_meas=30
+# ## omeas:Wloop=0 (default)
+# ## omeas:potential:potentialplanar=0
+# ## omeas:potential:potentialnonplanar=1
+# ## omeas:potential:append=1
+# ## omeas:potential:smear_spatial_only=0 (default)
+# ## omeas:potential:smear_temporal_only=0 (default)
+# ## omeas:potential:n_apesmear=0
+# ## omeas:potential:alpha=1
+# ## omeas:potential:sizeWloops=0.5
+# ## Normalization factor: A = 2/(d*(d-1)*N_lat*N_c) = 1.234567901234568e-02
+# ## Acceptance rate parcentage: rho = rate/(i+1)
+# ## Initial Plaquette P: -4.645804525294518e-02
+# ## Plaquette after rnd trafo: -4.645804525294527e-02
+# For parallel computing an even number of points in T is needed!
+# Continuing with one thread.
+# threads 1
+# i E Q E_ss Q_ss 
+# 0 5.634413507845668e-01 -0.000000000000000e+00 5.095227966407124e-01 -0.000000000000000e+00
+# 1 4.317778285178042e-01 -0.000000000000000e+00 4.741622814925510e-01 -0.000000000000000e+00
+# 2 2.692167167956377e-01 -0.000000000000000e+00 2.394504601235053e-01 -0.000000000000000e+00
+# 3 2.892092209766479e-01 -0.000000000000000e+00 2.544812333279960e-01 -0.000000000000000e+00
+# 4 3.262644704380747e-01 -0.000000000000000e+00 3.163562844024106e-01 -0.000000000000000e+00
+# 5 3.701705715341399e-01 -0.000000000000000e+00 4.252521891390114e-01 -0.000000000000000e+00
+# 6 3.364305696182703e-01 -0.000000000000000e+00 2.334668245883491e-01 -0.000000000000000e+00
+# 7 3.055675990700683e-01 -0.000000000000000e+00 4.091621336192662e-01 -0.000000000000000e+00
+# 8 3.749832346152537e-01 -0.000000000000000e+00 4.231687605208316e-01 -0.000000000000000e+00
+# 9 3.242367326882052e-01 -0.000000000000000e+00 3.543598603653535e-01 -0.000000000000000e+00
+# 10 2.735816262509211e-01 -0.000000000000000e+00 2.678576097196704e-01 -0.000000000000000e+00
+# ## measure nonplanar potential
+# 11 2.414133808424481e-01 -0.000000000000000e+00 2.316476100018637e-01 -0.000000000000000e+00
+# 12 2.630740177684026e-01 -0.000000000000000e+00 2.350937928972758e-01 -0.000000000000000e+00
+# 13 3.335204579870082e-01 -0.000000000000000e+00 3.771442575300962e-01 -0.000000000000000e+00
+# 14 3.286561979797196e-01 -0.000000000000000e+00 3.848128784825318e-01 -0.000000000000000e+00
+# 15 3.633935580636156e-01 -0.000000000000000e+00 4.154729341898775e-01 -0.000000000000000e+00
+# 16 2.744435152746401e-01 -0.000000000000000e+00 1.926031509010100e-01 -0.000000000000000e+00
+# 17 2.902367833317264e-01 -0.000000000000000e+00 3.381360943149745e-01 -0.000000000000000e+00
+# 18 2.766818791577389e-01 -0.000000000000000e+00 2.749257609056434e-01 -0.000000000000000e+00
+# 19 3.224475765401649e-01 -0.000000000000000e+00 2.748668576774217e-01 -0.000000000000000e+00
+# 20 3.411274403518730e-01 -0.000000000000000e+00 2.823556364096869e-01 -0.000000000000000e+00
+# ## measure nonplanar potential
+# 21 3.471197918982440e-01 -0.000000000000000e+00 3.513126059121228e-01 -0.000000000000000e+00
+# 22 2.320484491609613e-01 -0.000000000000000e+00 2.300934876521937e-01 -0.000000000000000e+00
+# 23 2.973984431216110e-01 -0.000000000000000e+00 3.229125990795017e-01 -0.000000000000000e+00
+# 24 2.929167096548871e-01 -0.000000000000000e+00 2.660971263172641e-01 -0.000000000000000e+00
+# 25 2.713134636480585e-01 -0.000000000000000e+00 2.091761233686701e-01 -0.000000000000000e+00
+# 26 3.111259984348184e-01 -0.000000000000000e+00 3.285367711799684e-01 -0.000000000000000e+00
+# 27 2.478830098771290e-01 -0.000000000000000e+00 2.377255505513586e-01 -0.000000000000000e+00
+# 28 3.296251102986459e-01 -0.000000000000000e+00 3.552221545937449e-01 -0.000000000000000e+00
+# 29 3.216463500284021e-01 -0.000000000000000e+00 3.194755164466339e-01 -0.000000000000000e+00
+# ## Acceptance rate 3.659670781893002e-01 temporal acceptance rate 3.580246913580247e-01

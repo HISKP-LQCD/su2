@@ -40,21 +40,22 @@ make -j$(nproc) install
 ```
 
 
-# Installing on any machine
+# Installing on most HPC machines
 
 The dependencies of the library are often available on most HPC machines with, e.g. with
 ```{.bash}
 module load <name_of_library>
 ```
-If that is not the case, the libraries have to be compiled from source. 
-An example of how to set this up for `xtensor` (and its dependency `xtl`) can be found [here](https://github.com/simone-romiti/software-stack/tree/qbig/build).
+If that is not the case, the libraries have to be compiled from source. Please see the `doc/installation_scripts/` folder for template installation scripts.
 
 Once the dependencies are installed, please proceed by creating a build directory and from there run the following scripts in a `{.bash}` shell:
 
 ```{.bash}
-./do_cmake.sh
-./do_make.sh
+source ./load_modules.sh # optional, only if not installing depndencies from source
+./install.sh
 ```
 
-A template of the above two scripts can be found in the `doc/installation_scripts/` fo
+A template of the above scripts can be found in the `doc/installation_scripts/` folder.
+In the `test` folder there is an input file example `main.input` with some information in its header.
+
 

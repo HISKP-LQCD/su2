@@ -51,7 +51,7 @@ If that is not the case, the libraries have to be compiled from source. Please s
 Once the dependencies are installed, please proceed by creating a build directory and from there run the following scripts in a `{.bash}` shell:
 
 ```{.bash}
-source ./load_modules.sh # optional, only if not installing depndencies from source
+source ./load_modules.sh # optional, only if not installing dependencies from source
 ./install.sh
 ```
 

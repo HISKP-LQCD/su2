@@ -117,11 +117,7 @@ public:
     std::cout << "## Reading old n_live points from " << path_nlive_conf << std::endl;
     const int n_live = (*this).sparams.n_live;
     check_file_exists(path_nlive_conf, __func__);
-    // std::ifstream in_file;
-    // in_file.open(path_nlive_conf);
     check_file_exists(path_nlive_idx, __func__);
-    // (*this).Pi.resize(n_live);
-    // (*this).indices.resize(n_live);
 
     (*this).Pi = io::string_to_vector<double>(io::read_last_line(path_nlive_conf), " ");
     (*this).indices =

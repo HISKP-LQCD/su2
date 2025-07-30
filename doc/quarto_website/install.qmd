@@ -29,7 +29,7 @@ sudo apt-get install libboost-all-dev
 And then install the library itself:
 
 ```{.bash}
-bdir=/path/to/your/build/directory/
+bdir=/path/to/your/build/directory/ # custom empty directory
 
 cmake \
     -B ${bdir} \

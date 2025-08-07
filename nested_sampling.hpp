@@ -33,65 +33,71 @@
 #include "uniform_sweeps.hpp"
 
 template <class Group>
-class nested_sampling_algo : public base_program<Group, gp::nested_sampling> {
+class nested_sampling_algo : public base_program<Group, gp::nested_sampling>
+{
 private:
   std::vector<size_t> indices; // list of configuration indices
-  std::vector<double> Pi; // list of plaquette values for n_live points
+  std::vector<double> Pi;      // list of plaquette values for n_live points
 
-  std::mt19937 engine; // engine for random number generation
+  std::mt19937 engine;               // engine for random number generation
   std::vector<std::mt19937> engines; // engines for exceptional overrelaxation updates
 
   std::string conf_counter_file; // file to save the configuration counter
-  std::string output_data_file; // file to save the output.data
-  std::ofstream os_nlive_conf; // configurations of the n_live points
-  std::string path_nlive_conf; // path of os_nlive_conf
-  std::ofstream os_nlive_idx; // configuration indices of the n_live points
-  std::string path_nlive_idx; // path of os_nlive_idx
+  std::string output_data_file;  // file to save the output.data
+  std::ofstream os_nlive_conf;   // configurations of the n_live points
+  std::string path_nlive_conf;   // path of os_nlive_conf
+  std::ofstream os_nlive_idx;    // configuration indices of the n_live points
+  std::string path_nlive_idx;    // path of os_nlive_idx
 
   std::ofstream os_sampling_info; // information about sampling: delta, acc. rate
   std::string path_sampling_info; // path of os_sampling_info
 
   int i_last_conf = 0; // index of the last configuration saved
-  int i_step = 0; // index of the last NS step
-  int i_dead = 0; // index of the dead point
+  int i_step = 0;      // index of the last NS step
+  int i_dead = 0;      // index of the dead point
   std::string conf_counter_path;
   std::string step_counter_path;
 
   bool adaptive_delta = false; // flag for adaptive delta in uniform_sweeps
-  double delta = 1.0; // delta parameter for uniform_sweeps
+  double delta = 1.0;          // delta parameter for uniform_sweeps
 
 public:
   nested_sampling_algo() { (*this).algo_name = "nested_sampling"; }
-  ~nested_sampling_algo() {
+  ~nested_sampling_algo()
+  {
     os_nlive_conf.close();
     os_nlive_idx.close();
   }
 
   void print_program_info() const { std::cout << "## nested_sampling Algorithm\n"; }
 
-  void save_nlive_status() {
+  void save_nlive_status()
+  {
     // saving the configuration of the n_live points
     io::vector_to_stream(Pi, (*this).os_nlive_conf, " ");
     io::vector_to_stream((*this).indices, (*this).os_nlive_idx, " ");
     return;
   }
 
-  void parse_input_file(const YAML::Node &nd) {
+  void parse_input_file(const YAML::Node &nd)
+  {
     namespace in_nested_sampling = input_file_parsing::nested_sampling;
     in_nested_sampling::parse_input_file(nd, (*this).pparams, (*this).sparams);
     (*this).omeas = (*this).sparams.omeas;
     (*this).conf_path_basename =
-      io::get_conf_path_basename((*this).pparams, (*this).sparams);
+        io::get_conf_path_basename((*this).pparams, (*this).sparams);
   }
 
   // unsorted list of plaquette values
-  void init_nlive(const int &n_live, const int &seed) {
+  void init_nlive(const int &n_live, const int &seed)
+  {
     (*this).Pi.resize(n_live);
     (*this).indices.resize(n_live);
 
     const double delta = 1.0; //(*this).sparams.delta;
     std::cout << "## Initial n_live values of the plaquette density (drawn at beta=0) \n";
-    for (size_t i = 0; i < n_live; i++) {
+    for (size_t i = 0; i < n_live; i++)
+    {
       // creating a random gauge configuration
       hotstart<Group>((*this).U, seed + i, delta);
       std::string path_i = (*this).conf_path_basename + "." + std::to_string(i);
@@ -113,7 +119,8 @@ public:
     return;
   }
 
-  std::vector<double> read_nlive_conf() {
+  std::vector<double> read_nlive_conf()
+  {
     std::cout << "## Reading old n_live points from " << path_nlive_conf << std::endl;
     const int n_live = (*this).sparams.n_live;
     check_file_exists(path_nlive_conf, __func__);
@@ -121,7 +128,7 @@ public:
 
     (*this).Pi = io::string_to_vector<double>(io::read_last_line(path_nlive_conf), " ");
     (*this).indices =
-      io::string_to_vector<size_t>(io::read_last_line(path_nlive_idx), " ");
+        io::string_to_vector<size_t>(io::read_last_line(path_nlive_idx), " ");
 
     // index of the last configuration saved
     i_last_conf = io::read_single_value<int>(conf_counter_file);
@@ -129,18 +136,22 @@ public:
     return Pi;
   }
 
-  void open_output_data() {
+  void open_output_data()
+  {
     conf_counter_file = (*this).sparams.conf_dir + "/conf_counter.txt";
 
     output_data_file =
-      (*this).sparams.conf_dir + "/output." + (*this).algo_name + ".data";
+        (*this).sparams.conf_dir + "/output." + (*this).algo_name + ".data";
 
     std::ios_base::openmode write_mode;
-    if ((*this).sparams.continue_run == true) {
+    if ((*this).sparams.continue_run == true)
+    {
       write_mode = std::ios::app; // append to existing file
       check_file_exists(path_nlive_conf, __func__);
       check_file_exists(path_nlive_idx, __func__);
-    } else {
+    }
+    else
+    {
       write_mode = std::ios::out; // create a new file
     }
 
@@ -158,40 +169,48 @@ public:
     (*this).os_sampling_info.open(path_sampling_info, write_mode);
   }
 
-  std::string get_path_conf(const int &i) const {
+  std::string get_path_conf(const int &i) const
+  {
     return (*this).conf_path_basename + "." + std::to_string(i);
   }
 
-  void clear_omeas() {
+  void clear_omeas()
+  {
     size_t N_overrelaxation = (*this).sparams.N_overrelaxation_measure;
-    for (size_t i_orlx = 0; i_orlx <= N_overrelaxation; i_orlx++) {
+    for (size_t i_orlx = 0; i_orlx <= N_overrelaxation; i_orlx++)
+    {
       // clearing output files for the Polyakov loop
       std::ostringstream oss;
       oss << (*this).omeas.res_dir + "/" + (*this).omeas.polyakov.subdir << "/";
       std::string out_dir = oss.str();
       std::string output_polyakov =
-        out_dir + "/Ploops-orlx_" + boost::lexical_cast<std::string>(i_orlx);
+          out_dir + "/Ploops-orlx_" + boost::lexical_cast<std::string>(i_orlx);
       io::clear_file(output_polyakov);
     }
     return;
   }
 
-  void do_omeas_i(const size_t &i) {
+  void do_omeas_i(const size_t &i)
+  {
     namespace fsys = boost::filesystem;
 
     gaugeconfig<Group> &U_i = (*this).U;
 
-    if (!(*this).sparams.do_mcmc) { // doing only offline measurements
+    if (!(*this).sparams.do_mcmc)
+    { // doing only offline measurements
       const std::string path_i = get_path_conf(i);
       int ierrU = U_i.load(path_i);
 
-      if (ierrU == 1) { // cannot load gauge config
+      if (ierrU == 1)
+      {         // cannot load gauge config
         return; // simply ignore configuration
       }
     }
 
-    if ((*this).omeas.polyakov.measure_it) {
-      if ((*this).omeas.verbosity > 0) {
+    if ((*this).omeas.polyakov.measure_it)
+    {
+      if ((*this).omeas.verbosity > 0)
+      {
         std::cout << "## online measuring: Polyakov loop\n";
       }
 
@@ -204,16 +223,18 @@ public:
       size_t i_orlx = 0;
       size_t N_overrelaxation = (*this).sparams.N_overrelaxation_measure;
       const int n_threads = (*this).threads;
-      while (i_orlx < N_overrelaxation + 1) {
+      while (i_orlx < N_overrelaxation + 1)
+      {
         // initializing the engines
-        for (size_t i_engine = 0; i_engine < n_threads; i_engine++) {
+        for (size_t i_engine = 0; i_engine < n_threads; i_engine++)
+        {
           (*this).engines[i_engine].seed(i * N_overrelaxation + i_orlx);
         }
 
         overrelaxation(U_i, (*this).engines, 1.0, false);
 
         std::string output_polyakov =
-          out_dir + "/Ploops-orlx_" + boost::lexical_cast<std::string>(i_orlx);
+            out_dir + "/Ploops-orlx_" + boost::lexical_cast<std::string>(i_orlx);
 
         std::ofstream ofs(output_polyakov, std::ios::app);
         ofs << std::scientific << std::setprecision(16);
@@ -227,22 +248,26 @@ public:
     return;
   }
 
-  void offline_measurements() {
+  void offline_measurements()
+  {
     const std::string output_data_file =
-      (*this).sparams.conf_dir + "/output." + (*this).algo_name + ".data";
+        (*this).sparams.conf_dir + "/output." + (*this).algo_name + ".data";
 
     std::ifstream file(output_data_file);
 
-    if (!file.is_open()) {
+    if (!file.is_open())
+    {
       std::cerr << "Error opening: " << output_data_file << std::endl;
       std::abort();
     }
 
     std::string line;
-    while (getline(file, line)) {
+    while (getline(file, line))
+    {
       std::istringstream iss(line);
       std::string firstColumn;
-      if (getline(iss, firstColumn, ' ')) {
+      if (getline(iss, firstColumn, ' '))
+      {
         const size_t i_conf = stod(firstColumn);
 
         this->do_omeas_i(i_conf);
@@ -252,7 +277,8 @@ public:
     file.close();
   }
 
-  void run(const YAML::Node &nd) {
+  void run(const YAML::Node &nd)
+  {
     this->pre_run(nd); // prepare the algorithm
 
     path_nlive_conf = (*this).sparams.conf_dir + "/nlive_conf.dat";
@@ -262,7 +288,8 @@ public:
 
     bool do_omeas = (*this).sparams.do_omeas;
     bool do_mcmc = nd["nested_sampling"]["do_mcmc"].as<bool>();
-    if (do_omeas && (!do_mcmc)) {
+    if (do_omeas && (!do_mcmc))
+    {
       this->offline_measurements();
       return; // do not run the algorithm, just measure observables
     }
@@ -272,22 +299,28 @@ public:
     const size_t seed = (*this).sparams.seed;
 
     const std::string delta_str = (*this).sparams.delta;
-    if (delta_str == "adaptive") {
+    if (delta_str == "adaptive")
+    {
       std::cout << "## Using adaptive delta for uniform_sweeps\n";
       (*this).adaptive_delta = true; // set adaptive delta flag
       (*this).delta = 1.0;
-    } else {
+    }
+    else
+    {
       std::cout << "## Using fixed delta = " << delta_str << " for uniform_sweeps\n";
       (*this).adaptive_delta = false; // set adaptive delta flag
       (*this).delta = boost::lexical_cast<double>(delta_str);
     }
     // number of sweeps per link, i.e. a multiple of the number of links
-    const size_t n_sweeps_tot = ((*this).sparams.n_sweeps) * (*this).U.getSize();
+    const size_t n_sweeps_min = ((*this).sparams.n_sweeps); //* (*this).U.getSize();
 
-    if ((*this).sparams.continue_run) {
+    if ((*this).sparams.continue_run)
+    {
       // i_step = 1 + this->read_from_counter(step_counter_path); // new step index
       read_nlive_conf();
-    } else {
+    }
+    else
+    {
       std::cout << "## Initializing n_live points\n";
       this->init_nlive(n_live, seed);
       this->clear_omeas();
@@ -300,7 +333,8 @@ public:
     gaugeconfig<Group> &U_i = (*this).U; // configuration corresponding to that index
 
     // sampling n_samples points in the phase space
-    for (size_t i = 0; i < n_samples; i++) {
+    for (size_t i = 0; i < n_samples; i++)
+    {
       const int i_conf = i_last_conf + (1 + i); // configuration index
 
       // finding the minimum plaquette and appending it to the list
@@ -319,14 +353,17 @@ public:
       Pi.erase(Pi.begin() + i_dead);
       (*this).indices.erase((*this).indices.begin() + i_dead);
 
-      if (do_omeas) {
-        if (i == 0 and (*this).sparams.continue_run) {
+      if (do_omeas)
+      {
+        if (i == 0 and (*this).sparams.continue_run)
+        {
           U_i.load(get_path_conf(i_dead_conf)); // configuration not already in memory
         }
         this->do_omeas_i(i_dead_conf);
       }
 
-      if ((*this).sparams.delete_dead_confs) {
+      if ((*this).sparams.delete_dead_confs)
+      {
         // removing dead configuration
         std::remove(this->get_path_conf(i_dead_conf).c_str());
       }
@@ -340,30 +377,36 @@ public:
       engines.resize(n_threads);
 
       const size_t ii_rand = int_dist(engine);
-      const double Prand = Pi[ii_rand]; // value of the plaquette
+      const double Prand = Pi[ii_rand];               // value of the plaquette
       const size_t i_rand = (*this).indices[ii_rand]; // index of the configuration
 
       U_i.load(this->get_path_conf(i_rand), false, true);
 
-      // applying a minimum of "n_sweeps_tot" sweeps to this configuration
+      // applying a minimum of "n_sweeps_min" sweeps to this configuration
       // to draw another one sampled from the constrained prior
       double acc_rate =
-        uniform_sweeps(U_i, Prand, Pmin, engine, (*this).delta, n_sweeps_tot);
-      if ((*this).adaptive_delta) {
+          uniform_sweeps(U_i, Prand, Pmin, engine, (*this).delta, n_sweeps_min);
+      if ((*this).adaptive_delta)
+      {
         os_sampling_info << std::scientific << std::setprecision(16);
         double rej_rate = 1.0 - acc_rate; // rejection rate
         os_sampling_info << (*this).delta << " " << acc_rate << std::endl;
         // Empirical refining of step-size to let acceptance ratio converge around 50%
-        if ((acc_rate > rej_rate) && (*this).delta < 1.0) {
+        if ((acc_rate > rej_rate) && (*this).delta < 1.0)
+        {
           (*this).delta *= (0.5 + acc_rate);
-        } else if (acc_rate < rej_rate) {
+        }
+        else if (acc_rate < rej_rate)
+        {
           (*this).delta *= (0.5 + acc_rate);
         }
       }
       // applying N_overrelaxation steps to improve the sampling
       const size_t N_overrelaxation = (*this).sparams.N_overrelaxation_run;
-      for (size_t i_orlx = 0; i_orlx < N_overrelaxation; i_orlx++) {
-        for (size_t i_engine = 0; i_engine < n_threads; i_engine++) {
+      for (size_t i_orlx = 0; i_orlx < N_overrelaxation; i_orlx++)
+      {
+        for (size_t i_engine = 0; i_engine < n_threads; i_engine++)
+        {
           (*this).engines[i_engine].seed(i * N_overrelaxation + i_orlx);
         }
         overrelaxation(U_i, (*this).engines, 1.0, false);

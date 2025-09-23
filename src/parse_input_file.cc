@@ -22,26 +22,30 @@
 #include "geometry.hh"
 #include "parse_input_file.hh"
 
-namespace input_file_parsing {
+namespace input_file_parsing
+{
 
-  void parse_command_line(int ac, char *av[], std::string &input_file) {
+  void parse_command_line(int ac, char *av[], std::string &input_file)
+  {
     namespace po = boost::program_options;
 
     po::options_description desc("Allowed options");
     desc.add_options()("help,h", "produce this help message")(
-      "file,f", po::value<std::string>(&input_file)->default_value("NONE"),
-      "yaml input file");
+        "file,f", po::value<std::string>(&input_file)->default_value("NONE"),
+        "yaml input file");
 
     po::variables_map vm;
     po::store(po::parse_command_line(ac, av, desc), vm);
     po::notify(vm);
 
-    if (vm.count("help")) {
+    if (vm.count("help"))
+    {
       std::cout << desc << "\n";
       std::abort();
     }
 
-    if (input_file == "NONE") {
+    if (input_file == "NONE")
+    {
       std::cout << "Error: invalid command line parameters.\nCheck using the "
                    "\"-h/--help\" option."
                 << "\n";
@@ -51,9 +55,11 @@ namespace input_file_parsing {
     return;
   }
 
-  void check_bc(const std::string &bc) {
+  void check_bc(const std::string &bc)
+  {
     const bool b1 = (bc == "periodic" || bc == "open" || bc == "spatial_open");
-    if (!b1) {
+    if (!b1)
+    {
       std::cerr << "Error. Unsupported periodic boundary condition: " << bc << "\n";
       std::cerr << "Aborting.\n";
       std::abort();
@@ -61,20 +67,25 @@ namespace input_file_parsing {
     return;
   }
 
-  int validate_geometry(gp::physics &pparams) {
-    if (pparams.ndims > 4 || pparams.ndims < 2) {
+  int validate_geometry(gp::physics &pparams)
+  {
+    if (pparams.ndims > 4 || pparams.ndims < 2)
+    {
       std::cerr << "2 <= ndims <= 4!" << std::endl;
       return 1;
     }
-    if (pparams.Lx < 1 || pparams.Ly < 1 || pparams.Lz < 1 || pparams.Lt < 1) {
+    if (pparams.Lx < 1 || pparams.Ly < 1 || pparams.Lz < 1 || pparams.Lt < 1)
+    {
       std::cerr << "All box extents must be > 1!" << std::endl;
       return 1;
     }
-    if (pparams.ndims < 4) {
+    if (pparams.ndims < 4)
+    {
       std::cerr << "## Warning: ndims==" << pparams.ndims << " --> flattening the \'z\' ";
       pparams.Lz = 1;
       std::string s_end = "";
-      if (pparams.ndims < 3) {
+      if (pparams.ndims < 3)
+      {
         pparams.Ly = 1;
         std::cerr << "and \'y\' ";
         s_end = "s";
@@ -89,8 +100,10 @@ namespace input_file_parsing {
    * @brief check if beta_str_width >= 1, otherwise it aborts
    * @param n width (number of digits after the dot)
    */
-  void validate_beta_str_width(const size_t &n) {
-    if (n < 1) {
+  void validate_beta_str_width(const size_t &n)
+  {
+    if (n < 1)
+    {
       std::cerr << "Error: beta string width in the output file should have at least "
                    "decimal 1 digit.";
       std::cerr << "Aborting.\n";
@@ -103,8 +116,10 @@ namespace input_file_parsing {
    * @brief check if N_hit >= 1, otherwise it aborts
    * @param n N_hit (number of times an update per link is attempted)
    */
-  void validate_N_hit(const size_t &n) {
-    if (n < 1) {
+  void validate_N_hit(const size_t &n)
+  {
+    if (n < 1)
+    {
       std::cerr << "Error: N_hit should be at least 1, otherwise nothing will happen";
       std::cerr << "Aborting.\n";
       std::abort();
@@ -114,29 +129,35 @@ namespace input_file_parsing {
 
   namespace Yp = YAML_parsing;
 
-  void parse_geometry(Yp::inspect_node &in, gp::physics &pparams) {
+  void parse_geometry(Yp::inspect_node &in, gp::physics &pparams)
+  {
     YAML::Node R = in.get_root();
 
     const bool spec_L = (bool)R["geometry"]["L"];
     const bool spec_Lxyz =
-      (R["geometry"]["X"] || R["geometry"]["Y"] || R["geometry"]["Z"]);
+        (R["geometry"]["X"] || R["geometry"]["Y"] || R["geometry"]["Z"]);
 
-    if (spec_L ^ spec_Lxyz) {
+    if (spec_L ^ spec_Lxyz)
+    {
       // either L^3*T or Lx*Ly*Lz*Lt have been specified (but not both)
 
-      if (spec_L) {
+      if (spec_L)
+      {
         size_t L;
         in.read_verb<size_t>(L, {"geometry", "L"});
         pparams.Lx = L;
         pparams.Ly = L;
         pparams.Lz = L;
-      } else {
+      }
+      else
+      {
         in.read_verb<size_t>(pparams.Lx, {"geometry", "X"});
         in.read_verb<size_t>(pparams.Ly, {"geometry", "Y"});
         in.read_verb<size_t>(pparams.Lz, {"geometry", "Z"});
       }
-
-    } else {
+    }
+    else
+    {
       std::cerr << "Error: check your input file. ";
       std::cerr << "Either you specify L=X=Y=Z or each dimension separately, not both.\n";
       std::cerr << "Aborting.\n";
@@ -148,21 +169,24 @@ namespace input_file_parsing {
     in.read_opt_verb<std::string>(pparams.bc, {"geometry", "bc"});
 
     int gerr = validate_geometry(pparams);
-    if (gerr > 0) {
+    if (gerr > 0)
+    {
       std::cerr << "Error: invalid geometry parameters. Check L (or X,Y,Z), T, ndims "
                    "in your input file.";
       std::cerr << "Aborting.\n";
       std::abort();
     }
 
-    if (R["geometry"]["rotating_frame"]) {
+    if (R["geometry"]["rotating_frame"])
+    {
       fatal_error("Rotating metric not supported yet.", __func__);
       pparams.rotating_frame = true;
-      pparams.flat_metric = false; // metric is not flat
+      // pparams.flat_metric = false; // metric is not flat
       in.read_verb<double>(pparams.Omega, {"geometry", "rotating_frame", "Omega"});
     }
 
-    if (R["geometry"]["bc"]) {
+    if (R["geometry"]["bc"])
+    {
       in.read_verb<std::string>(pparams.bc, {"geometry", "bc"});
       check_bc(pparams.bc);
     }
@@ -175,11 +199,13 @@ namespace input_file_parsing {
    * `hot`, `cold`, `read`
    *
    */
-  void check_restart_condition(const std::string &rc) {
+  void check_restart_condition(const std::string &rc)
+  {
     const bool b1 = (rc == "hot");
     const bool b2 = (rc == "cold");
     const bool b3 = (rc == "read");
-    if (!(b1 || b2 || b3)) {
+    if (!(b1 || b2 || b3))
+    {
       std::cerr << "Error: "
                 << "Invalid restart condition: " << rc << ". "
                 << "Aborting.\n";
@@ -189,7 +215,8 @@ namespace input_file_parsing {
 
   void parse_polyakov_measure(Yp::inspect_node &in,
                               const std::vector<std::string> &inner_tree,
-                              gp::measure_polyakov &mpparams) {
+                              gp::measure_polyakov &mpparams)
+  {
     const std::vector<std::string> state0 = in.get_InnerTree();
     in.dig_deeper(inner_tree); // entering the glueball node
     YAML::Node nd = in.get_outer_node();
@@ -202,7 +229,8 @@ namespace input_file_parsing {
 
   void parse_plaquette_measure(Yp::inspect_node &in,
                                const std::vector<std::string> &inner_tree,
-                               gp::measure_plaquette &mpparams) {
+                               gp::measure_plaquette &mpparams)
+  {
     const std::vector<std::string> state0 = in.get_InnerTree();
     in.dig_deeper(inner_tree); // entering the glueball node
     YAML::Node nd = in.get_outer_node();
@@ -211,7 +239,8 @@ namespace input_file_parsing {
     in.read_opt_verb<std::string>(mpparams.subdir, {"subdir"});
     in.read_opt_verb<bool>(mpparams.spatial, {"spatial"});
     in.read_opt_verb<std::string>(mpparams.bc, {"bc"});
-    if (nd["bc"]) {
+    if (nd["bc"])
+    {
       check_bc(mpparams.bc);
     }
 
@@ -225,20 +254,24 @@ namespace input_file_parsing {
    */
   void parse_glueball_measure(Yp::inspect_node &in,
                               const std::vector<std::string> &inner_tree,
-                              gp::measure_glueball &mgparams) {
+                              gp::measure_glueball &mgparams)
+  {
     const std::vector<std::string> state0 = in.get_InnerTree();
     in.dig_deeper(inner_tree); // entering the glueball node
     YAML::Node nd = in.get_outer_node();
 
     mgparams.interpolator = bool(nd["interpolator"]);
-    if (mgparams.interpolator) {
+    if (mgparams.interpolator)
+    {
       in.read_verb<std::string>(mgparams.interpolator_type, {"interpolator", "type"});
       in.read_verb<bool>(mgparams.spatial_loops, {"interpolator", "spatial"});
       in.read_verb<size_t>(mgparams.rmin, {"interpolator", "rmin"});
       in.read_verb<size_t>(mgparams.rmax, {"interpolator", "rmax"});
       in.read_verb<bool>(mgparams.save_interpolator, {"interpolator", "save"});
       in.read_verb<bool>(mgparams.correlator, {"correlator"});
-    } else {
+    }
+    else
+    {
       std::cerr << "Error: No 'glueball:interpolator' node found in the input file.\n";
       std::cerr << "Aborting.\n";
       std::abort();
@@ -246,9 +279,10 @@ namespace input_file_parsing {
 
     in.read_verb<bool>(mgparams.correlator, {"correlator"});
     mgparams.do_measure =
-      mgparams.interpolator || mgparams.correlator; // true if we save one of the two
+        mgparams.interpolator || mgparams.correlator; // true if we save one of the two
     in.read_verb<bool>(mgparams.doAPEsmear, {"do_APE_smearing"});
-    if (mgparams.doAPEsmear) {
+    if (mgparams.doAPEsmear)
+    {
       in.read_sequence_verb<size_t>(mgparams.vec_nAPEsmear, {"APE_smearing", "n"});
       in.read_verb<double>(mgparams.alphaAPEsmear, {"APE_smearing", "alpha"});
     }
@@ -265,7 +299,8 @@ namespace input_file_parsing {
    */
   void parse_gradient_flow_measure(Yp::inspect_node &in,
                                    const std::vector<std::string> &inner_tree,
-                                   gp::measure_gradient_flow &mgfparams) {
+                                   gp::measure_gradient_flow &mgfparams)
+  {
     const std::vector<std::string> state0 = in.get_InnerTree();
     in.dig_deeper(inner_tree); // entering the glueball node
     YAML::Node nd = in.get_outer_node();
@@ -291,13 +326,15 @@ namespace input_file_parsing {
    */
   void parse_omeas(Yp::inspect_node &in,
                    const std::vector<std::string> &inner_tree,
-                   gp::measure &mparams) {
+                   gp::measure &mparams)
+  {
     const std::vector<std::string> state0 = in.get_InnerTree();
     in.dig_deeper(inner_tree); // entering the glueball node
     YAML::Node nd = in.get_outer_node();
 
     mparams.do_mcmc = !bool(nd["offline"]); // true if doing offline measurements
-    if (!mparams.do_mcmc) { // if offline, need these parameters
+    if (!mparams.do_mcmc)
+    { // if offline, need these parameters
       in.read_verb<std::string>(mparams.conf_dir, {"offline", "conf_dir"});
       in.read_opt_verb<std::string>(mparams.conf_basename, {"offline", "conf_basename"});
       in.read_opt_verb<bool>(mparams.lenghty_conf_name, {"offline", "lenghty_conf_name"});
@@ -312,25 +349,28 @@ namespace input_file_parsing {
 
     in.read_opt_verb<bool>(mparams.restart, {"restart"});
     in.read_opt_verb<size_t>(mparams.icounter, {"icounter"});
-    if (mparams.restart && nd["icounter"]) {
+    if (mparams.restart && nd["icounter"])
+    {
       std::cerr
-        << "Incompatible simultaneous restart==true and icounter in omeas block.\n";
+          << "Incompatible simultaneous restart==true and icounter in omeas block.\n";
       std::cerr << "Aborting.\n";
       std::abort();
     }
     in.read_opt_verb<size_t>(mparams.nstep, {"nstep"});
     in.read_opt_verb<size_t>(mparams.n_meas, {"n_meas"});
 
-
-    if (nd["polyakov"]) {
+    if (nd["polyakov"])
+    {
       parse_polyakov_measure(in, {"polyakov"}, mparams.polyakov);
     }
 
-    if (nd["plaquette"]) {
+    if (nd["plaquette"])
+    {
       parse_plaquette_measure(in, {"plaquette"}, mparams.plaquette);
     }
 
-    if (nd["pion_staggered"]) {
+    if (nd["pion_staggered"])
+    {
       mparams.pion_staggered = true;
       in.read_verb<double>(mparams.m0, {"pion_staggered", "mass"});
     }
@@ -338,7 +378,8 @@ namespace input_file_parsing {
     in.read_opt_verb<bool>(mparams.Wloop, {"Wloop"});
 
     // optional parameters for potentials
-    if (nd["potential"]) {
+    if (nd["potential"])
+    {
       in.read_opt_verb<bool>(mparams.potentialplanar, {"potential", "potentialplanar"});
       in.read_opt_verb<bool>(mparams.potentialnonplanar,
                              {"potential", "potentialnonplanar"});
@@ -351,11 +392,13 @@ namespace input_file_parsing {
       in.read_opt_verb<double>(mparams.alpha, {"potential", "alpha"});
       in.read_opt_verb<double>(mparams.sizeWloops, {"potential", "sizeWloops"});
     }
-    if (nd["glueball"]) {
+    if (nd["glueball"])
+    {
       parse_glueball_measure(in, {"glueball"}, mparams.glueball);
     }
 
-    if (nd["gradient_flow"]) {
+    if (nd["gradient_flow"])
+    {
       parse_gradient_flow_measure(in, {"gradient_flow"}, mparams.gradient_flow);
     }
 
@@ -371,7 +414,8 @@ namespace input_file_parsing {
    */
   void parse_metropolis(Yp::inspect_node &in,
                         const std::vector<std::string> &inner_tree,
-                        gp::metropolis &mcparams) {
+                        gp::metropolis &mcparams)
+  {
     const std::vector<std::string> state0 = in.get_InnerTree();
     in.dig_deeper(inner_tree); // entering the sub-node
     YAML::Node nd = in.get_outer_node();
@@ -407,7 +451,8 @@ namespace input_file_parsing {
    */
   void parse_nested_sampling(Yp::inspect_node &in,
                              const std::vector<std::string> &inner_tree,
-                             gp::nested_sampling &mcparams) {
+                             gp::nested_sampling &mcparams)
+  {
     const std::vector<std::string> state0 = in.get_InnerTree();
     in.dig_deeper(inner_tree); // entering the sub-node
     YAML::Node nd = in.get_outer_node();
@@ -443,7 +488,8 @@ namespace input_file_parsing {
    */
   void parse_heatbath_overrelaxation(Yp::inspect_node &in,
                                      const std::vector<std::string> &inner_tree,
-                                     gp::heatbath_overrelaxation &mcparams) {
+                                     gp::heatbath_overrelaxation &mcparams)
+  {
     const std::vector<std::string> state0 = in.get_InnerTree();
     in.dig_deeper(inner_tree); // entering the glueball node
     YAML::Node nd = in.get_outer_node();
@@ -476,7 +522,8 @@ namespace input_file_parsing {
    */
   void parse_hmc(Yp::inspect_node &in,
                  const std::vector<std::string> &inner_tree,
-                 gp::hmc &hparams) {
+                 gp::hmc &hparams)
+  {
     const std::vector<std::string> state0 = in.get_InnerTree();
     in.dig_deeper(inner_tree); // entering the glueball node
     YAML::Node nd = in.get_outer_node();
@@ -504,7 +551,8 @@ namespace input_file_parsing {
 
   void parse_integrator(Yp::inspect_node &in,
                         const std::vector<std::string> &inner_tree,
-                        gp::hmc &hparams) {
+                        gp::hmc &hparams)
+  {
     const std::vector<std::string> state0 = in.get_InnerTree();
     in.dig_deeper(inner_tree); // entering the glueball node
     YAML::Node nd = in.get_outer_node();
@@ -530,25 +578,31 @@ namespace input_file_parsing {
   void parse_action(Yp::inspect_node &in,
                     const std::vector<std::string> &inner_tree,
                     gp::physics &pparams,
-                    S &sparams) {
+                    S &sparams)
+  {
     const std::vector<std::string> state0 = in.get_InnerTree();
     in.dig_deeper(inner_tree); // entering the glueball node
     YAML::Node nd = in.get_outer_node();
 
-    if (nd["monomials"]) {
-      if (nd["monomials"]["gauge"]) {
+    if (nd["monomials"])
+    {
+      if (nd["monomials"]["gauge"])
+      {
         pparams.include_gauge = true;
         in.read_verb<double>(pparams.beta, {"monomials", "gauge", "beta"});
-        if (nd["monomials"]["gauge"]["anisotropic"]) {
+        if (nd["monomials"]["gauge"]["anisotropic"])
+        {
           pparams.anisotropic = true;
           in.read_opt_verb<double>(pparams.xi,
                                    {"monomials", "gauge", "anisotropic", "xi"});
         }
       }
-      if (nd["operators"]) {
+      if (nd["operators"])
+      {
         // note: initializing the D*Ddag monomial makes sense only with a valid Dirac
         // operator
-        if (nd["operators"]["staggered"] && nd["monomials"]["staggered_det_DDdag"]) {
+        if (nd["operators"]["staggered"] && nd["monomials"]["staggered_det_DDdag"])
+        {
           pparams.include_staggered_fermions = true;
 
           in.read_verb<double>(pparams.m0, {"operators", "staggered", "mass"});
@@ -558,8 +612,8 @@ namespace input_file_parsing {
           in.read_opt_verb<double>(sparams.tolerance_cg,
                                    {"monomials", "staggered_det_DDdag", "tolerance_cg"});
           in.read_opt_verb<size_t>(
-            sparams.solver_verbosity,
-            {"monomials", "staggered_det_DDdag", "solver_verbosity"});
+              sparams.solver_verbosity,
+              {"monomials", "staggered_det_DDdag", "solver_verbosity"});
           in.read_opt_verb<size_t>(sparams.seed_pf,
                                    {"monomials", "staggered_det_DDdag", "seed_pf"});
         }
@@ -569,18 +623,21 @@ namespace input_file_parsing {
     in.set_InnerTree(state0); // reset to previous state
   }
 
-  namespace hmc {
-    void parse_input_file(const YAML::Node &nd, gp::physics &pparams, gp::hmc &hparams) {
+  namespace hmc
+  {
+    void parse_input_file(const YAML::Node &nd, gp::physics &pparams, gp::hmc &hparams)
+    {
       Yp::inspect_node in(nd);
 
       parse_geometry(in, pparams);
       parse_action<gp::hmc>(in, {}, pparams, hparams);
 
-      parse_hmc(in, {"hmc"}, hparams); // hmc parameters
+      parse_hmc(in, {"hmc"}, hparams);               // hmc parameters
       parse_integrator(in, {"integrator"}, hparams); // integrator parameters
 
       // online measurements
-      if (nd["omeas"]) {
+      if (nd["omeas"])
+      {
         hparams.do_omeas = true;
         hparams.omeas.conf_dir = hparams.conf_dir;
         parse_omeas(in, {"omeas"}, hparams.omeas);
@@ -592,10 +649,12 @@ namespace input_file_parsing {
 
   } // namespace hmc
 
-  namespace measure {
+  namespace measure
+  {
 
     void
-    parse_input_file(const YAML::Node &nd, gp::physics &pparams, gp::measure &mparams) {
+    parse_input_file(const YAML::Node &nd, gp::physics &pparams, gp::measure &mparams)
+    {
       Yp::inspect_node in(nd);
 
       parse_geometry(in, pparams);
@@ -607,7 +666,8 @@ namespace input_file_parsing {
       //   in.read_opt_verb<double>(pparams.xi, {"monomials", "gauge", "anisotropic", "xi"});
       // }
 
-      if (nd["omeas"]) {
+      if (nd["omeas"])
+      {
         parse_omeas(in, {"omeas"}, mparams);
       }
 
@@ -617,18 +677,21 @@ namespace input_file_parsing {
 
   } // namespace measure
 
-  namespace metropolis {
+  namespace metropolis
+  {
 
     void parse_input_file(const YAML::Node &nd,
                           gp::physics &pparams,
-                          gp::metropolis &mcparams) {
+                          gp::metropolis &mcparams)
+    {
       Yp::inspect_node in(nd);
 
       parse_geometry(in, pparams);
       parse_action<gp::metropolis>(in, {}, pparams, mcparams);
       parse_metropolis(in, {"metropolis"}, mcparams);
 
-      if (nd["omeas"]) {
+      if (nd["omeas"])
+      {
         mcparams.do_omeas = true;
         mcparams.omeas.conf_dir = mcparams.conf_dir;
         parse_omeas(in, {"omeas"}, mcparams.omeas);
@@ -641,18 +704,21 @@ namespace input_file_parsing {
 
   } // namespace metropolis
 
-  namespace heatbath_overrelaxation {
+  namespace heatbath_overrelaxation
+  {
 
     void parse_input_file(const YAML::Node &nd,
                           gp::physics &pparams,
-                          gp::heatbath_overrelaxation &mcparams) {
+                          gp::heatbath_overrelaxation &mcparams)
+    {
       Yp::inspect_node in(nd);
 
       parse_geometry(in, pparams);
       parse_action<gp::heatbath_overrelaxation>(in, {}, pparams, mcparams);
       parse_heatbath_overrelaxation(in, {"heatbath_overrelaxation"}, mcparams);
 
-      if (nd["omeas"]) {
+      if (nd["omeas"])
+      {
         mcparams.do_omeas = true;
         mcparams.omeas.conf_dir = mcparams.conf_dir;
         parse_omeas(in, {"omeas"}, mcparams.omeas);
@@ -665,17 +731,20 @@ namespace input_file_parsing {
 
   } // namespace heatbath_overrelaxation
 
-  namespace nested_sampling {
+  namespace nested_sampling
+  {
 
     void parse_input_file(const YAML::Node &nd,
                           gp::physics &pparams,
-                          gp::nested_sampling &mcparams) {
+                          gp::nested_sampling &mcparams)
+    {
       Yp::inspect_node in(nd);
 
       parse_geometry(in, pparams);
       // parse_action<gp::nested_sampling>(in, {}, pparams, mcparams);
       parse_nested_sampling(in, {"nested_sampling"}, mcparams);
-      if (nd["omeas"]) {
+      if (nd["omeas"])
+      {
         mcparams.do_omeas = true;
         mcparams.omeas.conf_dir = mcparams.conf_dir;
         parse_omeas(in, {"omeas"}, mcparams.omeas);

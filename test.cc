@@ -10,17 +10,20 @@
 #include <iostream>
 #include <vector>
 
-int main() {
+int main()
+{
   size_t Lx = 8, Ly = 8, Lz = 8, Lt = 16;
 
-  std::cout << "Tests of SU(2)" << std::endl << std::endl;
+  std::cout << "Tests of SU(2)" << std::endl
+            << std::endl;
   ;
 
   std::vector<su2> config;
   config.resize(Lx * Ly * Lz * Lt);
 
   // set all to 1
-  for (auto i = config.begin(), end = config.end(); i < end; i++) {
+  for (auto i = config.begin(), end = config.end(); i < end; i++)
+  {
     *i = su2(1., 0.);
   }
 
@@ -47,7 +50,9 @@ int main() {
   std::cout << "Test of U*U^dagger, should be: (1,0) (0,0)" << std::endl;
   std::cout << U.geta() << " " << U.getb() << std::endl;
 
-  std::cout << std::endl << "Tests of U(1)" << std::endl << std::endl;
+  std::cout << std::endl
+            << "Tests of U(1)" << std::endl
+            << std::endl;
   ;
   _u1 u;
   double a = u.retrace();
@@ -72,12 +77,12 @@ int main() {
 
   hotstart(cU, 124665, 0.);
 
-  double plaquette = flat_spacetime::retr_sum_Wplaquettes(cU);
+  double plaquette = retr_sum_Wplaquettes(cU);
   double res = 0., Q = 0.;
   std::cout << "Initital Plaquette: " << plaquette / cU.getVolume() / 6. << std::endl;
 
   random_gauge_trafo(cU, 654321);
-  plaquette = flat_spacetime::retr_sum_Wplaquettes(cU);
+  plaquette = retr_sum_Wplaquettes(cU);
   std::cout << "Plaquette after rnd trafo: " << plaquette / cU.getVolume() / 6.
             << std::endl;
 
@@ -103,13 +108,13 @@ int main() {
   xz = {1, 1, 1, 0};
   cU(xz, 3).set(pi() / 2);
 
-  flat_spacetime::leafs_and_Qtop(cU, res, Q);
+  leafs_and_Qtop(cU, res, Q);
 
   std::cout << "charge: " << Q << std::endl;
   std::cout << "should be: 0.0126651" << std::endl;
   random_gauge_trafo(cU, 654321);
   Q = 0;
-  flat_spacetime::leafs_and_Qtop(cU, res, Q);
+  leafs_and_Qtop(cU, res, Q);
   std::cout << "Charge after random gauge trafo: " << Q << std::endl;
   return (0);
 }

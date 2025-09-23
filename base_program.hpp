@@ -13,7 +13,7 @@
 
 #include "clover.hh"
 #include "errors.hpp"
-#include "flat-sweep.hh" // flat spacetime
+#include "sweep.hh" // flat spacetime
 #include "gauge_energy.hh"
 #include "gaugeconfig.hh"
 #include "io.hh"
@@ -47,17 +47,19 @@ namespace po = boost::program_options;
  * @param ac argc from the standard main() function
  * @param av argv from the standard main() function
  */
-void parse_command_line(int ac, char *av[], std::string &input_file) {
+void parse_command_line(int ac, char *av[], std::string &input_file)
+{
   po::options_description desc("Allowed options");
   desc.add_options()("help,h", "produce this help message")(
-    "file,f", po::value<std::string>(&input_file)->default_value("NONE"),
-    "yaml input file");
+      "file,f", po::value<std::string>(&input_file)->default_value("NONE"),
+      "yaml input file");
 
   po::variables_map vm;
   po::store(po::parse_command_line(ac, av, desc), vm);
   po::notify(vm);
 
-  if (vm.count("help")) {
+  if (vm.count("help"))
+  {
     std::cout << desc << "\n";
     exit(0);
   }
@@ -69,12 +71,13 @@ void parse_command_line(int ac, char *av[], std::string &input_file) {
  * each flag is true when the corresponding program is running.
  * NOTE: Only one flat at the time can be true
  */
-struct running_program {
-  bool do_hmc = false; // Hybrid Monte Carlo algorithm
-  bool do_metropolis = false; // Metropolis algorithm
+struct running_program
+{
+  bool do_hmc = false;                     // Hybrid Monte Carlo algorithm
+  bool do_metropolis = false;              // Metropolis algorithm
   bool do_heatbath_overrelaxation = false; // heatbath+overrelaxation algorithm
-  bool do_nested_sampling = false; // nested sampling algorithm
-  bool do_omeas = false; // only measuring observables
+  bool do_nested_sampling = false;         // nested sampling algorithm
+  bool do_omeas = false;                   // only measuring observables
 };
 
 /**
@@ -86,7 +89,8 @@ struct running_program {
  * @param rp running program
  * @param input_file path to the input file
  */
-YAML::Node get_cleaned_input_file(running_program &rp, const std::string &input_file) {
+YAML::Node get_cleaned_input_file(running_program &rp, const std::string &input_file)
+{
   YAML::Node nd = YAML::LoadFile(input_file);
   YAML_parsing::inspect_node in(nd);
 
@@ -96,37 +100,47 @@ YAML::Node get_cleaned_input_file(running_program &rp, const std::string &input_
   bool &do_heatbath_overrelaxation = rp.do_heatbath_overrelaxation;
   bool &do_nested_sampling = rp.do_nested_sampling;
 
-  if (nd["hmc"]) {
+  if (nd["hmc"])
+  {
     in.read_verb<bool>(do_hmc, {"hmc", "do_mcmc"});
-    if (!do_hmc) {
+    if (!do_hmc)
+    {
       nd.remove("integrator");
       nd.remove("hmc");
     }
   }
 
   do_metropolis = false;
-  if (nd["metropolis"]) {
+  if (nd["metropolis"])
+  {
     in.read_verb<bool>(do_metropolis, {"metropolis", "do_mcmc"});
-    if (!do_metropolis) {
+    if (!do_metropolis)
+    {
       nd.remove("metropolis");
     }
   }
 
   do_heatbath_overrelaxation = false;
-  if (nd["heatbath_overrelaxation"]) {
+  if (nd["heatbath_overrelaxation"])
+  {
     in.read_verb<bool>(do_heatbath_overrelaxation,
                        {"heatbath_overrelaxation", "do_mcmc"});
-    if (!do_heatbath_overrelaxation) {
+    if (!do_heatbath_overrelaxation)
+    {
       nd.remove("heatbath_overrelaxation");
     }
   }
 
   do_nested_sampling = false;
-  if (nd["nested_sampling"]) {
+  if (nd["nested_sampling"])
+  {
     in.read_verb<bool>(do_nested_sampling, {"nested_sampling", "use_NS"});
-    if (!do_nested_sampling) {
+    if (!do_nested_sampling)
+    {
       nd.remove("nested_sampling");
-    } else {
+    }
+    else
+    {
       nd.remove("monomials");
     }
   }
@@ -140,16 +154,22 @@ YAML::Node get_cleaned_input_file(running_program &rp, const std::string &input_
                         int(do_heatbath_overrelaxation) + int(do_nested_sampling);
   std::cout << do_hmc << " " << do_metropolis << "  " << " " << do_heatbath_overrelaxation
             << " " << do_nested_sampling << std::endl;
-  try {
-    if (flag_algo > 1) { // can run only one algorithm
+  try
+  {
+    if (flag_algo > 1)
+    { // can run only one algorithm
       err = "ERROR: You can run no more than one MC algorithm.\n";
       throw err;
-    } else if (flag_algo == 0 && !nd["omeas"]["offline"] && !do_nested_sampling) {
+    }
+    else if (flag_algo == 0 && !nd["omeas"]["offline"] && !do_nested_sampling)
+    {
       err = "Error: You must write the 'offline' measurements node inside 'omeas' "
             "because you're not running any MCMC algorithm.\n";
       throw err;
     }
-  } catch (...) {
+  }
+  catch (...)
+  {
     std::cerr << err << "Check your input file: " << input_file << "\n";
     std::cerr << "Aborting.\n";
     std::abort();
@@ -160,13 +180,15 @@ YAML::Node get_cleaned_input_file(running_program &rp, const std::string &input_
 
 namespace gp = global_parameters;
 
-template <class Group, class sparam_type> class base_program {
+template <class Group, class sparam_type>
+class base_program
+{
 protected:
   std::string algo_name = "UNNAMED_PROGRAM"; // algorithm's name
 
   gp::physics pparams; // physics parameters
   sparam_type sparams; // specific parameters to the given run
-  gp::measure omeas; // omeasurements parameters
+  gp::measure omeas;   // omeasurements parameters
 
   size_t threads;
 
@@ -176,9 +198,9 @@ protected:
   std::string filename_nonplanar;
 
   std::string conf_path_basename; // basename for configurations
-  gaugeconfig<Group> U; // gauge configuration evolved through the algorithm
+  gaugeconfig<Group> U;           // gauge configuration evolved through the algorithm
 
-  bool g_heat; // hot or cold starting configuration
+  bool g_heat;           // hot or cold starting configuration
   size_t g_icounter = 0; // 1st configuration(trajectory) to load from
 
   double normalisation;
@@ -189,19 +211,22 @@ protected:
 
 public:
   base_program() {}
-  ~base_program() {
+  ~base_program()
+  {
     acceptancerates.close();
     os.close();
   }
 
   virtual void print_program_info() const = 0;
 
-  void print_git_info() const {
+  void print_git_info() const
+  {
     std::cout << "## GIT branch " << GIT_BRANCH;
     std::cout << " on commit " << GIT_COMMIT_HASH << "\n";
   }
 
-  void print_info() const {
+  void print_info() const
+  {
     this->print_program_info();
     this->print_git_info();
   }
@@ -211,20 +236,23 @@ public:
   /**
    * @brief create the necessary output directories
    */
-  void create_directories() {
+  void create_directories()
+  {
     namespace fsys = boost::filesystem;
     fsys::create_directories(fsys::absolute(sparams.conf_dir));
     fsys::create_directories(fsys::absolute(omeas.res_dir));
   }
 
-  void set_omp_threads() {
+  void set_omp_threads()
+  {
 #ifdef _USE_OMP_
     /**
      * the parallelisation of the sweep-function first iterates over all odd points in t
      * and then over all even points because the nearest neighbours must not change
      * during the updates, this is not possible for an uneven number of points in T
      * */
-    if (pparams.Lt % 2 != 0) {
+    if (pparams.Lt % 2 != 0)
+    {
       std::cerr << "For parallel computing an even number of points in T is needed!"
                 << std::endl;
       omp_set_num_threads(1);
@@ -233,7 +261,8 @@ public:
     // set things up for parallel computing in sweep
     threads = omp_get_max_threads();
 
-    if (threads > pparams.Lt) {
+    if (threads > pparams.Lt)
+    {
       std::cerr << "Number of threads larger than temporal does not make sense; setting "
                    "numer of threads to T."
                 << std::endl;
@@ -250,7 +279,8 @@ public:
   /**
    * @brief initialize the potential filenames attributes
    */
-  void set_potential_filenames() {
+  void set_potential_filenames()
+  {
     // filename needed for saving results from potential and potentialsmall
     filename_fine = io::measure::get_filename_fine(pparams, omeas);
     filename_coarse = io::measure::get_filename_coarse(pparams, omeas);
@@ -258,10 +288,12 @@ public:
 
     // write explanatory headers into result-files, also check if measuring routine is
     // implemented for given dimension
-    if (omeas.potentialplanar) {
+    if (omeas.potentialplanar)
+    {
       io::measure::set_header_planar(pparams, omeas, filename_coarse, filename_fine);
     }
-    if (omeas.potentialnonplanar) {
+    if (omeas.potentialnonplanar)
+    {
       io::measure::set_header_nonplanar(pparams, omeas, filename_nonplanar);
     }
     return;
@@ -269,31 +301,34 @@ public:
 
   double retr_sum_Wplaquettes(const gp::physics &pparams,
                               const gaugeconfig<Group> &U,
-                              const bool spatial_only = false) {
-    if (pparams.flat_metric) {
-      return flat_spacetime::retr_sum_Wplaquettes(U, spatial_only);
-    }
-    if (pparams.rotating_frame) {
+                              const bool spatial_only = false)
+  {
+    if (pparams.rotating_frame)
+    {
       fatal_error("Rotating metric not supported yet.", __func__);
       // return rotating_spacetime::retr_sum_Wplaquettes(U, pparams.Omega, spatial_only);
-    } else {
-      fatal_error("Invalid metric when calling: ", __func__);
-      return {};
+    }
+    else
+    {
+      return retr_sum_Wplaquettes(U, spatial_only);
     }
   }
 
   template <class T>
-  void leafs_and_Qtop(const gp::physics &pparams,
+  void get_leafs_and_Qtop(const gp::physics &pparams,
                       const gaugeconfig<T> &U,
                       double &E,
                       double &Q,
                       const bool &cloverdef = true,
-                      const bool &ss = false) {
-    if (pparams.flat_metric) {
-      flat_spacetime::leafs_and_Qtop(U, E, Q, cloverdef, ss);
-    }
-    if (pparams.rotating_frame) {
+                      const bool &ss = false)
+  {
+    if (pparams.rotating_frame)
+    {
       fatal_error("Rotating metric not supported yet.", __func__);
+    }
+    else
+    {
+      leafs_and_Qtop(U, E, Q, cloverdef, ss);
     }
     return;
   }
@@ -301,7 +336,8 @@ public:
   /**
    * @brief create gauge configuration with correct geometry
    */
-  void create_gauge_conf() {
+  void create_gauge_conf()
+  {
     gaugeconfig<Group> U0(pparams.Lx, pparams.Ly, pparams.Lz, pparams.Lt, pparams.ndims,
                           pparams.beta);
     U = U0;
@@ -310,7 +346,8 @@ public:
   /**
    * @brief initialize the gauge configuration for the Markov chain Monte Carlo programs
    */
-  void init_gauge_conf_mcmc() {
+  void init_gauge_conf_mcmc()
+  {
     /**
      * @brief measuring spatial plaquettes means only (ndims-1)/ndims of all
      * plaquettes are measured, so need facnorm for normalization to 1
@@ -318,7 +355,8 @@ public:
      */
     facnorm = (pparams.ndims > 2) ? pparams.ndims / (pparams.ndims - 2) : 0;
 
-    if (sparams.restart_condition == "read") {
+    if (sparams.restart_condition == "read")
+    {
       std::cout << "## restart_condition " << sparams.restart_condition << "\n";
       const std::vector<std::string> v_ncc = io::read_nconf_counter(sparams.conf_dir);
       g_heat = boost::lexical_cast<bool>(v_ncc[0]);
@@ -326,24 +364,29 @@ public:
       std::string config_path = v_ncc[2];
 
       const size_t err = U.load(config_path);
-      if (err != 0 && sparams.do_mcmc) {
+      if (err != 0 && sparams.do_mcmc)
+      {
         std::cout << "Error: failed to load initial gauge configuration for "
                      "intializing the Markov chain Monte Carlo. Aborting.\n";
         std::abort();
       }
-    } else {
-      if (sparams.restart_condition == "hot") {
+    }
+    else
+    {
+      if (sparams.restart_condition == "hot")
+      {
         g_heat = 1.0;
-      } else if (sparams.restart_condition == "cold") {
+      }
+      else if (sparams.restart_condition == "cold")
+      {
         g_heat = 0.0;
       }
       g_icounter = 0;
       hotstart(U, sparams.seed, g_heat);
     }
 
-    // double plaquette = flat_spacetime::retr_sum_Wplaquettes(U);
     double plaquette =
-      omeasurements::get_retr_plaquette_density((*this).U, (*this).pparams.bc);
+        omeasurements::get_retr_plaquette_density((*this).U, (*this).pparams.bc);
     double fac = 2.0 / U.getndims() / (U.getndims() - 1.0);
     normalisation = fac / U.getVolume() / double(U.getNc());
 
@@ -355,35 +398,41 @@ public:
     std::cout << "## Initial Plaquette P: " << plaquette << std::endl;
 
     random_gauge_trafo(U, 654321);
-    // plaquette = flat_spacetime::retr_sum_Wplaquettes(U);
     plaquette = omeasurements::get_retr_plaquette_density((*this).U, (*this).pparams.bc);
     std::cout << "## Plaquette after rnd trafo: " << plaquette << std::endl;
   }
 
-  virtual void open_output_data() {
+  virtual void open_output_data()
+  {
     // doing only offline measurements
-    if (!sparams.do_mcmc) {
+    if (!sparams.do_mcmc)
+    {
       return;
     }
 
     const std::string file = sparams.conf_dir + "/output." + algo_name + ".data";
-    if (g_icounter == 0) {
+    if (g_icounter == 0)
+    {
       os.open(file, std::ios::out);
-    } else {
+    }
+    else
+    {
       os.open(file, std::ios::app);
     }
 
     return;
   }
 
-  void output_line(const int &i) {
+  void output_line(const int &i)
+  {
     double ImTr_P = 0., Q = 0.;
     std::cout << i << std::scientific << std::setprecision(15);
     (*this).os << i << std::scientific << std::setprecision(15);
-    for (bool ss : {false, true}) {
+    for (bool ss : {false, true})
+    {
       const double ReTr_P =
-        omeasurements::get_retr_plaquette_density((*this).U, (*this).pparams.bc, ss);
-      this->leafs_and_Qtop((*this).pparams, (*this).U, ImTr_P, Q, false, ss);
+          omeasurements::get_retr_plaquette_density((*this).U, (*this).pparams.bc, ss);
+      this->get_leafs_and_Qtop((*this).pparams, (*this).U, ImTr_P, Q, false, ss);
 
       std::cout << " " << ReTr_P << " " << ImTr_P << " " << Q;
       (*this).os << " " << ReTr_P << " " << ImTr_P << " " << Q;
@@ -396,7 +445,8 @@ public:
   /**
    * @brief part of the program flow common to all programs
    */
-  void pre_run(const YAML::Node &nd) {
+  void pre_run(const YAML::Node &nd)
+  {
     this->print_program_info();
     this->print_git_info();
 
@@ -421,8 +471,10 @@ public:
   virtual void save_acceptance_rates() { return; };
 
   // save the final configuration when doing the MC evolution
-  void save_final_conf() {
-    if ((*this).sparams.do_mcmc) {
+  void save_final_conf()
+  {
+    if ((*this).sparams.do_mcmc)
+    {
       std::ostringstream oss;
       oss << (*this).conf_path_basename << ".final" << std::ends;
       ((*this).U).save((*this).sparams.conf_dir + "/" + oss.str());
@@ -435,72 +487,90 @@ public:
    *
    * @param i trajectory index
    */
-  virtual void do_omeas_i(const size_t &i) {
+  virtual void do_omeas_i(const size_t &i)
+  {
     const bool flag_i =
-      sparams.do_omeas && (i > omeas.icounter) && ((i % omeas.nstep) == 0);
+        sparams.do_omeas && (i > omeas.icounter) && ((i % omeas.nstep) == 0);
 
-    if (!flag_i) {
+    if (!flag_i)
+    {
       return;
     }
 
-    if (!sparams.do_mcmc) { // doing only offline measurements
+    if (!sparams.do_mcmc)
+    { // doing only offline measurements
       const std::string path_i = conf_path_basename + "." + std::to_string(i);
       int ierrU = U.load(path_i);
 
-      if (ierrU == 1) { // cannot load gauge config
+      if (ierrU == 1)
+      {         // cannot load gauge config
         return; // simply ignore configuration
       }
     }
 
-    if (omeas.plaquette.measure_it) {
-      if ((*this).omeas.verbosity > 0) {
+    if (omeas.plaquette.measure_it)
+    {
+      if ((*this).omeas.verbosity > 0)
+      {
         std::cout << "## online measuring: Plaquette\n";
       }
       omeasurements::meas_plaquette(U, i, pparams, omeas);
     }
 
-    if (omeas.potentialplanar || omeas.potentialnonplanar) {
+    if (omeas.potentialplanar || omeas.potentialnonplanar)
+    {
       gaugeconfig<Group> U1 = U;
       // smear lattice
-      for (size_t smears = 0; smears < omeas.n_apesmear; smears += 1) {
+      for (size_t smears = 0; smears < omeas.n_apesmear; smears += 1)
+      {
         APEsmearing<double, Group>(U1, omeas.alpha, omeas.smear_spatial_only);
       }
-      if (omeas.potentialplanar) {
+      if (omeas.potentialplanar)
+      {
         std::cout << "## measure planar potential\n";
         omeasurements::meas_loops_planar_pot(U1, pparams, omeas.sizeWloops,
                                              (*this).filename_coarse,
                                              (*this).filename_fine, i);
       }
 
-      if (omeas.potentialnonplanar) {
+      if (omeas.potentialnonplanar)
+      {
         std::cout << "## measure nonplanar potential\n";
         omeasurements::meas_loops_nonplanar_pot(U1, pparams, omeas.sizeWloops,
                                                 (*this).filename_nonplanar, i);
       }
     }
 
-    if ((*this).omeas.Wloop) {
-      if ((*this).omeas.verbosity > 0) {
+    if ((*this).omeas.Wloop)
+    {
+      if ((*this).omeas.verbosity > 0)
+      {
         std::cout << "## online measuring: Wilson loop\n";
       }
       omeasurements::meas_wilson_loop<Group>(U, i, omeas.res_dir);
     }
-    if ((*this).omeas.gradient_flow.measure_it) {
-      if ((*this).omeas.verbosity > 0) {
+    if ((*this).omeas.gradient_flow.measure_it)
+    {
+      if ((*this).omeas.verbosity > 0)
+      {
         std::cout << "## online measuring: Gradient flow\n";
       }
       omeasurements::meas_gradient_flow<Group>(U, i, pparams, (*this).omeas);
     }
 
-    if ((*this).omeas.pion_staggered) {
-      if ((*this).omeas.verbosity > 0) {
+    if ((*this).omeas.pion_staggered)
+    {
+      if ((*this).omeas.verbosity > 0)
+      {
         std::cout << "## online measuring: Pion correlator\n";
       }
       omeasurements::meas_pion_correlator<Group>(U, i, pparams.m0, (*this).omeas);
     }
 
-    if ((*this).omeas.glueball.do_measure) {
-      if ((*this).omeas.verbosity > 0) {
+    if ((*this).omeas.glueball.do_measure)
+    {
+      if ((*this).omeas.verbosity > 0)
+      {
         std::cout << "## online measuring: J^{PC} glueball correlators.\n";
       }
 
@@ -515,19 +585,24 @@ public:
    *
    * @param i configuration index
    */
-  void after_MCMC_step(const size_t &i, const bool &do_omeas) {
+  void after_MCMC_step(const size_t &i, const bool &do_omeas)
+  {
     if (i > 0 && (i % (*this).sparams.N_save) ==
-                   0) { // saving (*this).U after each N_save trajectories
+                     0)
+    { // saving (*this).U after each N_save trajectories
       std::string path_i = (*this).conf_path_basename + "." + std::to_string(i);
-      if ((*this).sparams.do_mcmc) {
+      if ((*this).sparams.do_mcmc)
+      {
         (*this).U.save(path_i);
       }
 
-      if (do_omeas) {
+      if (do_omeas)
+      {
         this->do_omeas_i(i);
       }
 
-      if ((*this).sparams.do_mcmc) {
+      if ((*this).sparams.do_mcmc)
+      {
         // storing last conf index (only after online measurements has been done)
         io::update_nconf_counter((*this).sparams.conf_dir, (*this).g_heat, i, path_i);
       }

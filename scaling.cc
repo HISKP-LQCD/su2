@@ -1,5 +1,5 @@
 #include "clover.hh"
-#include "flat-sweep.hh"
+#include "sweep.hh"
 #include "gauge_energy.hh"
 #include "gaugeconfig.hh"
 #include "parse_commandline.hh"
@@ -36,7 +36,8 @@ using Complex = std::complex<double>;
  * of the code is copied from main-u1.cc and measure-u1.cc
  * */
 
-int main(int ac, char *av[]) {
+int main(int ac, char *av[])
+{
   general_params gparams;
 
   size_t N_hit = 10;
@@ -54,10 +55,11 @@ int main(int ac, char *av[]) {
   // add Metropolis specific options
   desc.add_options()("nhit", po::value<size_t>(&N_hit)->default_value(10),
                      "N_hit")("delta,d", po::value<double>(&delta), "delta")(
-    "oneengine,e", po::value<bool>(&oneengine), "only one engine used in sweep");
+      "oneengine,e", po::value<bool>(&oneengine), "only one engine used in sweep");
 
   int err = parse_commandline(ac, av, desc, gparams);
-  if (err > 0) {
+  if (err > 0)
+  {
     return err;
   }
 
@@ -66,7 +68,8 @@ int main(int ac, char *av[]) {
 #else
   bool parallel = false;
 #endif
-  if (gparams.Lt % 2 != 0 && parallel) {
+  if (gparams.Lt % 2 != 0 && parallel)
+  {
     std::cerr << "For parallel computing an even number of points in T is needed!"
               << std::endl;
     omp_set_num_threads(1);
@@ -112,12 +115,14 @@ int main(int ac, char *av[]) {
   std::chrono::duration<double, std::micro> elapse_sweep_one, elapse_loop_one;
 
   double g_heat = -1.0;
-  if (gparams.restart_condition == "hot") {
+  if (gparams.restart_condition == "hot")
+  {
     g_heat = 1.0;
-  } else if (gparams.restart_condition == "cold") {
+  }
+  else if (gparams.restart_condition == "cold")
+  {
     g_heat = 0.0;
   }
-
 
   /**
    * the measurements are done twice to be able to adjust for variations in the cores
@@ -134,39 +139,46 @@ int main(int ac, char *av[]) {
    * generator is used for all threads if oneengine=false, each thread gets one rng, given
    * to the sweep-function in a vector
    * */
-  for (size_t measurement = 0; measurement < 5; measurement++) {
-    for (size_t thread = 1; thread <= threads; thread++) {
+  for (size_t measurement = 0; measurement < 5; measurement++)
+  {
+    for (size_t thread = 1; thread <= threads; thread++)
+    {
       hotstart(U, gparams.seed, g_heat);
       omp_set_num_threads(thread);
       auto start = std::chrono::high_resolution_clock::now();
 
       for (size_t i = gparams.icounter; i < gparams.n_meas * thread + gparams.icounter;
-           i += thread) {
-        if (!oneengine) {
-          for (size_t engine = 0; engine < thread; engine += 1) {
+           i += thread)
+      {
+        if (!oneengine)
+        {
+          for (size_t engine = 0; engine < thread; engine += 1)
+          {
             engines[engine].seed(gparams.seed + i + engine);
           }
-          rate += flat_spacetime::sweep(U, engines, delta, N_hit, gparams.beta,
-                                        gparams.xi, gparams.anisotropic);
+          rate += sweep(U, engines, delta, N_hit, gparams.beta,
+                        gparams.xi, gparams.anisotropic);
         }
-        if (oneengine) {
+        if (oneengine)
+        {
           blankrng.seed(gparams.seed + i);
-          rate += flat_spacetime::sweepone(U, blankrng, delta, N_hit, gparams.beta,
-                                           gparams.xi, gparams.anisotropic);
+          rate += sweepone(U, blankrng, delta, N_hit, gparams.beta,
+                           gparams.xi, gparams.anisotropic);
         }
         // inew counts loops, loop-variable needed to have one RNG per thread with
         // different seeds for every measurement
         size_t inew = (i - gparams.icounter) / thread + gparams.icounter;
 
-        double energy = flat_spacetime::retr_sum_Wplaquettes(U, true);
+        double energy = retr_sum_Wplaquettes(U, true);
 
         double E = 0., Q = 0.;
-        flat_spacetime::leafs_and_Qtop(U, E, Q);
+        leafs_and_Qtop(U, E, Q);
         // measuring spatial plaquettes only means only (ndims-1)/ndims of all plaquettes
         // are measured, so need facnorm for normalization to 1
         cout << inew << " " << std::scientific << std::setw(18) << std::setprecision(15)
              << energy * normalisation * facnorm << "  " << Q << endl;
-        if (inew > 0 && (inew % gparams.N_save) == 0) {
+        if (inew > 0 && (inew % gparams.N_save) == 0)
+        {
           std::ostringstream oss;
           oss << "configu1." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz
               << "." << gparams.Lt << ".b" << std::fixed << gparams.beta << ".x"
@@ -177,7 +189,8 @@ int main(int ac, char *av[]) {
 
       auto end = std::chrono::high_resolution_clock::now();
       std::chrono::duration<double, std::micro> elapsed_time = end - start;
-      if (thread == 1) {
+      if (thread == 1)
+      {
         elapse_sweep_one = elapsed_time;
       }
       os << thread << "  " << std::setw(14) << std::scientific << elapsed_time.count()
@@ -187,15 +200,18 @@ int main(int ac, char *av[]) {
 
       start = std::chrono::high_resolution_clock::now();
       for (size_t i = gparams.icounter + gparams.N_save;
-           i < gparams.n_meas + gparams.icounter; i += gparams.N_save) {
+           i < gparams.n_meas + gparams.icounter; i += gparams.N_save)
+      {
         std::ostringstream oss;
         oss << "configu1." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz << "."
             << gparams.Lt << ".b" << std::fixed << U.getBeta() << ".x" << gparams.xi
             << "." << i << std::ends;
         U.load(oss.str());
         //~ //calculate wilsonloops
-        if (gparams.ndims == 4) {
-          for (size_t x = 1; x <= gparams.Lx / 2; x++) {
+        if (gparams.ndims == 4)
+        {
+          for (size_t x = 1; x <= gparams.Lx / 2; x++)
+          {
             sprintf(filenamepot, "result.u1potential.Nt%lu.Ns%lu.b%f.xi%f.x%lu",
                     gparams.Lt, gparams.Lx, U.getBeta(), gparams.xi, x);
             resultfile.open(filenamepot, std::ios::app);
@@ -204,7 +220,8 @@ int main(int ac, char *av[]) {
             // needed for the measurement Measure (x,t) and (x,y), with "t" the
             // anisotropic direction, "x" the "first" isotropic direction and "y" taken as
             // the average of the other two directions
-            for (size_t t = 1; t <= gparams.Lt / 2; t++) {
+            for (size_t t = 1; t <= gparams.Lt / 2; t++)
+            {
               loop = wilsonloop_non_planar(U, {t, x, 0, 0});
               loop += wilsonloop_non_planar(U, {t, 0, x, 0});
               loop += wilsonloop_non_planar(U, {t, 0, 0, x});
@@ -220,7 +237,8 @@ int main(int ac, char *av[]) {
               resultfile << std::setw(14) << std::scientific << loop / U.getVolume() / 6.0
                          << "  ";
             }
-            for (size_t y = 1; y <= gparams.Lx / 2; y++) {
+            for (size_t y = 1; y <= gparams.Lx / 2; y++)
+            {
               loop = wilsonloop_non_planar(U, {0, x, y, 0});
               loop += wilsonloop_non_planar(U, {0, x, 0, y});
               loop += wilsonloop_non_planar(U, {0, y, x, 0});
@@ -243,13 +261,16 @@ int main(int ac, char *av[]) {
             resultfile.close();
           }
         }
-        if (gparams.ndims == 3) {
+        if (gparams.ndims == 3)
+        {
           sprintf(filename,
                   "result2p1d.u1potential.scaling.Nt%lu.Ns%lu.b%f.xi%f.finedistance",
                   gparams.Lt, gparams.Lx, U.getBeta(), gparams.xi);
           resultfile.open(filename, std::ios::app);
-          for (size_t t = 1; t <= gparams.Lt / 2; t++) {
-            for (size_t x = 1; x <= gparams.Lx / 2; x++) {
+          for (size_t t = 1; t <= gparams.Lt / 2; t++)
+          {
+            for (size_t x = 1; x <= gparams.Lx / 2; x++)
+            {
               loop = wilsonloop_non_planar(U, {t, x, 0});
               resultfile << std::setw(14) << std::scientific << loop / U.getVolume() / 1.0
                          << "  ";
@@ -262,8 +283,10 @@ int main(int ac, char *av[]) {
                   "result2p1d.u1potential.scaling.Nt%lu.Ns%lu.b%f.xi%f.coarsedistance",
                   gparams.Lt, gparams.Lx, U.getBeta(), gparams.xi);
           resultfile.open(filename, std::ios::app);
-          for (size_t y = 1; y <= gparams.Ly / 2; y++) {
-            for (size_t x = 1; x <= gparams.Lx / 2; x++) {
+          for (size_t y = 1; y <= gparams.Ly / 2; y++)
+          {
+            for (size_t x = 1; x <= gparams.Lx / 2; x++)
+            {
               loop = wilsonloop_non_planar(U, {0, x, y});
               //~ loop += wilsonloop_non_planar(U, {0, y, x});
               resultfile << std::setw(14) << std::scientific << loop / U.getVolume() / 1.0
@@ -278,7 +301,8 @@ int main(int ac, char *av[]) {
 
       end = std::chrono::high_resolution_clock::now();
       elapsed_time = end - start;
-      if (thread == 1) {
+      if (thread == 1)
+      {
         elapse_loop_one = elapsed_time;
       }
       os << "  " << std::setw(14) << std::scientific << elapsed_time.count() << "  "

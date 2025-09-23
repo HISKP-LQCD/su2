@@ -33,7 +33,8 @@
 #include <xtensor/xio.hpp>
 #include <xtensor/xview.hpp>
 
-namespace omeasurements {
+namespace omeasurements
+{
 
   namespace fsys = boost::filesystem;
   using Complex = std::complex<double>;
@@ -47,35 +48,45 @@ namespace omeasurements {
   template <class Group>
   double get_retr_plaquette_density(const gaugeconfig<Group> &U,
                                     const std::string &bc,
-                                    const bool &spatial = false) {
+                                    const bool &spatial = false)
+  {
     const double ndims_fact =
-      spacetime_lattice::num_pLloops_half(U.getndims() - int(spatial));
+        spacetime_lattice::num_pLloops_half(U.getndims() - int(spatial));
     double P = 0.0; // plaquette density value
     double den = ndims_fact * double(U.getNc());
 
-    if (bc == "periodic") {
-      P = flat_spacetime::retr_sum_Wplaquettes(U, /*xi=*/1.0, /*anisotropic=*/false,
-                                               /*spatial=*/spatial);
+    if (bc == "periodic")
+    {
+      P = retr_sum_Wplaquettes(U, /*xi=*/1.0, /*anisotropic=*/false,
+                               /*spatial=*/spatial);
       den *= U.getVolume();
-    } else if (bc == "open" || bc == "spatial_open") {
+    }
+    else if (bc == "open" || bc == "spatial_open")
+    {
       const size_t ndims = U.getndims();
       obc::weights w(bc, U.getLx(), U.getLy(), U.getLz(), U.getLt(), ndims);
 
       P = obc::retr_sum_Wplaquettes(U, w, /*xi=*/1.0, /*anisotropic=*/false,
                                     /*spatial=*/spatial);
-      if (ndims > 0) {
+      if (ndims > 0)
+      {
         den *= U.getLt();
-        if (ndims > 1) {
+        if (ndims > 1)
+        {
           den *= (U.getLx() - 1);
-          if (ndims > 2) {
+          if (ndims > 2)
+          {
             den *= (U.getLy() - 1);
-            if (ndims > 3) {
+            if (ndims > 3)
+            {
               den *= (U.getLz() - 1);
             }
           }
         }
       }
-    } else {
+    }
+    else
+    {
       fatal_error("Illegal periodic boundary conditions:" + bc, __func__);
     }
 
@@ -87,7 +98,8 @@ namespace omeasurements {
   void meas_plaquette(const gaugeconfig<Group> &U,
                       const size_t &i,
                       const global_parameters::physics &pparams,
-                      const sparams &S) {
+                      const sparams &S)
+  {
     std::ostringstream oss;
     oss << S.res_dir + "/" + S.plaquette.subdir << "/";
     fsys::create_directories(fsys::absolute(oss.str())); // creating directory
@@ -113,11 +125,13 @@ namespace omeasurements {
 
   // measure Polyakov loops
   template <class Group>
-  Complex get_polyakov_loop(const gaugeconfig<Group> &U, const std::vector<size_t> &x_i) {
+  Complex get_polyakov_loop(const gaugeconfig<Group> &U, const std::vector<size_t> &x_i)
+  {
     std::vector<size_t> x = {0, x_i[0], x_i[1], x_i[2]};
 
     Group U0 = U(x, 0);
-    for (size_t t = 1; t < U.getLt(); t++) {
+    for (size_t t = 1; t < U.getLt(); t++)
+    {
       x[0] = t;
       U0 = U0 * U(x, 0);
     }
@@ -126,13 +140,17 @@ namespace omeasurements {
 
   // measure Polyakov loops
   template <class Group>
-  void meas_polyakov(const gaugeconfig<Group> &U, std::ofstream &ofs) {
+  void meas_polyakov(const gaugeconfig<Group> &U, std::ofstream &ofs)
+  {
     int i_g = 0;
     int N_spatial = U.getVolume() / U.getLt(); // number of spatial sites of the lattice
     Complex Ploop_vol_avg = 0.0;
-    for (size_t x1 = 0; x1 < U.getLx(); x1++) {
-      for (size_t x2 = 0; x2 < U.getLy(); x2++) {
-        for (size_t x3 = 0; x3 < U.getLz(); x3++) {
+    for (size_t x1 = 0; x1 < U.getLx(); x1++)
+    {
+      for (size_t x2 = 0; x2 < U.getLy(); x2++)
+      {
+        for (size_t x3 = 0; x3 < U.getLz(); x3++)
+        {
           const std::vector<size_t> x_i = {x1, x2, x3};
           Ploop_vol_avg += get_polyakov_loop(U, x_i);
         }
@@ -156,7 +174,8 @@ namespace omeasurements {
   template <class Group>
   void meas_wilson_loop(const gaugeconfig<Group> &U,
                         const size_t &i,
-                        const std::string &res_dir) {
+                        const std::string &res_dir)
+  {
     std::ostringstream os;
     os << res_dir + "/wilsonloop.";
     auto prevw = os.width(6);
@@ -183,7 +202,8 @@ namespace omeasurements {
   void meas_gradient_flow(const gaugeconfig<Group> &U,
                           const size_t &i,
                           const global_parameters::physics &pparams,
-                          const sparams &S) {
+                          const sparams &S)
+  {
     const std::string res_dir = S.res_dir + "/" + S.gradient_flow.subdir + "/";
     fsys::create_directories(fsys::absolute(res_dir));
 
@@ -201,10 +221,11 @@ namespace omeasurements {
     os.fill(prevf);
 
     gaugeconfig<Group> V = U;
-    if (tstart > eps) {
+    if (tstart > eps)
+    {
       V.load(os.str() + "_t" + std::to_string(tstart) + ".conf");
     }
-    flat_spacetime::gradient_flow(V, os.str(), tmax, eps, pparams.xi, tstart, save_conf);
+    gradient_flow(V, os.str(), tmax, eps, pparams.xi, tstart, save_conf);
 
     return;
   }
@@ -223,7 +244,8 @@ namespace omeasurements {
   void meas_pion_correlator(const gaugeconfig<Group> &U,
                             const size_t &i,
                             const double &m,
-                            const sparams &S) {
+                            const sparams &S)
+  {
     std::ostringstream oss;
     oss << S.res_dir + "/C_pion.";
     auto prevw = oss.width(6);
@@ -237,8 +259,9 @@ namespace omeasurements {
 
     ofs << "t C(t)\n";
     const std::vector<double> Cpi = staggered::C_pion<Group>(
-      U, m, S.solver, S.tolerance_cg, S.solver_verbosity, S.seed_pf);
-    for (size_t i = 0; i < U.getLt(); i++) {
+        U, m, S.solver, S.tolerance_cg, S.solver_verbosity, S.seed_pf);
+    for (size_t i = 0; i < U.getLt(); i++)
+    {
       ofs << std::scientific << std::setprecision(16) << i << " " << Cpi[i] << "\n";
     }
     ofs.close();
@@ -246,7 +269,8 @@ namespace omeasurements {
     return;
   }
 
-  namespace from_smeared_field {
+  namespace from_smeared_field
+  {
 
     /**
      * @brief measure the glueball 0^{PC} interpolators (at rest) from a smeared gauge
@@ -266,7 +290,8 @@ namespace omeasurements {
                                 const size_t &i,
                                 const size_t &nAPEsmear,
                                 const bool &save_interpolator,
-                                const sparams &S) {
+                                const sparams &S)
+    {
       typedef typename accum_type<Group>::type accum;
 
       std::ostringstream oss_dir, oss_name;
@@ -276,13 +301,16 @@ namespace omeasurements {
       oss_details << "smearAPEn" << nAPEsmear << "alpha" << S.glueball.alphaAPEsmear;
       std::string meas_details = oss_details.str();
 
-      if (S.glueball.doAPEsmear) {
+      if (S.glueball.doAPEsmear)
+      {
         oss_dir << meas_details + "/";
       }
       //      fsys::create_directories(fsys::absolute(oss_dir.str()));
 
-      if (S.glueball.doAPEsmear) {
-        if (S.glueball.lengthy_file_name) {
+      if (S.glueball.doAPEsmear)
+      {
+        if (S.glueball.lengthy_file_name)
+        {
           oss_name << "_" << meas_details;
         }
       }
@@ -300,26 +328,29 @@ namespace omeasurements {
       // phi_i(t)^{PC}
       const size_t nr = (rmax - rmin + 1);
       std::vector<xt::xarray<double>> phi(nr); // vector of all interpolators
-      size_t ii = 0; // interpolator index
+      size_t ii = 0;                           // interpolator index
 
-      for (size_t i1 = 0; i1 < nr; i1++) {
+      for (size_t i1 = 0; i1 < nr; i1++)
+      {
         const size_t r1 = i1 + rmin;
 
         phi[ii].resize({T_ext, 5}); // t, ++, +-, -+, --
 
-        for (size_t t = 0; t < T_ext; t++) {
+        for (size_t t = 0; t < T_ext; t++)
+        {
           phi[ii](t, 0) = t;
           const std::complex<double> Pp = glueballs::get_rest_trace_loop<double, Group>(
-            type, t, U, r1, false, S.glueball.spatial_loops);
+              type, t, U, r1, false, S.glueball.spatial_loops);
           const std::complex<double> Pm = glueballs::get_rest_trace_loop<double, Group>(
-            type, t, U, r1, true, S.glueball.spatial_loops);
+              type, t, U, r1, true, S.glueball.spatial_loops);
           phi[ii](t, 1) = (Pp + Pm).real() / 2.0; // PC=++
           phi[ii](t, 3) = (Pp + Pm).imag() / 2.0; // PC=+-
           phi[ii](t, 2) = (Pp - Pm).real() / 2.0; // PC=-+
           phi[ii](t, 4) = (Pp - Pm).imag() / 2.0; // PC=--
         }
 
-        if (save_interpolator) {
+        if (save_interpolator)
+        {
           // directory path
           const std::string dir_ij = oss_dir.str() + std::to_string(r1) + "/";
           fsys::create_directories(fsys::absolute(dir_ij));
@@ -350,7 +381,8 @@ namespace omeasurements {
                                   const gaugeconfig<Group> &U,
                                   const size_t &i,
                                   const size_t &nAPEsmear,
-                                  const sparams &S) {
+                                  const sparams &S)
+    {
       std::ostringstream oss_dir, oss_name;
       oss_dir << S.res_dir + "/glueball/correlator/" + type + "/";
 
@@ -358,13 +390,16 @@ namespace omeasurements {
       oss_details << "smearAPEn" << nAPEsmear << "alpha" << S.glueball.alphaAPEsmear;
       std::string meas_details = oss_details.str();
 
-      if (S.glueball.doAPEsmear) {
+      if (S.glueball.doAPEsmear)
+      {
         oss_dir << meas_details + "/";
       }
       //      fsys::create_directories(fsys::absolute(oss_dir.str()));
 
-      if (S.glueball.doAPEsmear) {
-        if (S.glueball.lengthy_file_name) {
+      if (S.glueball.doAPEsmear)
+      {
+        if (S.glueball.lengthy_file_name)
+        {
           oss_name << "_" << meas_details;
         }
       }
@@ -381,15 +416,18 @@ namespace omeasurements {
 
       // phi_i(t)^{PC}
       std::vector<xt::xarray<double>> phi = meas_glueball_interpolators(
-        type, U, i, nAPEsmear, S.glueball.save_interpolator, S);
-      if (!S.glueball.correlator) {
+          type, U, i, nAPEsmear, S.glueball.save_interpolator, S);
+      if (!S.glueball.correlator)
+      {
         return;
       }
 
       const size_t n_phi = phi.size();
 
-      for (size_t i = 0; i < n_phi; i++) {
-        for (size_t j = 0; j <= i; j++) {
+      for (size_t i = 0; i < n_phi; i++)
+      {
+        for (size_t j = 0; j <= i; j++)
+        {
           // directory path
           const std::string dir_ij = oss_dir.str() + std::to_string(i + S.glueball.rmin) +
                                      "_" + std::to_string(j + S.glueball.rmin) + "/";
@@ -402,13 +440,17 @@ namespace omeasurements {
           xt::xarray<double> corr;
           corr.resize({T_ext, 5}); // t, ++, +-, -+, --
 
-          for (size_t t = 0; t < T_ext; t++) {
+          for (size_t t = 0; t < T_ext; t++)
+          {
             corr(t, 0) = t;
             size_t iPC = 1; // 1st column is time 't'
-            for (size_t P = 0; P <= 1; P++) {
-              for (size_t C = 0; C <= 1; C++) {
+            for (size_t P = 0; P <= 1; P++)
+            {
+              for (size_t C = 0; C <= 1; C++)
+              {
                 corr(t, iPC) = 0.0;
-                for (size_t tau = 0; tau < T_ext; tau++) {
+                for (size_t tau = 0; tau < T_ext; tau++)
+                {
                   const size_t t1 = (t + tau) % T_ext;
                   corr(t, iPC) += phi[i](t1, iPC) * phi[j](tau, iPC);
                 }
@@ -445,20 +487,23 @@ namespace omeasurements {
   void meas_glueball_interpolators(const std::string &type,
                                    const gaugeconfig<Group> &U0,
                                    const size_t &i,
-                                   const sparams &S) {
+                                   const sparams &S)
+  {
     const std::vector<size_t> &v_ns =
-      S.glueball.vec_nAPEsmear; // vector of number of smearing steps
+        S.glueball.vec_nAPEsmear; // vector of number of smearing steps
     const size_t ns = v_ns.size();
 
     gaugeconfig<Group> U = U0; // copy of the initial gauge configuration
-    for (size_t is = 0; is < ns; is++) {
+    for (size_t is = 0; is < ns; is++)
+    {
       const size_t nsteps = (is == 0) ? v_ns[is] : v_ns[is] - v_ns[is - 1];
-      for (size_t i = 0; i < nsteps; i++) {
+      for (size_t i = 0; i < nsteps; i++)
+      {
         // other nsteps so that we reach the value of v_ns[is]
         spatial_APEsmearing<double, Group>(U, S.glueball.alphaAPEsmear);
       }
       auto foo = from_smeared_field::meas_glueball_interpolators(
-        type, U, i, v_ns[is], S.glueball.save_interpolator, S);
+          type, U, i, v_ns[is], S.glueball.save_interpolator, S);
     }
   }
 
@@ -476,15 +521,18 @@ namespace omeasurements {
   void meas_glueball_correlator(const std::string &type,
                                 const gaugeconfig<Group> &U0,
                                 const size_t &i,
-                                const sparams &S) {
+                                const sparams &S)
+  {
     const std::vector<size_t> &v_ns =
-      S.glueball.vec_nAPEsmear; // vector of number of smearing steps
+        S.glueball.vec_nAPEsmear; // vector of number of smearing steps
     const size_t ns = v_ns.size();
 
     gaugeconfig<Group> U = U0; // copy of the initial gauge configuration
-    for (size_t is = 0; is < ns; is++) {
+    for (size_t is = 0; is < ns; is++)
+    {
       const size_t nsteps = (is == 0) ? v_ns[is] : v_ns[is] - v_ns[is - 1];
-      for (size_t i = 0; i < nsteps; i++) {
+      for (size_t i = 0; i < nsteps; i++)
+      {
         // other nsteps so that we reach the value of v_ns[is]
         spatial_APEsmearing<double, Group>(U, S.glueball.alphaAPEsmear);
       }
@@ -509,15 +557,19 @@ namespace omeasurements {
                              const double &sizeWloops,
                              const std::string &filename_coarse,
                              const std::string &filename_fine,
-                             const size_t &i) {
+                             const size_t &i)
+  {
     double loop;
     std::ofstream resultfile;
     //~ //calculate wilsonloops for potential
 
-    if (pparams.ndims == 4) {
+    if (pparams.ndims == 4)
+    {
       resultfile.open(filename_fine, std::ios::app);
-      for (size_t t = 1; t <= pparams.Lt * sizeWloops; t++) {
-        for (size_t x = 1; x <= pparams.Lx * sizeWloops; x++) {
+      for (size_t t = 1; t <= pparams.Lt * sizeWloops; t++)
+      {
+        for (size_t x = 1; x <= pparams.Lx * sizeWloops; x++)
+        {
           loop = wilsonloop_non_planar(U, {t, x, 0, 0});
           resultfile << std::setw(14) << std::scientific << loop / U.getVolume() << "  ";
         }
@@ -527,8 +579,10 @@ namespace omeasurements {
       resultfile.close();
 
       resultfile.open(filename_coarse, std::ios::app);
-      for (size_t y = 1; y <= pparams.Ly * sizeWloops; y++) {
-        for (size_t x = 1; x <= pparams.Lx * sizeWloops; x++) {
+      for (size_t y = 1; y <= pparams.Ly * sizeWloops; y++)
+      {
+        for (size_t x = 1; x <= pparams.Lx * sizeWloops; x++)
+        {
           loop = wilsonloop_non_planar(U, {0, x, y, 0});
           loop += wilsonloop_non_planar(U, {0, x, 0, y});
           resultfile << std::setw(14) << std::scientific << loop / U.getVolume() / 2.0
@@ -539,10 +593,13 @@ namespace omeasurements {
       resultfile << std::endl;
       resultfile.close();
     }
-    if (pparams.ndims == 3) {
+    if (pparams.ndims == 3)
+    {
       resultfile.open(filename_fine, std::ios::app);
-      for (size_t t = 1; t <= pparams.Lt * sizeWloops; t++) {
-        for (size_t x = 1; x <= pparams.Lx * sizeWloops; x++) {
+      for (size_t t = 1; t <= pparams.Lt * sizeWloops; t++)
+      {
+        for (size_t x = 1; x <= pparams.Lx * sizeWloops; x++)
+        {
           loop = wilsonloop_non_planar(U, {t, x, 0});
           //~ loop  += wilsonloop_non_planar(U, {t, 0, x});
           resultfile << std::setw(14) << std::scientific << loop / U.getVolume() << "  ";
@@ -553,8 +610,10 @@ namespace omeasurements {
       resultfile.close();
 
       resultfile.open(filename_coarse, std::ios::app);
-      for (size_t y = 1; y <= pparams.Ly * sizeWloops; y++) {
-        for (size_t x = 1; x <= pparams.Lx * sizeWloops; x++) {
+      for (size_t y = 1; y <= pparams.Ly * sizeWloops; y++)
+      {
+        for (size_t x = 1; x <= pparams.Lx * sizeWloops; x++)
+        {
           loop = wilsonloop_non_planar(U, {0, x, y});
           //~ loop += wilsonloop_non_planar(U, {0, y, x});
           resultfile << std::setw(14) << std::scientific << loop / U.getVolume() << "  ";
@@ -582,15 +641,20 @@ namespace omeasurements {
                                 const global_parameters::physics &pparams,
                                 const double &sizeWloops,
                                 const std::string &filename_nonplanar,
-                                const size_t &i) {
+                                const size_t &i)
+  {
     size_t maxsizenonplanar = (pparams.Lx < 4) ? pparams.Lx : 4;
 
-    if (pparams.bc == "periodic") {
+    if (pparams.bc == "periodic")
+    {
       std::ofstream resultfile;
       resultfile.open(filename_nonplanar, std::ios::app);
-      for (size_t t = 0; t <= pparams.Lt * sizeWloops; t++) {
-        for (size_t x = 0; x <= maxsizenonplanar; x++) {
-          for (size_t y = 0; y <= maxsizenonplanar; y++) {
+      for (size_t t = 0; t <= pparams.Lt * sizeWloops; t++)
+      {
+        for (size_t x = 0; x <= maxsizenonplanar; x++)
+        {
+          for (size_t y = 0; y <= maxsizenonplanar; y++)
+          {
             double loop = wilsonloop_non_planar(U, {t, x, y});
             resultfile << std::setw(14) << std::scientific << loop / U.getVolume()
                        << "  ";
@@ -600,17 +664,23 @@ namespace omeasurements {
       resultfile << i;
       resultfile << std::endl;
       resultfile.close();
-    } else if (pparams.bc == "spatial_open") {
+    }
+    else if (pparams.bc == "spatial_open")
+    {
       obc::weights w(pparams.bc, U.getLx(), U.getLy(), U.getLz(), U.getLt(),
                      U.getndims());
 
-      for (size_t x1 = 0; x1 < U.getLx(); x1++) {
-        for (size_t x2 = 0; x2 < U.getLy(); x2++) {
-          for (size_t x3 = 0; x3 < U.getLz(); x3++) {
+      for (size_t x1 = 0; x1 < U.getLx(); x1++)
+      {
+        for (size_t x2 = 0; x2 < U.getLy(); x2++)
+        {
+          for (size_t x3 = 0; x3 < U.getLz(); x3++)
+          {
             std::vector<size_t> point = {0, x1, x2, x3};
             std::ostringstream oss;
             oss << point[1];
-            for (size_t i = 2; i < point.size(); ++i) {
+            for (size_t i = 2; i < point.size(); ++i)
+            {
               oss << "_" << point[i];
             }
             const std::string str_x0 = oss.str(); // appandix to file name
@@ -618,11 +688,15 @@ namespace omeasurements {
             const std::string path = filename_nonplanar + "-" + pparams.bc + "-" + str_x0;
             std::ofstream resultfile;
             resultfile.open(path, std::ios::app);
-            for (size_t t = 0; t <= pparams.Lt * sizeWloops; t++) {
-              for (size_t x = 0; x <= maxsizenonplanar; x++) {
-                for (size_t y = 0; y <= maxsizenonplanar; y++) {
+            for (size_t t = 0; t <= pparams.Lt * sizeWloops; t++)
+            {
+              for (size_t x = 0; x <= maxsizenonplanar; x++)
+              {
+                for (size_t y = 0; y <= maxsizenonplanar; y++)
+                {
                   double loop = 0.0;
-                  for (size_t x0 = 0; x0 < U.getLt(); x0++) {
+                  for (size_t x0 = 0; x0 < U.getLt(); x0++)
+                  {
                     point[0] = x0;
                     loop += obc::wilsonloop_non_planar(U, w, point, {t, x, y});
                   }
@@ -635,7 +709,9 @@ namespace omeasurements {
           }
         }
       }
-    } else {
+    }
+    else
+    {
       fatal_error("Illegal boudary conditions" + pparams.bc, __func__);
     }
 

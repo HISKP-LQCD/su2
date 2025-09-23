@@ -32,7 +32,8 @@ using std::cout;
 using std::endl;
 namespace po = boost::program_options;
 
-int main(int ac, char *av[]) {
+int main(int ac, char *av[])
+{
   const size_t n_steps = 1;
 
   general_params gparams;
@@ -51,31 +52,39 @@ int main(int ac, char *av[]) {
   // add HMC specific options
   desc.add_options()("tau", po::value<double>(&tau)->default_value(0.1),
                      "trajectory length tau")(
-    "gamma,g", po::value<double>(&gamma)->default_value(1.),
-    "friction parameter gamma")("k", po::value<size_t>(&k_max)->default_value(1.),
-                                "number of iterations k_max per momentum choice")(
-    "no-accept-reject", "switch off the accept/reject step")(
-    "exponent", po::value<size_t>(&exponent)->default_value(0), "exponent for rounding")(
-    "integrator", po::value<size_t>(&integs)->default_value(0),
-    "itegration scheme to be used: 0=leapfrog, 1=lp_leapfrog, 2=omf4, 3=lp_omf4");
+      "gamma,g", po::value<double>(&gamma)->default_value(1.),
+      "friction parameter gamma")("k", po::value<size_t>(&k_max)->default_value(1.),
+                                  "number of iterations k_max per momentum choice")(
+      "no-accept-reject", "switch off the accept/reject step")(
+      "exponent", po::value<size_t>(&exponent)->default_value(0), "exponent for rounding")(
+      "integrator", po::value<size_t>(&integs)->default_value(0),
+      "itegration scheme to be used: 0=leapfrog, 1=lp_leapfrog, 2=omf4, 3=lp_omf4");
 
   int err = parse_commandline(ac, av, desc, gparams);
-  if (err > 0) {
+  if (err > 0)
+  {
     return err;
   }
 
   gaugeconfig<su2> U(gparams.Lx, gparams.Ly, gparams.Lz, gparams.Lt, gparams.ndims,
                      gparams.beta);
-  if (gparams.restart_condition == "read") {
+  if (gparams.restart_condition == "read")
+  {
     err = U.load(gparams.configfilename);
-    if (err != 0) {
+    if (err != 0)
+    {
       return err;
     }
-  } else {
+  }
+  else
+  {
     double g_heat = -1.0;
-    if (gparams.restart_condition == "hot") {
+    if (gparams.restart_condition == "hot")
+    {
       g_heat = 1.0;
-    } else if (gparams.restart_condition == "cold") {
+    }
+    else if (gparams.restart_condition == "cold")
+    {
       g_heat = 0.0;
     }
 
@@ -88,17 +97,17 @@ int main(int ac, char *av[]) {
 
   const double dims_fact = spacetime_lattice::num_pLloops_half(U.getndims());
   const double norm_factor =
-    1.0 / U.getVolume() / double(U.getNc()) / dims_fact; // normalization factor
+      1.0 / U.getVolume() / double(U.getNc()) / dims_fact; // normalization factor
 
-  double plaquette = flat_spacetime::retr_sum_Wplaquettes(U);
+  double plaquette = retr_sum_Wplaquettes(U);
   cout << "## Initital Plaquette: " << plaquette * norm_factor << endl;
 
   random_gauge_trafo(U, 654321);
-  plaquette = flat_spacetime::retr_sum_Wplaquettes(U);
+  plaquette = retr_sum_Wplaquettes(U);
   cout << "## Plaquette after rnd trafo: " << plaquette * norm_factor << endl;
 
   // generate list of monomials
-  flat_spacetime::gaugemonomial<double, su2> gm(0);
+  gaugemonomial<double, su2> gm(0);
   kineticmonomial<double, su2> km(0);
   km.setmdpassive();
 
@@ -119,7 +128,8 @@ int main(int ac, char *av[]) {
     os.open("output.kramers.data", std::ios::app);
 
   double rate = 0.;
-  for (size_t i = gparams.icounter; i < gparams.n_meas + gparams.icounter; i++) {
+  for (size_t i = gparams.icounter; i < gparams.n_meas + gparams.icounter; i++)
+  {
     mdparams.disablerevtest();
 
     // PRNG engine
@@ -127,7 +137,7 @@ int main(int ac, char *av[]) {
     // perform the MD update
     kramers_md_update(U, engine, mdparams, monomial_list, *md_integ);
 
-    double energy = flat_spacetime::retr_sum_Wplaquettes(U);
+    double energy = retr_sum_Wplaquettes(U);
     rate += mdparams.getaccept();
     cout << i << " " << mdparams.getaccept() << " " << std::scientific << std::setw(18)
          << std::setprecision(15) << energy * norm_factor << " " << std::setw(15)
@@ -139,7 +149,8 @@ int main(int ac, char *av[]) {
        << mdparams.getdeltaH() << " " << std::setw(15)
        << rate / static_cast<double>(i + 1) << std::endl;
 
-    if (i > 0 && (i % gparams.N_save) == 0) {
+    if (i > 0 && (i % gparams.N_save) == 0)
+    {
       std::ostringstream oss;
       oss << "config." << gparams.Lx << "." << gparams.Ly << "." << gparams.Lz << "."
           << gparams.Lt << ".b" << gparams.beta << "." << i << std::ends;

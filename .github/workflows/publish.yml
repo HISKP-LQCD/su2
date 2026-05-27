@@ -24,7 +24,7 @@ jobs:
           cmake \
           -B ./build/ \
           -S ./ \
-          -DCMAKE_PREFIX_PATH=./install_dir
+          -D CMAKE_INSTALL_PREFIX=$(realpath ./install_dir)
 
       - name: Build and install
         run: make -j$(nproc) install

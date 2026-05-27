@@ -21,7 +21,10 @@ jobs:
 
       - name: Configure
         run: |
-          cmake -B build -S .
+          cmake \
+          -B ./build/ \
+          -S ./ \
+          -DCMAKE_PREFIX_PATH=./install_dir
 
       - name: Build and install
         run: make -j$(nproc) install
